@@ -1,0 +1,34 @@
+jos stem voxelgitter (erweiterung auf 3d; auch rauch möglich ; artikel suchen)
+
+montag 17 uhr 
+
+thomas steil in bib suchen!!
+tobias hartmann
+
+fluide recherchieren
+
+als api implementieren?
+
+
+frustfaktor bei Umhören? aber sinnvoll und erlaubt
+
+
+opencl: matthias raspe nach ansprechpartner
+
+
+frage: ansprechpartner: peschel
+
+frage: optimierung auf bestimmte Hardwarearchtierktur
+
+frage: voxel oder partikel? in beide richtungen recherchiern
+
+msproject...
+
+bewertung!:
+
+
+drei gruppen:
+
+framework: ingnieurtechnisch, anforderungen erfüllt etc..
+algorithmen: vergleich mit bestehenden etc..
+benutzerzentrierung: usertests etc..

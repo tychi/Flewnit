@@ -1,0 +1,67 @@
+struct gridCellData
+{
+	//can be calculated by difference between start adresses in adjacent gridcells
+		//int numContainingParticles;
+	
+	int diffLeavingAndEnteringParticles;
+	int* startAdressInParticleHandleBuffer;
+};
+
+struct particleHandle
+{
+	int gridCellID;
+	int particleID;
+};
+
+Beschreibung des particleHandleinvalidBitBuffers:
+Anzahl byte-Einträge: numTotalParticles/8 (oder als int32, mal sehn wie das mit memorytransfer ausssieht)
+
+
+
+//codefragment  bei erstellung der gridstructure:
+//Aufruf für ALLE partikel: austretende partikel buffern:
+if cellIndexNew != cellIndexOld
+{
+	invalidateParticleHandleBufferEntry();
+	offsetInLeavingParticleBuffer = atomicInc(numtotalLeavingParticles);
+	atomicDec(grid[cellIndexOld].diffLeavingAndEnteringParticles);
+	atomicInc(grid[cellIndexNew].diffLeavingAndEnteringParticles);
+	leavingParticlesBuffer[offsetInLeavingParticleBuffer].index = particleIndex;
+}
+
+
+-------------------------------------------------
+
+
+
+Pseudocode für update der PartikelHandles in Beshcleunigungsstrukur (agnostisch ob uniform grid oder nicht):
+
+1. Kernel:
+	- Für jedes Partikel:
+		-prüfen, ob es seine Gridzelle verlassen hat;
+		- Wenn nein, nichts machen (buffer bleibt unverändert);
+		- wenn ja, dann zu LeavingPariclesBuffer zufügen, anzahlPartikel in neuer und alter gridzelle erhöhen bzw erniedrigen (atomic);
+		- im leavingParticlesbuffer auch die Adresse im ParticleHandle-Buffer speichern;
+
+2. Kernel:
+	Für jede Gridzelle:
+		- Parallel Scan über numParticles ausführen, auf diese Weise kommt automatisch für jede Cell die Startadresse im ParticleHandle-
+			Buffer heraus;
+
+
+3. Kernel:
+	Für jede Gridzelle:			
+		- (pro GridCell parallel) sequentiell über InvalidBits des eigenen Abschnitts des ParticleHandleBuffers iterieren:
+			- invalidBits akkumulieren;
+			- wenn Part.Handle valid, dann momentanes Handle in pingpong-ParticleHandleBuffer schreiben, und zwar an die Stelle:
+				Grid[gridCellIndex].newStartAdressInParticleHandleBuffer + 
+				(currentParticleOffsetInGridCell- numCurrentInvalidHandles);
+	// nach diesem Kernel sind alle validen Parikel nach links im Segement einer GridCell, und es sind rechts genau so viele leere Einträge,
+	//wie zum Einsortieren der leavingParticles nötig sind
+	
+4. Kernel:
+	Für jedes LeavingParticleHandle:
+		füge es ans Ende des Segments der neuen GridCell in den ParticleHandleBuffer ein 
+		(adresse über atomicInc(grid[currentGridCell].currentNumValidEntries) )
+
+

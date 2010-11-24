@@ -1,0 +1,14 @@
+Algorithm for LightingSimulator initialization;
+
+global init pass:
+- 	LightingSimulator gets Buffers from MechanicSimulator as input and creates an empty LightSim-global render target dependent on the gloabel default rendering mode 
+	(nondefered, deferred, layered depth images GI)
+
+pipeline init pass:
+[preconditions: Scene has been loaded Worldobjects with their corresponding Geometry- and Material-Objects have been created, but material Shaders hav not been creatred yet;]
+	for each pipeline stage:
+	-	Build LightSimPipeline with LightSimPipeLineFactory; Every Stage checks the global RenderTarget if it meets the its requirements.
+		(buffer allocation for needed semantics, channel datatypes and layout, ping pong buffer feature etc.). 
+		If it doesn't meet the requirements, allocate missing buffers, enhance
+	
+	

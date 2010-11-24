@@ -1,0 +1,43 @@
+Algorithmus zur Erstellung von Triangle-Indexlisten von statischen Meshes pro Uniform-Grid-Voxel
+------------------------------------------------------------------------------------------------
+
+Vorbemerkungen: Es handelt sich bei der Erzeugung um einen Vorprozess, daher wurde nur wenig Augenmerk auf die Effizienz der Implementierung gelegt;
+				Implementierungen von GPU-basiertem Dreieck-Partikel-Kollosionstest müssen existieren, zumindest in Nvidia PhysX; Allerdings habe ich keinerlei Literatur
+				hierzu gefunden, und mir daher selber folgenden Algoritmus überlegt.
+				Man kann sich fragen, warum man nicht einfach die TriangleIndices voxelisiert; Antwort: Weil bei Voxeln, in denen sich Kanten aufhalten, zwei Triangles liegen, bei "Vertex-Voxeln"
+				sogar beliebig viele, mindestens jedoch drei Triangles; Ferner können bei "engen" Meshes mit schmalen Rillen etc auch mehrere Dreiecke sich in einem Voxel gegenüber liegen;
+				Will man also nicht relativ schwer vom Modellierer (und selbst vom Programmierer!) überprüfbare Vorbedingungen an das Mesh stellen, sollte der Algorithmus so konzipiert werden,
+				dass ein Voxel eine beliebige Anzahl an Triangles enthalten kann. Tricks wie "Speichere für Vertex-Voxel nur maskierte Vertices, mit denen man die teilhabenden Triangles finden kann" 
+				fangen immer noch nicht den Kanten-Fall und den Dreiecke-nnabhängig-einander-gegenüber-Fall ab. Außerdem kostes jede Spezialbehandlung teure if-Abfragen.
+				Als Modellierer sollte man aus Performancegründen darauf achten, ein Polygon-armes Mesh zu erstellen, wo auch wenige Vertices zu mehr als 3-4 Triangles gehören, auch wenn für die
+				Korrektheit der Simulation eigentlich nur die folgenden Bedingungen erfüllt sein müssen.
+
+Vorbedingungen: Das Mesh ist water tight, Dreiecke überschneiden sich nicht, die Normalen sind korrekt orientiert. 
+				Vertices, die logisch zu unterschiedlichen Dreicken gehören, aber räumlich identisch
+				sind, müssten vom Algorithmus eigentlich korrekt behandelt werden, aber Zwecks Speicherplatzschonung, Bandbreitenminimierung und nach Möglichkeit coalesced Speichertransfers
+
+Input:	Ein Triangle Mesh (als VBO)
+
+	- Der Z-Voxel-Index jedes Vertex wird gepaart mit der ID des Vertex mit OpenCL in zwei Buffer geschrieben;
+	- Diese Buffer werden dann wie Partikel Parallel Radix Sort sortiert nach dem Z-Index;
+	- Die Vertex-Indices werden wie folgt updated:
+	[HIER WEITERMACHEN UND UNTERES ÜBERPRÜFEN; KANN MICH NCIT MEHR KONZENTRIEREN OMG 2 UHR FU]
+		- in einen weiteren Buffer wird eingetragen: newVertexIDArray[oldVertexIDArray[get_global_id()]]=get_global_id();
+		- dann in einem neuen Kernel in einen neuen Buffer: newVertexIndexArray [get_global_id()]= newVertexIDArray[oldVertexIndexArray[get_global_id()]];
+	
+	- Für jedes Dreieck wird der Schwerpunkt berechnet und sein Z-Voxel-Index gepaart mit seiner TriangleID in einen Buffer geschrieben (per OpenCL);
+	- Diese Buffer werden dann wie Partikel mit Parallel Radix Sort sortiert nach dem Z-Index;
+	- Das Triangle-Index-Array wird anhand dieser Sortierung in einen neuen Buffer geschrieben;
+	
+
+	- Wir rendern in eine Textur der Größe "width_UniformGrid * height_UniformGrid":
+		- 	Depth Test disablen, Stencil Buffer so einstellen, dass er bei jedem Fragment-Write inkrementiert wird;
+		- 	ersten und zweiten Teil des Parallel Segmented Prefix Sum drauf machen; Letzter Wert im Array entspricht Gesamtzahl an rasterisierten Pixeln durch die statische Szene; dieser Wert gibt die 
+			Größe des Triangle-Index-Buffers an; Außerdem bestimmen wir auf die "smarte Weise" die maximale Tiefenkomplexität durch Ermittlung des maximalen Pixelwertes des Stencil Buffers über 
+			atomic_inc()-Aufrufe;
+	- 	Die Szene wird nun mit weiterhin DEaktiviertem Tiefentest so oft in eine PingPong-Textur gerendert, wie die maximale Tiefenkomplexität ist; Die "Ping-Textur wird zum Lesen gebunden Der 
+		"Tiefentest" hängt von zwei Werten statt einem ab und wir müssen ihn daher selber machen: Schreibe das Fragment in die Textur, wenn folgende Bedingungen erfüllt sind:
+		
+		In die Textur wird sowohl der Triangle-Index als auch der z-Index des Uniform-Grid-Voxels geschrieben (ermittelbar über Fragment-Position in Weltkoordinaten)
+
+		In die Textur Nach jedem OpenGL-Renderpass wird 

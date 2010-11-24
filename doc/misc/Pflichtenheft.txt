@@ -1,0 +1,88 @@
+Pflichtenheft BA Markus Schlüter (Codename "Flown")
+
+Phase 1: "reproduktive" Implementierung: verpflichtende Features
+("reproduktiv", da keine neuen Ideen enthalten, sondern es eher um Nachimplementierung, Porten, Verstehn, Probieren, Lernen geht)
+------------------------------------------------------------------
+Simulation:
+	- Es soll eine GPU-beschleunigte Wassersimulation mit OpenCL realisiert werden; Augenmerk ist auf Performance, Stabilität, Bildqualität und vor allem Interaktionmöglichkeiten zu richten,
+	da letzteres in bestehenden Tech-Demos vernachlässigt wird (per knopfdruck aus dem Nichts irgendwo zufällig in der Welt eine Kiste zu generieren ist nicht befriedigend interaktiv);
+	- die Anwendung muss Smoothed Particle Hydrodynamics mit OpenCL implementieren:
+		- die Implementierung der Simulation soll sich algorithmisch an [xy10] orientieren:
+			-als Beschleunigungsstruktur für die NAchbarschaftssuche soll ein Uniform Grid mit Z-Index-Sort benutzt werden;
+				- dafür braucht es OpenCL-Implementierungen folgender Algorithmen:
+					- Segmented Parallel Prefix Sum
+					- Radix Sort
+		- es müssen mindestens 65000 Partikel inclusive Rendering mit mindestens 10 fps bei 1024*768 Auflösung simuliert werden
+		- es sollen Fermi-Optimierungen probiert werden (v.A. 48kB L1-Caches statt Texturcache für 
+		partikel-Laden; Erhofft wird dadurch eine deutlich geringere Latenz durch schnellen "echten Cache" statt streamed Access)
+		- es sollen Techniken probiert werden, die pro renderpass hoffentlich weniger als 27 Zugriffe pro Partikel im global memory brauchen;
+			Idee: Uniform Grid über Thread Blocks verteilen, jeden Threadblock über die z-Curce laufen lassen, jedes Partikel der 27 Focus-Voxel mit JEDEM anderen Partikel verrechnen, 
+			über Bitmaske pro Voxel speichern, mit welchen Umgebungsvoxeln es schon verrechnet wurde (Relation ist syymetrisch); Dadurch entstehen etliche write-passes und Randbehandlungen,
+			aber evtl sind ein paar writes und ein paar Reads ja schneller als 27 Reads (genauer algo muss noch überlegt werden); Anmerkung: Das hier ist nicht mehr rein reproduktiv, aber diverse
+			Verwirrungen beim betreffenden Paper werden mich ohnehin zum PRobieren zwingen, da kann ich das auch gleich ins Pflichtprogramm aufnehmen; Es ist ja nciht Pflicht, auch wirklich eine
+			Optimierung zu _schaffen_, sondern nur, sie zu probieren;
+	- Es muss ein Mechanismus implementiert werden, der über Voxelisierung zumindest als Vorprozess aus wasserdichten Meshes Partikelbasierte Rigid Bodies erzeugt;
+	- Es muss Rigid Body-Simulation und -Interaktion mit der Wassersimulation realisiert werden:
+		- dafür ist es wichtig, dass die Partikel unterschiedliche Massen haben für Schwimm- und Sink-Effekte
+	- Es muss Interaktion der Partikel mit komplexerer Statischer Szenegeometrie realisiert werden, entweder über "Partikelisierung" oder direkt über Dreiecke:
+		- es muss evaluiert (mindestens Recheriert) werden, ob Kollision mit statischer Szenegeometrie lieber Dreiecksbasiert oder lieber ebenfalls Partikelbasiert stattfinden sollte
+		(evtl höhere Genauigkeit und weniger Speicherverbrauch  vs. algorithmische Komplexität bei Dreiecken: check this: http://www-graphics.stanford.edu/courses/cs348b-98/gg/intersect.html)
+	- die Randbehandlung der Simulationsdomain muss mindestens eine unsichtbare Box sein, durch die Partikel nciht entkommen können;
+		
+Rendering
+	- Fullscreen-Modus muss möglich sein
+	- es muss ein Minimum an CPU-GPU-Kommunikation stattfinden; Fluidrendering muss daher über die selben Buffer realisiert werden, die von OpenGL und OpenCL gleichermaßen genutzt werden;
+		Falls Treiberbugs dies nicht zulassen, fällt diese Anforderung weg;
+	- Es müssen folgende Rendering-Features für die Szene implementiert sein:
+		- Cubemap-Environment mapping (wichtig für Fresnel-Reflexionen an Wasseroberfläche)
+		- Normal Mapping (wichtig für glaubhafte feuchte Steine, Spundwände..)
+		- einfaches Shadow Mapping (sehr wichtig für visuelle Qualität, Glaubwürdigkeit, Entferungsabschätzung)
+		- eine Spot-Lichtquelle
+	- Das Wasser-Rendering soll zunächst Splat-basiert sein und sich an [Green08] orientieren und alle vorgestellten Features implementieren; 
+		(Erweitungsmöglichkeiten ([Green10] oder gar Distance-Field/Raycasting-Basiert [xy10]) sind erst nach erfolgreichem Abschluss von Phase 1 zu erwägen)
+	- Die Szene soll als Deko-Elemente besitzen:
+		- eine Skybox
+		- ein paar Pflanzen am Rand
+	- Als statische Kollisionsgeometrie (für Sim. zu Partikeln voxelisiert oder direkt als Dreiecke):
+		- See-ähnliches Terrain, evtl mit einer Spundwand
+		- große Steine oder eine Mole oder verwitterte Betonplatten für verwirbelungen, Gischt, Spritzer, brechende Wellen
+	- Als dynamische Rigid Bodies, zu Partikeln voxelisiert:
+		- 1-10 simple Geomterien: Wasserball, Kiste, Flaschenpost, Kanu, Paddel
+		
+Interaktion:
+	- Es müssen die wichtigsten PArameter per XML-Config gesetzt und geladen werden können
+	- es muss eine GUI existieren, mit der wichtige, zur Laufzeit änderbare Parameter über Buttons, Slider, Textboxen und Checkboxen modifiziert und gespeichert werden können;
+	- es muss eine Free-Look-Mode-Camera implementiert werden mit klassischer WASD- und Maussteuerung
+	- es muss mit dem Wasser und den Rigid Bodies direkt über ein kinetisches Objekt, z.B. einem partikelisierten Paddel oder Eimer, welches vor der Cam schwebt, interagiert werden können, also
+	  Wasser spritzen, Wellen erzeugen, Wasser mit Eimer schöpfen etc.
+Sonstiges:
+	- ModelLoader
+	- Texturloader
+	- Möglichkeit, Parikelvolumina und Parameter von Partikeln darinnen zu definieren (Annotation in Blender, OBJ-Exporter modden? Oder doch lieber sauberer über Assimp?)
+		
+		
+Phase 2: Optimierung, Forschung, Verbesserung, Realisirung einer innovativen Anwendung 
+(optionale Features wenn noch Zeit ist: Anwendung von x-ter Tech-Demo zu einem amüsanten und ansprechenden Paddel-Simulator transformieren)
+---------------------------------------------------------------------------------------
+Simulation:
+	- es soll ein Wasserfall simuliert werden: Am anfang es oberen Wasserfalls werden "Emitter"-Voxel definiert, unten eine "Sink" 
+	(als Felsspalte oder weiterer, von Steinen blockierter Wasserfall getarnt) die Sink-Partikel werden von den Emitter-Voxeln nach jedem Simluationsschritt entfernt und den Emitter-Voxel wieder
+	zugeführt; Es sind bestimmt einige Spezialfälle zu beachten, um Durchdringen beim Spawn zu vermeiden und um Simulationsfehler an den Nachbarvoxeln der Emitter und Sinks zu vermeiden)
+	- es soll eine Paddel-Simulation erstellt werden: Der Benutzer interagiert mit dem Wasser über ein virtuelles Paddel(anhand einer verlängerten WiiMote mithilfe derer Inertialsensoren).
+	Die resultierenden Kräfte sollen so vererchnet werden, dass mithilfe von beliebigen zusätzlichen Tricksereien ein Kanu damit navigiert werden kann.
+	
+	- (wohl eher unter "Future work" zu kategorisieren:) Es soll ein hybrider Ansatz erforscht werden, dessen Ideen sich an "Real time Simulation of Large Bodies of Water with Small Scale
+	Details" ([Chenantez10]) orientiert: Eine Wasserfläche soll sich in drei Bereiche aufteilen: 
+		- Nahe der Camera wird alles bis zu einer gewissen Wassertiefe mit SPH simuliert für detaillierte "Plansch-Erfahrungen";
+		- auf mittlere entfernung soll eine Heightfield-Simulation mithilfe der Shallow water equations zum Einsatz kommen; Dafür kann man sich stark an [Chenantez10] orientieren;
+		- weit entfernte Wasserflächen werden nciht mehr physikalisch simuliert, sondern mit der FFT animiert.
+	Mit einem solchen Simulationsframework sollte so einiges Möglich sein; Es mag jedoch aufgrund der drei parallelen und an den Rändern zu koppelnden Simulationnen ein Performanceproblem
+	entstehen. Die Kopplung der Simulationen an den Rändern wird vor allem für die SPH-SWE-Grenze nichttrivial
+		
+Rendering
+	- [Green10] oder gar Distance-Field/Raycasting-Basiert [xy10]
+		
+Interaktion:
+	WiiMote-Paddel (evtl.mit WiiMotionPlus)
+
+Sonstiges:

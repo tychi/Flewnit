@@ -1,0 +1,11 @@
+Fragen:
+- Wie viele Partikel pro Zelle? Wie berechnet man das Maximum bei gegebenen Partikelradius und gegebenen Voxelseitenlängen?
+- Optimierungsansatz "27 global Reads pro Partikel anhand von ein paar global write-Zwischenergebnissen reduzieren" evtl vielversprechend, oder eher blöd?
+	(nach wie vor etliche Reads und zusätzliche writes, global force buffer, maskierungs-buffer, VerwaltungsOverhead, Randbehandlung zwischen Threadblocks.. :()
+
+- Voxelisierung: Sinjes SA,DA?
+- OpenGL 3.3 und fullscreen: eher sekundär? will keine Fensteranwendung mit schwammiger "Mouse drag"-Steuerung; Will modernes OpenGL lernen, weil es sauberer in seiner Konzeption ist;
+- Verwendung und Modifikation von Code aus dem Nvidia GPU Computing SDK: Lizenzprobleme?
+- Erfahrungen mit Spawn und Entfernung von Partikeln (für Wasserfall, Sliden der Simulationsdomain)?
+- Warum dürfen nicht dynamisch Partikel zugefügt/entfernt werden? In welchen SPH-Berecnungen spielt die Erhaltung der Gesamtmasse denn so eine große Rolle?
+- Stolperfallen beim Leap-Frog-Integrationsschema? Wie am besten den initialen Step machen?
