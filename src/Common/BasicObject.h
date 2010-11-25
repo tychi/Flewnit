@@ -15,6 +15,8 @@
 
 #include "Common/FlewnitSharedDefinitions.h"
 
+#include <iostream>
+
 
 namespace Flewnit
 {
@@ -33,7 +35,7 @@ namespace Flewnit
 		}
 
 	private:
-		std::String mClassName;
+		std::string mClassName;
 		unsigned int mUniqueID;
 	};
 

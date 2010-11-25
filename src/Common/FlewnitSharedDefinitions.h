@@ -14,9 +14,8 @@ namespace Flewnit
 {
 
 //Media Layer Stuff; Shall be delegated by Cmake later ;)
+//#define FLEWNIT_USE_SDL
 //#define FLEWNIT_USE_XCB
-#define FLEWNIT_USE_SDL
-#define FLEWNIT_USE_XCB
 
 #define FLEWNIT_DEFAULT_CONFIG_DIR "../config"
 

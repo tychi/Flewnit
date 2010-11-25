@@ -15,12 +15,19 @@ namespace Flewnit
 	{
 	public:
 
+		//just a coding conveniance wrapper for the constructor ;)
 		static void startUp()
 		{
 			new Singleton<T>();
 		}
 
-		~Singleton( void )
+		Singleton( void )
+		{
+			assert( !mSingletonInstancePtr );
+			mSingletonInstancePtr = static_cast<T*>( this );
+		}
+
+		virtual ~Singleton( void )
 		{
 			assert( mSingletonInstancePtr );
 			mSingletonInstancePtr = 0;
@@ -50,12 +57,6 @@ namespace Flewnit
 
 	protected:
 	private:
-
-		Singleton( void )
-		{
-			assert( !mSingletonInstancePtr );
-			mSingletonInstancePtr = static_cast<T*>( this );
-		}
 
 		Singleton( Singleton const& other );
 		static T* mSingletonInstancePtr;

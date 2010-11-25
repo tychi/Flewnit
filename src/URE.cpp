@@ -9,9 +9,11 @@
 
 #include "Util/Log/Log.h"
 
+#include <iostream>
+
 namespace Flewnit {
 
-URE::URE( boost::filesystem::path pathToConfigFile)
+URE::URE()
 {
 	// TODO Auto-generated constructor stub
 
@@ -21,6 +23,14 @@ URE::URE( boost::filesystem::path pathToConfigFile)
 URE::~URE()
 {
 	// TODO Auto-generated destructor stub
+}
+
+
+
+void URE::init()//boost::filesystem::path directoryOfConfigFile)
+{
+	std::cout<<"here is the URE lib!!1\n";
+
 }
 
 }

@@ -158,6 +158,9 @@ set(LIBRARY_RELATIVE_DIRECTORIES
        World
 )
 
+#first, add the toplevel UnifiedRenderingEngine-sources, which ar running all our stuff in the library ;)
+set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/URE.cpp)
+
 #glob all source files in the given subdirectory
 foreach(LIBRARY_RELATIVE_DIRECTORY ${LIBRARY_RELATIVE_DIRECTORIES})
     file(GLOB_RECURSE GLOB_RESULT ${LIBRARY_SOURCE_DIRECTORY}/${LIBRARY_RELATIVE_DIRECTORY}/*.cpp)

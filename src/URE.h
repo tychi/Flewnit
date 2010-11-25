@@ -11,15 +11,17 @@
 
 #include "Common/FlewnitSharedDefinitions.h"
 #include "Common/Singleton.h"
-#include <boost/filesystem/path.hpp>
+//#include <boost/filesystem/path.hpp>
 
 namespace Flewnit {
 
 class URE : public Singleton<URE>
 {
 public:
-	URE( boost::filesystem::path pathToConfigFile);
+	URE();
 	virtual ~URE();
+
+	void init();//boost::filesystem::path directoryOfConfigFile = FLEWNIT_DEFAULT_CONFIG_DIR);
 };
 
 }
