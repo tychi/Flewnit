@@ -196,8 +196,10 @@ add_library(flewnit ${LIBRARY_SOURCE_FILES})
 
 #tell cmake to link the libflewnit library against the given third party libraries
 #TODO: add gpuTE ass dependency :D
-#TODO: only add the needed qt stuff, not all of it
+#TODO: unterstand why only relevant qt stuff will be linked against ;) yes, I'm noob with cmake and qt ;)
 target_link_libraries(flewnit ${OPENGL_LIB} freeimageplus ${QT_LIBRARIES} assimp)
+target_link_libraries(flewnit boost_filesystem)
+
 
 
 IF(MEDIA_LAYER STREQUAL "SDL")

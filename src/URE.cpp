@@ -27,9 +27,11 @@ URE::~URE()
 
 
 
-void URE::init()//boost::filesystem::path directoryOfConfigFile)
+void URE::init( boost::filesystem::path pathToConfigFile)
 {
 	std::cout<<"here is the URE lib!!1\n";
+
+	std::cout<<"The Config Path is"<< pathToConfigFile.string() <<"\n";
 
 }
 

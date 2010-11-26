@@ -17,7 +17,7 @@ namespace Flewnit
 //#define FLEWNIT_USE_SDL
 //#define FLEWNIT_USE_XCB
 
-#define FLEWNIT_DEFAULT_CONFIG_DIR "../config"
+#define FLEWNIT_DEFAULT_CONFIG_PATH "../config/FlewnitConfig.xml"
 
 #define FLEWNIT_DEFAULT_LOG_FILEPATH "./flewnitLog.txt"
 
