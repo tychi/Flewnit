@@ -17,6 +17,29 @@
 namespace Flewnit
 {
 
+enum SimulationDomain
+{
+	MECHANICAL_SIM_DOMAIN 	= 0,
+	VISUAL_SIM_DOMAIN 		= 1,
+	ACUSTIC_SIM_DOMAIN		= 2,
+	__NUM_SIM_DOMAINS__		= 3,
+	__NO_SIM_DOMAIN__		= 4
+};
+
+class SimulationDomainIdentifier
+{
+public:
+	virtual SimulationDomain getSimDomain()const = 0;
+
+//ad this macro to every class definition deriving from this class;
+#define DECLARE_SIM_DOMAIN(simDomain) virtual SimulationDomain getSimDomain()const {return simDomain;}
+
+};
+
+//settings to configure a simulation step:
+//debug draw, time interval, etc;
+class SimStepSettings;
+
 enum SimulationKindFlags
 {
 	LIGHTING_SIMULATION 	= 1<<0,
@@ -34,7 +57,9 @@ class Loader;
 
 class MediaLayerInterface;
 
+class UserInterface;
 class GUI;
+class UserInput;
 
 ///\brief Converter forwards;
 ///\{
@@ -56,10 +81,10 @@ class SoundSimulator;
 
 
 class SimulationPipeline;
-class SimulationData;
+class SimulationDataBase;
 class PipelineStageInterface;
-class LightingPipelineStage;
-class SPHFluidPipelineStage;
+//class LightingPipelineStage;
+//class SPHFluidPipelineStage;
 
 
 
@@ -89,9 +114,9 @@ class SceneNode;
 class Camera;
 class WorldObject;
 
-class SubObject;
+class SubObjectInterface;
 class GeometryInterface;
-class Material;
+class MaterialInterface;
 
 class MechanicSubObject;
 class VisualSubObject;

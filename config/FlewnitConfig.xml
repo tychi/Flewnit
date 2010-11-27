@@ -2,6 +2,10 @@
 
 <flewnit_global_config>
 
+  <media_layer>
+	XCB
+  </media_layer>
+
   <fullscreen>
   	true
   </fullscreen>
@@ -18,6 +22,10 @@
   <grab_mouse>
   	true
   </grab_mouse>
+
+  <enable_wiimote>
+	false
+  <enable_wiimote>
 
 
 
@@ -37,8 +45,7 @@
   	LakeSceneAnnotations.xml
   </scene_annotations>
 
-  <matlib_description>
-    Scene/matlib_default.xml
-  </matlib_description>
+  <!-- maybe GUI config to come... -->
+
 
 </flewnit_global_config>

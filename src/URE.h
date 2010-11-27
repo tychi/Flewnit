@@ -46,24 +46,44 @@ class URE :
 	public BasicObject
 {
 public:
-	//call before instantiation to setup profiler;
-	static void bootstrap();
-	//call after instatiation to clean profiler;
-	static void cleanup();
+    static void bootstrap();
+    static void cleanup();
+
+    URE();
+    virtual ~URE();
+
+    bool init(boost::filesystem::path pathToGlobalConfigFile = boost::filesystem::path(FLEWNIT_DEFAULT_CONFIG_PATH));
+
+    void resetEngine();
+    void stepSimulation(SimStepSettings const& stepSettings);
 
 
+    inline GUI* getGUI()const{return mGUI;}
+    inline GeometryConverter* getGeometryConverter()const{return mGeometryConverter;}
+    inline Loader* getLoader()const{return mLoader;}
+    inline MediaLayerInterface* getMediaLayer()const{return mMediaLayer;}
+    inline SimulationDataBase* getSimulationDataBase()const{return mSimulationDataBase;}
+    inline SimulatorInterface* getSimulator(SimulationDomain which)const{ assert(which < __NUM_SIM_DOMAINS__); return mSimulators[which];}
 
 
-	URE();
-	virtual ~URE();
-
-
-
-	void init( boost::filesystem::path pathToConfigFile = boost::filesystem::path(FLEWNIT_DEFAULT_CONFIG_PATH)	);
-
-	void stepSimulation();
 
 private:
+
+    //this routine will call the loader, which will in turn use assimp to load .blend files directly;
+    bool loadScene(boost::filesystem::path pathToSceneFile);
+
+    bool buildSimulationPipeLine(boost::filesystem::path pathToPipelineConfigFile);
+
+    SimulatorInterface*		mSimulators[__NUM_SIM_DOMAINS__];
+    SimulationDataBase*		mSimulationDataBase;
+    MediaLayerInterface* 	mMediaLayer;
+    GUI* 					mGUI;
+
+	GeometryConverter* 		mGeometryConverter;
+
+	Loader*					mLoader;
+
+	bool 					mCorrectlyInitializedGuard;
 
 };
 
