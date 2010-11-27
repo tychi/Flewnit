@@ -8,6 +8,7 @@
 #include "URE.h"
 
 #include "Util/Log/Log.h"
+#include "Common/Profiler.h"
 
 #include <iostream>
 
@@ -17,20 +18,21 @@ namespace Flewnit {
 ///\brief static stuff
 void URE::bootstrap()
 {
-
+	INSTANCIATE_SINGLETON(Log);
+	INSTANCIATE_SINGLETON(Profiler);
 }
 
 void URE::cleanup()
 {
-
+	DESTROY_SINGLETON(Profiler);
+	DESTROY_SINGLETON(Log);
 }
 //---------------------------------------------------------------------------------------------------------
 
 
 URE::URE()
-: BASIC_OBJECT_CONSTRUCTOR("URE", "URESingletonInstance", "do the unified Rendering")
+: BASIC_OBJECT_CONSTRUCTOR(URE, "URESingletonInstance", "do the unified Rendering")
 {
-	SET_MEMORY_FOOTPRINT(URE);
 	// TODO Auto-generated constructor stub
 
 

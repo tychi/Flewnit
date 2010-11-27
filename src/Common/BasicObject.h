@@ -33,16 +33,17 @@ namespace Flewnit
 		~BasicObject(){}
 
 
+////	define to nothing
+//#	define SET_MEMORY_FOOTPRINT(className)
 //	define the stuff to defaul sonctructor in order to save overhead
 #	define BASIC_OBJECT_CONSTRUCTOR(className, objectname, purposeDescription) BasicObject()
-//	define to nothing
-#	define SET_MEMORY_FOOTPRINT(className)
+
 
 #else
 		~BasicObject();
 
-//	we need the basic object for tracking purposes
-#	define SET_MEMORY_FOOTPRINT(className) mMemoryFootPrint=sizeof(className)
+////	we need the basic object for tracking purposes
+//#	define SET_MEMORY_FOOTPRINT(className) mMemoryFootPrint=sizeof(className)
 
 #	define BASIC_OBJECT_CONSTRUCTOR(className, objectname, purposeDescription) \
 		BasicObject(sizeof(className),FLEWNIT_STRINGIFY(className), objectname, purposeDescription)

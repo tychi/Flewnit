@@ -39,6 +39,7 @@ namespace Flewnit
 	BasicObject::BasicObject(int memoryFootPrint, String className, String objectname, String purposeDescription)
 		: mMemoryFootPrint(memoryFootPrint), mClassName(className), mObjectName(objectname), mPurposeDescription(purposeDescription)
 	{
+		std::cout<<"Object of class \""<< mClassName <<"\" created; Memory footprint is "<< mMemoryFootPrint <<" Byte;\n";
 		registerToProfiler();
 	}
 

@@ -12,13 +12,14 @@ namespace Flewnit
 
 Log::Log()
 {
-	// TODO Auto-generated constructor stub
-
+	mFileStream.open(FLEWNIT_DEFAULT_LOG_FILEPATH, std::ios::out);
+	mFileStream << "Log for the Flewnit Engine ,located at "<<FLEWNIT_DEFAULT_LOG_FILEPATH << ";\n";
 }
 
 Log::~Log()
 {
-	// TODO Auto-generated destructor stub
+
+	mFileStream.close();
 }
 
 }

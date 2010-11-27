@@ -27,8 +27,12 @@
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.418916172" name="GNU C++" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1576899984" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/usr/include/c++/4.4.5"/>
 									<listOptionValue builtIn="false" value="/usr/include/"/>
+									<listOptionValue builtIn="false" value="/usr/lib/gcc/x86_64-linux-gnu/4.4/include/"/>
+									<listOptionValue builtIn="false" value="/usr/include/linux"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/4.4"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/4.4/x86_64-linux-gnu/"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/4.4/tr1/"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libflewnit/src}&quot;"/>
 								</option>

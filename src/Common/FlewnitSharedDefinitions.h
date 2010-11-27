@@ -42,9 +42,22 @@ typedef unsigned int		uint;
 //-----------------------------------------------------------------------
 
 //-----------------------------------------------------------------------
-///\brief profinling stuff
+///\brief profiling stuff
 #define FLEWNIT_TRACK_MEMORY 1
 #define FLEWNINT_DO_PROFILING 1
+//-----------------------------------------------------------------------
+
+//-----------------------------------------------------------------------
+///\brief logging stuff
+enum LogLevel
+{
+	ERROR_LOG_LEVEL 	=1<<0,
+	WARNING_LOG_LEVEL	=1<<1,
+	INFO_LOG_LEVEL		=1<<2,
+	MEMORY_TRACK_LOGLEVEL=1<<3
+};
+#define FLEWNIT_CONSOLE_OUTPUT_LOGLEVEL \
+	(ERROR_LOG_LEVEL|WARNING_LOG_LEVEL|INFO_LOG_LEVEL| MEMORY_TRACK_LOGLEVEL)
 //-----------------------------------------------------------------------
 
 
