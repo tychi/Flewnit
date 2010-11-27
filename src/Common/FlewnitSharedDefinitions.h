@@ -51,7 +51,7 @@ namespace Flewnit
 typedef float 				Scalar;
 typedef std::string 		String;
 typedef unsigned int 		ID;
-typedef std::vector 		List;
+#define List std::vector
 
 //-----------------------------------------------------------------------
 

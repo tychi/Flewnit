@@ -1,0 +1,18 @@
+
+<!-- Config file for simulation pipeline -->
+
+<flewnit_simulation_pipeline_config>
+
+	<mechanic_simulator type="SPH_fluid_simulator">
+
+	</mechanic_simulator>
+
+	<lighting_simulator>
+	
+	<lighting_simulator>
+
+	<sound_simulator>
+
+	</sound_simulator>
+
+</flewnit_simulation_pipeline_config>
