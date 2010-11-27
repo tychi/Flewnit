@@ -1,0 +1,43 @@
+<!-- -->
+
+<flewnit_global_config>
+
+  <window_width>
+    512
+  </window_width>
+
+  <window_height>
+    512
+  </window_height>
+
+  <fullscreen>
+  	true
+  </fullscreen>
+  
+  <grab_mouse>
+  	true
+  </grab_mouse>
+
+
+
+  <path_to_data>
+    .
+  </path_to_data>
+  
+  <simulation_pipeline_config>
+  	SimulationPipeLineConfig.xml
+  </simulation_pipeline_config>
+
+  <scene_file>
+    ../../Assets/LakeScene/LakeScene.blend
+  </scene_file>
+  
+  <scene_annotations>
+  	LakeSceneAnnotations.xml
+  </scene_annotations>
+
+  <matlib_description>
+    Scene/matlib_default.xml
+  </matlib_description>
+
+<flewnit_global_config>

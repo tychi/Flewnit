@@ -36,11 +36,19 @@ namespace Flewnit {
 
 
 
-class URE : public Singleton<URE>
+class URE :
+	public Singleton<URE>,
+	public BasicObject
+
 {
 public:
+	static void bootstrap();
+
+
 	URE();
 	virtual ~URE();
+
+
 
 	void init( boost::filesystem::path pathToConfigFile = boost::filesystem::path(FLEWNIT_DEFAULT_CONFIG_PATH)	);
 };

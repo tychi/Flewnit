@@ -14,6 +14,7 @@
 namespace Flewnit {
 
 URE::URE()
+: BASIC_OBJECT_CONSTRUCTOR("URE", "URESingletonInstance", "do the unified Rendering")
 {
 	// TODO Auto-generated constructor stub
 

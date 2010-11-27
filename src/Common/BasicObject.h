@@ -17,6 +17,7 @@
 
 #include <iostream>
 
+#define FLEWNIT_UNSPECIFIED_NAME "none_specified"
 
 namespace Flewnit
 {
@@ -24,19 +25,25 @@ namespace Flewnit
 	class BasicObject
 	{
 	public:
-		BasicObject()
-		{
+		//register to Profiler
+		BasicObject();
 
-		}
+		BasicObject(
+				String className = FLEWNIT_UNSPECIFIED_NAME,
+				String objectname = FLEWNIT_UNSPECIFIED_NAME,
+				String purposeDescription = FLEWNIT_UNSPECIFIED_NAME);
 
-		~BasicObject()
-		{
-
-		}
+		//unregister from Profiler
+		~BasicObject();
 
 	private:
-		std::string mClassName;
+#if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
 		unsigned int mUniqueID;
+
+		String mClassName;
+		String mObjectname;
+		String mPurposeDescription;
+#endif
 	};
 
 }
