@@ -1,2 +1,4 @@
 CMakeCache
 CMakeFiles
+*.dia~
+*.dia.autosave

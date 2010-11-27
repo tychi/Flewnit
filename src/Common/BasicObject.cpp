@@ -16,7 +16,7 @@
 #include <iostream>
 
 #if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
-# include ""
+# include "Common/Profiler.h"
 #endif
 
 
@@ -27,29 +27,38 @@
 namespace Flewnit
 {
 
+#if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
 	BasicObject::BasicObject()
 	{
-#if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
-
-#endif
-	}
-
-	BasicObject::BasicObject(String className, String objectname, String purposeDescription)
-#if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
-	: mClassName(className), mObjectName(objectname), mPurposeDescription(purposeDescription)
-#endif
-	{
-		BasicObject();
+		registerToProfiler();
 	}
 
 
 	BasicObject::~BasicObject()
 	{
-#if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
-
-#endif
+		unregisterFromProfiler();
 	}
 
 
+
+	BasicObject::BasicObject(String className, String objectname, String purposeDescription)
+		: mClassName(className), mObjectName(objectname), mPurposeDescription(purposeDescription)
+	{
+		registerToProfiler();
+	}
+
+
+
+	void BasicObject::registerToProfiler()
+	{
+		//TODO
+	}
+
+	void BasicObject::unregisterFromProfiler()
+	{
+		//TODO
+	}
+
+#endif
 
 }

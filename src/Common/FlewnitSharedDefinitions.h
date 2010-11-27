@@ -12,6 +12,8 @@
 
 //maybe we want use qt string or boost strings later..
 #include <string>
+//maybe there are better containers than std::vector, but to begin...
+#include <vector>
 
 namespace Flewnit
 {
@@ -39,15 +41,17 @@ namespace Flewnit
 #	define BASIC_OBJECT_CONSTRUCTOR(className, objectname, purposeDescription) BasicObject()
 #endif
 
-//default contructor for basic object not works;
+//default contructor for basic object; not works;
 //#define BASIC_OBJECT_CONSTRUCTOR() BasicObject()
 
 
 
 //-----------------------------------------------------------------------
 //do some typedefs in order to be as independent from library specific types as possible
-typedef float Scalar;
-typedef std::string String;
+typedef float 				Scalar;
+typedef std::string 		String;
+typedef unsigned int 		ID;
+typedef std::vector 		List;
 
 //-----------------------------------------------------------------------
 

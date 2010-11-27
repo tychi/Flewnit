@@ -9,6 +9,10 @@
 #include <assert.h>
 
 
+#define INSTANCIATE_SINGLETON(Class) {assert(!Class::isInitialised()); new Class(); }
+#define DESTROY_SINGLETON(Class) {assert(Class::isInitialised()); delete Class::getInstancePtr();}
+
+
 namespace Flewnit
 {
 	template <typename T> class Singleton
@@ -16,10 +20,10 @@ namespace Flewnit
 	public:
 
 		//just a coding conveniance wrapper for the constructor ;)
-		static void startUp()
-		{
-			new Singleton<T>();
-		}
+//		static void startUp()
+//		{
+//			new T();
+//		}
 
 		Singleton( void )
 		{
@@ -48,12 +52,14 @@ namespace Flewnit
 			return ( mSingletonInstancePtr );
 		}
 
-		static void shutdown( void )
-		{
-			assert( mSingletonInstancePtr );
-			delete mSingletonInstancePtr;
-			mSingletonInstancePtr = 0;
-		}
+
+//		static void shutdown( void )
+//		{
+//			assert( mSingletonInstancePtr );
+//			delete mSingletonInstancePtr;
+//			mSingletonInstancePtr = 0;
+//		}
+
 
 	protected:
 	private:

@@ -27,6 +27,9 @@
 #include "Common/Singleton.h"
 #include "Common/BasicObject.h"
 
+
+#include "Simulator/SimulatorCommon.h"
+
 #include <boost/filesystem/path.hpp>
 
 namespace Flewnit {
@@ -36,13 +39,19 @@ namespace Flewnit {
 
 
 
+
+
 class URE :
 	public Singleton<URE>,
 	public BasicObject
-
 {
 public:
+	//call before instantiation to setup profiler;
 	static void bootstrap();
+	//call after instatiation to clean profiler;
+	static void cleanup();
+
+
 
 
 	URE();
@@ -51,6 +60,11 @@ public:
 
 
 	void init( boost::filesystem::path pathToConfigFile = boost::filesystem::path(FLEWNIT_DEFAULT_CONFIG_PATH)	);
+
+	void stepSimulation();
+
+private:
+
 };
 
 }

@@ -13,6 +13,18 @@
 
 namespace Flewnit {
 
+void URE::bootstrap()
+{
+
+}
+
+void URE::cleanup()
+{
+
+}
+
+
+
 URE::URE()
 : BASIC_OBJECT_CONSTRUCTOR("URE", "URESingletonInstance", "do the unified Rendering")
 {

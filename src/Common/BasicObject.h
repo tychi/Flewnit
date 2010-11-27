@@ -26,22 +26,30 @@ namespace Flewnit
 	{
 	public:
 		//register to Profiler
+#if !(FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING)
+
+		BasicObject(){}
+		~BasicObject(){}
+
+#else
 		BasicObject();
+		~BasicObject();
 
 		BasicObject(
 				String className = FLEWNIT_UNSPECIFIED_NAME,
 				String objectname = FLEWNIT_UNSPECIFIED_NAME,
 				String purposeDescription = FLEWNIT_UNSPECIFIED_NAME);
 
-		//unregister from Profiler
-		~BasicObject();
+
+		void registerToProfiler();
+		void unregisterFromProfiler();
+
 
 	private:
-#if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
-		unsigned int mUniqueID;
+		ID mUniqueID;
 
 		String mClassName;
-		String mObjectname;
+		String mObjectName;
 		String mPurposeDescription;
 #endif
 	};

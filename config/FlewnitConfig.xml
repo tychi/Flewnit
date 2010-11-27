@@ -2,6 +2,10 @@
 
 <flewnit_global_config>
 
+  <fullscreen>
+  	true
+  </fullscreen>
+
   <window_width>
     512
   </window_width>
@@ -10,10 +14,7 @@
     512
   </window_height>
 
-  <fullscreen>
-  	true
-  </fullscreen>
-  
+
   <grab_mouse>
   	true
   </grab_mouse>
