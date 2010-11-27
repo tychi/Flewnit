@@ -47,9 +47,11 @@ URE::~URE()
 
 bool URE::init(boost::filesystem::path pathToGlobalConfigFile)
 {
-	std::cout<<"here is the URE lib!!1\n";
 
-	std::cout<<"The Config Path is"<< pathToGlobalConfigFile.string() <<"\n";
+	Log::getInstance()<<INFO_LOG_LEVEL<<"here is the URE lib!!1\n";
+
+
+	Log::getInstance()<<DEBUG_LOG_LEVEL<<"The Config Path is"<< pathToGlobalConfigFile.string() <<"\n";
 
 }
 

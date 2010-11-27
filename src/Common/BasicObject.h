@@ -18,9 +18,6 @@
 #include <iostream>
 #include <cstring>
 
-#define FLEWNIT_UNSPECIFIED_NAME "none_specified"
-#define FLEWNIT_STRINGIFY(word) String(#word)
-
 namespace Flewnit
 {
 	class BasicObject

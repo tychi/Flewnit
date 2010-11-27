@@ -12,6 +12,8 @@
 
 
 #include "BasicObject.h"
+#include "Util/Log/Log.h"
+
 
 #if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
 #	include "Common/Profiler.h"
@@ -39,7 +41,13 @@ namespace Flewnit
 	BasicObject::BasicObject(int memoryFootPrint, String className, String objectname, String purposeDescription)
 		: mMemoryFootPrint(memoryFootPrint), mClassName(className), mObjectName(objectname), mPurposeDescription(purposeDescription)
 	{
-		std::cout<<"Object of class \""<< mClassName <<"\" created; Memory footprint is "<< mMemoryFootPrint <<" Byte;\n";
+		Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
+				<<"Object of class \""<< mClassName <<"\" created;\n"
+				<<"\t\tMemory footprint:"<< mMemoryFootPrint <<" Byte;\n"
+				<<"\t\tObject name:\"" <<mObjectName <<"\", object purpose: :\""<< mPurposeDescription <<"\";\n" ;
+
+		float i=3.45f;
+		Log::getInstance()<< DEBUG_LOG_LEVEL<< i;
 		registerToProfiler();
 	}
 
