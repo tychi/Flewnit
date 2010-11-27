@@ -60,42 +60,27 @@ Log&  Log::operator<<(String logEntry)
 }
 
 
-//Log& Log::operator<<( char* logEntry)
-//{
-//	return this->operator<<(String(logEntry));
-//	handleConsoleOutput(logEntry);
-//}
-
 Log& Log::operator<<( int logEntry)
 {
-	std::stringstream tmp;
-	tmp<<logEntry;
-	(*mFileStream) << tmp.str();
-	handleConsoleOutput(tmp.str());
-	return (*this);
+	return handleGenericValues<int>(logEntry);
 }
 Log&Log::operator<<( uint logEntry)
 {
-	std::stringstream tmp;
-	tmp<<logEntry;
-	(*mFileStream) << tmp.str();
-	handleConsoleOutput(tmp.str());
-	return (*this);
+	return handleGenericValues<uint>(logEntry);
 }
 Log& Log::operator<<( Scalar logEntry)
 {
-	std::stringstream tmp;
-	tmp<<logEntry;
-	(*mFileStream) << tmp.str();
-	handleConsoleOutput(tmp.str());
-	return (*this);
+	return handleGenericValues<Scalar>(logEntry);
 }
 
-//template <typename T> Log& Log::operator<<(T logEntry)
-//{
-//	(*mFileStream) << logEntry;
-//	return (*this);
-//}
+template <typename T> Log& Log::handleGenericValues(T logEntry)
+{
+	static std::stringstream pseudoToStringConverter;
+	pseudoToStringConverter<<logEntry;
+	(*mFileStream) << pseudoToStringConverter.str();
+	handleConsoleOutput(pseudoToStringConverter.str());
+	return (*this);
+}
 
 
 

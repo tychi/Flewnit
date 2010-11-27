@@ -59,7 +59,6 @@ public:
 	Log& operator<<( uint logEntry);
 	Log& operator<<( Scalar logEntry);
 
-	//template <typename T> Log& operator<<(T logEntry);
 
 	inline void enableLogLevel(LogLevel which)
 	{
@@ -80,6 +79,8 @@ private:
 	//nothing;
 #	define handleConsoleOutput(stringstuff)
 #endif
+
+	template <typename T> Log& handleGenericValues(T logEntry);
 
 	std::fstream* mFileStream;
 

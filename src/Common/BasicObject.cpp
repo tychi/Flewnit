@@ -46,8 +46,6 @@ namespace Flewnit
 				<<"\t\tMemory footprint:"<< mMemoryFootPrint <<" Byte;\n"
 				<<"\t\tObject name:\"" <<mObjectName <<"\", object purpose: :\""<< mPurposeDescription <<"\";\n" ;
 
-		float i=3.45f;
-		Log::getInstance()<< DEBUG_LOG_LEVEL<< i;
 		registerToProfiler();
 	}
 
