@@ -48,8 +48,8 @@ typedef unsigned int		uint;
 
 //-----------------------------------------------------------------------
 ///\brief profiling stuff
-#define FLEWNIT_TRACK_MEMORY 1
-#define FLEWNINT_DO_PROFILING 1
+#define FLEWNIT_TRACK_MEMORY 0
+#define FLEWNIT_DO_PROFILING 0
 #define FLEWNIT_DO_CONSOLE_DEBUG_OUTPUT 1
 //-----------------------------------------------------------------------
 

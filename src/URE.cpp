@@ -8,7 +8,10 @@
 #include "URE.h"
 
 #include "Util/Log/Log.h"
-#include "Common/Profiler.h"
+
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
+#	include "Common/Profiler.h"
+#endif
 
 #include <iostream>
 
@@ -19,12 +22,16 @@ namespace Flewnit {
 void URE::bootstrap()
 {
 	INSTANCIATE_SINGLETON(Log);
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	INSTANCIATE_SINGLETON(Profiler);
+#endif
 }
 
 void URE::cleanup()
 {
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	DESTROY_SINGLETON(Profiler);
+#endif
 	DESTROY_SINGLETON(Log);
 }
 //---------------------------------------------------------------------------------------------------------

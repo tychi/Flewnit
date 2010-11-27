@@ -8,10 +8,6 @@
 #include "Log.h"
 
 
-#include <fstream>
-#include <sstream>
-#include <iostream>
-
 namespace Flewnit
 {
 
@@ -59,28 +55,6 @@ Log&  Log::operator<<(String logEntry)
 	return (*this);
 }
 
-
-Log& Log::operator<<( int logEntry)
-{
-	return handleGenericValues<int>(logEntry);
-}
-Log&Log::operator<<( uint logEntry)
-{
-	return handleGenericValues<uint>(logEntry);
-}
-Log& Log::operator<<( Scalar logEntry)
-{
-	return handleGenericValues<Scalar>(logEntry);
-}
-
-template <typename T> Log& Log::handleGenericValues(T logEntry)
-{
-	static std::stringstream pseudoToStringConverter;
-	pseudoToStringConverter<<logEntry;
-	(*mFileStream) << pseudoToStringConverter.str();
-	handleConsoleOutput(pseudoToStringConverter.str());
-	return (*this);
-}
 
 
 

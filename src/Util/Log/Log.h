@@ -11,6 +11,10 @@
 
 #include "Common/Singleton.h"
 
+#include <fstream>
+#include <sstream>
+#include <iostream>
+
 
 //forward to omit fstream includion in often used header:
 namespace std
@@ -54,10 +58,10 @@ public:
 
 	Log& operator<<(LogLevel loglevel);
 	Log& operator<<(String logEntry);
-	//Log& operator<<( char* logEntry);
-	Log& operator<<( int logEntry);
-	Log& operator<<( uint logEntry);
-	Log& operator<<( Scalar logEntry);
+
+	inline Log& operator<<(int logEntry){return handleGenericValues<int>(logEntry);}
+	inline Log& operator<<(uint logEntry){return handleGenericValues<uint>(logEntry);}
+	inline Log& operator<<(Scalar logEntry){return handleGenericValues<Scalar>(logEntry);}
 
 
 	inline void enableLogLevel(LogLevel which)
@@ -91,6 +95,14 @@ private:
 	uint mConsoleOutputLevelFlags;
 };
 
+template <typename T> Log& Log::handleGenericValues(T logEntry)
+{
+	static std::stringstream pseudoToStringConverter;
+	pseudoToStringConverter<<logEntry;
+	(*mFileStream) << pseudoToStringConverter.str();
+	handleConsoleOutput(pseudoToStringConverter.str());
+	return (*this);
+}
 
 
 }

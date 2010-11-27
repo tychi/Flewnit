@@ -13,7 +13,7 @@
 #include "Buffer/BufferSharedDefinitions.h"
 
 //---------------------------------------------------------------------------------------------------------
-#if (FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING)
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 
 #include "Common/Singleton.h"
 

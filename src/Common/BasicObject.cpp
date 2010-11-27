@@ -15,7 +15,7 @@
 #include "Util/Log/Log.h"
 
 
-#if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
+#if FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING
 #	include "Common/Profiler.h"
 #endif
 
@@ -28,7 +28,7 @@
 namespace Flewnit
 {
 
-#if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
+#if FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING
 
 
 	BasicObject::~BasicObject()
