@@ -30,6 +30,7 @@ void URE::cleanup()
 URE::URE()
 : BASIC_OBJECT_CONSTRUCTOR("URE", "URESingletonInstance", "do the unified Rendering")
 {
+	SET_MEMORY_FOOTPRINT(URE);
 	// TODO Auto-generated constructor stub
 
 

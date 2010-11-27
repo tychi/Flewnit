@@ -16,12 +16,13 @@
 #include "Common/FlewnitSharedDefinitions.h"
 
 #include <iostream>
+#include <cstring>
 
 #define FLEWNIT_UNSPECIFIED_NAME "none_specified"
+#define FLEWNIT_STRINGIFY(word) String(#word)
 
 namespace Flewnit
 {
-
 	class BasicObject
 	{
 	public:
@@ -31,18 +32,37 @@ namespace Flewnit
 		BasicObject(){}
 		~BasicObject(){}
 
+
+//	define the stuff to defaul sonctructor in order to save overhead
+#	define BASIC_OBJECT_CONSTRUCTOR(className, objectname, purposeDescription) BasicObject()
+//	define to nothing
+#	define SET_MEMORY_FOOTPRINT(className)
+
 #else
-		BasicObject();
 		~BasicObject();
 
+//	we need the basic object for tracking purposes
+#	define SET_MEMORY_FOOTPRINT(className) mMemoryFootPrint=sizeof(className)
+
+#	define BASIC_OBJECT_CONSTRUCTOR(className, objectname, purposeDescription) \
+		BasicObject(sizeof(className),FLEWNIT_STRINGIFY(className), objectname, purposeDescription)
+
+
+
+
 		BasicObject(
+				int memoryFootPrint = -1,
 				String className = FLEWNIT_UNSPECIFIED_NAME,
 				String objectname = FLEWNIT_UNSPECIFIED_NAME,
 				String purposeDescription = FLEWNIT_UNSPECIFIED_NAME);
 
 
+
 		void registerToProfiler();
 		void unregisterFromProfiler();
+
+	protected:
+		int mMemoryFootPrint;
 
 
 	private:
@@ -51,6 +71,7 @@ namespace Flewnit
 		String mClassName;
 		String mObjectName;
 		String mPurposeDescription;
+
 #endif
 	};
 

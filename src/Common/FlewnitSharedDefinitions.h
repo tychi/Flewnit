@@ -14,6 +14,7 @@
 #include <string>
 //maybe there are better containers than std::vector, but to begin...
 #include <vector>
+#include <map>
 
 namespace Flewnit
 {
@@ -27,23 +28,6 @@ namespace Flewnit
 #define FLEWNIT_DEFAULT_LOG_FILEPATH "./flewnitLog.txt"
 
 
-#define FLEWNIT_TRACK_MEMORY 1
-#define FLEWNINT_DO_PROFILING 1
-
-#if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
-//we need the basic object for tracking purposes
-// 	call INHERIT_BASIC_OBJECT(,) or INHERIT_BASIC_OBJECT(:) dependent on the position of (multiple) inheritance
-//#	define INHERIT_BASIC_OBJECT(predecessor) #predecessor public BasicObject
-#	define BASIC_OBJECT_CONSTRUCTOR(className, objectname, purposeDescription) BasicObject(className, objectname, purposeDescription)
-#else
-//define the stuff to nothing in order to save overhead
-//#	define INHERIT_BASIC_OBJECT(predecessor)
-#	define BASIC_OBJECT_CONSTRUCTOR(className, objectname, purposeDescription) BasicObject()
-#endif
-
-//default contructor for basic object; not works;
-//#define BASIC_OBJECT_CONSTRUCTOR() BasicObject()
-
 
 
 //-----------------------------------------------------------------------
@@ -51,9 +35,18 @@ namespace Flewnit
 typedef float 				Scalar;
 typedef std::string 		String;
 typedef unsigned int 		ID;
+typedef unsigned int		uint;
 #define List std::vector
+#define Map std::map
 
 //-----------------------------------------------------------------------
+
+//-----------------------------------------------------------------------
+///\brief profinling stuff
+#define FLEWNIT_TRACK_MEMORY 1
+#define FLEWNINT_DO_PROFILING 1
+//-----------------------------------------------------------------------
+
 
 
 

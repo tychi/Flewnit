@@ -154,6 +154,7 @@ set(LIBRARY_RELATIVE_DIRECTORIES
        Common
        Simulator
        UserInterface
+       Buffer
        Util
        World
 )
@@ -221,6 +222,7 @@ IF(MEDIA_LAYER STREQUAL "SDL")
     	endif(UNIX)
 	endif(USE_SDL_LOCAL)
 elseif(MEDIA_LAYER STREQUAL "XCB")
+    message("trying to link against XCB")
 	target_link_libraries(flewnit X11-xcb xcb-keysyms)
 else()
     message("should never ended up here as script should have terminated earlies due to an error")

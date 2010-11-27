@@ -13,13 +13,12 @@
 
 #include "BasicObject.h"
 
-#include <iostream>
-
 #if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
-# include "Common/Profiler.h"
+#	include "Common/Profiler.h"
 #endif
 
 
+#include <iostream>
 
 
 #define FLEWNIT_UNSPECIFIED_NAME "none_specified"
@@ -28,10 +27,6 @@ namespace Flewnit
 {
 
 #if FLEWNIT_TRACK_MEMORY || FLEWNINT_DO_PROFILING
-	BasicObject::BasicObject()
-	{
-		registerToProfiler();
-	}
 
 
 	BasicObject::~BasicObject()
@@ -41,8 +36,8 @@ namespace Flewnit
 
 
 
-	BasicObject::BasicObject(String className, String objectname, String purposeDescription)
-		: mClassName(className), mObjectName(objectname), mPurposeDescription(purposeDescription)
+	BasicObject::BasicObject(int memoryFootPrint, String className, String objectname, String purposeDescription)
+		: mMemoryFootPrint(memoryFootPrint), mClassName(className), mObjectName(objectname), mPurposeDescription(purposeDescription)
 	{
 		registerToProfiler();
 	}
