@@ -28,37 +28,65 @@
 namespace Flewnit
 {
 
-#if FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 
+	bool BasicObjectInstancer::mInitializerMacroIsUsed= false;
+
+	BasicObject::BasicObject()
+	:	mUniqueID(-1)
+	{
+		//call the virtual function declared in any derinvnig class by the FLEWNIT_DECLARE_CLASS_META_INFO macro:
+		//initMetaInfo();
+		assert("declare your meta-info init via the FLEWNIT_INSTANCIATE macro for every class derived from BasicObject!"
+				&&  BasicObjectInstancer::getInitializerGuard());
+	}
+
+
+//	BasicObject::BasicObject(int memoryFootPrint, String className, String objectname, String purposeDescription)
+//		: mUniqueID(-1), mMemoryFootPrint(memoryFootPrint), mClassName(className), mObjectName(objectname), mPurposeDescription(purposeDescription)
+//	{
+//		Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
+//				<<"Object of class \""<< mClassName <<"\" created;\n"
+//				<<"\t\tMemory footprint:"<< mMemoryFootPrint <<" Byte;\n"
+//				<<"\t\tObject name:\"" <<mObjectName <<"\", object purpose: :\""<< mPurposeDescription <<"\";\n" ;
+//
+//		if(mMemoryFootPrint <=0)
+//		{
+//			Log::getInstance()<<WARNING_LOG_LEVEL
+//				<< "no valid memory footprint was provided by the super class constructor for object \""<<mObjectName<<"\";";
+//		}
+//
+//		registerToProfiler();
+//	}
 
 	BasicObject::~BasicObject()
 	{
-		unregisterFromProfiler();
+		BasicObjectInstancer::unregisterFromProfiler(this);
 	}
 
 
+//	void BasicObject::registerToProfiler()
+//	{
+//		//TODO
+//	}
+//
+//	void BasicObject::unregisterFromProfiler()
+//	{
+//		//TODO
+//	}
+//
 
-	BasicObject::BasicObject(int memoryFootPrint, String className, String objectname, String purposeDescription)
-		: mMemoryFootPrint(memoryFootPrint), mClassName(className), mObjectName(objectname), mPurposeDescription(purposeDescription)
+	//-------------------------------------------------------
+	void BasicObjectInstancer::registerToProfiler(BasicObject* bo)
 	{
-		Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
-				<<"Object of class \""<< mClassName <<"\" created;\n"
-				<<"\t\tMemory footprint:"<< mMemoryFootPrint <<" Byte;\n"
-				<<"\t\tObject name:\"" <<mObjectName <<"\", object purpose: :\""<< mPurposeDescription <<"\";\n" ;
-
-		registerToProfiler();
+		Profiler::getInstancePtr()->registerBasicObject(bo);
+		Profiler::getInstancePtr()->printMemoryStatus();
 	}
 
-
-
-	void BasicObject::registerToProfiler()
+	void BasicObjectInstancer::unregisterFromProfiler(BasicObject* bo)
 	{
-		//TODO
-	}
-
-	void BasicObject::unregisterFromProfiler()
-	{
-		//TODO
+		Profiler::getInstancePtr()->unregisterBasicObject(bo);
+		Profiler::getInstancePtr()->printMemoryStatus();
 	}
 
 #endif

@@ -45,6 +45,9 @@ class URE :
 	public Singleton<URE>,
 	public BasicObject
 {
+
+	//FLEWNIT_DECLARE_CLASS_META_INFO(URE, "do the unified Rendering")
+
 public:
     static void bootstrap();
     static void cleanup();

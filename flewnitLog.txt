@@ -1,0 +1,45 @@
+Log for the Flewnit Engine ,located at ./flewnitLog.txt;
+DEBUG       : :Profiler instanced
+INFO        : :4 bytes consumed by int;
+4 bytes consumed by uint;
+4 bytes consumed by Scalar (typedef for float or double);
+4 bytes consumed by float;
+8 bytes consumed by double;
+1 bytes consumed by bool;
+8 bytes consumed by pointer types;
+8 bytes consumed by long;
+8 bytes consumed by long unsigned int;
+8 bytes consumed by long long;
+DEBUG       : :BasicObject registered at Profiler; Now, 1  are registered in total;
+MEMORY_TRACK: :printing now Object Information:
+MEMORY_TRACK: :Object class name: "Flewnit::URE";
+		Memory footprint:104 Byte;
+		Object purpose: :"do the unified Rendering";
+MEMORY_TRACK: :1 objects registered;
+104 bytes are consumed by those objects;
+0 bytes are consumed by CPU buffers;
+0 bytes are consumed by privately used OpenCL buffers;
+0 bytes are consumed by privately used OpenGL buffers;
+0 bytes are consumed by shared OpenCL/OpenGL buffers;
+INFO        : :hello liquid world; running now app!!1 
+INFO        : :here is the URE lib!!1
+DEBUG       : :The Config Path is../config/FlewnitConfig.xml
+DEBUG       : :BasicObject UNregistered from Profiler; Now, 0  are registered in total;
+MEMORY_TRACK: :printing now Object Information:
+MEMORY_TRACK: :Object class name: "Flewnit::URE";
+		Memory footprint:104 Byte;
+		Object purpose: :"do the unified Rendering";
+MEMORY_TRACK: :0 objects registered;
+0 bytes are consumed by those objects;
+0 bytes are consumed by CPU buffers;
+0 bytes are consumed by privately used OpenCL buffers;
+0 bytes are consumed by privately used OpenGL buffers;
+0 bytes are consumed by shared OpenCL/OpenGL buffers;
+DEBUG       : :Profiler destructor called;
+MEMORY_TRACK: :Showing memory Status; If you've done a good house keeping, all values should be zero:
+MEMORY_TRACK: :0 objects registered;
+0 bytes are consumed by those objects;
+0 bytes are consumed by CPU buffers;
+0 bytes are consumed by privately used OpenCL buffers;
+0 bytes are consumed by privately used OpenGL buffers;
+0 bytes are consumed by shared OpenCL/OpenGL buffers;

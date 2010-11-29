@@ -3065,7 +3065,7 @@ Buffer-methods#</dia:string>
         <dia:point val="-27.236,-4.6519"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="-27.286,-4.8019;-10.361,6.9981"/>
+        <dia:rectangle val="-27.286,-4.8019;-10.361,7.7981"/>
       </dia:attribute>
       <dia:attribute name="elem_corner">
         <dia:point val="-27.236,-4.6519"/>
@@ -3074,7 +3074,7 @@ Buffer-methods#</dia:string>
         <dia:real val="16.425000000000001"/>
       </dia:attribute>
       <dia:attribute name="elem_height">
-        <dia:real val="11.6"/>
+        <dia:real val="12.4"/>
       </dia:attribute>
       <dia:attribute name="name">
         <dia:string>#BufferInterface#</dia:string>
@@ -3634,6 +3634,36 @@ Buffer-methods#</dia:string>
           </dia:attribute>
           <dia:attribute name="type">
             <dia:string>##</dia:string>
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="0"/>
+          </dia:attribute>
+          <dia:attribute name="comment">
+            <dia:string>##</dia:string>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="inheritance_type">
+            <dia:enum val="2"/>
+          </dia:attribute>
+          <dia:attribute name="query">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="parameters"/>
+        </dia:composite>
+        <dia:composite type="umloperation">
+          <dia:attribute name="name">
+            <dia:string>#isPingPongBuffer#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="stereotype">
+            <dia:string>##</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#bool#</dia:string>
           </dia:attribute>
           <dia:attribute name="visibility">
             <dia:enum val="0"/>
@@ -4565,16 +4595,16 @@ deletion operations#</dia:string>
     </dia:object>
     <dia:object type="UML - Realizes" version="1" id="O31">
       <dia:attribute name="obj_pos">
-        <dia:point val="-19.0235,6.9481"/>
+        <dia:point val="-19.0235,7.7481"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="-34.612,6.8981;-18.1735,11.2781"/>
+        <dia:rectangle val="-34.612,7.0606;-18.1735,11.2781"/>
       </dia:attribute>
       <dia:attribute name="meta">
         <dia:composite type="dict"/>
       </dia:attribute>
       <dia:attribute name="orth_points">
-        <dia:point val="-19.0235,6.9481"/>
+        <dia:point val="-19.0235,7.7481"/>
         <dia:point val="-19.0235,7.8606"/>
         <dia:point val="-34.562,7.8606"/>
         <dia:point val="-34.562,11.2281"/>
@@ -4607,18 +4637,18 @@ deletion operations#</dia:string>
     </dia:object>
     <dia:object type="UML - Realizes" version="1" id="O32">
       <dia:attribute name="obj_pos">
-        <dia:point val="-19.0235,6.9481"/>
+        <dia:point val="-19.0235,7.7481"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="-19.8735,6.8981;-12.0275,14.6096"/>
+        <dia:rectangle val="-19.8735,7.6981;-12.0275,14.6096"/>
       </dia:attribute>
       <dia:attribute name="meta">
         <dia:composite type="dict"/>
       </dia:attribute>
       <dia:attribute name="orth_points">
-        <dia:point val="-19.0235,6.9481"/>
-        <dia:point val="-19.0235,10.7539"/>
-        <dia:point val="-12.0775,10.7539"/>
+        <dia:point val="-19.0235,7.7481"/>
+        <dia:point val="-19.0235,11.1539"/>
+        <dia:point val="-12.0775,11.1539"/>
         <dia:point val="-12.0775,14.5596"/>
       </dia:attribute>
       <dia:attribute name="orth_orient">

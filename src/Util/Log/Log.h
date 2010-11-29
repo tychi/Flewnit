@@ -97,10 +97,14 @@ private:
 
 template <typename T> Log& Log::handleGenericValues(T logEntry)
 {
-	static std::stringstream pseudoToStringConverter;
+	//static std::stringstream pseudoToStringConverter;
+	std::stringstream pseudoToStringConverter;
 	pseudoToStringConverter<<logEntry;
 	(*mFileStream) << pseudoToStringConverter.str();
 	handleConsoleOutput(pseudoToStringConverter.str());
+	//this SHOULD reset th stringstream,. but it doesn't :(
+	//thats why the local variable cannot be static :((
+	//pseudoToStringConverter.rdbuf()->str()="";
 	return (*this);
 }
 

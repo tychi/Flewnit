@@ -9,9 +9,9 @@
 
 #include "Util/Log/Log.h"
 
-#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-#	include "Common/Profiler.h"
-#endif
+
+#include "Common/Profiler.h"
+
 
 #include <iostream>
 
@@ -24,6 +24,7 @@ void URE::bootstrap()
 	INSTANCIATE_SINGLETON(Log);
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	INSTANCIATE_SINGLETON(Profiler);
+	Profiler::getInstancePtr()->performBasicChecks();
 #endif
 }
 
@@ -38,7 +39,7 @@ void URE::cleanup()
 
 
 URE::URE()
-: BASIC_OBJECT_CONSTRUCTOR(URE, "URESingletonInstance", "do the unified Rendering")
+//: BASIC_OBJECT_CONSTRUCTOR(URE, "URESingletonInstance", "do the unified Rendering")
 {
 	// TODO Auto-generated constructor stub
 

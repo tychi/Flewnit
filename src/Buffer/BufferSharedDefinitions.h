@@ -27,9 +27,19 @@ enum BufferTypeFlags
 enum ContextType
 {
 	HOST_CONTEXT_TYPE				=0,
-	OPEN_GL_CONTEXT_TYPE			=1,
-	OPEN_CL_CONTEX_TYPE				=2
+	OPEN_CL_CONTEXT_TYPE			=1,
+	OPEN_GL_CONTEXT_TYPE				=2,
+	__NUM_CONTEXT_TYPES__			=3
 };
+
+///\note we need a flag type to indicate GL-CL-interoperation buffers and CPU-memory-mapped buffers
+enum ContextTypeFlags
+{
+	HOST_CONTEXT_TYPE_FLAG				=0,
+	OPEN_CL_CONTEXT_TYPE_FLAG			=1,
+	OPEN_GL_CONTEXT_TYPE_FLAG			=2
+};
+
 
 enum BufferSemantics
 {
