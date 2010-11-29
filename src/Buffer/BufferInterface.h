@@ -17,6 +17,8 @@
 
 #include "Buffer/BufferHelperUtils.h"
 
+#include "Common/Math.h"
+
 
 namespace Flewnit
 {
@@ -41,6 +43,7 @@ protected:
 private:
 
 	BufferInfo mBufferInfo;
+	Vector3D mTestValue;
 
 };
 

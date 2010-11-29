@@ -14,6 +14,7 @@ namespace Flewnit
 
 BufferInterface::BufferInterface()
 {
+	mTestValue=Vector3D(3.4,6.5,7.87);
 	// TODO Auto-generated constructor stub
 
 }
