@@ -1,6 +1,6 @@
 CMakeFiles*
 Makefile
-CMakeCache
-flewnitLog
+CMakeCache*
+flewnitLog*
 *.dia~
 *.dia.autosave

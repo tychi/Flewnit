@@ -30,64 +30,42 @@ namespace Flewnit
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 
-	bool BasicObjectInstancer::mInitializerMacroIsUsed= false;
-
 	BasicObject::BasicObject()
-	:	mUniqueID(-1)
+	:	mUniqueID(FLEWNIT_INVALID_ID)
 	{
-		//call the virtual function declared in any derinvnig class by the FLEWNIT_DECLARE_CLASS_META_INFO macro:
-		//initMetaInfo();
-		assert("declare your meta-info init via the FLEWNIT_INSTANCIATE macro for every class derived from BasicObject!"
-				&&  BasicObjectInstancer::getInitializerGuard());
+		registerToProfiler();
 	}
-
-
-//	BasicObject::BasicObject(int memoryFootPrint, String className, String objectname, String purposeDescription)
-//		: mUniqueID(-1), mMemoryFootPrint(memoryFootPrint), mClassName(className), mObjectName(objectname), mPurposeDescription(purposeDescription)
-//	{
-//		Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
-//				<<"Object of class \""<< mClassName <<"\" created;\n"
-//				<<"\t\tMemory footprint:"<< mMemoryFootPrint <<" Byte;\n"
-//				<<"\t\tObject name:\"" <<mObjectName <<"\", object purpose: :\""<< mPurposeDescription <<"\";\n" ;
-//
-//		if(mMemoryFootPrint <=0)
-//		{
-//			Log::getInstance()<<WARNING_LOG_LEVEL
-//				<< "no valid memory footprint was provided by the super class constructor for object \""<<mObjectName<<"\";";
-//		}
-//
-//		registerToProfiler();
-//	}
 
 	BasicObject::~BasicObject()
 	{
-		BasicObjectInstancer::unregisterFromProfiler(this);
+		unregisterFromProfiler();
 	}
 
 
-//	void BasicObject::registerToProfiler()
-//	{
-//		//TODO
-//	}
-//
-//	void BasicObject::unregisterFromProfiler()
-//	{
-//		//TODO
-//	}
-//
-
-	//-------------------------------------------------------
-	void BasicObjectInstancer::registerToProfiler(BasicObject* bo)
+	void BasicObject::registerToProfiler()
 	{
-		Profiler::getInstancePtr()->registerBasicObject(bo);
-		Profiler::getInstancePtr()->printMemoryStatus();
+		Profiler::getInstancePtr()->registerBasicObject(this);
+		//Profiler::getInstancePtr()->printMemoryStatus();
 	}
 
-	void BasicObjectInstancer::unregisterFromProfiler(BasicObject* bo)
+	void BasicObject::unregisterFromProfiler()
 	{
-		Profiler::getInstancePtr()->unregisterBasicObject(bo);
-		Profiler::getInstancePtr()->printMemoryStatus();
+		Profiler::getInstancePtr()->unregisterBasicObject(this);
+		//Profiler::getInstancePtr()->printMemoryStatus();
 	}
+
+	BasicObject* BasicObjectInstancer::getLastRegisteredBasicObjectFromProfiler()
+	{
+		return Profiler::getInstancePtr()->mRegisteredBasicObjects
+				[ Profiler::getInstancePtr()-> mIDOfLastRegisteredButNotMemoryTrackedObject ];
+	}
+
+	void BasicObjectInstancer::propagateObjectMemoryFootPrintToProfiler()
+	{
+		Profiler::getInstancePtr()->registerObjectMemoryFootPrint(
+				getLastRegisteredBasicObjectFromProfiler());
+	}
+
 
 #endif
 

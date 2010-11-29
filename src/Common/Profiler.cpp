@@ -33,6 +33,8 @@ Profiler::Profiler()
 	mNumPrivateAllocatedBuffers[OPEN_CL_CONTEXT_TYPE]=0;
 	mNumPrivateAllocatedBuffers[OPEN_GL_CONTEXT_TYPE]=0;
 
+	mIDOfLastRegisteredButNotMemoryTrackedObject = -1;
+
 	Log::getInstance()<< DEBUG_LOG_LEVEL<<"Profiler instanced\n";
 
 }
@@ -43,6 +45,7 @@ Profiler::~Profiler()
 	Log::getInstance()<< MEMORY_TRACK_LOG_LEVEL<<"Showing memory Status; If you've done a good house keeping, all values should be zero:\n";
 	printMemoryStatus();
 
+	checkError();
 }
 
 
@@ -79,15 +82,15 @@ void Profiler::performBasicChecks()
 			<< (int) sizeof(bool) << " bytes consumed by bool;\n"
 			<< (int) sizeof(int*) << " bytes consumed by pointer types;\n"
 			//<< (int) sizeof(int&) << " bytes consumed by reference types;\n"
-
 			//<< (int) sizeof(int64) << " bytes consumed by explicit 64 bit integer type __int64 ;\n"
 			<< (int) sizeof(long) << " bytes consumed by long;\n"
+			<< (int) sizeof(long int) << " bytes consumed by long int;\n"
 			<< (int) sizeof(long unsigned int) << " bytes consumed by long unsigned int;\n"
 			<< (int) sizeof(long long) << " bytes consumed by long long;\n"
+			<< (int) sizeof(String) << " bytes consumed by String;\n"
 			;
 
 	//TODO maybe some cl/gl related tests..
-
 }
 
 
@@ -97,7 +100,14 @@ void Profiler::performBasicChecks()
 ///\{
 ID Profiler::registerBasicObject(BasicObject* bo)
 {
+	checkError();
+
 	//assure that the object was NOT yet registered or has a valid ID; otherwise, the application logic would have failed;
+	assert( "BasicObject to be registered neither has a valid ID nor its ID is already registered;"
+			&& ( bo->getUniqueID() == FLEWNIT_INVALID_ID )
+			&& (mRegisteredBasicObjects.count(bo->getUniqueID()) == 0)
+	);
+
 
 
 	if(mIDsFromFreedObjects.size() == 0)
@@ -114,16 +124,18 @@ ID Profiler::registerBasicObject(BasicObject* bo)
 	}
 
 	mTotalRegisteredObjects++;
-	mTotalObjectMemoryFootprint += bo->getMemoryFootPrint();
 
-	Log::getInstance()<<DEBUG_LOG_LEVEL<<"BasicObject registered at Profiler; Now, "<<mTotalRegisteredObjects<<"  are registered in total;\n";
-	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"printing now Object Information:\n";
-	printObjectStatus(bo);
+	Log::getInstance()<<DEBUG_LOG_LEVEL<<"BasicObject with ID \""<< bo->getUniqueID()  <<"\" registered at Profiler; Now, "<<mTotalRegisteredObjects<<"  are registered in total;\n";
 
-	return bo->getUniqueID();
+	//set the guard, so that an error is thrown if the memory footprint isn't delivered right after initialisation:
+	return mIDOfLastRegisteredButNotMemoryTrackedObject = bo->getUniqueID();
+
 }
+
 void Profiler::unregisterBasicObject(BasicObject* bo)
 {
+	checkError();
+
 	//assure that the object was registered; otherwise, the application logic would have failed;
 	assert( mRegisteredBasicObjects.erase(bo->getUniqueID()) > 0);
 
@@ -135,17 +147,46 @@ void Profiler::unregisterBasicObject(BasicObject* bo)
 	Log::getInstance()<<DEBUG_LOG_LEVEL<<"BasicObject UNregistered from Profiler; Now, "<<mTotalRegisteredObjects<<"  are registered in total;\n";
 	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"printing now Object Information:\n";
 	printObjectStatus(bo);
+
+	printMemoryStatus();
+}
+
+void Profiler::registerObjectMemoryFootPrint(BasicObject* bo)
+{
+	assert("at least one BasicObject isn't tracked correctly; Use the FLEWNIT_INSTANCIATE macro for every class derived from BasicObject!"
+			&& mIDOfLastRegisteredButNotMemoryTrackedObject == bo->getUniqueID());
+
+	mTotalObjectMemoryFootprint += bo->getMemoryFootPrint();
+
+	//unset the Guard:
+	mIDOfLastRegisteredButNotMemoryTrackedObject = FLEWNIT_INVALID_ID;
+
+	Log::getInstance()<<DEBUG_LOG_LEVEL<<"BasicObject memory footprint propagated to profiler; Now, "<<mTotalObjectMemoryFootprint<<"  bytes are consumed for Object instances in total;\n";
+	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"printing now Object Information:\n";
+	printObjectStatus(bo);
+
+	printMemoryStatus();
 }
 
 void Profiler::registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte)
 {
+	checkError();
 	//TODO
 }
 
 void Profiler::unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte)
 {
+	checkError();
 	//TODO
 }
+
+
+void Profiler::checkError()
+{
+	assert("at least one BasicObject isn't tracked correctly; Use the FLEWNIT_INSTANCIATE macro for every class derived from BasicObject!"
+			&&  mIDOfLastRegisteredButNotMemoryTrackedObject == FLEWNIT_INVALID_ID);
+}
+
 
 
 }

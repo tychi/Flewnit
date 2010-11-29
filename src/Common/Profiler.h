@@ -39,17 +39,15 @@
 namespace Flewnit
 {
 
-////forwards to omit cyclic includes;
-//class BasicObject;
-//class BasicObjectInstancer;
-
 
 class Profiler : public Singleton<Profiler>
 {
 public:
 	//declare friend functions in order to enable only to to (un)register stuff;
-	friend void BasicObjectInstancer::registerToProfiler(BasicObject* bo);
-	friend void BasicObjectInstancer::unregisterFromProfiler(BasicObject* bo);
+	friend void BasicObject::registerToProfiler();
+	friend void BasicObject::unregisterFromProfiler();
+	friend BasicObject* BasicObjectInstancer::getLastRegisteredBasicObjectFromProfiler();
+	friend void BasicObjectInstancer::propagateObjectMemoryFootPrintToProfiler();
 	friend void BufferInterface::registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 	friend void BufferInterface::unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 
@@ -102,14 +100,17 @@ public:
 
 	void printMemoryStatus();
 
-
+	void checkError();
 private:
 
 	ID registerBasicObject(BasicObject* bo);
+	void registerObjectMemoryFootPrint(BasicObject* bo);
+
 	void unregisterBasicObject(BasicObject* bo);
 
 	void registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 	void unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
+
 
 
 	///\{
@@ -130,6 +131,8 @@ private:
 
 	uint mNumPrivateAllocatedBuffers[__NUM_CONTEXT_TYPES__];
 	uint mNumCLGLSharedAllocatedBuffers;
+
+	ID mIDOfLastRegisteredButNotMemoryTrackedObject;
 
 };
 

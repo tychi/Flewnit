@@ -15,6 +15,7 @@ project(libflewnit)
 #Set user defined stuff----------------------------------------
 
 if(UNIX)
+
     set(MEDIA_LAYER "XCB" CACHE STRING  "Media layer; Chose XCB or SDL")
     
     option(USE_SDL_LOCAL "if SDL is chosen as media layer, choose either installed version or a locally compiled one;option is necessary to handly folder structures of local builds" OFF)
@@ -25,6 +26,7 @@ if(UNIX)
     option(RELEASE "build in Release mode for more performance but no debugging features" OFF)
 
 elseif(WIN32)
+
      #no other option but SDL for Windows atm
      set(medialayer "SDL")
      set(SDL_DIRECTORY "/../../Dependencies/SDL_1_3" CACHE PATH "SDL Directory")

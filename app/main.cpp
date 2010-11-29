@@ -11,7 +11,7 @@
 #include "Util/Log/Log.h"
 
 
-class Foo: public Flewnit::BasicObject
+class Foo : public Flewnit::BasicObject
 {
 public:
 	Foo(int i, int j) {};
@@ -24,17 +24,18 @@ int main(int argc, char *argv[])
 	//now instanciate the Renderer singleton
 	//INSTANCIATE_SINGLETON(Flewnit::URE)
 
-	FLEWNIT_INSTANTIATE(
-			new Flewnit::URE(),
-			Flewnit::URE,
-			"do the unified Rendering");
+	FLEWNIT_INSTANTIATE(Flewnit::URE,(),"do the unified Rendering");
 
 	Flewnit::Log::getInstance()<<Flewnit::INFO_LOG_LEVEL<<"hello liquid world; running now app!!1 \n";
 
+	Foo* myAss = FLEWNIT_INSTANTIATE(Foo,(3,4),"just testing stuff with FFFUU");
+	delete myAss;
+
+	Flewnit::Log::getInstance()<< Flewnit::INFO_LOG_LEVEL
+			<< (int) sizeof(*myAss) << " bytes consumed by myAss object from type Foo;\n";
+
 	//initialize it
 	URE_INSTANCE->init();
-
-
 
 
 	DESTROY_SINGLETON(Flewnit::URE);

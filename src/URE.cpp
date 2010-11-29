@@ -21,9 +21,11 @@ namespace Flewnit {
 ///\brief static stuff
 void URE::bootstrap()
 {
-	INSTANCIATE_SINGLETON(Log);
+	//INSTANCIATE_SINGLETON(Log);
+	new Log();
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-	INSTANCIATE_SINGLETON(Profiler);
+	//INSTANCIATE_SINGLETON(Profiler);
+	new Profiler();
 	Profiler::getInstancePtr()->performBasicChecks();
 #endif
 }

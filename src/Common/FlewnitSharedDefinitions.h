@@ -20,7 +20,7 @@
 namespace Flewnit
 {
 
-//Media Layer Stuff; Shall be delegated by Cmake later ;)
+//Media Layer Stuff; Shall be delegated by Cmake later  ;)
 //#define FLEWNIT_USE_SDL
 //#define FLEWNIT_USE_XCB
 
@@ -28,7 +28,9 @@ namespace Flewnit
 
 #define FLEWNIT_DEFAULT_LOG_FILEPATH "./flewnitLog.txt"
 
+#define FLEWNIT_INVALID_ID ((ID) (-1))
 #define FLEWNIT_UNSPECIFIED_NAME "none_specified"
+
 //convert c++-code to a string ;)
 #define FLEWNIT_STRINGIFY(word) Flewnit::String(#word)
 
@@ -46,6 +48,7 @@ typedef unsigned int		uint;
 #define List std::vector
 #define Map std::map
 #define Stack std::stack
+#define Pair std::pair
 
 //-----------------------------------------------------------------------
 

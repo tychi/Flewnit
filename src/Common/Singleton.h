@@ -9,7 +9,7 @@
 #include <assert.h>
 
 
-#define INSTANCIATE_SINGLETON(Class) {assert(!Class::isInitialised()); new Class(); }
+//#define INSTANCIATE_SINGLETON(Class) {assert(!Class::isInitialised()); new Class(); }
 #define DESTROY_SINGLETON(Class) {assert(Class::isInitialised()); delete Class::getInstancePtr();}
 
 

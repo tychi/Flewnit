@@ -32,13 +32,12 @@ namespace Flewnit
 		BasicObject(){}
 		~BasicObject(){}
 
-#	define FLEWNIT_INSTANTIATE(actualInstantiationExpression, className, purposeDescription) \
-		className * macroTempInstancPtr =  actualInstantiationExpression
+//#	define FLEWNIT_INSTANTIATE(actualInstantiationExpression, className, purposeDescription) \
+//		className * macroTempInstancPtr =  actualInstantiationExpression
 
+#	define FLEWNIT_INSTANTIATE(className,parameterListExpression, purposeDescription) \
+		new className parameterListExpression ;
 
-//	define the stuff to default constructor in order to save overhead
-//#	define BASIC_OBJECT_CONSTRUCTOR(className, objectname, purposeDescription) BasicObject()
-//#	define FLEWNIT_DECLARE_META_OBJECT(className, objectname, purposeDescription)
 
 //---------------------------------------------------------------------------------------------------------
 #else
@@ -53,51 +52,40 @@ namespace Flewnit
 		BasicObject();
 		~BasicObject();
 
-///\note Helper macro to be able to define the constructor call to nothing (i.e. default constructor) if profiling isn't enabled;
-///		use this in any constructor of a class deriving from BasicObject;
-//#	define BASIC_OBJECT_CONSTRUCTOR(className, objectname, purposeDescription) \
-//		BasicObject(sizeof(className),FLEWNIT_STRINGIFY(className), objectname, purposeDescription)
 
-		//virtual void initMetaInfo(){assert("declare your meta-info init via the FLEWNIT_DECLARE_META_OBJECT macro for every class!" && 0);}
 
-///\note macro which should stand in any class definition deriving from BasicObject in order to provide the profiler with some information
-//#	define FLEWNIT_DECLARE_CLASS_META_INFO(className, purposeDescription) \
-//				virtual void initMetaInfo() \
-//				{ \
-//					mMemoryFootPrint = sizeof(className); \
-//					mClassName = FLEWNIT_STRINGIFY(className); \
-//					mPurposeDescription = purposeDescription; \
-//				}
+//#	define FLEWNIT_INSTANTIATE(actualInstantiationExpression, className, purposeDescription) \
+//		Flewnit::BasicObjectInstancer::setInitializerGuard(true); \
+//		className * macroTempInstancPtr =  actualInstantiationExpression; \
+//		Flewnit::BasicObjectInstancer::setMemoryFootPrint((int)sizeof(className),macroTempInstancPtr);\
+//		Flewnit::BasicObjectInstancer::setClassName(FLEWNIT_STRINGIFY(className),macroTempInstancPtr);\
+//		Flewnit::BasicObjectInstancer::setPurposeDescription(purposeDescription,macroTempInstancPtr);\
+//		Flewnit::BasicObjectInstancer::registerToProfiler(macroTempInstancPtr); \
+//		Flewnit::BasicObjectInstancer::setInitializerGuard(false)
 
-//#	define FLEWNIT_INSTANCIATE(className, constructorParamList, purposeDescription) \
-//		reinterpret_cast<className*>(BasicObjectInstancer::macroTempInstancePtr) = new className##constructorParamList ; \
-//		reinterpret_cast<className*>(BasicObjectInstancer::macroTempInstancePtr)->
+///\note  I'm doing some crazy haxx here in order to both
+///	-assure usage of this macro instead of direct constructor calling by flag setting and
+///	-enable support for using this macro like a instatiator function returning a pointer to the instance;
+#	define FLEWNIT_INSTANTIATE(className,parameterListExpression, purposeDescription) \
+		new className parameterListExpression ; \
+		Flewnit::BasicObjectInstancer::setMemoryFootPrint((int)sizeof(className));\
+		Flewnit::BasicObjectInstancer::setClassName(FLEWNIT_STRINGIFY(className));\
+		Flewnit::BasicObjectInstancer::setPurposeDescription(purposeDescription);\
+		Flewnit::BasicObjectInstancer::propagateObjectMemoryFootPrintToProfiler();
 
-//instancePointerToAssignObjectTo = new className##constructorParamList; \
-
-#	define FLEWNIT_INSTANTIATE(actualInstantiationExpression, className, purposeDescription) \
-		Flewnit::BasicObjectInstancer::setInitializerGuard(true); \
-		className * macroTempInstancPtr =  actualInstantiationExpression; \
-		Flewnit::BasicObjectInstancer::setMemoryFootPrint((int)sizeof(className),macroTempInstancPtr);\
-		Flewnit::BasicObjectInstancer::setClassName(FLEWNIT_STRINGIFY(className),macroTempInstancPtr);\
-		Flewnit::BasicObjectInstancer::setPurposeDescription(purposeDescription,macroTempInstancPtr);\
-		Flewnit::BasicObjectInstancer::registerToProfiler(macroTempInstancPtr); \
-		Flewnit::BasicObjectInstancer::setInitializerGuard(false)
-
-//		BasicObject(
-//				int memoryFootPrint = -1,
-//				String className = FLEWNIT_UNSPECIFIED_NAME,
-//				String objectname = FLEWNIT_UNSPECIFIED_NAME,
-//				String purposeDescription = FLEWNIT_UNSPECIFIED_NAME);
 
 
 		inline int getMemoryFootPrint(){return mMemoryFootPrint;}
 		inline const String& getClassName()const{return mClassName;}
 		inline const String& getPurposeDescription()const{return mPurposeDescription;}
 
-		inline ID getUniqueID()const{ assert(mUniqueID>=0); return mUniqueID;}
+		inline ID getUniqueID()const{return mUniqueID;}
 
 	private:
+
+		void registerToProfiler();
+		void unregisterFromProfiler();
+
 		//only Profiler shall be able to set this:
 		ID mUniqueID;
 
@@ -118,38 +106,26 @@ namespace Flewnit
 	class BasicObjectInstancer
 	{
 	public:
-		static inline void setInitializerGuard(bool value)
+
+		static inline void setMemoryFootPrint(int memFP)
 		{
-			mInitializerMacroIsUsed=value;
+			getLastRegisteredBasicObjectFromProfiler()->mMemoryFootPrint=memFP ;
 		}
 
-		static inline bool getInitializerGuard()
+		static inline void setClassName(String name)
 		{
-			return mInitializerMacroIsUsed;
+			getLastRegisteredBasicObjectFromProfiler()->mClassName=name;
 		}
 
-		static inline void setMemoryFootPrint(int memFP,BasicObject* bo)
+		static inline void setPurposeDescription(String desc)
 		{
-			bo->mMemoryFootPrint=memFP ;
+			getLastRegisteredBasicObjectFromProfiler()->mPurposeDescription=desc ;
 		}
 
-		static inline void setClassName(String name,BasicObject* bo)
-		{
-			bo->mClassName=name;
-		}
+		static void propagateObjectMemoryFootPrintToProfiler();
 
-		static inline void setPurposeDescription(String desc,BasicObject* bo)
-		{
-			bo->mPurposeDescription=desc ;
-		}
+		static BasicObject* getLastRegisteredBasicObjectFromProfiler();
 
-		static void registerToProfiler(BasicObject* bo);
-
-		static void unregisterFromProfiler(BasicObject* bo);
-
-	private:
-
-		static bool mInitializerMacroIsUsed;
 	};
 #endif
 
