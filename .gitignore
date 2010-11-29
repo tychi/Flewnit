@@ -1,6 +1,9 @@
-CMakeFiles*
+CMakeFiles/
+bin/
+lib/
 Makefile
 CMakeCache.txt
 flewnitLog.txt
+cmake_install.cmake
 *.dia~
 *.dia.autosave
