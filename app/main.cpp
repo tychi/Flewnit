@@ -21,18 +21,9 @@ int main(int argc, char *argv[])
 {
 	//run bootstrap before acually instancing the render library; This is because the profiler must be instance at first;
 	Flewnit::URE::bootstrap();
-	//now instanciate the Renderer singleton
-	//INSTANCIATE_SINGLETON(Flewnit::URE)
-
+	//now instantiate the Engine singleton
 	FLEWNIT_INSTANTIATE(Flewnit::URE,(),"do the unified Rendering");
 
-	Flewnit::Log::getInstance()<<Flewnit::INFO_LOG_LEVEL<<"hello liquid world; running now app!!1 \n";
-
-	Foo* myAss = FLEWNIT_INSTANTIATE(Foo,(3,4),"just testing stuff with FFFUU");
-	delete myAss;
-
-	Flewnit::Log::getInstance()<< Flewnit::INFO_LOG_LEVEL
-			<< (int) sizeof(*myAss) << " bytes consumed by myAss object from type Foo;\n";
 
 	//initialize it
 	URE_INSTANCE->init();
