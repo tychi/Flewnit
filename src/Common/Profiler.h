@@ -47,7 +47,7 @@ public:
 	friend void BasicObject::registerToProfiler();
 	friend void BasicObject::unregisterFromProfiler();
 	friend BasicObject* BasicObjectInstancer::getLastRegisteredBasicObjectFromProfiler();
-	friend void BasicObjectInstancer::propagateObjectMemoryFootPrintToProfiler();
+	friend void BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject();
 	friend void BufferInterface::registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 	friend void BufferInterface::unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 

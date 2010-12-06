@@ -42,10 +42,17 @@ void URE::cleanup()
 
 URE::URE()
 //: BASIC_OBJECT_CONSTRUCTOR(URE, "URESingletonInstance", "do the unified Rendering")
+: mCorrectlyInitializedGuard(false),
+  mLoader(0),
+  mWindowManager(0),
+  mInputManager(0),
+  mGUI(0),
+  mSimulationDataBase(0),
+  mGeometryConverter(0)
 {
-	// TODO Auto-generated constructor stub
-
-
+	mSimulators[MECHANICAL_SIM_DOMAIN]=0;
+	mSimulators[VISUAL_SIM_DOMAIN]=0;
+	mSimulators[ACUSTIC_SIM_DOMAIN]=0;
 }
 
 URE::~URE()
@@ -60,9 +67,13 @@ bool URE::init(boost::filesystem::path pathToGlobalConfigFile)
 
 	Log::getInstance()<<INFO_LOG_LEVEL<<"here is the URE lib!!1\n";
 
+	//mLoader=FLEWNIT_INSTANTIATE(new Loader,(pathToGlobalConfigFile));
+	sizeof(*(new float()));
 
 	Log::getInstance()<<DEBUG_LOG_LEVEL<<"The Config Path is"<< pathToGlobalConfigFile.string() <<"\n";
 
+
+	return mCorrectlyInitializedGuard;
 }
 
 void URE::resetEngine()

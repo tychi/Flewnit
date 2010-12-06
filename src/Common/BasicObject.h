@@ -20,6 +20,8 @@
 #include <iostream>
 #include <cstring>
 
+#include <typeinfo>
+
 namespace Flewnit
 {
 	class BasicObject
@@ -35,8 +37,10 @@ namespace Flewnit
 //#	define FLEWNIT_INSTANTIATE(actualInstantiationExpression, className, purposeDescription) \
 //		className * macroTempInstancPtr =  actualInstantiationExpression
 
-#	define FLEWNIT_INSTANTIATE(className,parameterListExpression, purposeDescription) \
-		new className parameterListExpression ;
+#	define FLEWNIT_INSTANTIATE(instantiationExpression) \
+		instantiationExpression
+
+# 	define FLEWNIT_BASIC_OBJECT_DECLARATIONS
 
 
 //---------------------------------------------------------------------------------------------------------
@@ -66,36 +70,49 @@ namespace Flewnit
 ///\note  I'm doing some crazy haxx here in order to both
 ///	-assure usage of this macro instead of direct constructor calling by flag setting and
 ///	-enable support for using this macro like a instatiator function returning a pointer to the instance;
-#	define FLEWNIT_INSTANTIATE(className,parameterListExpression, purposeDescription) \
-		className parameterListExpression ; \
-		Flewnit::BasicObjectInstancer::setMemoryFootPrint((int)sizeof(className));\
-		Flewnit::BasicObjectInstancer::setClassName(FLEWNIT_STRINGIFY(className));\
-		Flewnit::BasicObjectInstancer::setPurposeDescription(purposeDescription);\
-		Flewnit::BasicObjectInstancer::propagateObjectMemoryFootPrintToProfiler();
+#	define FLEWNIT_INSTANTIATE(instantiationExpression) \
+		instantiationExpression ; \
+		Flewnit::BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject()
 
 
+# 	define FLEWNIT_BASIC_OBJECT_DECLARATIONS \
+		virtual void initBasicObject() \
+		{ \
+			mMemoryFootPrint = (int) sizeof(*this); \
+			mClassName = String(typeid(*this).name()); \
+		}
 
-		inline int getMemoryFootPrint(){return mMemoryFootPrint;}
-		inline const String& getClassName()const{return mClassName;}
-		inline const String& getPurposeDescription()const{return mPurposeDescription;}
+
+		virtual void initBasicObject()=0;
+
+
+		inline const String& getClassName()const
+		{
+			assert( (mMemoryFootPrint >0) &&  (mClassName!="")  );
+			return mClassName;
+		}
+
+		//inline const String& getPurposeDescription()const{return mPurposeDescription;}
 
 		inline ID getUniqueID()const{return mUniqueID;}
+		inline int getMemoryFootprint()
+		{
+			assert( (mMemoryFootPrint >0) &&  (mClassName!="")  );
+			return mMemoryFootPrint;
+		}
 
 	private:
 
 		void registerToProfiler();
 		void unregisterFromProfiler();
 
-		//only Profiler shall be able to set this:
+		//only Profiler shall be able to set this, so the friendship:
 		ID mUniqueID;
 
+	protected:
 		//must be protected as the class-dependent virtual void initMetaInfo() must set this stuff
 		int mMemoryFootPrint;
-
 		String mClassName;
-		String mPurposeDescription;
-
-
 #endif
 //---------------------------------------------------------------------------------------------------------
 	};
@@ -107,22 +124,14 @@ namespace Flewnit
 	{
 	public:
 
-		static inline void setMemoryFootPrint(int memFP)
-		{
-			getLastRegisteredBasicObjectFromProfiler()->mMemoryFootPrint=memFP ;
-		}
+//		static inline void setMemoryFootPrint()
+//		{
+//			getLastRegisteredBasicObjectFromProfiler()->mMemoryFootPrint=
+//					getLastRegisteredBasicObjectFromProfiler()->getMemoryFootprint();
+//		}
 
-		static inline void setClassName(String name)
-		{
-			getLastRegisteredBasicObjectFromProfiler()->mClassName=name;
-		}
 
-		static inline void setPurposeDescription(String desc)
-		{
-			getLastRegisteredBasicObjectFromProfiler()->mPurposeDescription=desc ;
-		}
-
-		static void propagateObjectMemoryFootPrintToProfiler();
+		static void initAndFinalizeRegistrationOfCurrentBasicObject();
 
 		static BasicObject* getLastRegisteredBasicObjectFromProfiler();
 

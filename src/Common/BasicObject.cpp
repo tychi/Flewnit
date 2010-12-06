@@ -31,7 +31,7 @@ namespace Flewnit
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 
 	BasicObject::BasicObject()
-	:	mUniqueID(FLEWNIT_INVALID_ID)
+	:	mUniqueID(FLEWNIT_INVALID_ID),mMemoryFootPrint(-1)
 	{
 		registerToProfiler();
 	}
@@ -60,8 +60,10 @@ namespace Flewnit
 				[ Profiler::getInstancePtr()-> mIDOfLastRegisteredButNotMemoryTrackedObject ];
 	}
 
-	void BasicObjectInstancer::propagateObjectMemoryFootPrintToProfiler()
+	void BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject()
 	{
+		getLastRegisteredBasicObjectFromProfiler()->initBasicObject();
+
 		Profiler::getInstancePtr()->registerObjectMemoryFootPrint(
 				getLastRegisteredBasicObjectFromProfiler());
 	}

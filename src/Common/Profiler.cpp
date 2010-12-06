@@ -53,8 +53,8 @@ void Profiler::printObjectStatus(BasicObject* bo)
 {
 	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
 			<<"Object class name: \""<< bo->getClassName() <<"\";\n"
-			<<"\t\tMemory footprint:"<< bo->getMemoryFootPrint() <<" Byte;\n"
-			<<"\t\tObject purpose: :\""<< bo->getPurposeDescription() <<"\";\n" ;
+			<<"\t\tMemory footprint:"<< bo->getMemoryFootprint() <<" Byte;\n"
+			;//<<"\t\tObject purpose: :\""<< bo->getPurposeDescription() <<"\";\n" ;
 }
 
 void Profiler::printMemoryStatus()
@@ -142,7 +142,7 @@ void Profiler::unregisterBasicObject(BasicObject* bo)
 	mIDsFromFreedObjects.push(bo->getUniqueID());
 
 	mTotalRegisteredObjects--;
-	mTotalObjectMemoryFootprint -= bo->getMemoryFootPrint();
+	mTotalObjectMemoryFootprint -= bo->getMemoryFootprint();
 
 	Log::getInstance()<<DEBUG_LOG_LEVEL<<"BasicObject UNregistered from Profiler; Now, "<<mTotalRegisteredObjects<<"  are registered in total;\n";
 	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"printing now Object Information:\n";
@@ -156,7 +156,7 @@ void Profiler::registerObjectMemoryFootPrint(BasicObject* bo)
 	assert("at least one BasicObject isn't tracked correctly; Use the FLEWNIT_INSTANCIATE macro for every class derived from BasicObject!"
 			&& mIDOfLastRegisteredButNotMemoryTrackedObject == bo->getUniqueID());
 
-	mTotalObjectMemoryFootprint += bo->getMemoryFootPrint();
+	mTotalObjectMemoryFootprint += bo->getMemoryFootprint();
 
 	//unset the Guard:
 	mIDOfLastRegisteredButNotMemoryTrackedObject = FLEWNIT_INVALID_ID;
