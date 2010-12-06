@@ -28,7 +28,7 @@
 #include "Common/BasicObject.h"
 
 
-#include "Simulator/SimulatorCommon.h"
+#include "Simulator/SimulatorForwards.h"
 
 #include <boost/filesystem/path.hpp>
 
@@ -59,34 +59,41 @@ public:
 
     void resetEngine();
     void stepSimulation(SimStepSettings const& stepSettings);
+    bool enterMainLoop();
 
 
     inline GUI* getGUI()const{return mGUI;}
     inline GeometryConverter* getGeometryConverter()const{return mGeometryConverter;}
     inline Loader* getLoader()const{return mLoader;}
-    inline MediaLayerInterface* getMediaLayer()const{return mMediaLayer;}
+    inline WindowManager* getWindowManager()const{return mWindowManager;}
     inline SimulationDataBase* getSimulationDataBase()const{return mSimulationDataBase;}
     inline SimulatorInterface* getSimulator(SimulationDomain which)const{ assert(which < __NUM_SIM_DOMAINS__); return mSimulators[which];}
+
 
 
 
 private:
 
     //this routine will call the loader, which will in turn use assimp to load .blend files directly;
-    bool loadScene(boost::filesystem::path pathToSceneFile);
+    //bool loadScene(boost::filesystem::path pathToSceneFile);
 
     bool buildSimulationPipeLine(boost::filesystem::path pathToPipelineConfigFile);
 
+
+    bool 					mCorrectlyInitializedGuard;
+    Loader*					mLoader;
+
+    WindowManager* 			mWindowManager;
+    InputManager*			mInputManager;
+    GUI* 					mGUI;
+
     SimulatorInterface*		mSimulators[__NUM_SIM_DOMAINS__];
     SimulationDataBase*		mSimulationDataBase;
-    MediaLayerInterface* 	mMediaLayer;
-    GUI* 					mGUI;
+
 
 	GeometryConverter* 		mGeometryConverter;
 
-	Loader*					mLoader;
 
-	bool 					mCorrectlyInitializedGuard;
 
 };
 

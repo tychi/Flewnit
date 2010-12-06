@@ -22,11 +22,18 @@ int main(int argc, char *argv[])
 	//run bootstrap before acually instancing the render library; This is because the profiler must be instance at first;
 	Flewnit::URE::bootstrap();
 	//now instantiate the Engine singleton
-	FLEWNIT_INSTANTIATE(Flewnit::URE,(),"do the unified Rendering");
+	FLEWNIT_INSTANTIATE(new Flewnit::URE,(),"do the unified Rendering");
 
 
 	//initialize it
 	URE_INSTANCE->init();
+
+
+//	while(URE_INSTANCE->getMediaLayer())
+//	{
+//
+//
+//	}
 
 
 	DESTROY_SINGLETON(Flewnit::URE);

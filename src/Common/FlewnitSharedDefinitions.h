@@ -20,9 +20,11 @@
 namespace Flewnit
 {
 
-//Media Layer Stuff; Shall be delegated by Cmake later  ;)
-//#define FLEWNIT_USE_SDL
+//Media Layer Stuff; delegated by cmake;
+//#define FLEWNIT_USE_GLFW
 //#define FLEWNIT_USE_XCB
+//#define FLEWNIT_USE_SDL
+
 
 #define FLEWNIT_DEFAULT_CONFIG_PATH "../config/FlewnitConfig.xml"
 
@@ -60,7 +62,8 @@ typedef unsigned int		uint;
 //-----------------------------------------------------------------------
 
 //there is no alternatic in sight now, but let's consider there might be one ;)
-#define FLEWNIT_USE_QT_MATH 1
+#define FLEWNIT_USE_QT_MATH 0
+#define FLEWNIT_USE_GLM_MATH 1
 
 
 }

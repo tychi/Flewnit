@@ -67,27 +67,21 @@ bool URE::init(boost::filesystem::path pathToGlobalConfigFile)
 
 void URE::resetEngine()
 {
-
+	//TODO
 }
 
 
 void URE::stepSimulation(SimStepSettings const& stepSettings)
 {
-
+	//TODO
 }
 
-
-//this routine will call the loader, which will in turn use assimp to load .blend files directly
-bool URE::loadScene(boost::filesystem::path pathToSceneFile)
-{
-
-}
 
 
 
 bool URE::buildSimulationPipeLine(boost::filesystem::path pathToPipelineConfigFile)
 {
-
+	//TODO
 }
 
 

@@ -9,6 +9,8 @@
 
 #include "Common/FlewnitSharedDefinitions.h"
 
+
+//--------------------------------------------------------------
 #if FLEWNIT_USE_QT_MATH
 
 #	include <QVector2D>
@@ -29,6 +31,31 @@ namespace Flewnit
 	typedef QMatrix4x4 Matrix4x4;
 }
 
+
+//--------------------------------------------------------------
+#elif FLEWNIT_USE_GLM_MATH
+
+#	include  <glm/setup.hpp>
+//no swizzling for the moment
+//#	define GLM_SWIZZLE  GLM_SWIZZLE_FULL
+#	include  <glm/glm.hpp>
+
+//extensions:
+#	include <glm/gtc/matrix_transform.hpp>
+#	include <glm/gtc/matrix_projection.hpp>
+#	include <glm/gtc/quaternion.hpp>
+
+namespace Flewnit
+{
+	typedef glm::vec2 Vector2D;
+	typedef glm::vec3 Vector3D;
+	typedef glm::vec4 Vector4D;
+
+	typedef glm::mat3x3 Matrix3x3;
+	typedef glm::mat4x4 Matrix4x4;
+}
+
+//--------------------------------------------------------------
 #endif //FLEWNIT_USE_QT_MATH
 
 namespace Flewnit

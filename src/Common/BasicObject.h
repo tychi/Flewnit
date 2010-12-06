@@ -30,7 +30,7 @@ namespace Flewnit
 #if !(FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 //without profiling preprocessor option, this is only an empty base class
 		BasicObject(){}
-		~BasicObject(){}
+		virtual ~BasicObject(){}
 
 //#	define FLEWNIT_INSTANTIATE(actualInstantiationExpression, className, purposeDescription) \
 //		className * macroTempInstancPtr =  actualInstantiationExpression
@@ -50,7 +50,7 @@ namespace Flewnit
 
 
 		BasicObject();
-		~BasicObject();
+		virtual ~BasicObject();
 
 
 
@@ -67,7 +67,7 @@ namespace Flewnit
 ///	-assure usage of this macro instead of direct constructor calling by flag setting and
 ///	-enable support for using this macro like a instatiator function returning a pointer to the instance;
 #	define FLEWNIT_INSTANTIATE(className,parameterListExpression, purposeDescription) \
-		new className parameterListExpression ; \
+		className parameterListExpression ; \
 		Flewnit::BasicObjectInstancer::setMemoryFootPrint((int)sizeof(className));\
 		Flewnit::BasicObjectInstancer::setClassName(FLEWNIT_STRINGIFY(className));\
 		Flewnit::BasicObjectInstancer::setPurposeDescription(purposeDescription);\

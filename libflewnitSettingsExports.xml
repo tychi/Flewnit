@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cdtprojectproperties>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.IncludePaths">
+<language name="holder for library settings">
+
+</language>
+<language name="Assembly">
+
+</language>
+<language name="GNU C++">
+<includepath>/usr/include/</includepath>
+<includepath>/usr/include/linux</includepath>
+<includepath>/usr/include/c++/4.4/x86_64-linux-gnu/</includepath>
+<includepath>/usr/include/c++/4.4/</includepath>
+<includepath>/usr/include/c++/4.4/tr1/</includepath>
+<includepath>/usr/include/qt4</includepath>
+<includepath>/usr/include/qt4/QtGui/</includepath>
+<includepath>/usr/local/include/</includepath>
+<includepath>/libflewnit/src</includepath>
+<includepath>../../thirdParty/glm</includepath>
+
+</language>
+<language name="GNU C">
+
+</language>
+</section>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.Macros">
+<language name="holder for library settings">
+
+</language>
+<language name="Assembly">
+
+</language>
+<language name="GNU C++">
+
+</language>
+<language name="GNU C">
+
+</language>
+</section>
+</cdtprojectproperties>

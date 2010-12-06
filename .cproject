@@ -5,7 +5,18 @@
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="0.432973818">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="0.432973818" moduleId="org.eclipse.cdt.core.settings" name="Default">
-				<externalSettings/>
+				<externalSettings>
+					<externalSetting>
+						<entry flags="RESOLVED" kind="includePath" name="/usr/include/"/>
+						<entry flags="RESOLVED" kind="includePath" name="/usr/include/linux"/>
+						<entry flags="RESOLVED" kind="includePath" name="/usr/include/c++/4.4/x86_64-linux-gnu/"/>
+						<entry flags="RESOLVED" kind="includePath" name="/usr/include/c++/4.4/"/>
+						<entry flags="RESOLVED" kind="includePath" name="/usr/include/c++/4.4/tr1/"/>
+						<entry flags="RESOLVED" kind="includePath" name="/usr/include/qt4"/>
+						<entry flags="RESOLVED" kind="includePath" name="/usr/include/qt4/QtGui/"/>
+						<entry flags="RESOLVED" kind="includePath" name="/usr/local/include/"/>
+					</externalSetting>
+				</externalSettings>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -35,7 +46,8 @@
 									<listOptionValue builtIn="false" value="/usr/include/qt4"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt4/QtGui/"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libflewnit/src}&quot;"/>
+									<listOptionValue builtIn="false" value="/libflewnit/src"/>
+									<listOptionValue builtIn="false" value="../../../thirdParty/glm"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1125366040" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>

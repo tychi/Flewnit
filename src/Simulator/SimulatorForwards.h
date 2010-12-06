@@ -53,13 +53,13 @@ enum SimulationKindFlags
 class Profiler;
 class Log;
 
+
+class Config;
 class Loader;
 
-class MediaLayerInterface;
-
-class UserInterface;
+class WindowManager;
 class GUI;
-class UserInput;
+class InputManager;
 
 ///\brief Converter forwards;
 ///\{

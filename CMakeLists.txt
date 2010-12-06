@@ -16,20 +16,26 @@ project(libflewnit)
 
 if(UNIX)
 
-    set(MEDIA_LAYER "XCB" CACHE STRING  "Media layer; Chose XCB or SDL")
+    set(MEDIA_LAYER "GLFW" CACHE STRING  "Media layer; Chose GLFW, XCB or SDL")
     
     option(USE_SDL_LOCAL "if SDL is chosen as media layer, choose either installed version or a locally compiled one;option is necessary to handly folder structures of local builds" OFF)
     set(SDL_DIRECTORY "/usr/local" CACHE PATH "SDL Directory; might be locally compiled, or installed in /usr or /usr/local")
+    set(GLFW_DIRECTORY "/usr/local" CACHE PATH "SDL Directory; might be locally compiled, or installed in /usr or /usr/local")
+   
     # a bad hack, should be replaced with a FIND_SDL()-module-like stuff, but i'm to stupid for this atm
     #option(SDL_INSTALLED_LOCALLY "if USE_SDL_LOCAL is unselected, then you might have SDL installed in /usr/local instead of /usr" ON)
 
     option(RELEASE "build in Release mode for more performance but no debugging features" OFF)
+    
+    set(GLM_DIRECTORY "../../thirdParty/glm" CACHE PATH "Path to glm Math library")
 
 elseif(WIN32)
 
      #no other option but SDL for Windows atm
-     set(medialayer "SDL")
-     set(SDL_DIRECTORY "/../../Dependencies/SDL_1_3" CACHE PATH "SDL Directory")
+     set(medialayer "GLFW")
+     set(SDL_DIRECTORY "../../Dependencies/glfw-2.7" CACHE PATH "GLFW window manager directory")
+     
+     ##sdl maybe to come...
 
 endif(UNIX)
 
@@ -140,36 +146,42 @@ elseif(WIN32)
 endif(UNIX)
 
 
-
+#${SDL_INCLUDE_DIRECTORY}
  #to add the "src" directory to the include path might seem hacky, but at least for development purposes this seems appropriate
  include_directories(
      src
      include
+     ${GLM_DIRECTORY}
      ${QT_INCLUDES}	    	
-     ${SDL_INCLUDE_DIRECTORY}
  )
 
 
 #Add flewnit library sources --------------------------------------------------------------------------------
+
+#glob all .cpp files in the source directory
+file(GLOB_RECURSE LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/*.cpp)
+
+
+#the following stuff was a hack for a compile-time-dependent media layer setup; has now become obsolete because of a real interface:
 #This stuff instead of globbing the whole source folder is necessary in order to handle the media layer sources differently
-set(LIBRARY_RELATIVE_DIRECTORIES
-       Common
-       Simulator
-       UserInterface
-       Buffer
-       Util
-       World
-)
-
+#set(LIBRARY_RELATIVE_DIRECTORIES
+#       Common
+#       Simulator
+#       UserInterface
+#       Buffer
+#       Util
+#       World
+#)
+#
 #first, add the toplevel UnifiedRenderingEngine-sources, which ar running all our stuff in the library ;)
-set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/URE.cpp)
-
+#set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/URE.cpp)
+#
 #glob all source files in the given subdirectory
-foreach(LIBRARY_RELATIVE_DIRECTORY ${LIBRARY_RELATIVE_DIRECTORIES})
-    file(GLOB_RECURSE GLOB_RESULT ${LIBRARY_SOURCE_DIRECTORY}/${LIBRARY_RELATIVE_DIRECTORY}/*.cpp)
-    set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_FILES} ${GLOB_RESULT})
+#foreach(LIBRARY_RELATIVE_DIRECTORY ${LIBRARY_RELATIVE_DIRECTORIES})
+#    file(GLOB_RECURSE GLOB_RESULT ${LIBRARY_SOURCE_DIRECTORY}/${LIBRARY_RELATIVE_DIRECTORY}/*.cpp)
+#    set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_FILES} ${GLOB_RESULT})
     #TODO check if adding all the header will omit the fuckup that changes in headers don't result in rebuild :@
-endforeach(LIBRARY_RELATIVE_DIRECTORY)
+#endforeach(LIBRARY_RELATIVE_DIRECTORY)
 #----------------------------------------------------------------------------------------------------------
 
 
@@ -178,6 +190,8 @@ if(MEDIA_LAYER STREQUAL "SDL")
     set(WINDOW_MANAGER_LIBRARY_NAME SDL)
 elseif(MEDIA_LAYER STREQUAL "XCB")
     set(WINDOW_MANAGER_LIBRARY_NAME XCB)
+elseif(MEDIA_LAYER STREQUAL "GLFW")
+    set(WINDOW_MANAGER_LIBRARY_NAME GLFW)
 else()
     message(FATAL_ERROR "Enter a valid Media Layer Library, either SDL or XCB")
 endif()
@@ -185,10 +199,11 @@ endif()
 #tell our source code which media layer to use
 add_definitions(-DFLEWNIT_USE_${WINDOW_MANAGER_LIBRARY_NAME})
 
+# another now obsolete medialayer-hack; see above
 #find media layer source files
-file(GLOB_RECURSE GLOB_RESULT ${LIBRARY_SOURCE_DIRECTORY}/MediaLayer/${WINDOW_MANAGER_LIBRARY_NAME}/*.cpp)
+#file(GLOB_RECURSE GLOB_RESULT ${LIBRARY_SOURCE_DIRECTORY}/MediaLayer/${WINDOW_MANAGER_LIBRARY_NAME}/*.cpp)
 #add them to the whole library source file list
-set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_FILES} ${GLOB_RESULT})
+#set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_FILES} ${GLOB_RESULT})
 #----------------------------------------------------------------------------------------------------------
 
 
@@ -223,9 +238,15 @@ IF(MEDIA_LAYER STREQUAL "SDL")
     	    #TODO ist there any "install" for SDL on Windows?
     	endif(UNIX)
 	endif(USE_SDL_LOCAL)
+	
 elseif(MEDIA_LAYER STREQUAL "XCB")
     message("trying to link against XCB")
 	target_link_libraries(flewnit X11-xcb xcb-keysyms)
+	
+elseif(MEDIA_LAYER STREQUAL "GLFW")
+    message("trying to link against GLFW")
+    target_link_libraries(flewnit glfw)	
+	
 else()
     message("should never ended up here as script should have terminated earlies due to an error")
 endif()
