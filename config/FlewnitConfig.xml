@@ -1,51 +1,120 @@
 <!-- -->
 
-<flewnit_global_config>
+<flewnitGlobalConfig>
 
-  <media_layer>
-	XCB
-  </media_layer>
+	<section name="UI_Settings">
 
-  <fullscreen>
-  	true
-  </fullscreen>
+		<section name="WindowManager">
+				
+			<managerLibrary value="GLFW" />
 
-  <window_width>
-    512
-  </window_width>
+			<fullscreen value="true" enforceCustomResolution="false" />
+			
+			<resolution x="1024" y="768" viewInGUI="read" />
+			
+			
 
-  <window_height>
-    512
-  </window_height>
+		</section>
+
+		<section name="Input">
+
+			<grabMouse value="true" />
+			
+			<enableWiimote value="false" />
+
+		</section>
+		
+		<!-- maybe GUI config to come... -->
+		
+	</section>
+	
+	<section name="Simulatorettings">
+		<!--  -->
+		
+		
+		<simulator type="SPHFluidMechanicsSimulator">
+				
+			<settings>
+				<numFluidParticles value="65536" viewInGUI="read/write" tweakConfigString="TODO"/>
+				<particleRadius value="1.0" viewInGUI="read/write" tweakConfigString="TODO"/>
+					
+				<fluidParticleMass value="1.0" viewInGUI="read/write" tweakConfigString="TODO"/>
+				
+				
+				<particlesPerRigidBody value="256" viewInGUI="read/write" tweakConfigString="TODO"/>
+				
+				<particelizeBordersOnly value ="false" viewInGUI="read/write" tweakConfigString="TODO"/>
+				
+				<rigidBodyParticleMass value="0.5" viewInGUI="read/write" tweakConfigString="TODO"/>
+				
+				<targetMinSimulationStepsPerSecond value="60"  viewInGUI="read/write" tweakConfigString="TODO"/>
+						
+			</settings>
+			
+			
+			<pipelineStage type="AccelerationStructureUpdater">
+				
+					
+			</pipelineStage>
+			
+			<!-- the following stages two could be joined in trade of stability/accuracy  -->
+			<pipelineStage type="ParticleDensityComputation">
+				
+					
+			</pipelineStage>
+			
+			<pipelineStage type="ParticlePressureComputation">
+				
+					
+			</pipelineStage>
+			
+			
+			<pipelineStage type="FluidParticleIntegrator">
+				
+					
+			</pipelineStage>
+			
+						
+			<pipelineStage type="ParticleizedRigidBodyIntegrator">
+				
+					
+			</pipelineStage>
+			
+							
+		</simulator>
+		
+		<simulator type="LightingSimulator">
+				
+			<pipelineStage type="SkyBoxRenderer">
+				
+					
+			</pipelineStage>
+
+			<pipelineStage type="ShadowMapGenerator">
+									
+			</pipelineStage>
+
+			<pipelineStage type="ShadowedLightingStage">
+				
+					
+			</pipelineStage>						
+			
+			<!-- Fluid rendering specific stages to go -->
+			
+		</simulator>
+		
+	
+	</section>
+
+	<path_to_data>.</path_to_data>
+
+	<simulation_pipeline_config>SimulationPipeLineConfig.xml</simulation_pipeline_config>
+
+	<scene_file>../../Assets/LakeScene/LakeScene.blend</scene_file>
+
+	<scene_annotations>LakeSceneAnnotations.xml</scene_annotations>
+
+	
 
 
-  <grab_mouse>
-  	true
-  </grab_mouse>
-
-  <enable_wiimote>
-	false
-  <enable_wiimote>
-
-
-
-  <path_to_data>
-    .
-  </path_to_data>
-  
-  <simulation_pipeline_config>
-  	SimulationPipeLineConfig.xml
-  </simulation_pipeline_config>
-
-  <scene_file>
-    ../../Assets/LakeScene/LakeScene.blend
-  </scene_file>
-  
-  <scene_annotations>
-  	LakeSceneAnnotations.xml
-  </scene_annotations>
-
-  <!-- maybe GUI config to come... -->
-
-
-</flewnit_global_config>
+</flewnitGlobalConfig>

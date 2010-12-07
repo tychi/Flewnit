@@ -19,6 +19,8 @@ class Config : BasicObject
 public:
 	Config();
 	virtual ~Config();
+
+
 };
 
 }
