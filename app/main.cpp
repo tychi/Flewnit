@@ -29,11 +29,7 @@ int main(int argc, char *argv[])
 	URE_INSTANCE->init();
 
 
-//	while(URE_INSTANCE->getMediaLayer())
-//	{
-//
-//
-//	}
+	URE_INSTANCE->enterMainLoop();
 
 
 	DESTROY_SINGLETON(Flewnit::URE);

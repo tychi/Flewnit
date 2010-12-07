@@ -17,10 +17,27 @@
 #include <map>
 #include <stack>
 
+//gloabal defines; hack in cmake script in order to provide code completion in an IDE dependent of user's build choice;
+#include "cmakeGeneratedDefinitions.h"
+
+namespace boost {
+	namespace filesystem {
+		template<class,class> class basic_path;
+		struct path_traits;
+		typedef basic_path< std::string, path_traits > path;
+	}
+}
+
+
+
+
 namespace Flewnit
 {
 
+typedef boost::filesystem::path Path;
+
 //Media Layer Stuff; delegated by cmake;
+//but let's define it here anyway in order to have some code completion;
 //#define FLEWNIT_USE_GLFW
 //#define FLEWNIT_USE_XCB
 //#define FLEWNIT_USE_SDL
@@ -51,6 +68,7 @@ typedef unsigned int		uint;
 #define Map std::map
 #define Stack std::stack
 #define Pair std::pair
+
 
 //-----------------------------------------------------------------------
 

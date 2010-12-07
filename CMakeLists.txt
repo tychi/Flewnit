@@ -154,6 +154,34 @@ endif(UNIX)
      ${GLM_DIRECTORY}
      ${QT_INCLUDES}	    	
  )
+ 
+ 
+ #choose window manager library-----------------------------------------------------------------------------
+if(MEDIA_LAYER STREQUAL "SDL")
+    set(WINDOW_MANAGER_LIBRARY_NAME SDL)
+elseif(MEDIA_LAYER STREQUAL "XCB")
+    set(WINDOW_MANAGER_LIBRARY_NAME XCB)
+elseif(MEDIA_LAYER STREQUAL "GLFW")
+    set(WINDOW_MANAGER_LIBRARY_NAME GLFW)
+else()
+    message(FATAL_ERROR "Enter a valid Media Layer Library, either SDL or XCB")
+endif()
+
+#tell our source code which media layer to use
+#add_definitions(-DFLEWNIT_USE_${WINDOW_MANAGER_LIBRARY_NAME})
+set(STRINGTOECHO "# define FLEWNIT_USE_${WINDOW_MANAGER_LIBRARY_NAME}\n")
+execute_process(
+    WORKING_DIRECTORY src
+	COMMAND echo ${STRINGTOECHO} 
+	OUTPUT_FILE cmakeGeneratedDefinitions.h 
+	)
+
+# another now obsolete medialayer-hack; see above
+#find media layer source files
+#file(GLOB_RECURSE GLOB_RESULT ${LIBRARY_SOURCE_DIRECTORY}/MediaLayer/${WINDOW_MANAGER_LIBRARY_NAME}/*.cpp)
+#add them to the whole library source file list
+#set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_FILES} ${GLOB_RESULT})
+#----------------------------------------------------------------------------------------------------------
 
 
 #Add flewnit library sources --------------------------------------------------------------------------------
@@ -185,26 +213,6 @@ file(GLOB_RECURSE LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/*.cpp)
 #----------------------------------------------------------------------------------------------------------
 
 
-#choose window manager library-----------------------------------------------------------------------------
-if(MEDIA_LAYER STREQUAL "SDL")
-    set(WINDOW_MANAGER_LIBRARY_NAME SDL)
-elseif(MEDIA_LAYER STREQUAL "XCB")
-    set(WINDOW_MANAGER_LIBRARY_NAME XCB)
-elseif(MEDIA_LAYER STREQUAL "GLFW")
-    set(WINDOW_MANAGER_LIBRARY_NAME GLFW)
-else()
-    message(FATAL_ERROR "Enter a valid Media Layer Library, either SDL or XCB")
-endif()
-
-#tell our source code which media layer to use
-add_definitions(-DFLEWNIT_USE_${WINDOW_MANAGER_LIBRARY_NAME})
-
-# another now obsolete medialayer-hack; see above
-#find media layer source files
-#file(GLOB_RECURSE GLOB_RESULT ${LIBRARY_SOURCE_DIRECTORY}/MediaLayer/${WINDOW_MANAGER_LIBRARY_NAME}/*.cpp)
-#add them to the whole library source file list
-#set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_FILES} ${GLOB_RESULT})
-#----------------------------------------------------------------------------------------------------------
 
 
 ###########################################################################################################

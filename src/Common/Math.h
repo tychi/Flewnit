@@ -9,7 +9,6 @@
 
 #include "Common/FlewnitSharedDefinitions.h"
 
-
 //--------------------------------------------------------------
 #if FLEWNIT_USE_QT_MATH
 

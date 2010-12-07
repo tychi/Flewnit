@@ -16,6 +16,9 @@
 #include <iostream>
 
 
+#define LOG Flewnit::Log::getInstance()
+
+
 //forward to omit fstream includion in often used header:
 namespace std
 {

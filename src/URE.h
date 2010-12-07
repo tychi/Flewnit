@@ -30,13 +30,12 @@
 
 #include "Simulator/SimulatorForwards.h"
 
-#include <boost/filesystem/path.hpp>
+
 
 namespace Flewnit {
 
 //shortcut for instance Pointer
 #define URE_INSTANCE Flewnit::URE::getInstancePtr()
-
 
 
 
@@ -54,7 +53,8 @@ public:
     URE();
     virtual ~URE();
 
-    bool init(boost::filesystem::path pathToGlobalConfigFile = boost::filesystem::path(FLEWNIT_DEFAULT_CONFIG_PATH));
+    bool init(Path& pathToGlobalConfigFile);
+    bool init();
 
     void resetEngine();
     void stepSimulation(SimStepSettings const& stepSettings);
@@ -81,6 +81,7 @@ private:
 
     bool 					mCorrectlyInitializedGuard;
     Loader*					mLoader;
+    Config*					mConfig;
 
     WindowManager* 			mWindowManager;
     InputManager*			mInputManager;

@@ -46,8 +46,8 @@
 									<listOptionValue builtIn="false" value="/usr/include/qt4"/>
 									<listOptionValue builtIn="false" value="/usr/include/qt4/QtGui/"/>
 									<listOptionValue builtIn="false" value="/usr/local/include/"/>
-									<listOptionValue builtIn="false" value="/libflewnit/src"/>
 									<listOptionValue builtIn="false" value="../../../thirdParty/glm"/>
+									<listOptionValue builtIn="false" value="../src"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1125366040" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
