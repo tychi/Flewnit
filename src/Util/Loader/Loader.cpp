@@ -7,12 +7,8 @@
 
 #include "Loader.h"
 
-#include "Config.h"
-#include "Util/Log/Log.h"
+#include "LoaderHelper.h"
 
-#include <boost/filesystem/path.hpp>
-
-#include <tinyxml.h>
 
 
 namespace Flewnit
@@ -39,8 +35,8 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 {
 	LOG<<INFO_LOG_LEVEL<< "Loading global Config;\n";
 
-	TiXmlDocument XMLDoc ("FlewnitGlobalConfig");
-	TiXmlElement* rootXMLNode = 0;
+	TiXmlDocument XMLDoc ("flewnitGlobalConfig");
+	TiXmlElement* xmlRootNode = 0;
 
 	try {
 		if(! XMLDoc.LoadFile(pathToGlobalConfigFile.string())
@@ -49,12 +45,11 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 			throw std::exception();
 		}
 
-		const char *tmp =0;
-		rootXMLNode = XMLDoc.RootElement();
+		xmlRootNode = XMLDoc.RootElement();//->FirstChildElement("flewnitGlobalConfig");
 
-		loadUISettings(rootXMLNode, config);
+		loadUISettings(xmlRootNode, config);
 
-		//rest to come
+		//rest to come TODO
 
 
 	} catch (...) {
@@ -68,8 +63,44 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 
 void Loader::loadUISettings(TiXmlElement* xmlRootNode, Config& config)
 {
+	const char *tmp =0;
+
+	TiXmlElement* winSettings= xmlRootNode->FirstChildElement("UI_Settings")->FirstChildElement("windowSettings");
+
+
+
+	config.root().get("UI_Settings")= new ConfigStructNode();
+
+	config.root().get("UI_Settings")->get("windowSettings")= new ConfigStructNode();
+
+//	config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")=
+//			new ConfigValueNode<String>(
+//					//String(winSettings->FirstChildElement("mediaLayer")->Attribute("value"))
+//					LoaderHelper::getAttribute<String>(winSettings,"value")
+//					);
+//
+//
+//	config.root().get("UI_Settings")->get("WindowSettings")->get("fullScreen")=
+//				new ConfigValueNode<bool>(
+//						LoaderHelper::getAttribute<bool>(winSettings->FirstChildElement("fullScreen"),"value")
+//						);
+
+
 
 }
+
+//LOG<<DEBUG_LOG_LEVEL<<"mediaLayer value: "<<
+//		reinterpret_cast<ConfigValueNode<String>* > (
+//				config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")
+//		)->value()
+//		   <<":\n";
+//
+//LOG<<DEBUG_LOG_LEVEL<<"mediaLayer type enum value : "<<
+//	config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")->getType()
+//		   <<":\n";
+//
+
+
 
 
 

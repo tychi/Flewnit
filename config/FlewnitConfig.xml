@@ -4,78 +4,80 @@
 
 	<UI_Settings>
 
-		<WindowSettings>
+		<windowSettings>
 				
-			<mediaLayer value="GLFW" />
+			<mediaLayer type="STRING" value="GLFW" />
 
-			<fullscreen value="true" enforceCustomResolution="false" />
+			<fullScreen type="BOOL" value="true"/>
 			
-			<resolution x="1024" y="768" viewInGUI="read" />
+			<enforceCustomResolutionInFullScreen type="BOOL" value="false" />
+			
+			<resolution type="VEC2I" x="1024" y="768" GUIVisibility="read" />
 			
 			
-		</WindowSettings>
+		</windowSettings>
 		
 
-		<InputSettings>
+		<inputSettings>
 
-			<grabMouse value="true" />
+			<grabMouse type="BOOL" value="true" />
 			
-			<enableWiimote value="false" />
+			<enableWiimote type="BOOL" value="false" />
 
-		</InputSettings>
+		</inputSettings>
 		
 		<!-- maybe GUI config to come... -->
 		
 	</UI_Settings>
 	
-	<Simulatorettings>
+	<simulatorettings>
 		<!--  -->
 		
 		
-		<simulator type="SPHFluidMechanicsSimulator">
+		<simulator type="STRING" value="SPHFluidMechanicsSimulator">
 				
-			<settings>
-				<numFluidParticles value="65536" viewInGUI="read/write" tweakConfigString="TODO"/>
-				<particleRadius value="1.0" viewInGUI="read/write" tweakConfigString="TODO"/>
+			<simulatorGeneralSettings>
+				
+				<targetMinSimulationStepsPerSecond type="INT" value="60"  GUIVisibility="read/write" tweakConfigString="TODO"/>		
+				<numFluidParticles 		type="INT" 		value="65536" 	GUIVisibility="read/write" tweakConfigString="TODO"/>
+				<particleRadius 		type="FLOAT" 	value="1.0"		GUIVisibility="read/write" tweakConfigString="TODO"/>
+				
 					
-				<fluidParticleMass value="1.0" viewInGUI="read/write" tweakConfigString="TODO"/>
+				<fluidParticleMass type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
 				
+				<particlesPerRigidBody type="INT" value="256" GUIVisibility="read/write" tweakConfigString="TODO"/>
 				
-				<particlesPerRigidBody value="256" viewInGUI="read/write" tweakConfigString="TODO"/>
+				<particelizeBordersOnly type="BOOL" value ="false" GUIVisibility="read" tweakConfigString="TODO"/>
 				
-				<particelizeBordersOnly value ="false" viewInGUI="read/write" tweakConfigString="TODO"/>
-				
-				<rigidBodyParticleMass value="0.5" viewInGUI="read/write" tweakConfigString="TODO"/>
-				
-				<targetMinSimulationStepsPerSecond value="60"  viewInGUI="read/write" tweakConfigString="TODO"/>
+				<rigidBodyParticleMass type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>
 						
-			</settings>
+			</simulatorGeneralSettings>
 			
 			
-			<pipelineStage type="AccelerationStructureUpdater">
+			<pipelineStage type="STRING" value="AccelerationStructureUpdater">
 				
 					
 			</pipelineStage>
 			
 			<!-- the following stages two could be joined in trade of stability/accuracy  -->
-			<pipelineStage type="ParticleDensityComputation">
+			<pipelineStage type="STRING" value="ParticleDensityComputation">
 				
 					
 			</pipelineStage>
 			
-			<pipelineStage type="ParticlePressureComputation">
+			<pipelineStage type="STRING" value="ParticlePressureComputation">
 				
 					
 			</pipelineStage>
 			
 			
-			<pipelineStage type="FluidParticleIntegrator">
+			<pipelineStage type="STRING" value="FluidParticleIntegrator">
 				
 					
 			</pipelineStage>
 			
 						
-			<pipelineStage type="ParticleizedRigidBodyIntegrator">
+			<pipelineStage type="STRING" value="ParticleizedRigidBodyIntegrator">
 				
 					
 			</pipelineStage>
@@ -83,18 +85,18 @@
 							
 		</simulator>
 		
-		<simulator type="LightingSimulator">
+		<simulator type="STRING" value="LightingSimulator">
 				
-			<pipelineStage type="SkyBoxRenderer">
+			<pipelineStage type="STRING" value="SkyBoxRenderer">
 				
 					
 			</pipelineStage>
 
-			<pipelineStage type="ShadowMapGenerator">
+			<pipelineStage type="STRING" value="ShadowMapGenerator">
 									
 			</pipelineStage>
 
-			<pipelineStage type="ShadowedLightingStage">
+			<pipelineStage type="STRING" value="ShadowedLightingStage">
 				
 					
 			</pipelineStage>						
@@ -104,15 +106,15 @@
 		</simulator>
 		
 	
-	</Simulatorettings>
+	</simulatorettings>
 
-	<path_to_data>.</path_to_data>
+	<pathToData type="STRING" value="." />
 
-	<simulation_pipeline_config>SimulationPipeLineConfig.xml</simulation_pipeline_config>
+	<simulationPipelineConfig type="STRING" value="SimulationPipeLineConfig.xml" />
 
-	<scene_file>../../Assets/LakeScene/LakeScene.blend</scene_file>
+	<sceneFile type="STRING" value="../Assets/LakeScene/LakeScene.blend" />
 
-	<scene_annotations>LakeSceneAnnotations.xml</scene_annotations>
+	<sceneAnnotationsFile type="STRING" value="LakeSceneAnnotations.xml" />
 
 	
 

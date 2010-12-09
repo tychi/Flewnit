@@ -218,7 +218,9 @@ file(GLOB_RECURSE LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/*.cpp)
 ###########################################################################################################
 #finally, do some build stuff for libflewnit:
 #tell cmake to create a library named "libflewnit", which uses auch library source file list as input for sources ;)
-add_library(flewnit SHARED ${LIBRARY_SOURCE_FILES})
+#shasred is bad for debugging :(
+#add_library(flewnit SHARED ${LIBRARY_SOURCE_FILES})
+add_library(flewnit ${LIBRARY_SOURCE_FILES})
 
 #tell cmake to link the libflewnit library against the given third party libraries
 #TODO: add gpuTE ass dependency :D

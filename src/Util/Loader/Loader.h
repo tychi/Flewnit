@@ -9,7 +9,7 @@
 #pragma once
 
 
-#include "../../Common/BasicObject.h"
+#include "Common/BasicObject.h"
 
 class TiXmlElement;
 

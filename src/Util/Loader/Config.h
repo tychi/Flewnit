@@ -128,7 +128,9 @@ class GUIParams
 public:
 	GUIParams():mGUIVisibility(ACCESS_NONE), mGUIProperyString(""){}
 	GUIParams(Access GUIVisibility, String GUIProperyString):mGUIVisibility(GUIVisibility), mGUIProperyString(GUIProperyString){}
+
 	GUIParams(const GUIParams& other):mGUIVisibility(other.getGuiVisiblity()),mGUIProperyString(other.getGUIProperyString()){}
+	GUIParams& operator=(const GUIParams& other){mGUIVisibility=other.getGuiVisiblity();mGUIProperyString=other.getGUIProperyString(); return *this;}
 
 	Access getGuiVisiblity()const{return mGUIVisibility;}
 	const String& getGUIProperyString()const{return mGUIProperyString;}
@@ -146,7 +148,7 @@ class ConfigStructNode: public BasicObject
 
 	Map<String, ConfigStructNode*> mChildren;
 
-	String mName;
+	//String mName;
 
 protected:
 
@@ -154,14 +156,19 @@ protected:
 
 public:
 
-	explicit ConfigStructNode(String name):mName(name), mValueType(TYPE_STRUCTURE){}
+	ConfigStructNode(): mValueType(TYPE_STRUCTURE){}
 	virtual ~ConfigStructNode();
 
-	const String& getName()const{return mName;}
 
 	bool isLeafNode()const{return (mChildren.size()==0);}
 
-	ConfigStructNode* & operator[](String name){return mChildren[name];}	//&?
+//	ConfigStructNode* & operator[](String name)
+//	{
+//
+//		return mChildren[name];
+//	}
+
+	ConfigStructNode* & get(String name){return mChildren[name];}
 
 	Type getType()const{return mValueType;}
 
@@ -174,17 +181,25 @@ class ConfigValueNode: public ConfigStructNode
 
 	T mValue;
 
-
+	GUIParams mGUIParams;
 
 public:
-	explicit ConfigValueNode(String name, T& value):ConfigStructNode(name), mValue(value)
+
+	ConfigValueNode( T value, GUIParams guiParams = GUIParams() ):ConfigStructNode(), mValue(value), mGUIParams(guiParams)
 	{
 		mValueType = initType();
 	}
+
 	virtual ~ConfigValueNode(){}
 
+	ConfigValueNode( const ConfigValueNode& other)
+	: mValue(other.value()), mGUIParams(other.getGUIParams())
+	{}
 
-	T& value(){return mValue;}
+
+
+	const T& value(){return mValue;}
+	const GUIParams& getGUIParams(){return mGUIParams;}
 
 private:
 
@@ -212,8 +227,6 @@ private:
 			return TYPE_UINT64;
 		if(typeid(mValue) == typeid(float))
 			return TYPE_FLOAT;
-		if(typeid(mValue) == typeid(float))
-			return TYPE_FLOAT;
 		if(typeid(mValue) == typeid(double))
 			return TYPE_DOUBLE;
 		if(typeid(mValue) == typeid(Vector2D))
@@ -222,12 +235,32 @@ private:
 			return TYPE_VEC3F;
 		if(typeid(mValue) == typeid(Vector4D))
 			return TYPE_VEC4F;
+
+		if(typeid(mValue) == typeid(Vector2Di))
+			return TYPE_VEC2I32;
+		if(typeid(mValue) == typeid(Vector3Di))
+			return TYPE_VEC3I32;
+		if(typeid(mValue) == typeid(Vector4Di))
+			return TYPE_VEC4I32;
+
+		if(typeid(mValue) == typeid(Vector2Dui))
+			return TYPE_VEC2UI32;
+		if(typeid(mValue) == typeid(Vector3Dui))
+			return TYPE_VEC3UI32;
+		if(typeid(mValue) == typeid(Vector4Dui))
+			return TYPE_VEC4UI32;
+
 		if(typeid(mValue) == typeid(Matrix3x3))
 			return TYPE_MATRIX33F;
 		if(typeid(mValue) == typeid(Matrix4x4))
 			return TYPE_MATRIX44F;
 		if(typeid(mValue) == typeid(Quaternion))
 			return TYPE_QUAT4F;
+
+		if(typeid(mValue) == typeid(String))
+			return TYPE_STRING;
+
+
 
 		//default
 		return  TYPE_UNDEF;
@@ -244,13 +277,14 @@ class Config : public BasicObject
 	ConfigStructNode* mRootNode;
 
 public:
-	Config():
-		mRootNode(0)
+	Config(): mRootNode(0)
 	{
-		 mRootNode=FLEWNIT_INSTANTIATE(new ConfigStructNode("flewnitGlobalConfig"));
+		 mRootNode=FLEWNIT_INSTANTIATE(new ConfigStructNode());
 	}
 
 	virtual ~Config(){delete mRootNode;}
+
+	ConfigStructNode& root(){return *mRootNode;}
 
 };
 

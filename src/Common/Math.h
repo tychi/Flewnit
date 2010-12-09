@@ -50,6 +50,15 @@ namespace Flewnit
 	typedef glm::vec3 Vector3D;
 	typedef glm::vec4 Vector4D;
 
+	typedef glm::ivec2 Vector2Di;
+	typedef glm::ivec3 Vector3Di;
+	typedef glm::ivec4 Vector4Di;
+
+	typedef glm::uvec2 Vector2Dui;
+	typedef glm::uvec3 Vector3Dui;
+	typedef glm::uvec4 Vector4Dui;
+
+
 	typedef glm::mat3x3 Matrix3x3;
 	typedef glm::mat4x4 Matrix4x4;
 
