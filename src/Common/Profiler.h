@@ -46,11 +46,14 @@ public:
 	//declare friend functions in order to enable only to to (un)register stuff;
 	friend void BasicObject::registerToProfiler();
 	friend void BasicObject::unregisterFromProfiler();
-	friend BasicObject* BasicObjectInstancer::getLastRegisteredBasicObjectFromProfiler();
-	friend void BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject();
+//	friend BasicObject* BasicObjectInstancer::getLastRegisteredBasicObjectFromProfiler();
+//	friend void BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject();
 	friend void BufferInterface::registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 	friend void BufferInterface::unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 
+	//call this from time to time to assure good tracking; workaround to omit pure virtual function call of a
+	//derived class during constructor execution of base class;
+	void updateMemoryTrackingInfo();
 
 
 	Profiler();
@@ -85,7 +88,7 @@ public:
 	{
 		return
 				mNumPrivateAllocatedBuffers[contextType]	+
-			//add shared amount if requestd and if contexttype is gl or cl;
+			//add shared amount if requested and if contexttype is gl or cl;
 			( (!privateAmountOnly) &&  (contextType!=HOST_CONTEXT_TYPE)) ? mNumCLGLSharedAllocatedBuffers : 0;
 	}
 
@@ -118,6 +121,11 @@ private:
 	///\detail Why messing around with ID re-usage? Because if an engine runs for a long time with many objects created and deleted, the IDs will overflow some time;
 	/// This may leed to strange bugs; It's very unlikely for this engine to happen, but let's design carefully and with scalability in mind from the beginning;
 	Map<ID,BasicObject*> mRegisteredBasicObjects;
+
+
+	List<BasicObject*> mRegisteredButUntrackedObjects;
+
+
 	Stack<ID> mIDsFromFreedObjects;
 	ID mMaxAssignedID;
 	///\}
@@ -131,8 +139,6 @@ private:
 
 	uint mNumPrivateAllocatedBuffers[__NUM_CONTEXT_TYPES__];
 	uint mNumCLGLSharedAllocatedBuffers;
-
-	ID mIDOfLastRegisteredButNotMemoryTrackedObject;
 
 };
 

@@ -85,7 +85,7 @@ bool URE::init(Path& pathToGlobalConfigFile)
 	mConfig = FLEWNIT_INSTANTIATE(new Config());
 	mLoader= FLEWNIT_INSTANTIATE(new Loader());
 
-	mLoader->loadGlobalConfig(mConfig,pathToGlobalConfigFile);
+	mLoader->loadGlobalConfig(*mConfig,pathToGlobalConfigFile);
 
 #ifdef FLEWNIT_USE_GLFW
 	//mWindowManager = FLEWNIT_INSTANTIATE(new GLFWWindowManager());
@@ -100,6 +100,11 @@ bool URE::init(Path& pathToGlobalConfigFile)
 			assert(0 && "You have to specifiy window manager with cmake!");
 #		endif
 #	endif
+#endif
+
+
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
+	Profiler::getInstance().updateMemoryTrackingInfo();
 #endif
 
 

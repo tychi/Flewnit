@@ -71,8 +71,8 @@ namespace Flewnit
 ///	-assure usage of this macro instead of direct constructor calling by flag setting and
 ///	-enable support for using this macro like a instatiator function returning a pointer to the instance;
 #	define FLEWNIT_INSTANTIATE(instantiationExpression) \
-		instantiationExpression ; \
-		Flewnit::BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject()
+		instantiationExpression ;
+		//Flewnit::BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject()
 
 
 # 	define FLEWNIT_BASIC_OBJECT_DECLARATIONS \
@@ -88,7 +88,8 @@ namespace Flewnit
 
 		inline const String& getClassName()const
 		{
-			assert( (mMemoryFootPrint >0) &&  (mClassName!="")  );
+			assert( "call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n"
+					&& (mMemoryFootPrint >0) &&  (mClassName!="")  );
 			return mClassName;
 		}
 
@@ -97,7 +98,8 @@ namespace Flewnit
 		inline ID getUniqueID()const{return mUniqueID;}
 		inline int getMemoryFootprint()
 		{
-			assert( (mMemoryFootPrint >0) &&  (mClassName!="")  );
+			assert( "call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n"
+					&& (mMemoryFootPrint >0) &&  (mClassName!="")  );
 			return mMemoryFootPrint;
 		}
 
@@ -118,24 +120,24 @@ namespace Flewnit
 	};
 
 
-//---------------------------------------------------------------------------------------------------------
-#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-	class BasicObjectInstancer
-	{
-	public:
-
-//		static inline void setMemoryFootPrint()
-//		{
-//			getLastRegisteredBasicObjectFromProfiler()->mMemoryFootPrint=
-//					getLastRegisteredBasicObjectFromProfiler()->getMemoryFootprint();
-//		}
-
-
-		static void initAndFinalizeRegistrationOfCurrentBasicObject();
-
-		static BasicObject* getLastRegisteredBasicObjectFromProfiler();
-
-	};
-#endif
+////---------------------------------------------------------------------------------------------------------
+//#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
+//	class BasicObjectInstancer
+//	{
+//	public:
+//
+////		static inline void setMemoryFootPrint()
+////		{
+////			getLastRegisteredBasicObjectFromProfiler()->mMemoryFootPrint=
+////					getLastRegisteredBasicObjectFromProfiler()->getMemoryFootprint();
+////		}
+//
+//
+//		static void initAndFinalizeRegistrationOfCurrentBasicObject();
+//
+//		static BasicObject* getLastRegisteredBasicObjectFromProfiler();
+//
+//	};
+//#endif
 
 }

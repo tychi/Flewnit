@@ -27,8 +27,8 @@ public:
 	Loader();
 	virtual ~Loader();
 
-	void loadGlobalConfig( Config* config, const Path& pathToGlobalConfigFile	);
-	void loadGlobalConfig( Config* config);
+	void loadGlobalConfig( Config& config, const Path& pathToGlobalConfigFile	);
+	void loadGlobalConfig( Config& config);
 
 	Scene* loadScene();
 

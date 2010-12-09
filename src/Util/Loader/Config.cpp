@@ -7,18 +7,20 @@
 
 #include "Config.h"
 
+#include <boost/foreach.hpp>
+
 namespace Flewnit
 {
 
-Config::Config()
-{
-	// TODO Auto-generated constructor stub
 
-}
 
-Config::~Config()
+ConfigStructNode::~ConfigStructNode()
 {
-	// TODO Auto-generated destructor stub
+	typedef Map<String, ConfigNodeInterface*> mapDummyType;
+	BOOST_FOREACH( mapDummyType::value_type & node, mChildren )
+		{
+			delete node.second;
+		}
 }
 
 }

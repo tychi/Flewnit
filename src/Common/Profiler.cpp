@@ -17,6 +17,8 @@
 #include "Common/BasicObject.h"
 #include "Util/Log/Log.h"
 
+#include <boost/foreach.hpp>
+
 namespace Flewnit
 {
 
@@ -32,8 +34,6 @@ Profiler::Profiler()
 	mNumPrivateAllocatedBuffers[HOST_CONTEXT_TYPE]=0;
 	mNumPrivateAllocatedBuffers[OPEN_CL_CONTEXT_TYPE]=0;
 	mNumPrivateAllocatedBuffers[OPEN_GL_CONTEXT_TYPE]=0;
-
-	mIDOfLastRegisteredButNotMemoryTrackedObject = -1;
 
 	Log::getInstance()<< DEBUG_LOG_LEVEL<<"Profiler instanced\n";
 
@@ -59,6 +59,10 @@ void Profiler::printObjectStatus(BasicObject* bo)
 
 void Profiler::printMemoryStatus()
 {
+	assert("Not all registered objects have their memory footprint initialized and tracked; "
+			&& "Call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n"
+			&& mRegisteredButUntrackedObjects.size()==0);
+
 	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
 			<<  mTotalRegisteredObjects << " objects registered;\n"
 			<<  mTotalObjectMemoryFootprint << " bytes are consumed by those objects;\n"
@@ -125,10 +129,12 @@ ID Profiler::registerBasicObject(BasicObject* bo)
 
 	mTotalRegisteredObjects++;
 
+	mRegisteredButUntrackedObjects.push_back(bo);
+
 	Log::getInstance()<<DEBUG_LOG_LEVEL<<"BasicObject with ID \""<< bo->getUniqueID()  <<"\" registered at Profiler; Now, "<<mTotalRegisteredObjects<<"  are registered in total;\n";
 
 	//set the guard, so that an error is thrown if the memory footprint isn't delivered right after initialisation:
-	return mIDOfLastRegisteredButNotMemoryTrackedObject = bo->getUniqueID();
+	return bo->getUniqueID();
 
 }
 
@@ -151,21 +157,29 @@ void Profiler::unregisterBasicObject(BasicObject* bo)
 	printMemoryStatus();
 }
 
-void Profiler::registerObjectMemoryFootPrint(BasicObject* bo)
+void Profiler::updateMemoryTrackingInfo()
 {
-	assert("at least one BasicObject isn't tracked correctly; Use the FLEWNIT_INSTANCIATE macro for every class derived from BasicObject!"
-			&& mIDOfLastRegisteredButNotMemoryTrackedObject == bo->getUniqueID());
+	LOG<<INFO_LOG_LEVEL<<"now updating memory Tracking Info:\n";
+	BOOST_FOREACH(BasicObject* bo, mRegisteredButUntrackedObjects)
+		{
+			registerObjectMemoryFootPrint(bo);
+		}
 
-	mTotalObjectMemoryFootprint += bo->getMemoryFootprint();
-
-	//unset the Guard:
-	mIDOfLastRegisteredButNotMemoryTrackedObject = FLEWNIT_INVALID_ID;
-
-	Log::getInstance()<<DEBUG_LOG_LEVEL<<"BasicObject memory footprint propagated to profiler; Now, "<<mTotalObjectMemoryFootprint<<"  bytes are consumed for Object instances in total;\n";
-	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"printing now Object Information:\n";
-	printObjectStatus(bo);
+	mRegisteredButUntrackedObjects.clear();
 
 	printMemoryStatus();
+}
+
+
+
+void Profiler::registerObjectMemoryFootPrint(BasicObject* bo)
+{
+	bo->initBasicObject();
+	mTotalObjectMemoryFootprint += bo->getMemoryFootprint();
+
+	Log::getInstance()<<DEBUG_LOG_LEVEL<<"BasicObject memory footprint ("<< bo->getMemoryFootprint() <<" Bytes) of \" "<< bo->getClassName() <<" \" is now tracked by Profiler;\n";
+	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"printing now Object Information:\n";
+	printObjectStatus(bo);
 }
 
 void Profiler::registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte)
@@ -183,8 +197,9 @@ void Profiler::unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, siz
 
 void Profiler::checkError()
 {
-	assert("at least one BasicObject isn't tracked correctly; Use the FLEWNIT_INSTANCIATE macro for every class derived from BasicObject!"
-			&&  mIDOfLastRegisteredButNotMemoryTrackedObject == FLEWNIT_INVALID_ID);
+//following assertion is bad du to nested instanciations; redesigning again :(
+//	assert("at least one BasicObject isn't tracked correctly; Use the FLEWNIT_INSTANCIATE macro for every class derived from BasicObject!"
+//			&&  mIDOfLastRegisteredButNotMemoryTrackedObject == FLEWNIT_INVALID_ID);
 }
 
 

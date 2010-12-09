@@ -54,19 +54,7 @@ namespace Flewnit
 		//Profiler::getInstancePtr()->printMemoryStatus();
 	}
 
-	BasicObject* BasicObjectInstancer::getLastRegisteredBasicObjectFromProfiler()
-	{
-		return Profiler::getInstancePtr()->mRegisteredBasicObjects
-				[ Profiler::getInstancePtr()-> mIDOfLastRegisteredButNotMemoryTrackedObject ];
-	}
 
-	void BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject()
-	{
-		getLastRegisteredBasicObjectFromProfiler()->initBasicObject();
-
-		Profiler::getInstancePtr()->registerObjectMemoryFootPrint(
-				getLastRegisteredBasicObjectFromProfiler());
-	}
 
 
 #endif
