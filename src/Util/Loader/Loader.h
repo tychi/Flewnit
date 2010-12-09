@@ -11,6 +11,8 @@
 
 #include "../../Common/BasicObject.h"
 
+class TiXmlElement;
+
 
 
 namespace Flewnit
@@ -31,6 +33,9 @@ public:
 	void loadGlobalConfig( Config& config);
 
 	Scene* loadScene();
+
+private:
+	void loadUISettings(TiXmlElement* xmlRootNode, Config& config);
 
 
 };

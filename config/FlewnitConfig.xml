@@ -2,33 +2,33 @@
 
 <flewnitGlobalConfig>
 
-	<section name="UI_Settings">
+	<UI_Settings>
 
-		<section name="WindowManager">
+		<WindowSettings>
 				
-			<managerLibrary value="GLFW" />
+			<mediaLayer value="GLFW" />
 
 			<fullscreen value="true" enforceCustomResolution="false" />
 			
 			<resolution x="1024" y="768" viewInGUI="read" />
 			
 			
+		</WindowSettings>
+		
 
-		</section>
-
-		<section name="Input">
+		<InputSettings>
 
 			<grabMouse value="true" />
 			
 			<enableWiimote value="false" />
 
-		</section>
+		</InputSettings>
 		
 		<!-- maybe GUI config to come... -->
 		
-	</section>
+	</UI_Settings>
 	
-	<section name="Simulatorettings">
+	<Simulatorettings>
 		<!--  -->
 		
 		
@@ -104,7 +104,7 @@
 		</simulator>
 		
 	
-	</section>
+	</Simulatorettings>
 
 	<path_to_data>.</path_to_data>
 

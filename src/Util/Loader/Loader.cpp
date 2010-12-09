@@ -29,6 +29,12 @@ Loader::~Loader()
 	// TODO Auto-generated destructor stub
 }
 
+void Loader::loadGlobalConfig(Config& config)
+{
+	Path dummy(FLEWNIT_DEFAULT_CONFIG_PATH);
+	loadGlobalConfig(config, dummy);
+}
+
 void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFile)
 {
 	LOG<<INFO_LOG_LEVEL<< "Loading global Config;\n";
@@ -46,6 +52,10 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 		const char *tmp =0;
 		rootXMLNode = XMLDoc.RootElement();
 
+		loadUISettings(rootXMLNode, config);
+
+		//rest to come
+
 
 	} catch (...) {
 		// We'll just log, and continue on gracefully
@@ -56,11 +66,12 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 	}
 }
 
-void Loader::loadGlobalConfig(Config& config)
+void Loader::loadUISettings(TiXmlElement* xmlRootNode, Config& config)
 {
-	Path dummy(FLEWNIT_DEFAULT_CONFIG_PATH);
-	loadGlobalConfig(config, dummy);
+
 }
+
+
 
 }
 

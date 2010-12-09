@@ -114,23 +114,31 @@ enum Type
 
 };
 
-//class ConfigNodeInterface: public BasicObject
-//{
-//	FLEWNIT_BASIC_OBJECT_DECLARATIONS
-//
-//	String mName;
-//
-//public:
-//
-//	virtual ~ConfigNodeInterface(){}
-//
-//	explicit ConfigNodeInterface(String name): mName(name){}
-//	const String& getName()const{return mName;}
-//
-//	virtual Type getNodeType()const=0;
-//	virtual bool isLeafNode()const=0;
-//
-//};
+
+
+enum Access
+{
+	ACCESS_NONE,
+	ACCESS_READ,
+	ACCESS_READWRITE
+};
+
+class GUIParams
+{
+public:
+	GUIParams():mGUIVisibility(ACCESS_NONE), mGUIProperyString(""){}
+	GUIParams(Access GUIVisibility, String GUIProperyString):mGUIVisibility(GUIVisibility), mGUIProperyString(GUIProperyString){}
+	GUIParams(const GUIParams& other):mGUIVisibility(other.getGuiVisiblity()),mGUIProperyString(other.getGUIProperyString()){}
+
+	Access getGuiVisiblity()const{return mGUIVisibility;}
+	const String& getGUIProperyString()const{return mGUIProperyString;}
+
+
+private:
+	Access mGUIVisibility;
+	String mGUIProperyString;
+};
+
 
 class ConfigStructNode: public BasicObject
 {
@@ -167,6 +175,7 @@ class ConfigValueNode: public ConfigStructNode
 	T mValue;
 
 
+
 public:
 	explicit ConfigValueNode(String name, T& value):ConfigStructNode(name), mValue(value)
 	{
@@ -175,6 +184,7 @@ public:
 	virtual ~ConfigValueNode(){}
 
 
+	T& value(){return mValue;}
 
 private:
 
@@ -184,65 +194,44 @@ private:
 
 		if(typeid(mValue) == typeid(bool))
 			return TYPE_BOOL;
-
 		if(typeid(mValue) == typeid(unsigned char))
 			return TYPE_CHAR;
-
 		if(typeid(mValue) == typeid(short))
 			return TYPE_INT16;
-
 		if(typeid(mValue) == typeid(unsigned short))
 			return TYPE_UINT16;
-
 		if(typeid(mValue) == typeid(int))
 			return TYPE_INT32;
-
 		if(typeid(mValue) == typeid(unsigned int))
 			return TYPE_UINT32;
-
 		if(typeid(mValue) == typeid(long))
 			return TYPE_INT64;
-
 		if(typeid(mValue) == typeid(long))
 			return TYPE_INT64;
-
 		if(typeid(mValue) == typeid(unsigned long))
 			return TYPE_UINT64;
-
 		if(typeid(mValue) == typeid(float))
 			return TYPE_FLOAT;
-
 		if(typeid(mValue) == typeid(float))
 			return TYPE_FLOAT;
-
 		if(typeid(mValue) == typeid(double))
 			return TYPE_DOUBLE;
-
 		if(typeid(mValue) == typeid(Vector2D))
 			return TYPE_VEC2F;
-
 		if(typeid(mValue) == typeid(Vector3D))
 			return TYPE_VEC3F;
-
 		if(typeid(mValue) == typeid(Vector4D))
 			return TYPE_VEC4F;
-
 		if(typeid(mValue) == typeid(Matrix3x3))
 			return TYPE_MATRIX33F;
-
 		if(typeid(mValue) == typeid(Matrix4x4))
 			return TYPE_MATRIX44F;
-
 		if(typeid(mValue) == typeid(Quaternion))
 			return TYPE_QUAT4F;
 
-
 		//default
 		return  TYPE_UNDEF;
-
 	}
-
-	T& value(){return mValue;}
 
 };
 
