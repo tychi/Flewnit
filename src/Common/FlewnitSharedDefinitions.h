@@ -20,6 +20,7 @@
 //gloabal defines; hack in cmake script in order to provide code completion in an IDE dependent of user's build choice;
 #include "cmakeGeneratedDefinitions.h"
 
+//forward hack in order not to pollute ALL headers in project with the big boost header stuff; Compile and link time is everything ;)
 namespace boost {
 	namespace filesystem {
 		template<class,class> class basic_path;
@@ -43,7 +44,7 @@ typedef boost::filesystem::path Path;
 //#define FLEWNIT_USE_SDL
 
 
-#define FLEWNIT_DEFAULT_CONFIG_PATH "../config/FlewnitConfig.xml"
+#define FLEWNIT_DEFAULT_CONFIG_PATH "./config/FlewnitConfig.xml"
 
 #define FLEWNIT_DEFAULT_LOG_FILEPATH "./flewnitLog.txt"
 

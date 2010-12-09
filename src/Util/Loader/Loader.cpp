@@ -12,6 +12,8 @@
 
 #include <boost/filesystem/path.hpp>
 
+#include <tinyxml.h>
+
 
 namespace Flewnit
 {
@@ -31,7 +33,26 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 {
 	LOG<<INFO_LOG_LEVEL<< "Loading global Config;\n";
 
-	//TODO
+	TiXmlDocument XMLDoc ("FlewnitGlobalConfig");
+	TiXmlElement* rootXMLNode = 0;
+
+	try {
+		if(! XMLDoc.LoadFile(pathToGlobalConfigFile.string()) )
+		{
+			throw std::exception();
+		}
+
+		const char *tmp =0;
+		rootXMLNode = XMLDoc.RootElement();
+
+
+	} catch (...) {
+		// We'll just log, and continue on gracefully
+		LOG<<ERROR_LOG_LEVEL<< "[Loader::loadGlobalConfig] Error loading file \""<< pathToGlobalConfigFile.string() <<"\";"
+				<< XMLDoc.ErrorDesc()
+				<<"; No default config initialization yet exists;\n";
+		assert(0);
+	}
 }
 
 void Loader::loadGlobalConfig(Config& config)

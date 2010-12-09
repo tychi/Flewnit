@@ -224,7 +224,10 @@ add_library(flewnit SHARED ${LIBRARY_SOURCE_FILES})
 #TODO: add gpuTE ass dependency :D
 #TODO: unterstand why only relevant qt stuff will be linked against ;) yes, I'm noob with cmake and qt ;)
 target_link_libraries(flewnit ${OPENGL_LIB} freeimageplus ${QT_LIBRARIES} assimp)
+
 target_link_libraries(flewnit boost_filesystem)
+
+target_link_libraries(flewnit tinyxml)
 
 
 
