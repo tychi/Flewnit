@@ -9,6 +9,9 @@
 
 #include <boost/foreach.hpp>
 
+#include "Common/Math.h"
+#include <typeinfo>
+
 namespace Flewnit
 {
 
@@ -16,11 +19,13 @@ namespace Flewnit
 
 ConfigStructNode::~ConfigStructNode()
 {
-	typedef Map<String, ConfigNodeInterface*> mapDummyType;
+	typedef Map<String, ConfigStructNode*> mapDummyType;
 	BOOST_FOREACH( mapDummyType::value_type & node, mChildren )
 		{
 			delete node.second;
 		}
 }
+
+
 
 }

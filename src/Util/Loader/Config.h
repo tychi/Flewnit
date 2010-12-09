@@ -9,12 +9,16 @@
 
 #include "Common/BasicObject.h"
 
+#include "Common/Math.h"
+
 namespace Flewnit
 {
 
 enum Type
 {
 	TYPE_UNDEF,
+
+	TYPE_STRUCTURE,
 
 	TYPE_BOOL,
 
@@ -110,54 +114,133 @@ enum Type
 
 };
 
-class ConfigNodeInterface: public BasicObject
+//class ConfigNodeInterface: public BasicObject
+//{
+//	FLEWNIT_BASIC_OBJECT_DECLARATIONS
+//
+//	String mName;
+//
+//public:
+//
+//	virtual ~ConfigNodeInterface(){}
+//
+//	explicit ConfigNodeInterface(String name): mName(name){}
+//	const String& getName()const{return mName;}
+//
+//	virtual Type getNodeType()const=0;
+//	virtual bool isLeafNode()const=0;
+//
+//};
+
+class ConfigStructNode: public BasicObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
+
+	Map<String, ConfigStructNode*> mChildren;
 
 	String mName;
 
-public:
+protected:
 
-	virtual ~ConfigNodeInterface(){}
-
-	explicit ConfigNodeInterface(String name): mName(name){};
-	const String& getName()const{return mName;}
-
-	virtual Type getNodeType()const=0;
-	virtual bool isLeafNode()const=0;
-
-};
-
-class ConfigStructNode: public ConfigNodeInterface
-{
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS
-
-	Map<String, ConfigNodeInterface*> mChildren;
+	Type mValueType;
 
 public:
 
-	explicit ConfigStructNode(String name):ConfigNodeInterface(name){}
+	explicit ConfigStructNode(String name):mName(name), mValueType(TYPE_STRUCTURE){}
 	virtual ~ConfigStructNode();
 
-	virtual Type getNodeType()const{return TYPE_UNDEF;}
-	virtual bool isLeafNode()const{return false;}
+	const String& getName()const{return mName;}
+
+	bool isLeafNode()const{return (mChildren.size()==0);}
+
+	ConfigStructNode* & operator[](String name){return mChildren[name];}	//&?
+
+	Type getType()const{return mValueType;}
 
 };
 
 template <typename T>
-class ConfigLeafNode: public ConfigNodeInterface
+class ConfigValueNode: public ConfigStructNode
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 
-	Type mType;
 	T mValue;
 
-public:
-	explicit ConfigLeafNode(String name, T& value):ConfigNodeInterface(name), mValue(value){}
-	virtual ~ConfigLeafNode(){}
 
-	virtual Type getNodeType()const{return mType;}
-	virtual bool isLeafNode()const{return true;}
+public:
+	explicit ConfigValueNode(String name, T& value):ConfigStructNode(name), mValue(value)
+	{
+		mValueType = initType();
+	}
+	virtual ~ConfigValueNode(){}
+
+
+
+private:
+
+	virtual Type initType()const
+	{
+		//not all types define in teh Type-enum are checked, but only the most common;
+
+		if(typeid(mValue) == typeid(bool))
+			return TYPE_BOOL;
+
+		if(typeid(mValue) == typeid(unsigned char))
+			return TYPE_CHAR;
+
+		if(typeid(mValue) == typeid(short))
+			return TYPE_INT16;
+
+		if(typeid(mValue) == typeid(unsigned short))
+			return TYPE_UINT16;
+
+		if(typeid(mValue) == typeid(int))
+			return TYPE_INT32;
+
+		if(typeid(mValue) == typeid(unsigned int))
+			return TYPE_UINT32;
+
+		if(typeid(mValue) == typeid(long))
+			return TYPE_INT64;
+
+		if(typeid(mValue) == typeid(long))
+			return TYPE_INT64;
+
+		if(typeid(mValue) == typeid(unsigned long))
+			return TYPE_UINT64;
+
+		if(typeid(mValue) == typeid(float))
+			return TYPE_FLOAT;
+
+		if(typeid(mValue) == typeid(float))
+			return TYPE_FLOAT;
+
+		if(typeid(mValue) == typeid(double))
+			return TYPE_DOUBLE;
+
+		if(typeid(mValue) == typeid(Vector2D))
+			return TYPE_VEC2F;
+
+		if(typeid(mValue) == typeid(Vector3D))
+			return TYPE_VEC3F;
+
+		if(typeid(mValue) == typeid(Vector4D))
+			return TYPE_VEC4F;
+
+		if(typeid(mValue) == typeid(Matrix3x3))
+			return TYPE_MATRIX33F;
+
+		if(typeid(mValue) == typeid(Matrix4x4))
+			return TYPE_MATRIX44F;
+
+		if(typeid(mValue) == typeid(Quaternion))
+			return TYPE_QUAT4F;
+
+
+		//default
+		return  TYPE_UNDEF;
+
+	}
 
 	T& value(){return mValue;}
 
@@ -181,6 +264,7 @@ public:
 	virtual ~Config(){delete mRootNode;}
 
 };
+
 
 }
 

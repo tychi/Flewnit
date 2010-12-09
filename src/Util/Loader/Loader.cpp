@@ -37,7 +37,8 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 	TiXmlElement* rootXMLNode = 0;
 
 	try {
-		if(! XMLDoc.LoadFile(pathToGlobalConfigFile.string()) )
+		if(! XMLDoc.LoadFile(pathToGlobalConfigFile.string())
+			|| XMLDoc.Error())
 		{
 			throw std::exception();
 		}

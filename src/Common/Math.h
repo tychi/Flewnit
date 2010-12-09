@@ -52,6 +52,8 @@ namespace Flewnit
 
 	typedef glm::mat3x3 Matrix3x3;
 	typedef glm::mat4x4 Matrix4x4;
+
+	typedef glm::quat Quaternion;
 }
 
 //--------------------------------------------------------------
