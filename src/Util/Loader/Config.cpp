@@ -22,28 +22,24 @@ namespace Flewnit
 
 ConfigStructNode::~ConfigStructNode()
 {
-	LOG<<DEBUG_LOG_LEVEL<<"destroying ConfigStructNode; hope to kill all children of this:P ;\n";
-	for(Map<String, ConfigStructNode*>::iterator it = mChildren.begin();
-			it!= mChildren.end();
-			it++)
+	typedef Map<String, ConfigStructNode*> mapDummyType;
+	BOOST_FOREACH( mapDummyType::value_type & node, mChildren )
 	{
-		LOG<<DEBUG_LOG_LEVEL<<"destroying Child named \""<< it->first <<"\" of ConfigStructNode;\n";
-		delete it->second;
+		delete node.second;
 	}
 
-
-	//wtf this alway omits the first element!:
-//	typedef Map<String, ConfigStructNode*> mapDummyType;
-//	BOOST_FOREACH( mapDummyType::value_type & node, mChildren )
-//		{
-//			delete node.second;
-//		}
+	//tryout stuff: obsolte
+	//	LOG<<DEBUG_LOG_LEVEL<<"destroying ConfigStructNode; hope to kill all children of this:P ;\n";
+	//	for(Map<String, ConfigStructNode*>::iterator it = mChildren.begin();
+	//			it!= mChildren.end();
+	//			it++)
+	//	{
+	//		LOG<<DEBUG_LOG_LEVEL<<"destroying Child named \""<< it->first <<"\" of ConfigStructNode;\n";
+	//		delete it->second;
+	//	}
 }
 
-//ConfigValueNode::~ConfigValueNode()
-//{
-//	LOG<<DEBUG_LOG_LEVEL<<"detrayoing configvaluenode; hope to kill all children of this:P ;\n";
-//}
+
 
 
 ConfigStructNode& ConfigStructNode::operator[](String name)

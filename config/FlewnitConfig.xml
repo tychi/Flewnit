@@ -3,7 +3,15 @@
 <flewnitGlobalConfig>
 
 	<UI_Settings>
+		
+		<inputSettings>
 
+			<grabMouse type="BOOL" value="true" />
+			
+			<enableWiimote type="BOOL" value="false" />
+
+		</inputSettings>
+		
 		<windowSettings>
 				
 			<mediaLayer type="STRING" value="GLFW" />
@@ -17,24 +25,16 @@
 			
 		</windowSettings>
 		
-
-		<inputSettings>
-
-			<grabMouse type="BOOL" value="true" />
-			
-			<enableWiimote type="BOOL" value="false" />
-
-		</inputSettings>
 		
 		<!-- maybe GUI config to come... -->
 		
 	</UI_Settings>
 	
-	<simulatorettings>
+	<simulatorSettings>
 		<!--  -->
 		
 		
-		<simulator type="STRING" value="SPHFluidMechanicsSimulator">
+		<SPHFluidMechanicsSimulator>
 				
 			<simulatorGeneralSettings>
 				
@@ -54,59 +54,61 @@
 			</simulatorGeneralSettings>
 			
 			
-			<pipelineStage type="STRING" value="AccelerationStructureUpdater">
-				
+			<AccelerationStructureUpdater>		
 					
-			</pipelineStage>
+			</AccelerationStructureUpdater>
+			
 			
 			<!-- the following stages two could be joined in trade of stability/accuracy  -->
-			<pipelineStage type="STRING" value="ParticleDensityComputation">
-				
-					
-			</pipelineStage>
-			
-			<pipelineStage type="STRING" value="ParticlePressureComputation">
-				
-					
-			</pipelineStage>
+			<ParticleDensityComputation>
+						
+			</ParticleDensityComputation>
 			
 			
-			<pipelineStage type="STRING" value="FluidParticleIntegrator">
-				
+			<ParticlePressureComputation>
 					
-			</pipelineStage>
+			</ParticlePressureComputation>
+			
+			
+			<FluidParticleIntegrator>
+									
+			</FluidParticleIntegrator>
 			
 						
-			<pipelineStage type="STRING" value="ParticleizedRigidBodyIntegrator">
-				
-					
-			</pipelineStage>
+			<ParticleizedRigidBodyIntegrator>
+								
+			</ParticleizedRigidBodyIntegrator>
 			
 							
-		</simulator>
+		</SPHFluidMechanicsSimulator>
 		
-		<simulator type="STRING" value="LightingSimulator">
+		<LightingSimulator>
 				
-			<pipelineStage type="STRING" value="SkyBoxRenderer">
+			<simulatorGeneralSettings>
+				
+
+			</simulatorGeneralSettings>
+				
+			<SkyBoxRenderer>
 				
 					
-			</pipelineStage>
+			</SkyBoxRenderer>
 
-			<pipelineStage type="STRING" value="ShadowMapGenerator">
+			<ShadowMapGenerator>
 									
-			</pipelineStage>
+			</ShadowMapGenerator>
 
-			<pipelineStage type="STRING" value="ShadowedLightingStage">
+			<ShadowedLightingStage>
 				
 					
-			</pipelineStage>						
+			</ShadowedLightingStage>						
 			
 			<!-- Fluid rendering specific stages to go -->
 			
-		</simulator>
+		</LightingSimulator>
 		
 	
-	</simulatorettings>
+	</simulatorSettings>
 
 	<pathToData type="STRING" value="." />
 

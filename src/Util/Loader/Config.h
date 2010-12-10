@@ -11,7 +11,7 @@
 
 #include "Common/Math.h"
 
-#include "Util/Log/Log.h" //DEBUG ONLY, TO REMOVE!
+
 
 namespace Flewnit
 {
@@ -191,7 +191,7 @@ public:
 
 	virtual ~ConfigValueNode()
 	{
-		LOG<<DEBUG_LOG_LEVEL<<"destroying ConfigValueNode; hope to kill all children of this:P ;\n";
+		// LOG<<DEBUG_LOG_LEVEL<<"destroying ConfigValueNode; hope to kill all children of this:P ;\n";
 	}
 
 	ConfigValueNode( const ConfigValueNode& other)
