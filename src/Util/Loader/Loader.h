@@ -19,6 +19,8 @@ namespace Flewnit
 {
 
 class Config;
+class ConfigStructNode;
+class GUIParams;
 class Scene;
 
 class Loader : public BasicObject
@@ -35,7 +37,11 @@ public:
 	Scene* loadScene();
 
 private:
-	void loadUISettings(TiXmlElement* xmlRootNode, Config& config);
+	void loadUISettings(TiXmlElement* xmlElementNode, Config& config);
+
+	ConfigStructNode* parseElement(TiXmlElement* xmlElementNode);
+
+	void getGUIParams(TiXmlElement* xmlElementNode, GUIParams& guiParams);
 
 
 };

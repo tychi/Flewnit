@@ -102,6 +102,7 @@ public:
 	void printObjectStatus(BasicObject* bo);
 
 	void printMemoryStatus();
+	void printRegisteredObjects();
 
 	void checkError();
 private:

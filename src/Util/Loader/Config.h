@@ -11,6 +11,8 @@
 
 #include "Common/Math.h"
 
+#include "Util/Log/Log.h" //DEBUG ONLY, TO REMOVE!
+
 namespace Flewnit
 {
 
@@ -125,6 +127,7 @@ enum Access
 
 class GUIParams
 {
+	//this class is so tiny, there will be no pointer-f***up, so we need no memory tracking of this class
 public:
 	GUIParams():mGUIVisibility(ACCESS_NONE), mGUIProperyString(""){}
 	GUIParams(Access GUIVisibility, String GUIProperyString):mGUIVisibility(GUIVisibility), mGUIProperyString(GUIProperyString){}
@@ -162,13 +165,9 @@ public:
 
 	bool isLeafNode()const{return (mChildren.size()==0);}
 
-//	ConfigStructNode* & operator[](String name)
-//	{
-//
-//		return mChildren[name];
-//	}
+	ConfigStructNode& operator[](String name);
 
-	ConfigStructNode* & get(String name){return mChildren[name];}
+	ConfigStructNode*& get(String name){return mChildren[name];}
 
 	Type getType()const{return mValueType;}
 
@@ -190,7 +189,10 @@ public:
 		mValueType = initType();
 	}
 
-	virtual ~ConfigValueNode(){}
+	virtual ~ConfigValueNode()
+	{
+		LOG<<DEBUG_LOG_LEVEL<<"destroying ConfigValueNode; hope to kill all children of this:P ;\n";
+	}
 
 	ConfigValueNode( const ConfigValueNode& other)
 	: mValue(other.value()), mGUIParams(other.getGUIParams())
@@ -276,10 +278,14 @@ class Config : public BasicObject
 
 	ConfigStructNode* mRootNode;
 
+	//necessary for initialization: <-- NOT ;(
+	//friend class Loader;
+	//ConfigStructNode* & rootPtr(){return mRootNode;}
+
 public:
 	Config(): mRootNode(0)
 	{
-		 mRootNode=FLEWNIT_INSTANTIATE(new ConfigStructNode());
+		mRootNode=FLEWNIT_INSTANTIATE(new ConfigStructNode());
 	}
 
 	virtual ~Config(){delete mRootNode;}

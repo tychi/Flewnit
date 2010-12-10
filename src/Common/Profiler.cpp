@@ -45,6 +45,8 @@ Profiler::~Profiler()
 	Log::getInstance()<< MEMORY_TRACK_LOG_LEVEL<<"Showing memory Status; If you've done a good house keeping, all values should be zero:\n";
 	printMemoryStatus();
 
+	printRegisteredObjects();
+
 	checkError();
 }
 
@@ -71,6 +73,15 @@ void Profiler::printMemoryStatus()
 			<< mPrivateAllocatedBufferMemories[OPEN_GL_CONTEXT_TYPE]  << " bytes are consumed by privately used OpenGL buffers;\n"
 			<< mCLGLSharedAllocatedBufferMemory << " bytes are consumed by shared OpenCL/OpenGL buffers;\n"
 			;
+}
+
+void Profiler::printRegisteredObjects()
+{
+	Pair<ID,BasicObject*> boPair;
+	BOOST_FOREACH(boPair, mRegisteredBasicObjects)
+		{
+			printObjectStatus(boPair.second);
+		}
 }
 
 

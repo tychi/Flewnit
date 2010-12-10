@@ -36,7 +36,6 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 	LOG<<INFO_LOG_LEVEL<< "Loading global Config;\n";
 
 	TiXmlDocument XMLDoc ("flewnitGlobalConfig");
-	TiXmlElement* xmlRootNode = 0;
 
 	try {
 		if(! XMLDoc.LoadFile(pathToGlobalConfigFile.string())
@@ -45,15 +44,29 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 			throw std::exception();
 		}
 
-		xmlRootNode = XMLDoc.RootElement();//->FirstChildElement("flewnitGlobalConfig");
+		LOG<<INFO_LOG_LEVEL<<"Config file has root node named "<<
+				XMLDoc.RootElement()->ValueStr()<<" ;\n";
 
-		loadUISettings(xmlRootNode, config);
 
-		//rest to come TODO
+		//config.rootPtr() = new ConfigStructNode();
+		//config.root() = parseElement();
+
+		//check for children:
+		TiXmlNode* child = 0;
+		TiXmlNode* rootXmlNode =  XMLDoc.RootElement();
+		while( child = rootXmlNode->IterateChildren( child ) )
+		{
+			//parse only "elements":
+			TiXmlElement* childElement = child->ToElement();
+			if(childElement)
+			{
+				//returnNode->get(child->ValueStr())= parseElement(childElement);
+				config.root().get(child->ValueStr())= parseElement(childElement);
+			}
+		}
 
 
 	} catch (...) {
-		// We'll just log, and continue on gracefully
 		LOG<<ERROR_LOG_LEVEL<< "[Loader::loadGlobalConfig] Error loading file \""<< pathToGlobalConfigFile.string() <<"\";"
 				<< XMLDoc.ErrorDesc()
 				<<"; No default config initialization yet exists;\n";
@@ -61,50 +74,210 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 	}
 }
 
-void Loader::loadUISettings(TiXmlElement* xmlRootNode, Config& config)
+
+
+
+ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 {
-	const char *tmp =0;
+	ConfigStructNode* returnNode = 0;
 
-	TiXmlElement* winSettings= xmlRootNode->FirstChildElement("UI_Settings")->FirstChildElement("windowSettings");
+	const String* typeOfNode = xmlElementNode->Attribute(String("type"));
+
+
+	if(typeOfNode)
+	{
+		//ok, this is a "value" node which could be interesting for GUI manipulation:
+		GUIParams guiParams;
+		getGUIParams(xmlElementNode,guiParams);
+
+		if( *typeOfNode == String("STRING") )
+		{
+			returnNode = new ConfigValueNode<String>(
+					//dereference String pointer
+					*( xmlElementNode->Attribute(String("value")) )
+					, guiParams);
+		}
+
+		if( *typeOfNode == String("BOOL") )
+		{
+			returnNode = new ConfigValueNode<bool>(
+					 *(xmlElementNode->Attribute(String("value"))) == String("true")
+					 ? true : false
+					,guiParams);
+		}
+
+		if( *typeOfNode == String("INT") )
+		{
+			returnNode = new ConfigValueNode<int>(
+					 boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("value") )) )
+					,guiParams);
+		}
+
+		if( *typeOfNode == String("FLOAT") )
+		{
+			returnNode = new ConfigValueNode<float>(
+					boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("value") )) )
+					,guiParams);
+		}
 
 
 
-	config.root().get("UI_Settings")= new ConfigStructNode();
 
-	config.root().get("UI_Settings")->get("windowSettings")= new ConfigStructNode();
+		if( *typeOfNode == String("VEC2I") )
+		{
+			returnNode = new ConfigValueNode<Vector2Di>(
+					Vector2Di(
+							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("x") )) ),
+							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("y") )) )
+					)
+					,guiParams);
+		}
 
-//	config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")=
-//			new ConfigValueNode<String>(
-//					//String(winSettings->FirstChildElement("mediaLayer")->Attribute("value"))
-//					LoaderHelper::getAttribute<String>(winSettings,"value")
-//					);
-//
-//
-//	config.root().get("UI_Settings")->get("WindowSettings")->get("fullScreen")=
-//				new ConfigValueNode<bool>(
-//						LoaderHelper::getAttribute<bool>(winSettings->FirstChildElement("fullScreen"),"value")
-//						);
+		if( *typeOfNode == String("VEC3I") )
+		{
+			returnNode = new ConfigValueNode<Vector3Di>(
+					Vector3Di(
+							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("x") )) ),
+							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("y") )) ),
+							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("z") )) )
+					)
+					,guiParams);
+		}
+
+
+		if( *typeOfNode == String("VEC4I") )
+		{
+			returnNode = new ConfigValueNode<Vector4Di>(
+					Vector4Di(
+							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("x") )) ),
+							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("y") )) ),
+							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("z") )) ),
+							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("w") )) )
+					)
+					,guiParams);
+		}
+
+
+
+
+		if( *typeOfNode == String("VEC2") )
+		{
+			returnNode = new ConfigValueNode<Vector2D>(
+					Vector2D(
+							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("x") )) ),
+							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("y") )) )
+					)
+					,guiParams);
+		}
+
+		if( *typeOfNode == String("VEC3") )
+		{
+			returnNode = new ConfigValueNode<Vector3D>(
+					Vector3D(
+							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("x") )) ),
+							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("y") )) ),
+							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("z") )) )
+					)
+					,guiParams);
+		}
+
+
+		if( *typeOfNode == String("VEC4") )
+		{
+			returnNode = new ConfigValueNode<Vector4D>(
+					Vector4D(
+							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("x") )) ),
+							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("y") )) ),
+							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("z") )) ),
+							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("w") )) )
+					)
+					,guiParams);
+		}
+
+		//TODO rest
+		if(! returnNode)
+		{
+			LOG<<ERROR_LOG_LEVEL<<"Loader::parseElement: unknown \"type\" string in XML config element: "<<
+					(*typeOfNode) <<";\n";
+
+		}
+	}
+	else
+	{
+		//it's no "value" node but a container node:
+		returnNode = new ConfigStructNode();
+	}
+
+	//check for children:
+	TiXmlNode* child = 0;
+	while( child = xmlElementNode->IterateChildren( child ) )
+	{
+		//parse only "elements":
+		TiXmlElement* childElement = child->ToElement();
+		if(childElement)
+		{
+			returnNode->get(child->ValueStr())= parseElement(childElement);
+		}
+	}
+
+
+	return returnNode;
+}
+
+void Loader::getGUIParams(TiXmlElement* xmlElementNode, GUIParams& guiParams)
+{
+	//TODO
+}
 
 
 
 }
 
-//LOG<<DEBUG_LOG_LEVEL<<"mediaLayer value: "<<
-//		reinterpret_cast<ConfigValueNode<String>* > (
-//				config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")
-//		)->value()
-//		   <<":\n";
+
+
+
+
+//void Loader::loadUISettings(TiXmlElement* xmlRootNode, Config& config)
+//{
 //
-//LOG<<DEBUG_LOG_LEVEL<<"mediaLayer type enum value : "<<
-//	config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")->getType()
-//		   <<":\n";
 //
-
-
-
-
-
-}
-
+//
+//	const char *tmp =0;
+//
+//	TiXmlElement* winSettings= xmlRootNode->FirstChildElement("UI_Settings")->FirstChildElement("windowSettings");
+//
+//
+//
+//	config.root().get("UI_Settings")= new ConfigStructNode();
+//
+//	config.root().get("UI_Settings")->get("windowSettings")= new ConfigStructNode();
+//
+//
+//
+////	config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")=
+////			new ConfigValueNode<String>(
+////					//String(winSettings->FirstChildElement("mediaLayer")->Attribute("value"))
+////					LoaderHelper::getAttribute<String>(winSettings,"value")
+////					);
+////
+////
+////	config.root().get("UI_Settings")->get("WindowSettings")->get("fullScreen")=
+////				new ConfigValueNode<bool>(
+////						LoaderHelper::getAttribute<bool>(winSettings->FirstChildElement("fullScreen"),"value")
+////						);
+//
+//
+////LOG<<DEBUG_LOG_LEVEL<<"mediaLayer value: "<<
+////		reinterpret_cast<ConfigValueNode<String>* > (
+////				config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")
+////		)->value()
+////		   <<":\n";
+////
+////LOG<<DEBUG_LOG_LEVEL<<"mediaLayer type enum value : "<<
+////	config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")->getType()
+////		   <<":\n";
+////
+//
+//}
 
 

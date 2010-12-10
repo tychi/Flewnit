@@ -108,6 +108,12 @@ template <typename T> Log& Log::handleGenericValues(T logEntry)
 	//this SHOULD reset th stringstream,. but it doesn't :(
 	//thats why the local variable cannot be static :((
 	//pseudoToStringConverter.rdbuf()->str()="";
+
+	if(mCurrentLogLevel== ERROR_LOG_LEVEL)
+	{
+		//maybe assert(0); lets see if this is necessary;
+	}
+
 	return (*this);
 }
 
