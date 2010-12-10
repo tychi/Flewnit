@@ -28,6 +28,8 @@ namespace Flewnit
 
 	typedef QMatrix3x3 Matrix3x3;
 	typedef QMatrix4x4 Matrix4x4;
+
+	//typedefs not complete, but I don't plan to use QT math anyway; just if glm should suck inexpectedly...
 }
 
 
@@ -68,16 +70,5 @@ namespace Flewnit
 //--------------------------------------------------------------
 #endif //FLEWNIT_USE_QT_MATH
 
-namespace Flewnit
-{
 
-
-class Math
-{
-public:
-	Math();
-	virtual ~Math();
-};
-
-}
 

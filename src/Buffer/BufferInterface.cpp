@@ -9,12 +9,15 @@
 
 #include "Common/Profiler.h"
 
+#include "Common/Math.h"
+
 namespace Flewnit
 {
 
 BufferInterface::BufferInterface()
 {
-	mTestValue=Vector3D(3.4,6.5,7.87);
+	Vector3D testValue;
+	testValue=Vector3D(3.4,6.5,7.87);
 	// TODO Auto-generated constructor stub
 
 }

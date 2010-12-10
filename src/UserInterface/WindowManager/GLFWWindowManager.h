@@ -7,15 +7,19 @@
 
 #pragma once
 
+#include "WindowManager.h"
+
 namespace Flewnit
 {
 
-class GLFWWindowManager
-{
-public:
-	GLFWWindowManager();
-	virtual ~GLFWWindowManager();
-};
+//class GLFWWindowManager: public WindowManager
+//{
+//	FLEWNIT_BASIC_OBJECT_DECLARATIONS
+//
+//public:
+//	GLFWWindowManager();
+//	virtual ~GLFWWindowManager();
+//};
 
 }
 

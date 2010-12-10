@@ -16,6 +16,8 @@
 				
 			<mediaLayer type="STRING" value="GLFW" />
 
+			<windowTitle type="STRING" value="Flewnit" />
+			
 			<fullScreen type="BOOL" value="true"/>
 			
 			<enforceCustomResolutionInFullScreen type="BOOL" value="false" />

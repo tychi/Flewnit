@@ -10,15 +10,15 @@
 namespace Flewnit
 {
 
-GLFWWindowManager::GLFWWindowManager()
-{
-	// TODO Auto-generated constructor stub
-
-}
-
-GLFWWindowManager::~GLFWWindowManager()
-{
-	// TODO Auto-generated destructor stub
-}
+//GLFWWindowManager::GLFWWindowManager()
+//{
+//	// TODO Auto-generated constructor stub
+//
+//}
+//
+//GLFWWindowManager::~GLFWWindowManager()
+//{
+//	// TODO Auto-generated destructor stub
+//}
 
 }

@@ -3,18 +3,38 @@
  *
  *  Created on: Dec 6, 2010
  *      Author: tychi
+ *
+ * Interface class for window management
  */
 
 #pragma once
 
+#include "Common/BasicObject.h"
+#include "Common/Math.h"
+
 namespace Flewnit
 {
 
-class WindowManager
+class Config;
+
+class WindowManager: public BasicObject
 {
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
-	WindowManager();
-	virtual ~WindowManager();
+	explicit WindowManager(const Config& config);
+
+	virtual ~WindowManager(){}
+
+
+	void createGLContext();
+
+	void setWindowTitle(String title);
+	    void initScreen();
+
+	    void createWindow();
+	    void initFrameBuffer();
+	    void createColorMap();
+	    void createBlankCursor();
 };
 
 }

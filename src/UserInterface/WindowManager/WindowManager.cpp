@@ -10,15 +10,15 @@
 namespace Flewnit
 {
 
-WindowManager::WindowManager()
+WindowManager::WindowManager(const Config& config)
 {
 	// TODO Auto-generated constructor stub
 
 }
 
-WindowManager::~WindowManager()
-{
-	// TODO Auto-generated destructor stub
-}
+//WindowManager::~WindowManager()
+//{
+//	// TODO Auto-generated destructor stub
+//}
 
 }

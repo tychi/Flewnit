@@ -43,7 +43,6 @@ protected:
 private:
 
 	BufferInfo mBufferInfo;
-	Vector3D mTestValue;
 
 };
 
