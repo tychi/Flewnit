@@ -129,19 +129,23 @@ class GUIParams
 {
 	//this class is so tiny, there will be no pointer-f***up, so we need no memory tracking of this class
 public:
-	GUIParams():mGUIVisibility(ACCESS_NONE), mGUIProperyString(""){}
-	GUIParams(Access GUIVisibility, String GUIProperyString):mGUIVisibility(GUIVisibility), mGUIProperyString(GUIProperyString){}
+	GUIParams():mGUIVisibility(ACCESS_NONE), mGUIPropertyString(""){}
+	GUIParams(Access GUIVisibility, String GUIPropertyString):mGUIVisibility(GUIVisibility), mGUIPropertyString(GUIPropertyString){}
 
-	GUIParams(const GUIParams& other):mGUIVisibility(other.getGuiVisiblity()),mGUIProperyString(other.getGUIProperyString()){}
-	GUIParams& operator=(const GUIParams& other){mGUIVisibility=other.getGuiVisiblity();mGUIProperyString=other.getGUIProperyString(); return *this;}
+	GUIParams(const GUIParams& other):mGUIVisibility(other.getGUIVisibility()),mGUIPropertyString(other.getGUIPropertyString()){}
+	const GUIParams& operator=(const GUIParams& other){mGUIVisibility=other.getGUIVisibility();mGUIPropertyString=other.getGUIPropertyString(); return *this;}
 
-	Access getGuiVisiblity()const{return mGUIVisibility;}
-	const String& getGUIProperyString()const{return mGUIProperyString;}
+    Access getGUIVisibility() const{return mGUIVisibility;}
+    void setGUIVisibility(Access mGUIVisibility){this->mGUIVisibility = mGUIVisibility;}
+
+    void setGUIPropertyString(String str){mGUIPropertyString = str;}
+    const String& getGUIPropertyString()const{return mGUIPropertyString;}
 
 
 private:
 	Access mGUIVisibility;
-	String mGUIProperyString;
+	String mGUIPropertyString;
+
 };
 
 

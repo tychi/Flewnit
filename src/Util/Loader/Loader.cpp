@@ -226,7 +226,43 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 
 void Loader::getGUIParams(TiXmlElement* xmlElementNode, GUIParams& guiParams)
 {
-	//TODO
+	const String* guiVisibilityOfNode = xmlElementNode->Attribute(String("GUIVisibility"));
+
+	if(guiVisibilityOfNode)
+	{
+		if(*(guiVisibilityOfNode) == String("read"))
+		{
+			guiParams.setGUIVisibility( ACCESS_READ );
+		}
+		else
+		{
+			if(*(guiVisibilityOfNode) == String("read/write"))
+			{
+				guiParams.setGUIVisibility( ACCESS_READWRITE );
+			}
+			else
+			{
+				if(*(guiVisibilityOfNode) == String("none"))
+				{
+					guiParams.setGUIVisibility( ACCESS_NONE );
+				}
+				else
+				{
+					LOG<<ERROR_LOG_LEVEL<<"GUIVisibility String \""<< *guiVisibilityOfNode << "\" invalid; \n";
+				}
+			}
+		}
+
+		//get the tweakConfigString
+		const String* tweakConfigString = xmlElementNode->Attribute(String("tweakConfigString"));
+		if(tweakConfigString)
+		{
+			guiParams.setGUIPropertyString(*tweakConfigString);
+		}
+	}
+	//else do nothing, as the defaul constructor of GUIParams allready has initialized its values;
+
+
 }
 
 
