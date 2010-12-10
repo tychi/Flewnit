@@ -18,6 +18,8 @@
 
 			<windowTitle type="STRING" value="Flewnit" />
 			
+			<glContextVersion type="VEC2I" x="3" y="3" />
+			
 			<fullScreen type="BOOL" value="true"/>
 			
 			<enforceCustomResolutionInFullScreen type="BOOL" value="false" />
