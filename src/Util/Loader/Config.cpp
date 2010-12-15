@@ -22,10 +22,14 @@ namespace Flewnit
 
 ConfigStructNode::~ConfigStructNode()
 {
-	typedef Map<String, ConfigStructNode*> mapDummyType;
-	BOOST_FOREACH( mapDummyType::value_type & node, mChildren )
+	typedef Map<String, List<ConfigStructNode*> > mapDummyType;
+	BOOST_FOREACH( mapDummyType::value_type & mapNode, mChildren )
 	{
-		delete node.second;
+		BOOST_FOREACH(ConfigStructNode* vecNode, mapNode.second )
+		{
+			//delete mapNode.second[runner];
+			delete vecNode;
+		}
 	}
 
 	//tryout stuff: obsolte
@@ -42,16 +46,16 @@ ConfigStructNode::~ConfigStructNode()
 
 
 
-ConfigStructNode& ConfigStructNode::operator[](String name)
+List<ConfigStructNode*>& ConfigStructNode::operator[](String name)
 {
 
-	if(mChildren.find(name) ==  mChildren.end())
-	{
-		LOG<< ERROR_LOG_LEVEL<<"For usage of this operator, the element must Exist, otherwise you'd dereference an uninitialized pointer;\n";
-		assert(0);
-	}
+//	if(mChildren.find(name) ==  mChildren.end())
+//	{
+//		LOG<< ERROR_LOG_LEVEL<<"For usage of this operator, the element must Exist, otherwise you'd dereference an uninitialized pointer;\n";
+//		assert(0);
+//	}
 
-	return *(mChildren[name]);
+	return mChildren[name];
 }
 
 

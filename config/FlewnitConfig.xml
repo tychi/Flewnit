@@ -64,6 +64,7 @@
 			</AccelerationStructureUpdater>
 			
 			
+			
 			<!-- the following stages two could be joined in trade of stability/accuracy  -->
 			<ParticleDensityComputation>
 						

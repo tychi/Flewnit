@@ -61,7 +61,7 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 			if(childElement)
 			{
 				//returnNode->get(child->ValueStr())= parseElement(childElement);
-				config.root().get(child->ValueStr())= parseElement(childElement);
+				config.root()[child->ValueStr()].push_back( parseElement(childElement) );
 			}
 		}
 
@@ -216,7 +216,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 		TiXmlElement* childElement = child->ToElement();
 		if(childElement)
 		{
-			returnNode->get(child->ValueStr())= parseElement(childElement);
+			(*returnNode) [ child->ValueStr() ] . push_back( parseElement(childElement) );
 		}
 	}
 

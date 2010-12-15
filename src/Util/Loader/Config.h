@@ -153,7 +153,7 @@ class ConfigStructNode: public BasicObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 
-	Map<String, ConfigStructNode*> mChildren;
+	Map<String, List<ConfigStructNode*> > mChildren;
 
 	//String mName;
 
@@ -169,9 +169,9 @@ public:
 
 	bool isLeafNode()const{return (mChildren.size()==0);}
 
-	ConfigStructNode& operator[](String name);
+	List<ConfigStructNode*>& operator[](String name);
 
-	ConfigStructNode*& get(String name){return mChildren[name];}
+	//ConfigStructNode*& get(String name){return mChildren[name];}
 
 	Type getType()const{return mValueType;}
 
