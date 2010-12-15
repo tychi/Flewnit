@@ -21,12 +21,6 @@
 //the complicated case:
 //TODO think about some buffer allocation macros in order to free the programmer from memoizing and repeating tedious profiling code
 
-//as registerBufferAllocation() is protected member of BufferInterface, only Buffers can use this macro;
-//the friendship between profiler and Bufferinterface::registerBufferAllocation() assures that really only Buffers can register to the profiler;
-//this stuff is quite complicated and might be able to simplified, but at the moment, I don't see any more elegant solution, as friendship cannot be inherited;
-//#define FLEWNIT_PROFILED_BUFFER_ALLOC(contextFlags,numElements, elementSizeInByte, actualAllocationFunctionCallExpression) \
-//	registerBufferAllocation(contextFlags,sizeInByte); \
-//	actualAllocationFunctionCallExpression
 
 
 #include "Common/Singleton.h"
@@ -46,8 +40,10 @@ public:
 	//declare friend functions in order to enable only to to (un)register stuff;
 	friend void BasicObject::registerToProfiler();
 	friend void BasicObject::unregisterFromProfiler();
-//	friend BasicObject* BasicObjectInstancer::getLastRegisteredBasicObjectFromProfiler();
-//	friend void BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject();
+
+
+	//as registerBufferAllocation() is protected member of BufferInterface, only Buffers can use this macro;
+	//the friendship between profiler and Bufferinterface::registerBufferAllocation() assures that really only Buffers can register to the profiler;
 	friend void BufferInterface::registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 	friend void BufferInterface::unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 

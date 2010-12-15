@@ -54,7 +54,7 @@ void Loader::loadGlobalConfig(Config& config, const Path & pathToGlobalConfigFil
 		//check for children:
 		TiXmlNode* child = 0;
 		TiXmlNode* rootXmlNode =  XMLDoc.RootElement();
-		while( child = rootXmlNode->IterateChildren( child ) )
+		while( ( child = rootXmlNode->IterateChildren( child ) ) != NULL)
 		{
 			//parse only "elements":
 			TiXmlElement* childElement = child->ToElement();
@@ -210,7 +210,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 
 	//check for children:
 	TiXmlNode* child = 0;
-	while( child = xmlElementNode->IterateChildren( child ) )
+	while( ( child = xmlElementNode->IterateChildren( child ) ) != NULL )
 	{
 		//parse only "elements":
 		TiXmlElement* childElement = child->ToElement();

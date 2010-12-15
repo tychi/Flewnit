@@ -4,14 +4,6 @@
 
 	<UI_Settings>
 		
-		<inputSettings>
-
-			<grabMouse type="BOOL" value="true" />
-			
-			<enableWiimote type="BOOL" value="false" />
-
-		</inputSettings>
-		
 		<windowSettings>
 				
 			<mediaLayer type="STRING" value="GLFW" />
@@ -19,6 +11,7 @@
 			<windowTitle type="STRING" value="Flewnit" />
 			
 			<glContextVersion type="VEC2I" x="3" y="3" />
+			<clVersion type="VEC2I" x="1" y="0"/>
 			
 			<fullScreen type="BOOL" value="true"/>
 			
@@ -28,6 +21,14 @@
 			
 			
 		</windowSettings>
+		
+		<inputSettings>
+
+			<grabMouse type="BOOL" value="true" />
+			
+			<enableWiimote type="BOOL" value="false" />
+
+		</inputSettings>
 		
 		
 		<!-- maybe GUI config to come... -->

@@ -54,7 +54,7 @@ if(UNIX)
     if(RELEASE)
         set(CMAKE_CXX_FLAGS "-O3 -msse4 -mssse3") #Optimized
     else()
-        set(CMAKE_CXX_FLAGS "-O0 -g3") #Debug
+        set(CMAKE_CXX_FLAGS "-Wall -O0 -g3") #Debug
     endif()
     
     #Set c++0x

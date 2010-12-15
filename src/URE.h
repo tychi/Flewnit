@@ -80,8 +80,8 @@ private:
 
 
     bool 					mCorrectlyInitializedGuard;
-    Loader*					mLoader;
     Config*					mConfig;
+    Loader*					mLoader;
 
     WindowManager* 			mWindowManager;
     InputManager*			mInputManager;

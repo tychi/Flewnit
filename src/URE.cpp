@@ -116,7 +116,7 @@ bool URE::init(Path& pathToGlobalConfigFile)
 bool URE::init()
 {
 	Path dummy(FLEWNIT_DEFAULT_CONFIG_PATH);
-	init(dummy  );
+	return init(dummy  );
 }
 
 void URE::resetEngine()
@@ -132,7 +132,9 @@ void URE::resetEngine()
 
 bool URE::enterMainLoop()
 {
+	//TODO
 
+	return false;
 }
 
 
@@ -149,6 +151,8 @@ bool URE::buildSimulationPipeLine(boost::filesystem::path pathToPipelineConfigFi
 {
 	//TODO
 	assert(mCorrectlyInitializedGuard);
+
+	return false;
 }
 
 

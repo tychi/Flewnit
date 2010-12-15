@@ -34,8 +34,6 @@ namespace Flewnit
 		BasicObject(){}
 		virtual ~BasicObject(){}
 
-//#	define FLEWNIT_INSTANTIATE(actualInstantiationExpression, className, purposeDescription) \
-//		className * macroTempInstancPtr =  actualInstantiationExpression
 
 #	define FLEWNIT_INSTANTIATE(instantiationExpression) \
 		instantiationExpression
@@ -58,14 +56,6 @@ namespace Flewnit
 
 
 
-//#	define FLEWNIT_INSTANTIATE(actualInstantiationExpression, className, purposeDescription) \
-//		Flewnit::BasicObjectInstancer::setInitializerGuard(true); \
-//		className * macroTempInstancPtr =  actualInstantiationExpression; \
-//		Flewnit::BasicObjectInstancer::setMemoryFootPrint((int)sizeof(className),macroTempInstancPtr);\
-//		Flewnit::BasicObjectInstancer::setClassName(FLEWNIT_STRINGIFY(className),macroTempInstancPtr);\
-//		Flewnit::BasicObjectInstancer::setPurposeDescription(purposeDescription,macroTempInstancPtr);\
-//		Flewnit::BasicObjectInstancer::registerToProfiler(macroTempInstancPtr); \
-//		Flewnit::BasicObjectInstancer::setInitializerGuard(false)
 
 ///\note  I'm doing some crazy haxx here in order to both
 ///	-assure usage of this macro instead of direct constructor calling by flag setting and
