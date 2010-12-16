@@ -149,6 +149,7 @@ private:
 };
 
 
+
 class ConfigStructNode: public BasicObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
@@ -170,6 +171,9 @@ public:
 	bool isLeafNode()const{return (mChildren.size()==0);}
 
 	List<ConfigStructNode*>& operator[](String name);
+
+	List<ConfigStructNode*>& get(String name);
+	ConfigStructNode& get(String name, int index);
 
 	//ConfigStructNode*& get(String name){return mChildren[name];}
 
@@ -276,6 +280,7 @@ private:
 
 
 
+
 class Config : public BasicObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
@@ -286,6 +291,8 @@ class Config : public BasicObject
 	//friend class Loader;
 	//ConfigStructNode* & rootPtr(){return mRootNode;}
 
+
+
 public:
 	Config(): mRootNode(0)
 	{
@@ -294,7 +301,7 @@ public:
 
 	virtual ~Config(){delete mRootNode;}
 
-	ConfigStructNode& root(){return *mRootNode;}
+	ConfigStructNode & root(){return *mRootNode;}
 
 };
 

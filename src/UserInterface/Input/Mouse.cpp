@@ -10,15 +10,17 @@
 namespace Flewnit
 {
 
-Mouse::Mouse()
-{
-	// TODO Auto-generated constructor stub
 
-}
 
 Mouse::~Mouse()
 {
 	// TODO Auto-generated destructor stub
 }
+
+void Mouse::notifyInterpreter()
+{
+	URE_INSTANCE->getWindowManager()->getInputInterpreter()->interpretInput(this);
+}
+
 
 }

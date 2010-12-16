@@ -26,19 +26,16 @@ public:
 	//instancing function in order to delegate the instantiation of the concrete Timer class (depends on WindowManager)
 	static Timer* create();
 
+	virtual void getCurrentTime()=0;
 
 	virtual void start()=0;
-	virtual void pause()=0;
-	virtual void resume()=0;
 	virtual void stop()=0;
+	virtual void reset()=0;
+
+	virtual double getElapsedTimeInSecondsDouble()=0;
+	virtual float getElapsedTimeInSecondsFloat()=0;
 
 
-
-	virtual float getElapsedTimeInMilliSecondsFloat()=0;
-	virtual float getElapsedTimeInMicroSecondsFloat()=0;
-
-	virtual int getElapsedTimeInMilliSecondsInt()=0;
-	virtual int getElapsedTimeInMicroSecondsInt()=0;
 };
 
 }

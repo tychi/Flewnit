@@ -11,11 +11,14 @@
 
 #pragma once
 
-#include "Util/Timer.h"
+#include "Util/Time/Timer.h"
 
 
 namespace Flewnit
 {
+
+class FPSCounter;
+class InputInterpreter;
 
 enum SimulationDomain
 {
@@ -109,10 +112,11 @@ class Texture3D;
 
 ///\brief Scene forwards;
 ///\{
-class Scene;
-class SceneNode;
-class Camera;
+class SceneGraph;
+class SceneNode
 class WorldObject;
+class Camera;
+
 
 class SubObjectInterface;
 class GeometryInterface;

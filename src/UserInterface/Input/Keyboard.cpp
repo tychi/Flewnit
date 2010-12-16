@@ -7,18 +7,28 @@
 
 #include "Keyboard.h"
 
+#include "URE.h"
+#include "UserInterface/Input/InputInterpreter.h"
+
 namespace Flewnit
 {
 
-Keyboard::Keyboard()
-{
-	// TODO Auto-generated constructor stub
 
-}
+
+
 
 Keyboard::~Keyboard()
 {
 	// TODO Auto-generated destructor stub
 }
+
+
+void Keyboard::notifyInterpreter()
+{
+	URE_INSTANCE->getWindowManager()->getInputInterpreter()->interpretInput(this);
+}
+
+
+
 
 }

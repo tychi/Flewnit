@@ -56,6 +56,9 @@ typedef boost::filesystem::path Path;
 
 #define FLEWNIT_FLAGIFY(value) (1 << value)
 
+//if this value is exceeded, some methods may issue a warning, an error or trunk their timing valus (e.g. to to omit degenerate input interpretation)
+#define FLEWNIT_NON_RESPONSIVE_WARNING_TIME 0.5
+
 
 
 //-----------------------------------------------------------------------

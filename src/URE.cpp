@@ -14,15 +14,24 @@
 #include "Util/Loader/Config.h"
 #include "Util/Loader/Loader.h"
 
+#ifdef FLEWNIT_USE_GLFW
+#	include "UserInterface/WindowManager/GLFWWindowManager.h"
+#else
+	//nothing implemented yet ;)
+#endif
+
+#include "UserInterface/Input/InputManager.h"
+
+#include "Util/Time/FPSCounter.h"
+
+
 
 #include <iostream>
 
 
-
-
-
-
 #include <boost/filesystem/path.hpp>
+
+
 
 
 
@@ -55,11 +64,14 @@ void URE::cleanup()
 URE::URE()
 //: BASIC_OBJECT_CONSTRUCTOR(URE, "URESingletonInstance", "do the unified Rendering")
 : mCorrectlyInitializedGuard(false),
+  mMainLoopQuitRequested(false),
   mConfig(0),
   mLoader(0),
   mWindowManager(0),
   mInputManager(0),
+  mFPSCounter(0),
   mGUI(0),
+  mOpenCLContext(0),
   mSimulationDataBase(0),
   mGeometryConverter(0)
 {
@@ -88,8 +100,7 @@ bool URE::init(Path& pathToGlobalConfigFile)
 	mLoader->loadGlobalConfig(*mConfig,pathToGlobalConfigFile);
 
 #ifdef FLEWNIT_USE_GLFW
-	//mWindowManager = FLEWNIT_INSTANTIATE(new GLFWWindowManager());
-	//mInputManager =  FLEWNIT_INSTANTIATE(new GLFWInputManager());
+	mWindowManager = FLEWNIT_INSTANTIATE(new GLFWWindowManager());
 #else
 #	ifdef	FLEWNIT_USE_XCB
 	assert(0 && "Sorry, XCB Windowmanager not implemented");
@@ -102,6 +113,12 @@ bool URE::init(Path& pathToGlobalConfigFile)
 #	endif
 #endif
 
+	mInputManager =  FLEWNIT_INSTANTIATE(new InputManager());
+	mFPSCounter = new FPSCounter();
+
+
+	//mOpenCLContext = createOpenCLContext();
+
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	Profiler::getInstance().updateMemoryTrackingInfo();
@@ -110,6 +127,7 @@ bool URE::init(Path& pathToGlobalConfigFile)
 
 	Log::getInstance()<<INFO_LOG_LEVEL<<"initializing done!\n";
 
+	mCorrectlyInitializedGuard = true;
 	return mCorrectlyInitializedGuard;
 }
 
@@ -119,13 +137,33 @@ bool URE::init()
 	return init(dummy  );
 }
 
+void URE::createOpenCLContext()
+{
+	//TODO
+}
+
+
 void URE::resetEngine()
 {
 	Log::getInstance()<<INFO_LOG_LEVEL<< "resetting URE;\n";
 
+	mMainLoopQuitRequested = false;
 
-//	delete mInputManager;
-//	delete mWindowManager;
+	delete mGeometryConverter;
+
+	delete mSimulationDataBase;
+
+	for(int runner =0; runner < __NUM_SIM_DOMAINS__ ; runner ++)
+	{
+    	delete mSimulators[runner];
+	}
+
+	delete mOpenCLContext;
+
+	delete mFPSCounter;
+
+	delete mInputManager;
+	delete mWindowManager;
 	delete mLoader;
 	delete mConfig;
 }
@@ -133,15 +171,44 @@ void URE::resetEngine()
 bool URE::enterMainLoop()
 {
 	//TODO
+	bool sucess =true;
 
-	return false;
+	while (sucess &&  (! mMainLoopQuitRequested))
+	{
+		sucess = stepSimulation();
+	}
+
+	return sucess;
 }
 
 
-void URE::stepSimulation(SimStepSettings const& stepSettings)
+bool URE::stepSimulation()
 {
-	//TODO
+	bool success =true;
 	assert(mCorrectlyInitializedGuard);
+
+	mFPSCounter->newFrameStarted();
+
+	//TODO
+
+	//success = mSimulators[MECHANICAL_SIM_DOMAIN] -> stepSimulation();
+
+	//success = mSimulators[VISUAL_SIM_DOMAIN] -> stepSimulation();
+
+	//success =mSimulators[ACUSTIC_SIM_DOMAIN] -> stepSimulation();
+
+	mWindowManager->swapBuffers();
+
+	success = mInputManager->processInput();
+
+
+	mFPSCounter->frameEnded();
+
+	LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(false) << "last FPS\n";
+	LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(true) << "average FPS\n";
+
+	return succes;
+
 }
 
 

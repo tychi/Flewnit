@@ -3,128 +3,142 @@
 <flewnitGlobalConfig>
 
 	<UI_Settings>
-		
+
 		<windowSettings>
-				
+
 			<mediaLayer type="STRING" value="GLFW" />
 
 			<windowTitle type="STRING" value="Flewnit" />
-			
-			<glContextVersion type="VEC2I" x="3" y="3" />
-			<clVersion type="VEC2I" x="1" y="0"/>
-			
-			<fullScreen type="BOOL" value="true"/>
-			
+
+			<fullScreen type="BOOL" value="false"/>
+
 			<enforceCustomResolutionInFullScreen type="BOOL" value="false" />
-			
-			<resolution type="VEC2I" x="1024" y="768" GUIVisibility="read" />
-			
-			
+
+			<resolution type="VEC2I" x="1024" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
+
 		</windowSettings>
+		
+		
+		<OpenGL_Settings>
+			<contextVersion type="VEC2I" x="3" y="3" />
+			<enforceCoreProfile type="BOOL" value="true" />
+		</OpenGL_Settings>
+		
+		
+		<OpenCL_Settings>
+			<contextVersion type="VEC2I" x="1" y="0" />	
+			<deviceType type="STRING" value="GPU" />
+		</OpenCL_Settings>
+
 		
 		<inputSettings>
 
 			<grabMouse type="BOOL" value="true" />
-			
+
 			<enableWiimote type="BOOL" value="false" />
 
 		</inputSettings>
-		
-		
+
+
 		<!-- maybe GUI config to come... -->
-		
+
 	</UI_Settings>
-	
+
+	<generalSettings>
+		<pathToData type="STRING" value="." />
+
+		<!-- simulationPipelineConfig type="STRING" value="SimulationPipeLineConfig.xml"/ -->
+
+		<sceneFile type="STRING" value="../Assets/LakeScene/LakeScene.blend" />
+
+		<sceneAnnotationsFile type="STRING" value="LakeSceneAnnotations.xml" />
+
+	</generalSettings>
+
 	<simulatorSettings>
 		<!--  -->
-		
-		
+
+
 		<SPHFluidMechanicsSimulator>
-				
+
 			<simulatorGeneralSettings>
-				
-				<targetMinSimulationStepsPerSecond type="INT" value="60"  GUIVisibility="read/write" tweakConfigString="TODO"/>		
-				<numFluidParticles 		type="INT" 		value="65536" 	GUIVisibility="read/write" tweakConfigString="TODO"/>
-				<particleRadius 		type="FLOAT" 	value="1.0"		GUIVisibility="read/write" tweakConfigString="TODO"/>
-				
-					
+
+				<targetMinSimulationStepsPerSecond type="INT" value="60" GUIVisibility="read/write"	tweakConfigString="TODO"/>
+				<numFluidParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
+				<particleRadius type="FLOAT" value="1.0"		GUIVisibility="read/write" tweakConfigString="TODO"/>
+
+
 				<fluidParticleMass type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-				
+
 				<particlesPerRigidBody type="INT" value="256" GUIVisibility="read/write" tweakConfigString="TODO"/>
-				
+
 				<particelizeBordersOnly type="BOOL" value ="false" GUIVisibility="read" tweakConfigString="TODO"/>
-				
-				<rigidBodyParticleMass type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>
-						
-			</simulatorGeneralSettings>
-			
-			
-			<AccelerationStructureUpdater>		
-					
-			</AccelerationStructureUpdater>
-			
-			
-			
-			<!-- the following stages two could be joined in trade of stability/accuracy  -->
-			<ParticleDensityComputation>
-						
-			</ParticleDensityComputation>
-			
-			
-			<ParticlePressureComputation>
-					
-			</ParticlePressureComputation>
-			
-			
-			<FluidParticleIntegrator>
-									
-			</FluidParticleIntegrator>
-			
-						
-			<ParticleizedRigidBodyIntegrator>
-								
-			</ParticleizedRigidBodyIntegrator>
-			
-							
-		</SPHFluidMechanicsSimulator>
-		
-		<LightingSimulator>
-				
-			<simulatorGeneralSettings>
-				
+
+				<rigidBodyParticleMass type="FLOAT" value="0.5" GUIVisibility="read/write"
+					tweakConfigString="TODO"/>
 
 			</simulatorGeneralSettings>
-				
+
+
+			<AccelerationStructureUpdater>
+
+			</AccelerationStructureUpdater>
+
+
+
+			<!-- the following stages two could be joined in trade of stability/accuracy
+				-->
+			<ParticleDensityComputation>
+
+			</ParticleDensityComputation>
+
+
+			<ParticlePressureComputation>
+
+			</ParticlePressureComputation>
+
+
+			<FluidParticleIntegrator>
+
+			</FluidParticleIntegrator>
+
+
+			<ParticleizedRigidBodyIntegrator>
+
+			</ParticleizedRigidBodyIntegrator>
+
+
+		</SPHFluidMechanicsSimulator>
+
+		<LightingSimulator>
+
+			<simulatorGeneralSettings>
+
+
+			</simulatorGeneralSettings>
+
 			<SkyBoxRenderer>
-				
-					
+
+
 			</SkyBoxRenderer>
 
 			<ShadowMapGenerator>
-									
+
 			</ShadowMapGenerator>
 
 			<ShadowedLightingStage>
-				
-					
-			</ShadowedLightingStage>						
-			
+
+
+			</ShadowedLightingStage>
+
 			<!-- Fluid rendering specific stages to go -->
-			
+
 		</LightingSimulator>
-		
-	
+
+
 	</simulatorSettings>
 
-	<pathToData type="STRING" value="." />
 
-	<simulationPipelineConfig type="STRING" value="SimulationPipeLineConfig.xml" />
-
-	<sceneFile type="STRING" value="../Assets/LakeScene/LakeScene.blend" />
-
-	<sceneAnnotationsFile type="STRING" value="LakeSceneAnnotations.xml" />
-
-	
 
 
 </flewnitGlobalConfig>

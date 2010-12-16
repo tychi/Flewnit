@@ -9,6 +9,8 @@
 
 #include "Timer.h"
 
+#ifdef FLEWNIT_USE_GLFW
+
 namespace Flewnit
 {
 
@@ -23,18 +25,24 @@ public:
 
 	virtual ~GLFWTimer();
 
+	virtual void getCurrentTime();
+
 	virtual void start();
-	virtual void pause();
-	virtual void resume();
 	virtual void stop();
+	virtual void reset();
 
 
 
-	virtual float getElapsedTimeInMilliSecondsFloat();
-	virtual float getElapsedTimeInMicroSecondsFloat();
+	virtual double getElapsedTimeInSecondsDouble();
+	virtual float getElapsedTimeInSecondsFloat();
 
-	virtual int getElapsedTimeInMilliSecondsInt();
-	virtual int getElapsedTimeInMicroSecondsInt();
+private:
+	bool mIsRunning;
+
+	double mLastStartTime;
+	double mTotalElapsedNonPausedTime;
 };
 
 }
+
+#endif // FLEWNIT_USE_GLFW

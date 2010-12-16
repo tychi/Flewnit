@@ -30,6 +30,11 @@
 
 #include "Simulator/SimulatorForwards.h"
 
+//OpenCL context forward:
+namespace cl
+{
+	class Context;
+}
 
 
 namespace Flewnit {
@@ -53,12 +58,20 @@ public:
     URE();
     virtual ~URE();
 
+    //call after instantiation and after a successful reset, e.g. to parse a new config file and set everything up at runtime (if possible)
     bool init(Path& pathToGlobalConfigFile);
     bool init();
 
+    void registerInputInterpreter(InputInterpreter* interpreter);
+
     void resetEngine();
-    void stepSimulation(SimStepSettings const& stepSettings);
+
+    //library user's choice if she wants to control the steps herself or to enter a main loop;
+    bool stepSimulation();
+
     bool enterMainLoop();
+    //called by InputInterpreter:
+    void requestMainLoopQuit(){mMainLoopQuitRequested = true;}
 
 
     inline GUI* getGUI()const{return mGUI;}
@@ -68,24 +81,36 @@ public:
     inline SimulationDataBase* getSimulationDataBase()const{return mSimulationDataBase;}
     inline SimulatorInterface* getSimulator(SimulationDomain which)const{ assert(which < __NUM_SIM_DOMAINS__); return mSimulators[which];}
 
+    //intitialization per config won't be realized via annoying pointer passing to the constructors of all classes;
+    //instead, the classes grab the Config from the URE Singleton if the need it^^.
+    //cons: bad encapsulation;
+    //pros: have lesser parameters to pass to many constructors;
+    inline const Config& getConfig()const{return *mConfig;}
 
+    inline cl::Context* getOpenCLContext()const{return mOpenCLContext;}
 
 
 private:
 
-    //this routine will call the loader, which will in turn use assimp to load .blend files directly;
-    //bool loadScene(boost::filesystem::path pathToSceneFile);
+	void createOpenCLContext();
+	//not necessary due to the OO-c++-binding :)
+	//void releaseOpenCLContext();
 
     bool buildSimulationPipeLine(boost::filesystem::path pathToPipelineConfigFile);
 
 
     bool 					mCorrectlyInitializedGuard;
+    bool					mMainLoopQuitRequested;
+
     Config*					mConfig;
     Loader*					mLoader;
 
     WindowManager* 			mWindowManager;
     InputManager*			mInputManager;
+    FPSCounter*				mFPSCounter;
     GUI* 					mGUI;
+
+    cl::Context*			mOpenCLContext;
 
     SimulatorInterface*		mSimulators[__NUM_SIM_DOMAINS__];
     SimulationDataBase*		mSimulationDataBase;

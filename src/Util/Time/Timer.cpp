@@ -9,6 +9,8 @@
 
 #include "Util/Log/Log.h"
 
+#include <assert.h>
+
 #ifdef FLEWNIT_USE_GLFW
 #	include "GLFWTimer.h"
 #else
