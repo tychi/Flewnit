@@ -46,10 +46,10 @@ public:
 		notifyInterpreter();
 	}
 
-	void positionChanged(Vector2Di const& newPos)
+	void positionChanged(int x, int y)
 	{
 		mLastPosition = mRecentPosition;
-		mRecentPosition = newPos;
+		mRecentPosition = Vector2Di(x,y);
 
 		mRecentEvent= MOUSE_EVENT_POSITION_CHANGED;
 		notifyInterpreter();

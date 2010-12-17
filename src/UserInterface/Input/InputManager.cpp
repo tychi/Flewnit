@@ -31,13 +31,20 @@ InputManager::InputManager()
 {
 	// TODO Auto-generated constructor stub
 #ifdef FLEWNIT_USE_GLFW
-	glfwSetKeyCallback(keyPressedCallback);
-	glfwSetMouseButtonCallback(mouseButtonChangedCallback);
-	glfwSetMousePosCallback(mouseMovedCallback);
 
 	mKeyboard = FLEWNIT_INSTANTIATE( new Keyboard() );
 	mMouse =  FLEWNIT_INSTANTIATE ( new Mouse() );
 	mWiiMote =  FLEWNIT_INSTANTIATE ( new WiiMote() );
+
+	glfwSetKeyCallback(keyPressedCallback);
+	glfwSetMouseButtonCallback(mouseButtonChangedCallback);
+	glfwSetMousePosCallback(mouseMovedCallback);
+
+
+
+//	mKeyboard = 0;//FLEWNIT_INSTANTIATE( new Keyboard() );
+//		mMouse = 0; //FLEWNIT_INSTANTIATE ( new Mouse() );
+//		mWiiMote = 0;// FLEWNIT_INSTANTIATE ( new WiiMote() );
 #else
 	assert(0);
 #endif
@@ -87,7 +94,7 @@ void InputManager::keyPressedCallback(int key, int status)
 
 void InputManager::mouseMovedCallback(int newXpos, int newYpos)
 {
-	InputManager::getInstance().mMouse->positionChanged(Vector2Di(newXpos,newYpos));
+	InputManager::getInstance().mMouse->positionChanged(newXpos,newYpos);
 }
 
 void InputManager::mouseButtonChangedCallback(int button, int status)

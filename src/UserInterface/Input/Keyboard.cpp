@@ -24,7 +24,10 @@ Keyboard::~Keyboard()
 
 void Keyboard::notifyInterpreter()
 {
-	URE_INSTANCE->getInputInterpreter()->interpretInput(this);
+	if(URE_INSTANCE -> getInputInterpreter())
+	{
+		URE_INSTANCE->getInputInterpreter()->interpretInput(this);
+	}
 }
 
 

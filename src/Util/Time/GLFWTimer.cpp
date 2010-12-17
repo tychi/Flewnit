@@ -21,8 +21,8 @@ namespace Flewnit
 GLFWTimer::GLFWTimer()
 {
 	// TODO Auto-generated constructor stub
-	assert("Sorry for the inconvenence, but GLFW must be initialized before a timer can be used :( Bad haxx as we use glfwGetTime() internally ;("
-			&& URE_INSTANCE->getWindowManager());
+//	assert("Sorry for the inconvenence, but GLFW must be initialized before a timer can be used :( Bad haxx as we use glfwGetTime() internally ;("
+//			&& URE_INSTANCE->getWindowManager());
 
 	reset();
 

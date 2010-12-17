@@ -23,7 +23,10 @@ Mouse::~Mouse()
 
 void Mouse::notifyInterpreter()
 {
-	URE_INSTANCE->getInputInterpreter()->interpretInput(this);
+	if(URE_INSTANCE -> getInputInterpreter())
+	{
+		URE_INSTANCE->getInputInterpreter()->interpretInput(this);
+	}
 }
 
 void Mouse::setHidden(bool value)

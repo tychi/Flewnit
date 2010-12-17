@@ -27,10 +27,13 @@ int main(int argc, char *argv[])
 	FLEWNIT_INSTANTIATE(new Flewnit::URE());
 
 
+
 	//initialize it
 	URE_INSTANCE->init();
 
 	URE_INSTANCE->setInputInterpreter( new Flewnit::DemoInputInterpreter());
+
+
 	URE_INSTANCE->enterMainLoop();
 
 

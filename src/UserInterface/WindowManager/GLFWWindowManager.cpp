@@ -54,7 +54,10 @@ void GLFWWindowManager::init()
 
 		oglVersion =
 			ConfigCaster::cast<Vector2Di> (
-					URE_INSTANCE->getConfig().root().get("OpenGL_Settings",0).get("contextVersion",0)
+					URE_INSTANCE->getConfig().root().
+					get("UI_Settings",0).
+					get("OpenGL_Settings",0).
+					get("contextVersion",0)
 			);
 
 	}
@@ -116,9 +119,9 @@ void GLFWWindowManager::toggleFullScreen()
 void GLFWWindowManager::setMouseGrab(bool value)
 {
 	if(value)
-		glfwEnable(GLFW_MOUSE_CURSOR);
-	else
 		glfwDisable(GLFW_MOUSE_CURSOR);
+	else
+		glfwEnable(GLFW_MOUSE_CURSOR);
 }
 
 

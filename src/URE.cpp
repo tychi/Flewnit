@@ -239,7 +239,14 @@ void URE::setInputInterpreter(InputInterpreter* interpreter)
 
 InputInterpreter* URE::getInputInterpreter()const
 {
-	return mInputManager->getInputInterpreter();
+	if(mInputManager)
+	{
+		return mInputManager->getInputInterpreter();
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 
