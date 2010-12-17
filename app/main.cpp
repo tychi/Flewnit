@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 	//initialize it
 	URE_INSTANCE->init();
 
-
+	URE_INSTANCE->registerInputInterpreter();
 	URE_INSTANCE->enterMainLoop();
 
 

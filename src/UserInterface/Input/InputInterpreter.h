@@ -28,8 +28,8 @@ public:
 	InputInterpreter();
 	virtual ~InputInterpreter();
 
-	//is call by InputManager after registration;
-	virtual void init()=0;
+	//is called by InputManager after registration;
+	//virtual void init()=0;
 
 
 	//"partial visitor pattern": kind of virtual callback: Devices call these functions from their own callback functions, if they have some;

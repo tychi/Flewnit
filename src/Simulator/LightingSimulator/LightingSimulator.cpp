@@ -1,32 +1,31 @@
 /*
- * MechanicsSimulator.cpp
+ * LightingSimulator.cpp
  *
- *  Created on: Dec 16, 2010
+ *  Created on: Dec 17, 2010
  *      Author: tychi
  */
 
-#include "MechanicsSimulator.h"
-
+#include "LightingSimulator.h"
 #include "Util/Log/Log.h"
 
 #include <typeinfo>
 
-
 namespace Flewnit
 {
 
-MechanicsSimulator::MechanicsSimulator()
+LightingSimulator::LightingSimulator()
 {
 	// TODO Auto-generated constructor stub
 
 }
 
-MechanicsSimulator::~MechanicsSimulator()
+LightingSimulator::~LightingSimulator()
 {
 	// TODO Auto-generated destructor stub
 }
 
-bool MechanicsSimulator::stepSimulation() throw(SimulatorException)
+
+bool LightingSimulator::stepSimulation()  throw(SimulatorException)
 {
 	// TODO Auto-generated destructor stub
 	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
@@ -35,7 +34,7 @@ bool MechanicsSimulator::stepSimulation() throw(SimulatorException)
 
 
 //build pipeline according to config;
-bool MechanicsSimulator::initPipeLine() throw(SimulatorException)
+bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 {
 	// TODO Auto-generated destructor stub
 	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  initPipeLine()";
@@ -44,7 +43,7 @@ bool MechanicsSimulator::initPipeLine() throw(SimulatorException)
 
 
 //check if pipeline stages are compatible to each other (also to those stages form other simulators (they might have to interact!))
-bool MechanicsSimulator::validatePipeLine() throw(SimulatorException)
+bool LightingSimulator::validatePipeLine()  throw(SimulatorException)
 {
 	// TODO Auto-generated destructor stub
 	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  validatePipeLine()";

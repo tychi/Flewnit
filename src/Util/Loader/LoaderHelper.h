@@ -25,6 +25,28 @@
 namespace Flewnit
 {
 
+
+class ConfigCaster
+{
+public:
+	template<typename T>
+	static const T& cast(ConfigStructNode* csn)
+	{
+		ConfigValueNode<T>* cvn = dynamic_cast< ConfigValueNode<T>* > (csn);
+
+		if(cvn)
+		{
+			return cvn->value();
+		}
+		else
+		{
+			assert("Bad cast of ConfigStructNode!" && 0);
+			//maybe should reaqlize type-prettyprinting... but later...
+		}
+	}
+
+};
+
 //class LoaderHelper
 //{
 //public:

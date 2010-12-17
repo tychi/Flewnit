@@ -17,7 +17,7 @@ class Keyboard
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
-	Keyboard(): mRecentValue(0), mRecentStatus(0){}
+	Keyboard(): mRecentKey(0), mRecentStatus(0){}
 	virtual ~Keyboard();
 
 
@@ -25,22 +25,20 @@ public:
 	//inputmanager will call this function when it receives input events (e.g. from the window manager, e.g. GLFW);
 	void keyPressed(int value, int status)
 	{
-		mRecentValue = value;
+		mRecentKey = value;
 		mRecentStatus = status;
 		notifyInterpreter();
 	}
 
 
-
-
 	virtual void notifyInterpreter();
 
-	int getRecentValue(){return mRecentValue;}
+	int getRecentKey(){return mRecentKey;}
 	int getRecentStatus(){return mRecentStatus;}
 
 private:
 
-	int mRecentValue;
+	int mRecentKey;
 	int mRecentStatus;
 
 };

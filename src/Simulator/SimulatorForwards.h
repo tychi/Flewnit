@@ -78,7 +78,8 @@ class TriangleIndexBufferGenerator;
 class SimulatorInterface;
 class LightingSimulator;
 //class FluidMechanicsSimulator;
-class SPHFluidMechanicsSimulator;
+class MechanicsSimulator;
+//class SPHFluidMechanicsSimulator;
 class SoundSimulator;
 
 
@@ -113,14 +114,14 @@ class Texture3D;
 ///\brief Scene forwards;
 ///\{
 class SceneGraph;
-class SceneNode
+class SceneNode;
 class WorldObject;
 class Camera;
 
-
-class SubObjectInterface;
-class GeometryInterface;
-class MaterialInterface;
+//abstract generic intercae classes for all simulation domains to derive from them spcifically
+class SubObject;
+class Geometry;
+class Material;
 
 class MechanicSubObject;
 class VisualSubObject;

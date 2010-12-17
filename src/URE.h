@@ -92,7 +92,7 @@ public:
 
 private:
 
-	void createOpenCLContext();
+    void createOpenCLContext();
 	//not necessary due to the OO-c++-binding :)
 	//void releaseOpenCLContext();
 

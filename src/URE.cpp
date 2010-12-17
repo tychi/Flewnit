@@ -24,6 +24,10 @@
 
 #include "Util/Time/FPSCounter.h"
 
+#include "Simulator/MechanicsSimulator/MechanicsSimulator.h"
+#include "Simulator/LightingSimulator/LightingSimulator.h"
+#include "Simulator/SoundSimulator/SoundSimulator.h"
+
 
 
 #include <iostream>
@@ -114,10 +118,24 @@ bool URE::init(Path& pathToGlobalConfigFile)
 #endif
 
 	mInputManager =  FLEWNIT_INSTANTIATE(new InputManager());
-	mFPSCounter = new FPSCounter();
+	mFPSCounter = FLEWNIT_INSTANTIATE(new FPSCounter());
 
 
-	//mOpenCLContext = createOpenCLContext();
+	createOpenCLContext();
+
+	mSimulators[MECHANICAL_SIM_DOMAIN]= FLEWNIT_INSTANTIATE(new MechanicsSimulator());
+	mSimulators[VISUAL_SIM_DOMAIN]=FLEWNIT_INSTANTIATE(new LightingSimulator());
+	mSimulators[ACUSTIC_SIM_DOMAIN]=FLEWNIT_INSTANTIATE(new SoundSimulator());
+
+	for(int runner = 0; runner < __NUM_SIM_DOMAINS__; runner ++)
+	{
+		mSimulators[runner] -> initPipeLine();
+	}
+
+	for(int runner = 0; runner < __NUM_SIM_DOMAINS__; runner ++)
+	{
+		mSimulators[runner] -> validatePipeLine();
+	}
 
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
@@ -140,6 +158,7 @@ bool URE::init()
 void URE::createOpenCLContext()
 {
 	//TODO
+	LOG<<DEBUG_LOG_LEVEL << " OpenCL Context Setup TODO ;(; ";
 }
 
 
