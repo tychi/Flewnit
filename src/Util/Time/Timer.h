@@ -20,13 +20,15 @@ class Timer : public BasicObject
 protected:
 
 	Timer(){}
-	virtual ~Timer(){}
 
 public:
+
 	//instancing function in order to delegate the instantiation of the concrete Timer class (depends on WindowManager)
 	static Timer* create();
 
-	virtual void getCurrentTime()=0;
+	virtual ~Timer(){}
+
+	virtual double getCurrentTime()=0;
 
 	virtual void start()=0;
 	virtual void stop()=0;

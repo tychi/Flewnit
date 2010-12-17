@@ -34,7 +34,7 @@ GLFWTimer::~GLFWTimer()
 }
 
 
-virtual void GLFWTimer::getCurrentTime()
+double GLFWTimer::getCurrentTime()
 {
 	return glfwGetTime();
 }

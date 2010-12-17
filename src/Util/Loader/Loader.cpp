@@ -9,6 +9,10 @@
 
 #include "LoaderHelper.h"
 
+#include <tinyxml.h>
+
+#include <boost/lexical_cast.hpp>
+
 
 
 namespace Flewnit

@@ -62,7 +62,8 @@ public:
     bool init(Path& pathToGlobalConfigFile);
     bool init();
 
-    void registerInputInterpreter(InputInterpreter* interpreter);
+    void setInputInterpreter(InputInterpreter* interpreter);
+    InputInterpreter* getInputInterpreter()const;
 
     void resetEngine();
 
@@ -96,7 +97,7 @@ private:
 	//not necessary due to the OO-c++-binding :)
 	//void releaseOpenCLContext();
 
-    bool buildSimulationPipeLine(boost::filesystem::path pathToPipelineConfigFile);
+    //bool buildSimulationPipeLine(boost::filesystem::path pathToPipelineConfigFile);
 
 
     bool 					mCorrectlyInitializedGuard;

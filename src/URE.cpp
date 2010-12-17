@@ -168,16 +168,17 @@ void URE::resetEngine()
 
 	mMainLoopQuitRequested = false;
 
-	delete mGeometryConverter;
+	//TODO creat classes
+	//delete mGeometryConverter;
 
-	delete mSimulationDataBase;
+	//delete mSimulationDataBase;
 
 	for(int runner =0; runner < __NUM_SIM_DOMAINS__ ; runner ++)
 	{
     	delete mSimulators[runner];
 	}
 
-	delete mOpenCLContext;
+	//delete mOpenCLContext;
 
 	delete mFPSCounter;
 
@@ -223,23 +224,32 @@ bool URE::stepSimulation()
 
 	mFPSCounter->frameEnded();
 
-	LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(false) << "last FPS\n";
-	LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(true) << "average FPS\n";
+	LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(false) << "last FPS;\n";
+	LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(true) << " average FPS;\n";
 
-	return succes;
+	return success;
 
 }
 
 
-
-
-bool URE::buildSimulationPipeLine(boost::filesystem::path pathToPipelineConfigFile)
+void URE::setInputInterpreter(InputInterpreter* interpreter)
 {
-	//TODO
-	assert(mCorrectlyInitializedGuard);
-
-	return false;
+	mInputManager->setInputInterpreter(interpreter);
 }
+
+InputInterpreter* URE::getInputInterpreter()const
+{
+	return mInputManager->getInputInterpreter();
+}
+
+
+//bool URE::buildSimulationPipeLine(boost::filesystem::path pathToPipelineConfigFile)
+//{
+//	//TODO
+//	assert(mCorrectlyInitializedGuard);
+//
+//	return false;
+//}
 
 
 }

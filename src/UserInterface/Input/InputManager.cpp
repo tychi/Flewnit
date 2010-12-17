@@ -54,13 +54,15 @@ InputManager::~InputManager()
 
 
 //let die InputInterpreter do his work: set camera, delegate GUI
-void InputManager::processInput()
+bool InputManager::processInput()
 {
 	assert(mInputInterpreter);
 
 	// keyboard and mouse handle themselves due to tthe callback deleagation;
 	// Wiimote has no functionality yet, but for the lulz, lets' "pull" some stuff, even if only stubs are invoked;
 	mWiiMote->pullStatus();
+
+	return true;
 
 }
 
@@ -69,6 +71,7 @@ void InputManager::setInputInterpreter(InputInterpreter* inputInterpreter)
 	if(mInputInterpreter)
 	{
 		LOG<< WARNING_LOG_LEVEL << "InputInterpreter already set; deleting old one ;\n";
+		delete mInputInterpreter;
 	}
 	mInputInterpreter = inputInterpreter;
 }

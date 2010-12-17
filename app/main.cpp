@@ -10,6 +10,8 @@
 
 #include "Util/Log/Log.h"
 
+#include "DemoInputInterpreter.h"
+
 
 //class Foo : public Flewnit::BasicObject
 //{
@@ -28,7 +30,7 @@ int main(int argc, char *argv[])
 	//initialize it
 	URE_INSTANCE->init();
 
-	URE_INSTANCE->registerInputInterpreter();
+	URE_INSTANCE->setInputInterpreter( new Flewnit::DemoInputInterpreter());
 	URE_INSTANCE->enterMainLoop();
 
 

@@ -7,12 +7,14 @@
 
 #pragma once
 
-#include <queue>
+#include "Common/BasicObject.h"
+
+#include <list>
 
 namespace Flewnit
 {
 
-#include "Timer.h"
+class Timer;
 
 class FPSCounter
 : public BasicObject
@@ -23,22 +25,23 @@ class FPSCounter
 
 	int mNumTotalFrames;
 
-	int mNumFramesToAverage;
+	unsigned int mNumFramesToAverage;
 
 	bool mFrameEndedWasCalledGuard;
 
-	std::queue<double> mLastFrameDurations;
+	std::list<double> mLastFrameDurations;
 
 public:
 	FPSCounter( int framesToAverage = 20);
 	virtual ~FPSCounter();
 
-	void setFramesToAverage(int value);
+	void setFramesToAverage(unsigned int value);
 
 	void newFrameStarted();
 	void frameEnded();
 
 	double getFPS(bool averaged = false);
+	double getLastFrameDuration();
 	int getTotalRenderedFrames();
 };
 

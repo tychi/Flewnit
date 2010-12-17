@@ -25,7 +25,7 @@ public:
 
 	virtual ~GLFWTimer();
 
-	virtual void getCurrentTime();
+	virtual double getCurrentTime();
 
 	virtual void start();
 	virtual void stop();

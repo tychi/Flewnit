@@ -35,7 +35,7 @@ public:
 
 	virtual void setWindowTitle(String title);
 
-	virtual float getLastFrameDuration() ;
+	virtual double getLastFrameDuration() ;
 	virtual double getFPS(bool averaged );
 
 

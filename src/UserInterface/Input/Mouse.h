@@ -75,8 +75,8 @@ private:
 	int mRecentButton;
 	int mRecentButtonStatus;
 
-	Vector2Di mRecentPosition;
 	Vector2Di mLastPosition;
+	Vector2Di mRecentPosition;
 
 	MouseEvent mRecentEvent;
 

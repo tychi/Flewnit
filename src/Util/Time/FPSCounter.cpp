@@ -7,10 +7,13 @@
 
 #include "FPSCounter.h"
 
+#include "Timer.h"
+
 #include <boost/foreach.hpp>
 
 namespace Flewnit
 {
+
 
 FPSCounter::FPSCounter(int framesToAverage)
 : 	mTimer(Timer::create()),
@@ -30,7 +33,7 @@ FPSCounter::~FPSCounter()
 }
 
 
-void FPSCounter::setFramesToAverage(int value)
+void FPSCounter::setFramesToAverage(unsigned int value)
 {
 	//no sophisticatede adjustmenst stuff here, hard reset ;)
 	mLastFrameDurations.empty();
@@ -57,18 +60,18 @@ void FPSCounter::frameEnded()
 	mNumTotalFrames++;
 
 	//add last frame duration to queue;
-	mLastFrameDurations.push( mTimer->getElapsedTimeInSecondsDouble());
+	mLastFrameDurations.push_back( mTimer->getElapsedTimeInSecondsDouble());
 
-	if(mLastFrameDurations.size() > mNumFramesToAverage )
+	if(mLastFrameDurations.size() >  mNumFramesToAverage )
 	{
 		//delete first element, so that we only keep track of the recent mNumFramesToAverage values;
-		mLastFrameDurations.pop();
+		mLastFrameDurations.pop_front();
 	}
 
 	mFrameEndedWasCalledGuard=true;
 }
 
-double FPSCounter::getFPS(bool averaged = false)
+double FPSCounter::getFPS(bool averaged)
 {
 	assert("We need at least one frame passed in order to obtain a valid FPS value;"
 			&& !mLastFrameDurations.empty() && mLastFrameDurations.back()>0.0);
@@ -79,14 +82,25 @@ double FPSCounter::getFPS(bool averaged = false)
 		//we could save the vals instead of recomputing it, but ... what the hell I have to go on! no optimazations a this non-important level!
 		BOOST_FOREACH(double frameDuration, mLastFrameDurations)
 		{
-			totalLastFrameDurations = frameDuration;
+			totalLastFrameDurations += frameDuration;
 		}
+
+//		for(unsigned int runner= 0 ; runner< mLastFrameDurations.size(); runner ++)
+//		{
+//			totalLastFrameDurations += mLastFrameDurations[runner];
+//		}
+
 		return static_cast<double> (mLastFrameDurations.size())	/ totalLastFrameDurations;
 	}
 	else
 	{
 		return 1.0 / mLastFrameDurations.back();
 	}
+}
+
+double FPSCounter::getLastFrameDuration()
+{
+	return mLastFrameDurations.back();
 }
 
 int FPSCounter::getTotalRenderedFrames()

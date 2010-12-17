@@ -58,6 +58,11 @@ List<ConfigStructNode*>& ConfigStructNode::operator[](String name)
 	return mChildren[name];
 }
 
+ConfigStructNode& ConfigStructNode::get(String name, int index)
+{
+	return *(mChildren[name][index]);
+}
+
 
 
 }

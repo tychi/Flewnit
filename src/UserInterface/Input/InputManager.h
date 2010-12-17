@@ -39,10 +39,10 @@ public:
 
 
 	//let die InputInterpreter do his work: set camera, delegate GUI
-	void processInput();
+	bool processInput();
 
 	void setInputInterpreter(InputInterpreter* inputInterpreter);
-
+	InputInterpreter* getInputInterpreter()const {return mInputInterpreter;}
 
 
 protected:
