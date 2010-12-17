@@ -145,7 +145,9 @@ bool URE::init(Path& pathToGlobalConfigFile)
 
 	Log::getInstance()<<INFO_LOG_LEVEL<<"initializing done!\n";
 
+	//hack
 	mCorrectlyInitializedGuard = true;
+
 	return mCorrectlyInitializedGuard;
 }
 
