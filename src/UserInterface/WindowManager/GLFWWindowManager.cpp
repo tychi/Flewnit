@@ -16,7 +16,7 @@
 #include "Util/Loader/Config.h"
 #include "Common/Math.h"
 
-#include "Util/Timer.h"
+#include "Util/Time/FPSCounter.h"
 
 namespace Flewnit
 {
@@ -35,7 +35,7 @@ GLFWWindowManager::~GLFWWindowManager()
 void GLFWWindowManager::init()
 {
 	glfwInit();
-	mTimer = Timer::create();
+	mFPSCounter = new FPSCounter();
 
 	//TODO
 
@@ -43,6 +43,9 @@ void GLFWWindowManager::init()
 //
 //	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR,
 //			);
+
+	//call this now already to assure a valid initial counter state, even if it distorts the first FPS values
+	mFPSCounter->newFrameStarted();
 }
 
 void GLFWWindowManager::cleanup()
@@ -53,7 +56,11 @@ void GLFWWindowManager::cleanup()
 
 void GLFWWindowManager::swapBuffers()
 {
+	mFPSCounter->frameEnded();
 
+	glfwSwapBuffers();
+
+	mFPSCounter->newFrameStarted();
 }
 
 
@@ -62,9 +69,12 @@ void GLFWWindowManager::toggleFullScreen()
 
 }
 
-void GLFWWindowManager::toggleMouseGrab()
+void GLFWWindowManager::setMouseGrab(bool value)
 {
-
+	if(value)
+		glfwEnable(GLFW_MOUSE_CURSOR);
+	else
+		glfwDisable(GLFW_MOUSE_CURSOR);
 }
 
 
@@ -81,7 +91,7 @@ float GLFWWindowManager::getLastFrameDuration()
 
 float GLFWWindowManager::getFPS(bool averaged )
 {
-
+	return mFPSCounter->getFPS(averaged);
 }
 
 void GLFWWindowManager::createWindow(bool fullScreen, const Vector2Di& position, const Vector2Di& resolution)

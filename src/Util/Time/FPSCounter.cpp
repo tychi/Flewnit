@@ -16,7 +16,7 @@ FPSCounter::FPSCounter(int framesToAverage)
 : 	mTimer(Timer::create()),
   	mNumTotalFrames(0),
 	mNumFramesToAverage(framesToAverage),
-	mFrameEndedWasCalledGuard(false)
+	mFrameEndedWasCalledGuard(true)
 {
 
 	// TODO Auto-generated constructor stub

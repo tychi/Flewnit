@@ -14,9 +14,10 @@
 namespace Flewnit
 {
 
-class Timer;
+class FPSCounter;
 
-class GLFWWindowManager: public WindowManager
+class GLFWWindowManager
+: public WindowManager
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 
@@ -30,20 +31,20 @@ public:
 	virtual void swapBuffers();
 
 	virtual void toggleFullScreen();
-	virtual void toggleMouseGrab();
+	virtual void setMouseGrab(bool value);
 
 	virtual void setWindowTitle(String title);
 
 	virtual float getLastFrameDuration() ;
-	virtual float getFPS(bool averaged );
+	virtual double getFPS(bool averaged );
 
 
 protected:
 
 
-	virtual void createWindow(bool fullScreen, const Vector2Di& position, const Vector2Di& resolution) = 0;
+	virtual void createWindow(bool fullScreen, const Vector2Di& position, const Vector2Di& resolution) ;
 
-	Timer* mTimer;
+	FPSCounter* mFPSCounter;
 
 
 };

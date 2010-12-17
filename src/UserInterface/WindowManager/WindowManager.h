@@ -35,12 +35,12 @@ public:
 	virtual void swapBuffers() = 0;
 
 	virtual void toggleFullScreen() = 0;
-	virtual void toggleMouseGrab() = 0;
+	virtual void setMouseGrab(bool value) = 0;
 
 	virtual void setWindowTitle(String title) =0;
 
 	virtual float getLastFrameDuration() = 0;
-	virtual float getFPS(bool averaged =false )=0;
+	virtual double getFPS(bool averaged =false )=0;
 
 
 protected:

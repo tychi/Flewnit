@@ -7,6 +7,9 @@
 
 #include "Mouse.h"
 
+//#include "URE.h";
+#include "UserInterface/WindowManager/WindowManager.h"
+
 namespace Flewnit
 {
 
@@ -20,6 +23,12 @@ Mouse::~Mouse()
 void Mouse::notifyInterpreter()
 {
 	URE_INSTANCE->getWindowManager()->getInputInterpreter()->interpretInput(this);
+}
+
+void Mouse::setHidden(bool value)
+{
+	//forward request to window manager;
+	WindowManager::getInstance().setMouseGrab(value);
 }
 
 

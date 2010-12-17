@@ -27,7 +27,7 @@ public:
 		MOUSE_EVENT_BUTTON_CHANGED
 	};
 
-	Mouse(): mRecentButton(0), mRecentStatus(0), mLastPosition(0,0),mRecentPosition(0,0), mRecentEvent(MOUSE_EVENT_NONE)
+	Mouse(): mRecentButton(0), mRecentButtonStatus(0), mLastPosition(0,0),mRecentPosition(0,0), mRecentEvent(MOUSE_EVENT_NONE)
 	{}
 
 	virtual ~Mouse();
@@ -41,7 +41,7 @@ public:
 	void buttonChanged(int value, int status)
 	{
 		mRecentButton = value;
-		mRecentStatus = status;
+		mRecentButtonStatus = status;
 		mRecentEvent= MOUSE_EVENT_BUTTON_CHANGED;
 		notifyInterpreter();
 	}
@@ -59,16 +59,21 @@ public:
 
 	virtual void notifyInterpreter();
 
-	int getRecentButton(){return mRecentButton;}
-	int getRecentStatus(){return mRecentStatus;}
-
 
 	inline MouseEvent getRecentEvent()const{return mRecentEvent;}
+	int getRecentButton(){return mRecentButton;}
+	int getRecentButtonStatus(){return mRecentButtonStatus;}
+	const Vector2Di & getRecentPosition()const{return mRecentPosition;}
+	const Vector2Di & getLastPosition()const{return mLastPosition;}
+
+
+	void setHidden(bool value);
+
 
 private:
 
 	int mRecentButton;
-	int mRecentStatus;
+	int mRecentButtonStatus;
 
 	Vector2Di mRecentPosition;
 	Vector2Di mLastPosition;
