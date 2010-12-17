@@ -12,6 +12,8 @@
 #include "Mouse.h"
 #include "WiiMote.h"
 
+#include "InputInterpreter.h"
+
 #include <boost/foreach.hpp>
 
 #ifdef FLEWNIT_USE_GLFW
@@ -80,17 +82,17 @@ void InputManager::setInputInterpreter(InputInterpreter* inputInterpreter)
 //the callback functions to go:
 void InputManager::keyPressedCallback(int key, int status)
 {
-	mKeyboard->keyPressed(key,status);
+	InputManager::getInstance().mKeyboard->keyPressed(key,status);
 }
 
 void InputManager::mouseMovedCallback(int newXpos, int newYpos)
 {
-	mMouse->positionChanged(Vector2Di(newXpos,newYpos));
+	InputManager::getInstance().mMouse->positionChanged(Vector2Di(newXpos,newYpos));
 }
 
 void InputManager::mouseButtonChangedCallback(int button, int status)
 {
-	mMouse->buttonChanged(button,status);
+	InputManager::getInstance().mMouse->buttonChanged(button,status);
 }
 
 

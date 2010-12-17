@@ -8,14 +8,13 @@
 #include "Keyboard.h"
 
 #include "URE.h"
+#include "UserInterface/WindowManager/WindowManager.h"
 #include "UserInterface/Input/InputInterpreter.h"
+
+
 
 namespace Flewnit
 {
-
-
-
-
 
 Keyboard::~Keyboard()
 {
@@ -25,7 +24,7 @@ Keyboard::~Keyboard()
 
 void Keyboard::notifyInterpreter()
 {
-	URE_INSTANCE->getWindowManager()->getInputInterpreter()->interpretInput(this);
+	URE_INSTANCE->getInputInterpreter()->interpretInput(this);
 }
 
 

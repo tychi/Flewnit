@@ -8,6 +8,10 @@
 #include "WiiMote.h"
 #include "Util/Log/Log.h"
 
+#include "URE.h"
+#include "UserInterface/WindowManager/WindowManager.h"
+#include "UserInterface/Input/InputInterpreter.h"
+
 namespace Flewnit
 {
 
@@ -33,7 +37,7 @@ void WiiMote::pullStatus() //TODO use WiiYouself or whatever to realize stuff; t
 
 void WiiMote::notifyInterpreter()
 {
-	URE_INSTANCE->getWindowManager()->getInputInterpreter()->interpretInput(this);
+	URE_INSTANCE->getInputInterpreter()->interpretInput(this);
 }
 
 

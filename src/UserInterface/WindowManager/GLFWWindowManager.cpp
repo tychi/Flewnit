@@ -53,7 +53,7 @@ void GLFWWindowManager::init()
 	{
 
 		oglVersion =
-			ConfigCaster::cast<const Vector2Di&> (
+			ConfigCaster::cast<Vector2Di> (
 					URE_INSTANCE->getConfig().root().get("OpenGL_Settings",0).get("contextVersion",0)
 			);
 

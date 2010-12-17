@@ -9,6 +9,7 @@
 
 #include "URE.h"
 #include "UserInterface/WindowManager/WindowManager.h"
+#include "UserInterface/Input/InputInterpreter.h"
 
 namespace Flewnit
 {

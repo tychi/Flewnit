@@ -9,14 +9,17 @@
 
 #pragma once
 
+#include "Common/BasicObject.h"
+
+
+
 namespace Flewnit
 {
-
-#include "Common/BasicObject.h"
 
 class Keyboard;
 class Mouse;
 class WiiMote;
+
 
 class InputInterpreter
 : public BasicObject

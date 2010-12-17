@@ -16,7 +16,7 @@ namespace Flewnit
 class InputDevice;
 class Keyboard;
 class Mouse;
-class Wiimote;
+class WiiMote;
 
 class InputInterpreter;
 
@@ -50,7 +50,7 @@ protected:
 
 	Keyboard* mKeyboard;
 	Mouse* mMouse;
-	Wiimote* mWiiMote;
+	WiiMote* mWiiMote;
 
 	InputInterpreter* mInputInterpreter;
 };

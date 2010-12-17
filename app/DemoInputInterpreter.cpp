@@ -10,6 +10,12 @@
 
 #include "URE.h"
 
+
+#include "UserInterface/Input/Keyboard.h"
+#include "UserInterface/Input/Mouse.h"
+#include "UserInterface/Input/WiiMote.h"
+
+
 #ifdef FLEWNIT_USE_GLFW
 #	include <GL/glfw.h>
 #else

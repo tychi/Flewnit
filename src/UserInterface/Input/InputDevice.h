@@ -20,9 +20,9 @@ class InputDevice
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
-	double mTimeAtLastUpdate;
-	double mTimeSinceLastUpdate;
-	Timer* mTimer;
+//	double mTimeAtLastUpdate;
+//	double mTimeSinceLastUpdate;
+//	Timer* mTimer;
 
 public:
 	InputDevice();

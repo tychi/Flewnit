@@ -208,7 +208,7 @@ public:
 
 
 
-	const T& value(){return mValue;}
+	T value(){return mValue;}
 	const GUIParams& getGUIParams(){return mGUIParams;}
 
 private:

@@ -86,7 +86,7 @@ public:
     //instead, the classes grab the Config from the URE Singleton if the need it^^.
     //cons: bad encapsulation;
     //pros: have lesser parameters to pass to many constructors;
-    inline const Config& getConfig()const{return *mConfig;}
+    inline Config& getConfig()const{return *mConfig;}
 
     inline cl::Context* getOpenCLContext()const{return mOpenCLContext;}
 
