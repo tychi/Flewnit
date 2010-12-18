@@ -213,11 +213,11 @@ bool URE::stepSimulation()
 
 	//TODO
 
-	//success = mSimulators[MECHANICAL_SIM_DOMAIN] -> stepSimulation();
+	success = mSimulators[MECHANICAL_SIM_DOMAIN] -> stepSimulation();
 
-	//success = mSimulators[VISUAL_SIM_DOMAIN] -> stepSimulation();
+	success = mSimulators[VISUAL_SIM_DOMAIN] -> stepSimulation();
 
-	//success =mSimulators[ACUSTIC_SIM_DOMAIN] -> stepSimulation();
+	success =mSimulators[ACUSTIC_SIM_DOMAIN] -> stepSimulation();
 
 	mWindowManager->swapBuffers();
 
@@ -226,8 +226,8 @@ bool URE::stepSimulation()
 
 	mFPSCounter->frameEnded();
 
-	LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(false) << "last FPS;\n";
-	LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(true) << " average FPS;\n";
+	//LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(false) << "last FPS;\n";
+	//LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(true) << " average FPS;\n";
 
 	return success;
 

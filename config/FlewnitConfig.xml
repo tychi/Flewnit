@@ -33,7 +33,7 @@
 		
 		<inputSettings>
 
-			<grabMouse type="BOOL" value="true" />
+			<grabMouse type="BOOL" value="false" />
 
 			<enableWiimote type="BOOL" value="false" />
 

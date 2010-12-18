@@ -10,6 +10,8 @@
 
 #include <typeinfo>
 
+#include <GL/gl.h>
+
 namespace Flewnit
 {
 
@@ -28,7 +30,9 @@ LightingSimulator::~LightingSimulator()
 bool LightingSimulator::stepSimulation()  throw(SimulatorException)
 {
 	// TODO Auto-generated destructor stub
-	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
+	//LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
+	glClearColor(1,1,0,0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	return true;
 }
 

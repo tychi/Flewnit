@@ -46,7 +46,8 @@ void GLFWWindowManager::init()
 	Vector2Di winRes(300,500);
 	bool enforceCoreProfile = false;
 	bool grabMouse = false;
-	bool fullscreen = false;
+	bool fullscreen = true;
+	String windowTitle = "myASS";
 
 
 	try
@@ -91,6 +92,11 @@ void GLFWWindowManager::init()
 
 	setMouseGrab(grabMouse);
 
+	setWindowTitle(windowTitle);
+
+	glfwSetWindowSizeCallback(windowChangeCallback);
+
+
 	//call this now already to assure a valid initial counter state, even if it distorts the first FPS values
 	mFPSCounter->newFrameStarted();
 }
@@ -127,7 +133,7 @@ void GLFWWindowManager::setMouseGrab(bool value)
 
 void GLFWWindowManager::setWindowTitle(String title)
 {
-
+	glfwSetWindowTitle(title.c_str());
 }
 
 
@@ -147,6 +153,19 @@ void GLFWWindowManager::createWindow(bool fullScreen, const Vector2Di& position,
 			fullScreen? GLFW_FULLSCREEN : GLFW_WINDOW );
 
 	glfwSetWindowPos(position.x,position.y);
+
+}
+
+void GLFWWindowManager::windowChangeCallback(int newResX, int newResY)
+{
+	LOG<<INFO_LOG_LEVEL<<"Resolution is now ("<<newResX<<","<<newResY<<");\n";
+}
+
+Vector2Di GLFWWindowManager::getWindowResolution()
+{
+	int actualResX, actualResY;
+	glfwGetWindowSize(&actualResX,&actualResY);
+	return Vector2Di(actualResX,actualResY);
 }
 
 

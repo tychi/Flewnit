@@ -39,6 +39,11 @@ public:
 	virtual double getFPS(bool averaged );
 
 
+	virtual Vector2Di getWindowResolution();
+
+	static void windowChangeCallback(int newResX, int newResY);
+
+
 protected:
 
 

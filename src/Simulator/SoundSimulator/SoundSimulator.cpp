@@ -29,7 +29,7 @@ SoundSimulator::~SoundSimulator()
 bool SoundSimulator::stepSimulation() throw(SimulatorException)
 {
 	// TODO Auto-generated destructor stub
-	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
+	//LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
 	return true;
 }
 

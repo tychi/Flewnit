@@ -42,6 +42,8 @@ public:
 	virtual double getLastFrameDuration() = 0;
 	virtual double getFPS(bool averaged =false )=0;
 
+	virtual Vector2Di getWindowResolution()=0;
+
 
 protected:
 

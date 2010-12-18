@@ -15,6 +15,8 @@
 #include "UserInterface/Input/Mouse.h"
 #include "UserInterface/Input/WiiMote.h"
 
+#include "UserInterface/WindowManager/WindowManager.h"
+
 
 #ifdef FLEWNIT_USE_GLFW
 #	include <GL/glfw.h>
@@ -42,7 +44,10 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 	{
 		if(keyboard->getRecentStatus() == GLFW_PRESS)
 		{
+
 			LOG<<DEBUG_LOG_LEVEL<<"enter pressed;\n";
+			Vector2Di currentRes = WindowManager::getInstance().getWindowResolution();
+			LOG<<INFO_LOG_LEVEL<<"Resolution is now ("<<currentRes.x<<","<<currentRes.y<<");\n";
 		}
 		else
 		{

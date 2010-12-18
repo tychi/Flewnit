@@ -30,7 +30,7 @@ WiiMote::~WiiMote()
 //to be overridden by devices which don't have a callback functionality to get informed about their status changes, e.g. a Wiimote
 void WiiMote::pullStatus() //TODO use WiiYouself or whatever to realize stuff; this is only a stub, Wiimote isn't supported yet;
 {
-	LOG<<WARNING_LOG_LEVEL<< "  WiiMote::pullStatus(): no functionality implemented yet ;( ";
+	//LOG<<WARNING_LOG_LEVEL<< "  WiiMote::pullStatus(): no functionality implemented yet ;( ";
 	notifyInterpreter();
 }
 
