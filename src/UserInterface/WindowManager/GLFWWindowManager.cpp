@@ -42,11 +42,11 @@ void GLFWWindowManager::init()
 
 	//all invalid or values we don't want (in order to check config pasring success)
 	Vector2Di oglVersion(0,0);
-	Vector2Di winPos(100,100);
+	Vector2Di winPos(700,100);
 	Vector2Di winRes(300,500);
 	bool enforceCoreProfile = false;
 	bool grabMouse = false;
-	bool fullscreen = true;
+	bool fullscreen = false;
 	String windowTitle = "myASS";
 
 
@@ -103,6 +103,8 @@ void GLFWWindowManager::init()
 
 void GLFWWindowManager::cleanup()
 {
+	delete mFPSCounter;
+
 	glfwTerminate();
 }
 

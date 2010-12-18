@@ -57,6 +57,8 @@ InputManager::~InputManager()
 	delete mKeyboard;
 	delete mMouse;
 	delete mWiiMote;
+
+	delete mInputInterpreter;
 }
 
 

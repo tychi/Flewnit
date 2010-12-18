@@ -168,9 +168,11 @@ void URE::resetEngine()
 {
 	Log::getInstance()<<INFO_LOG_LEVEL<< "resetting URE;\n";
 
+	Profiler::getInstance().updateMemoryTrackingInfo();
+
 	mMainLoopQuitRequested = false;
 
-	//TODO creat classes
+	//TODO create classes
 	//delete mGeometryConverter;
 
 	//delete mSimulationDataBase;
@@ -188,6 +190,8 @@ void URE::resetEngine()
 	delete mWindowManager;
 	delete mLoader;
 	delete mConfig;
+
+	Profiler::getInstance().printRegisteredObjects();
 }
 
 bool URE::enterMainLoop()
