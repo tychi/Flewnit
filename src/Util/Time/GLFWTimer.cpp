@@ -9,7 +9,8 @@
 
 #ifdef FLEWNIT_USE_GLFW
 
-#include <GL/glfw.h>
+//#include <GL/glfw.h>
+#include "Common/CL_GL_Common.h"
 
 //need this to assert glfw has bin intialized;
 #	include "URE.h"

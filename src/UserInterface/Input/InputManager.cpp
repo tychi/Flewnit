@@ -16,11 +16,14 @@
 
 #include <boost/foreach.hpp>
 
-#ifdef FLEWNIT_USE_GLFW
-# include <GL/glfw.h>
-#else
+//#ifdef FLEWNIT_USE_GLFW
+//# include <GL/glfw.h>
+//#else
+//#endif
+#include "Common/CL_GL_Common.h"
 
-#endif
+
+
 
 
 namespace Flewnit

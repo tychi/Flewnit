@@ -10,7 +10,8 @@
 
 #ifdef FLEWNIT_USE_GLFW
 
-#include "GL/glfw.h"
+//#include <GL/glfw.h>
+#include "Common/CL_GL_Common.h"
 
 #include "URE.h"
 #include "Util/Loader/Config.h"
