@@ -69,11 +69,16 @@ elseif(WIN32)
 endif(UNIX)
 
 
+#need to include FindOPENCL.cmake to
+SET( CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake)
+message("CMake module path for OpenCL finding: ${CMAKE_MODULE_PATH}\n")
+
+
 
 
 #check for qt
-find_package(Qt4 REQUIRED)
-include(${QT_USE_FILE})
+#find_package(Qt4 REQUIRED)
+#include(${QT_USE_FILE})
 
 if(UNIX)
 
@@ -147,12 +152,12 @@ endif(UNIX)
 
 
 #${SDL_INCLUDE_DIRECTORY}
+#     ${QT_INCLUDES}	  
  #to add the "src" directory to the include path might seem hacky, but at least for development purposes this seems appropriate
  include_directories(
      src
      include
-     ${GLM_DIRECTORY}
-     ${QT_INCLUDES}	    	
+     ${GLM_DIRECTORY}  	
  )
  
  
@@ -225,7 +230,8 @@ add_library(flewnit ${LIBRARY_SOURCE_FILES})
 #tell cmake to link the libflewnit library against the given third party libraries
 #TODO: add gpuTE ass dependency :D
 #TODO: unterstand why only relevant qt stuff will be linked against ;) yes, I'm noob with cmake and qt ;)
-target_link_libraries(flewnit ${OPENGL_LIB} freeimageplus ${QT_LIBRARIES} assimp)
+#${QT_LIBRARIES}
+target_link_libraries(flewnit ${OPENGL_LIB} freeimageplus assimp)
 
 target_link_libraries(flewnit boost_filesystem)
 
