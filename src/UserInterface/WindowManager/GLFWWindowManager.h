@@ -42,7 +42,12 @@ public:
 	virtual Vector2Di getWindowResolution();
 	virtual bool windowIsOpened();
 
+	virtual void setWindowPosition(Vector2Di newPos);
+	virtual void printInfo();
+
 	static void windowChangeCallback(int newResX, int newResY);
+
+
 
 
 protected:

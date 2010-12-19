@@ -45,6 +45,10 @@ public:
 	virtual Vector2Di getWindowResolution()=0;
 	virtual bool windowIsOpened()=0;
 
+	virtual void printInfo()=0;
+
+	virtual void setWindowPosition(Vector2Di newPos) =0;
+
 
 protected:
 

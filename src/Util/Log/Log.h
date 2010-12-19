@@ -61,6 +61,7 @@ public:
 
 	Log& operator<<(LogLevel loglevel);
 	Log& operator<<(String logEntry);
+	Log& operator<<(const unsigned char* logEntry);
 
 	inline Log& operator<<(int logEntry){return handleGenericValues<int>(logEntry);}
 	inline Log& operator<<(uint logEntry){return handleGenericValues<uint>(logEntry);}

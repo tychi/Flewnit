@@ -55,8 +55,20 @@ Log&  Log::operator<<(String logEntry)
 	return (*this);
 }
 
-
-
+Log&  Log::operator<<(const unsigned char* logEntry)
+{
+	String stringEntry( reinterpret_cast<const char*>( logEntry) );
+	return *(this)<<stringEntry;
+//	if(!charPtr)
+//	{
+//		assert(0 && "Log: Bad cast from const unsigned char* to const char* ");
+//	}
+//	(*mFileStream) << String( charPtr );
+//
+//	handleConsoleOutput( String( charPtr ) );
+//
+//	return (*this);
+}
 
 #if FLEWNIT_DO_CONSOLE_DEBUG_OUTPUT
 void Log::handleConsoleOutput(String logEntry)

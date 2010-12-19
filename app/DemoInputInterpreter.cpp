@@ -126,6 +126,14 @@ void DemoInputInterpreter::interpretInput(Mouse* mouse)
 					<<");\n"
 					;
 		}
+		else
+		{
+			if(mouse->getRecentEvent() == Mouse::MOUSE_EVENT_WHEEL_CHANGED)
+			{
+				WindowManager::getInstance().setWindowPosition(
+						Vector2Di(mouse->getRecentWheelValue()+100, 500));
+			}
+		}
 	}
 }
 

@@ -35,6 +35,7 @@ public:
 	static void keyPressedCallback(int key, int status);
 	static void mouseMovedCallback(int newXpos, int newYpos);
 	static void mouseButtonChangedCallback(int button, int status);
+	static void mouseWheelCallback(int wheelValue);
 	//Wiimote will have to pull its own status actively, i.e. no callback function needed;
 
 

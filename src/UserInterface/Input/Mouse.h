@@ -24,10 +24,18 @@ public:
 	{
 		MOUSE_EVENT_NONE,
 		MOUSE_EVENT_POSITION_CHANGED,
-		MOUSE_EVENT_BUTTON_CHANGED
+		MOUSE_EVENT_BUTTON_CHANGED,
+		MOUSE_EVENT_WHEEL_CHANGED
 	};
 
-	Mouse(): mRecentButton(0), mRecentButtonStatus(0), mLastPosition(0,0),mRecentPosition(0,0), mRecentEvent(MOUSE_EVENT_NONE)
+	Mouse():
+		mRecentButton(0),
+		mRecentButtonStatus(0),
+		mLastPosition(0,0),
+		mRecentPosition(0,0),
+		mLastWheelValue(0),
+		mRecentWheelValue(0),
+		mRecentEvent(MOUSE_EVENT_NONE)
 	{}
 
 	virtual ~Mouse();
@@ -55,6 +63,15 @@ public:
 		notifyInterpreter();
 	}
 
+	void mouseWheelChanged(int newWheelValue)
+	{
+		mLastWheelValue = mRecentWheelValue;
+		mRecentWheelValue = newWheelValue;
+
+		mRecentEvent= MOUSE_EVENT_WHEEL_CHANGED;
+		notifyInterpreter();
+	}
+
 
 
 	virtual void notifyInterpreter();
@@ -65,6 +82,8 @@ public:
 	int getRecentButtonStatus(){return mRecentButtonStatus;}
 	const Vector2Di & getRecentPosition()const{return mRecentPosition;}
 	const Vector2Di & getLastPosition()const{return mLastPosition;}
+	int getRecentWheelValue()const{return mRecentWheelValue;}
+	int getLastWheelValue()const{return mLastWheelValue;}
 
 
 	void setHidden(bool value);
@@ -77,6 +96,9 @@ private:
 
 	Vector2Di mLastPosition;
 	Vector2Di mRecentPosition;
+
+	int mLastWheelValue;
+	int mRecentWheelValue;
 
 	MouseEvent mRecentEvent;
 

@@ -76,13 +76,13 @@ void GLFWWindowManager::init()
 				get("enforceCoreProfile",0)
 		);
 
-//		winPos =
-//			ConfigCaster::cast<Vector2Di> (
-//				URE_INSTANCE->getConfig().root().
-//				get("UI_Settings",0).
-//				get("windowSettings",0).
-//				get("position",0)
-//		);
+		winPos =
+			ConfigCaster::cast<Vector2Di> (
+				URE_INSTANCE->getConfig().root().
+				get("UI_Settings",0).
+				get("windowSettings",0).
+				get("position",0)
+		);
 
 		winRes =
 			ConfigCaster::cast<Vector2Di> (
@@ -156,6 +156,10 @@ void GLFWWindowManager::init()
 	glfwSetWindowSizeCallback(windowChangeCallback);
 
 
+	setWindowPosition(winPos);
+
+	printInfo();
+
 	//call this now already to assure a valid initial counter state, even if it distorts the first FPS values
 	mFPSCounter->newFrameStarted();
 }
@@ -180,7 +184,7 @@ void GLFWWindowManager::swapBuffers()
 
 void GLFWWindowManager::toggleFullScreen()
 {
-
+	LOG<<WARNING_LOG_LEVEL<<"Fullscreen toogle not possible with GLFW!\n";
 }
 
 void GLFWWindowManager::setMouseGrab(bool value)
@@ -210,12 +214,15 @@ double GLFWWindowManager::getFPS(bool averaged )
 
 void GLFWWindowManager::createWindow(bool fullScreen, const Vector2Di& position, const Vector2Di& resolution)
 {
-	glfwSetWindowPos(position.x,position.y);
-
 	glfwOpenWindow(resolution.x,resolution.y,8,8,8,8,32,32,
 			fullScreen? GLFW_FULLSCREEN : GLFW_WINDOW );
-
 }
+
+void GLFWWindowManager::setWindowPosition(Vector2Di newPos)
+{
+	glfwSetWindowPos(newPos.x,newPos.y);
+}
+
 
 void GLFWWindowManager::windowChangeCallback(int newResX, int newResY)
 {
@@ -227,6 +234,45 @@ Vector2Di GLFWWindowManager::getWindowResolution()
 	int actualResX, actualResY;
 	glfwGetWindowSize(&actualResX,&actualResY);
 	return Vector2Di(actualResX,actualResY);
+}
+
+
+void GLFWWindowManager::printInfo()
+{
+	LOG<< INFO_LOG_LEVEL << "Supported OpenGL and installed driver Version: " <<  glGetString(GL_VERSION)<<"\n";
+
+	GLint  majorVersion,minorVersion;
+	glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
+	glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
+	LOG<< INFO_LOG_LEVEL << "Used OpenGL Version: " << majorVersion<<"."<<minorVersion<<"\n";
+
+
+	LOG<< INFO_LOG_LEVEL << "Used GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION)<<"\n";
+
+
+	LOG<< INFO_LOG_LEVEL << "Hardware vendor: "<<glGetString(GL_VENDOR)<<"\n";
+	LOG<< INFO_LOG_LEVEL << "Rendering device: "<<glGetString(GL_RENDERER)<<"\n";
+
+
+//	GLint maxVertexTextures, maxFragmentTextures,MajorVersion,MinorVersion,numext,pointSize;
+//	glGetIntegerv(GL_POINT_SIZE, &pointSize);
+//    Logger::Instance().message << pointSize;
+//    Logger::Instance().log("MESSAGE","Point Size");
+//
+
+//	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,&maxTex1);
+//	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,&maxTex2);
+//    Logger::Instance().message << maxTex1 << " " << maxTex2;
+//    Logger::Instance().log("MESSAGE","MaxTex");
+//
+//	glGetIntegerv(GL_NUM_EXTENSIONS, &numext);
+//    Logger::Instance().message << "Found " << numext << " GL_EXTENSIONS";
+//    Logger::Instance().log("MESSAGE","GL_EXTENSIONS");
+
+//	for (int i = 0; i < numext; i++) {
+//		Logger::Instance().message << glGetStringi(GL_EXTENSIONS,i);
+//		Logger::Instance().log("DEBUG","GL_EXTENSIONS");
+//	}
 }
 
 

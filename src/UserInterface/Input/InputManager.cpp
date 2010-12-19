@@ -37,9 +37,10 @@ InputManager::InputManager()
 	mWiiMote =  FLEWNIT_INSTANTIATE ( new WiiMote() );
 
 	glfwSetKeyCallback(keyPressedCallback);
+
 	glfwSetMouseButtonCallback(mouseButtonChangedCallback);
 	glfwSetMousePosCallback(mouseMovedCallback);
-
+	glfwSetMouseWheelCallback(mouseWheelCallback);
 
 
 //	mKeyboard = 0;//FLEWNIT_INSTANTIATE( new Keyboard() );
@@ -103,6 +104,14 @@ void InputManager::mouseButtonChangedCallback(int button, int status)
 {
 	InputManager::getInstance().mMouse->buttonChanged(button,status);
 }
+
+
+void InputManager::mouseWheelCallback(int wheelValue)
+{
+	InputManager::getInstance().mMouse->mouseWheelChanged(wheelValue);
+}
+
+
 
 
 }
