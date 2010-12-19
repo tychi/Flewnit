@@ -233,6 +233,8 @@ bool URE::stepSimulation()
 	//LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(false) << "last FPS;\n";
 	//LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(true) << " average FPS;\n";
 
+	success &= mWindowManager->windowIsOpened();
+
 	return success;
 
 }

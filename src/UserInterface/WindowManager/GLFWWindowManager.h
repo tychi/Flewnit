@@ -40,6 +40,7 @@ public:
 
 
 	virtual Vector2Di getWindowResolution();
+	virtual bool windowIsOpened();
 
 	static void windowChangeCallback(int newResX, int newResY);
 

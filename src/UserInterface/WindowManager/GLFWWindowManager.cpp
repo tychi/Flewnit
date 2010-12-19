@@ -33,6 +33,13 @@ GLFWWindowManager::~GLFWWindowManager()
 	cleanup();
 }
 
+
+bool GLFWWindowManager::windowIsOpened()
+{
+	return	(glfwGetWindowParam(GLFW_OPENED)  == GL_TRUE ) ? true : false;
+}
+
+
 void GLFWWindowManager::init()
 {
 	glfwInit();
@@ -42,7 +49,7 @@ void GLFWWindowManager::init()
 
 	//all invalid or values we don't want (in order to check config pasring success)
 	Vector2Di oglVersion(0,0);
-	Vector2Di winPos(700,100);
+	Vector2Di winPos(0,0);
 	Vector2Di winRes(300,500);
 	bool enforceCoreProfile = false;
 	bool grabMouse = false;
@@ -60,6 +67,58 @@ void GLFWWindowManager::init()
 					get("OpenGL_Settings",0).
 					get("contextVersion",0)
 			);
+
+		enforceCoreProfile =
+			ConfigCaster::cast<bool> (
+				URE_INSTANCE->getConfig().root().
+				get("UI_Settings",0).
+				get("OpenGL_Settings",0).
+				get("enforceCoreProfile",0)
+		);
+
+//		winPos =
+//			ConfigCaster::cast<Vector2Di> (
+//				URE_INSTANCE->getConfig().root().
+//				get("UI_Settings",0).
+//				get("windowSettings",0).
+//				get("position",0)
+//		);
+
+		winRes =
+			ConfigCaster::cast<Vector2Di> (
+				URE_INSTANCE->getConfig().root().
+				get("UI_Settings",0).
+				get("windowSettings",0).
+				get("resolution",0)
+		);
+
+		fullscreen =
+			ConfigCaster::cast<bool> (
+				URE_INSTANCE->getConfig().root().
+				get("UI_Settings",0).
+				get("windowSettings",0).
+				get("fullScreen",0)
+		);
+
+
+		grabMouse =
+			ConfigCaster::cast<bool> (
+				URE_INSTANCE->getConfig().root().
+				get("UI_Settings",0).
+				get("inputSettings",0).
+				get("grabMouse",0)
+		);
+
+
+		windowTitle	=
+			ConfigCaster::cast<String> (
+				URE_INSTANCE->getConfig().root().
+				get("UI_Settings",0).
+				get("windowSettings",0).
+				get("windowTitle",0)
+		);
+
+
 
 	}
 	catch(ConfigCastException e)
@@ -151,10 +210,10 @@ double GLFWWindowManager::getFPS(bool averaged )
 
 void GLFWWindowManager::createWindow(bool fullScreen, const Vector2Di& position, const Vector2Di& resolution)
 {
+	glfwSetWindowPos(position.x,position.y);
+
 	glfwOpenWindow(resolution.x,resolution.y,8,8,8,8,32,32,
 			fullScreen? GLFW_FULLSCREEN : GLFW_WINDOW );
-
-	glfwSetWindowPos(position.x,position.y);
 
 }
 

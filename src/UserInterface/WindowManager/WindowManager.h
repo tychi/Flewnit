@@ -43,6 +43,7 @@ public:
 	virtual double getFPS(bool averaged =false )=0;
 
 	virtual Vector2Di getWindowResolution()=0;
+	virtual bool windowIsOpened()=0;
 
 
 protected:

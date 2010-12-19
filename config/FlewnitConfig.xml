@@ -14,8 +14,10 @@
 
 			<enforceCustomResolutionInFullScreen type="BOOL" value="false" />
 
-			<resolution type="VEC2I" x="1024" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
-
+			<resolution type="VEC2I" x="400" y="200" GUIVisibility="read" tweakConfigString="TODO"/>
+			<position type="VEC2I" x="0" y="0" GUIVisibility="read" tweakConfigString="TODO"/>
+			
+			
 		</windowSettings>
 		
 		
@@ -33,7 +35,7 @@
 		
 		<inputSettings>
 
-			<grabMouse type="BOOL" value="false" />
+			<grabMouse type="BOOL" value="true" />
 
 			<enableWiimote type="BOOL" value="false" />
 

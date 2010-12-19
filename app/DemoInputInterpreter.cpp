@@ -55,6 +55,20 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 		}
 	}
 
+	//if((unsigned char) (keyboard->getRecentKey() & 0xffff) == (int)('W'))
+	if( (keyboard->getRecentKey()) == 'W')
+	{
+		if(keyboard->getRecentStatus() == GLFW_PRESS)
+		{
+
+			LOG<<DEBUG_LOG_LEVEL<<"w pressed;\n";
+		}
+		else
+		{
+			LOG<<DEBUG_LOG_LEVEL<<"w released;\n";
+		}
+	}
+
 
 	if(keyboard->getRecentKey() == GLFW_KEY_ESC)
 	{
