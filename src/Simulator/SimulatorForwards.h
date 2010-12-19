@@ -76,17 +76,19 @@ class TriangleIndexBufferGenerator;
 
 
 class SimulatorInterface;
+
 class LightingSimulator;
 //class FluidMechanicsSimulator;
 class MechanicsSimulator;
 //class SPHFluidMechanicsSimulator;
 class SoundSimulator;
 
+class SimulationResourceManager;
+class OpenCL_Manager;
 
 
 class SimulationPipeline;
-class SimulationDataBase;
-class PipelineStageInterface;
+class SimulationPipelineStage;
 //class LightingPipelineStage;
 //class SPHFluidPipelineStage;
 
@@ -101,9 +103,10 @@ class VBO;
 class VertexAttributeBuffer;
 class VertexIndexBuffer;
 
-class OpenCLBuffer;
+//class OpenCLBuffer;
 
 class RenderTarget;
+class Screen;
 class FBO;
 
 class Texture;
@@ -122,6 +125,12 @@ class Camera;
 class SubObject;
 class Geometry;
 class Material;
+
+//the "Massively Parallel Program"; Abstraction for CUDA, OpenCL, OpenGL, DirectCompute etc pp;
+class MPP;
+class ShaderProgram;
+class OpenCLProgram;
+
 
 class MechanicSubObject;
 class VisualSubObject;

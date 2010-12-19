@@ -79,7 +79,7 @@ public:
     inline GeometryConverter* getGeometryConverter()const{return mGeometryConverter;}
     inline Loader* getLoader()const{return mLoader;}
     inline WindowManager* getWindowManager()const{return mWindowManager;}
-    inline SimulationDataBase* getSimulationDataBase()const{return mSimulationDataBase;}
+    inline SimulationResourceManager* getSimulationResourceManager()const{return mSimulationResourceManager;}
     inline SimulatorInterface* getSimulator(SimulationDomain which)const{ assert(which < __NUM_SIM_DOMAINS__); return mSimulators[which];}
 
     //intitialization per config won't be realized via annoying pointer passing to the constructors of all classes;
@@ -88,7 +88,7 @@ public:
     //pros: have lesser parameters to pass to many constructors;
     inline Config& getConfig()const{return *mConfig;}
 
-    inline cl::Context* getOpenCLContext()const{return mOpenCLContext;}
+    //inline cl::Context* getOpenCLContext()const{return mOpenCLContext;}
 
 
 private:
@@ -111,14 +111,15 @@ private:
     FPSCounter*				mFPSCounter;
     GUI* 					mGUI;
 
-    cl::Context*			mOpenCLContext;
+    //cl::Context*			mOpenCLContext;
+    OpenCL_Manager* 		mOpenCL_Manager;
+    SimulationResourceManager*		mSimulationResourceManager;
 
     SimulatorInterface*		mSimulators[__NUM_SIM_DOMAINS__];
-    SimulationDataBase*		mSimulationDataBase;
+
 
 
 	GeometryConverter* 		mGeometryConverter;
-
 
 
 };

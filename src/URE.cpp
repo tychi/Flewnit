@@ -24,9 +24,15 @@
 
 #include "Util/Time/FPSCounter.h"
 
+
+#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/SimulationResourceManager.h"
+
+
 #include "Simulator/MechanicsSimulator/MechanicsSimulator.h"
 #include "Simulator/LightingSimulator/LightingSimulator.h"
 #include "Simulator/SoundSimulator/SoundSimulator.h"
+
 
 
 
@@ -34,6 +40,7 @@
 
 
 #include <boost/filesystem/path.hpp>
+
 
 
 
@@ -75,8 +82,9 @@ URE::URE()
   mInputManager(0),
   mFPSCounter(0),
   mGUI(0),
-  mOpenCLContext(0),
-  mSimulationDataBase(0),
+  mOpenCL_Manager(0),
+  mSimulationResourceManager(0),
+
   mGeometryConverter(0)
 {
 	mSimulators[MECHANICAL_SIM_DOMAIN]=0;
@@ -121,7 +129,9 @@ bool URE::init(Path& pathToGlobalConfigFile)
 	mFPSCounter = FLEWNIT_INSTANTIATE(new FPSCounter());
 
 
-	createOpenCLContext();
+	mOpenCL_Manager = new OpenCL_Manager();
+	mSimulationResourceManager = new SimulationResourceManager();
+
 
 	mSimulators[MECHANICAL_SIM_DOMAIN]= FLEWNIT_INSTANTIATE(new MechanicsSimulator());
 	mSimulators[VISUAL_SIM_DOMAIN]=FLEWNIT_INSTANTIATE(new LightingSimulator());
@@ -172,17 +182,19 @@ void URE::resetEngine()
 
 	mMainLoopQuitRequested = false;
 
-	//TODO create classes
-	//delete mGeometryConverter;
 
-	//delete mSimulationDataBase;
 
 	for(int runner =0; runner < __NUM_SIM_DOMAINS__ ; runner ++)
 	{
     	delete mSimulators[runner];
 	}
 
-	//delete mOpenCLContext;
+	//TODO delete classes
+	//delete mGeometryConverter;
+
+	delete mSimulationResourceManager;
+	delete mOpenCL_Manager;
+
 
 	delete mFPSCounter;
 
@@ -233,7 +245,7 @@ bool URE::stepSimulation()
 	//LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(false) << "last FPS;\n";
 	//LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(true) << " average FPS;\n";
 
-	success &= mWindowManager->windowIsOpened();
+	mMainLoopQuitRequested &= mWindowManager->windowIsOpened();
 
 	return success;
 
