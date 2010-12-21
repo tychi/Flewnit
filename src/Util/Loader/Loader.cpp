@@ -29,6 +29,17 @@ Loader::~Loader()
 	// TODO Auto-generated destructor stub
 }
 
+
+//DEBUG stuff:
+void Loader::createHardCodedSceneStuff()
+{
+
+}
+
+
+
+
+
 void Loader::loadGlobalConfig(Config& config)
 {
 	Path dummy(FLEWNIT_DEFAULT_CONFIG_PATH);

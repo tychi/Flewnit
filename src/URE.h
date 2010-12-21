@@ -52,7 +52,7 @@ class URE :
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 
 public:
-    static void bootstrap();
+    static void bootstrap(bool disableMemoryTrackLogging = false);
     static void cleanup();
 
     URE();

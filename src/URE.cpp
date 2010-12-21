@@ -51,10 +51,16 @@ namespace Flewnit {
 
 //---------------------------------------------------------------------------------------------------------
 ///\brief static stuff
-void URE::bootstrap()
+void URE::bootstrap(bool disableMemoryTrackLogging)
 {
 	//INSTANCIATE_SINGLETON(Log);
 	new Log();
+
+	if(disableMemoryTrackLogging)
+	{
+		LOG.disableLogLevel(MEMORY_TRACK_LOG_LEVEL);
+	}
+
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	//INSTANCIATE_SINGLETON(Profiler);
 	new Profiler();
@@ -130,6 +136,8 @@ bool URE::init(Path& pathToGlobalConfigFile)
 
 
 	mOpenCL_Manager =  FLEWNIT_INSTANTIATE(new OpenCL_Manager());
+
+
 	mSimulationResourceManager =  FLEWNIT_INSTANTIATE(new SimulationResourceManager());
 
 
@@ -165,9 +173,8 @@ bool URE::init(Path& pathToGlobalConfigFile)
 
 	}
 
+	//load the scene
 
-
-	//TODO TODO
 
 	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
 	{

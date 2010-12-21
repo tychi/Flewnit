@@ -76,7 +76,7 @@ public:
 
 	inline void disableLogLevel(LogLevel which)
 	{
-		mConsoleOutputLevelFlags &=!FLEWNIT_FLAGIFY(which);
+		mConsoleOutputLevelFlags &= (~FLEWNIT_FLAGIFY(which));
 	}
 
 

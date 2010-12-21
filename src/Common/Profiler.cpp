@@ -41,7 +41,7 @@ Profiler::Profiler()
 
 Profiler::~Profiler()
 {
-	Log::getInstance()<< DEBUG_LOG_LEVEL<<"Profiler destructor called;\n";
+	Log::getInstance()<< MEMORY_TRACK_LOG_LEVEL<<"Profiler destructor called;\n";
 	Log::getInstance()<< MEMORY_TRACK_LOG_LEVEL<<"Showing memory Status; If you've done a good house keeping, all values should be zero:\n";
 	printMemoryStatus();
 
@@ -142,7 +142,7 @@ ID Profiler::registerBasicObject(BasicObject* bo)
 
 	mRegisteredButUntrackedObjects.push_back(bo);
 
-	Log::getInstance()<<DEBUG_LOG_LEVEL<<"BasicObject with ID \""<< bo->getUniqueID()  <<"\" registered at Profiler; Now, "<<mTotalRegisteredObjects<<"  are registered in total;\n";
+	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"BasicObject with ID \""<< bo->getUniqueID()  <<"\" registered at Profiler; Now, "<<mTotalRegisteredObjects<<"  are registered in total;\n";
 
 	//set the guard, so that an error is thrown if the memory footprint isn't delivered right after initialisation:
 	return bo->getUniqueID();
@@ -161,7 +161,7 @@ void Profiler::unregisterBasicObject(BasicObject* bo)
 	mTotalRegisteredObjects--;
 	mTotalObjectMemoryFootprint -= bo->getMemoryFootprint();
 
-	Log::getInstance()<<DEBUG_LOG_LEVEL<<"BasicObject UNregistered from Profiler; Now, "<<mTotalRegisteredObjects<<"  are registered in total;\n";
+	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"BasicObject UNregistered from Profiler; Now, "<<mTotalRegisteredObjects<<"  are registered in total;\n";
 	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"printing now Object Information:\n";
 	printObjectStatus(bo);
 
@@ -170,7 +170,7 @@ void Profiler::unregisterBasicObject(BasicObject* bo)
 
 void Profiler::updateMemoryTrackingInfo()
 {
-	LOG<<INFO_LOG_LEVEL<<"now updating memory Tracking Info:\n";
+	LOG<<MEMORY_TRACK_LOG_LEVEL<<"now updating memory Tracking Info:\n";
 	BOOST_FOREACH(BasicObject* bo, mRegisteredButUntrackedObjects)
 		{
 			registerObjectMemoryFootPrint(bo);
@@ -188,7 +188,7 @@ void Profiler::registerObjectMemoryFootPrint(BasicObject* bo)
 	bo->initBasicObject();
 	mTotalObjectMemoryFootprint += bo->getMemoryFootprint();
 
-	Log::getInstance()<<DEBUG_LOG_LEVEL<<"BasicObject memory footprint ("<< bo->getMemoryFootprint() <<" Bytes) of \" "<< bo->getClassName() <<" \" is now tracked by Profiler;\n";
+	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"BasicObject memory footprint ("<< bo->getMemoryFootprint() <<" Bytes) of \" "<< bo->getClassName() <<" \" is now tracked by Profiler;\n";
 	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"printing now Object Information:\n";
 	printObjectStatus(bo);
 }

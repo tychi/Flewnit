@@ -37,7 +37,7 @@ class OpenCL_Manager
     bool init(bool useCPU =false);
 
 public:
-	OpenCL_Manager( bool useCPU =false);
+	OpenCL_Manager( bool useCPU =false){init(useCPU);}
 
 	virtual ~OpenCL_Manager();
 

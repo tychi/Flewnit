@@ -12,6 +12,8 @@
 		<sceneFile type="STRING" value="../Assets/LakeScene/LakeScene.blend" />
 
 		<sceneAnnotationsFile type="STRING" value="LakeSceneAnnotations.xml" />
+		
+		<disableMemoryTrackingLogging type="BOOL" value="true"/>
 
 	</generalSettings>
 

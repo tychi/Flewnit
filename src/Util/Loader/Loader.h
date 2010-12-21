@@ -43,6 +43,9 @@ private:
 
 	void getGUIParams(TiXmlElement* xmlElementNode, GUIParams& guiParams);
 
+	//DEBUG stuff:
+	void createHardCodedSceneStuff();
+
 
 };
 
