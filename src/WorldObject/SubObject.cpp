@@ -10,15 +10,15 @@
 namespace Flewnit
 {
 
-WorldObject::WorldObject()
-{
-	// TODO Auto-generated constructor stub
-
-}
-
-WorldObject::~WorldObject()
-{
-	// TODO Auto-generated destructor stub
-}
+//WorldObject::WorldObject()
+//{
+//	// TODO Auto-generated constructor stub
+//
+//}
+//
+//WorldObject::~WorldObject()
+//{
+//	// TODO Auto-generated destructor stub
+//}
 
 }

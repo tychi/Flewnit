@@ -12,13 +12,13 @@ namespace Flewnit
 
 #include "Common/BasicObject.h"
 
-class WorldObject : public BasicObject
-{
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS
-public:
-	WorldObject();
-	virtual ~WorldObject();
-};
+//class WorldObject : public BasicObject
+//{
+//	FLEWNIT_BASIC_OBJECT_DECLARATIONS
+//public:
+//	WorldObject();
+//	virtual ~WorldObject();
+//};
 
 }
 

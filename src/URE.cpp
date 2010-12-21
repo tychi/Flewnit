@@ -174,6 +174,7 @@ bool URE::init(Path& pathToGlobalConfigFile)
 	}
 
 	//load the scene
+	mLoader->loadScene();
 
 
 	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)

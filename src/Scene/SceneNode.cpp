@@ -10,7 +10,8 @@
 namespace Flewnit
 {
 
-SceneNode::SceneNode()
+SceneNode::SceneNode(String name, Matrix4x4 localtransform  )
+
 : mTypeFlags(PURE_NODE)
 {}
 

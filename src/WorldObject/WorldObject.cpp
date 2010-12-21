@@ -11,6 +11,7 @@ namespace Flewnit
 {
 
 WorldObject::WorldObject()
+: SceneNode("TODO")
 {
 	// TODO Auto-generated constructor stub
 

@@ -29,10 +29,19 @@ Loader::~Loader()
 	// TODO Auto-generated destructor stub
 }
 
+Scene* Loader::loadScene()
+{
+	// createHardCodedSceneStuff();
+	// return NULL;
+}
+
 
 //DEBUG stuff:
 void Loader::createHardCodedSceneStuff()
 {
+	//create the first rendering, to see anything and to test the camera, the buffers, the shares and to overall architectural frame:
+	//TODO
+
 
 }
 
@@ -295,51 +304,5 @@ void Loader::getGUIParams(TiXmlElement* xmlElementNode, GUIParams& guiParams)
 
 }
 
-
-
-
-
-//void Loader::loadUISettings(TiXmlElement* xmlRootNode, Config& config)
-//{
-//
-//
-//
-//	const char *tmp =0;
-//
-//	TiXmlElement* winSettings= xmlRootNode->FirstChildElement("UI_Settings")->FirstChildElement("windowSettings");
-//
-//
-//
-//	config.root().get("UI_Settings")= new ConfigStructNode();
-//
-//	config.root().get("UI_Settings")->get("windowSettings")= new ConfigStructNode();
-//
-//
-//
-////	config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")=
-////			new ConfigValueNode<String>(
-////					//String(winSettings->FirstChildElement("mediaLayer")->Attribute("value"))
-////					LoaderHelper::getAttribute<String>(winSettings,"value")
-////					);
-////
-////
-////	config.root().get("UI_Settings")->get("WindowSettings")->get("fullScreen")=
-////				new ConfigValueNode<bool>(
-////						LoaderHelper::getAttribute<bool>(winSettings->FirstChildElement("fullScreen"),"value")
-////						);
-//
-//
-////LOG<<DEBUG_LOG_LEVEL<<"mediaLayer value: "<<
-////		reinterpret_cast<ConfigValueNode<String>* > (
-////				config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")
-////		)->value()
-////		   <<":\n";
-////
-////LOG<<DEBUG_LOG_LEVEL<<"mediaLayer type enum value : "<<
-////	config.root().get("UI_Settings")->get("windowSettings")->get("mediaLayer")->getType()
-////		   <<":\n";
-////
-//
-//}
 
 
