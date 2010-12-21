@@ -71,4 +71,15 @@ namespace Flewnit
 #endif //FLEWNIT_USE_QT_MATH
 
 
+namespace Flewnit
+{
+	class AABB
+	{
+	public:
+		AABB(): min(0),max(0){}
+		AABB(const Vector3D min, const Vector3D max  ): min(min),max(max){}
+		Vector3D min;
+		Vector3D max;
+	};
+}
 

@@ -28,6 +28,9 @@ private:
 
 	SceneGraph* mSceneGraph;
 
+	Map<String, SimulationPipelineStage*> mRegisteredPipeLineStages;
+
+
 	Map<String, WorldObject*> mWorldObjects;
 	Map<ID, SubObject*>	mSubObjects;
 	Map<String, Geometry*> mGeometries;

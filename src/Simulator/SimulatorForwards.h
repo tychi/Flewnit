@@ -91,6 +91,10 @@ class SimulationPipeline;
 class SimulationPipelineStage;
 //class LightingPipelineStage;
 //class SPHFluidPipelineStage;
+//required features a pipeline stage needs fulfilled from the rest of the simulators/pipelines to work properly
+class SimulationPipelineRequirements;
+//features the pipeline stage provides itself;
+class SimulationPipelineFeatures;
 
 
 

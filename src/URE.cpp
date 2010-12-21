@@ -129,8 +129,8 @@ bool URE::init(Path& pathToGlobalConfigFile)
 	mFPSCounter = FLEWNIT_INSTANTIATE(new FPSCounter());
 
 
-	mOpenCL_Manager = new OpenCL_Manager();
-	mSimulationResourceManager = new SimulationResourceManager();
+	mOpenCL_Manager =  FLEWNIT_INSTANTIATE(new OpenCL_Manager());
+	mSimulationResourceManager =  FLEWNIT_INSTANTIATE(new SimulationResourceManager());
 
 
 	mSimulators[MECHANICAL_SIM_DOMAIN]= FLEWNIT_INSTANTIATE(new MechanicsSimulator());
