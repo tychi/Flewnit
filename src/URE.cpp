@@ -287,7 +287,7 @@ bool URE::stepSimulation()
 	//LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(false) << "last FPS;\n";
 	//LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(true) << " average FPS;\n";
 
-	mMainLoopQuitRequested &= mWindowManager->windowIsOpened();
+	mMainLoopQuitRequested |= ( ! mWindowManager->windowIsOpened() );
 
 	return success;
 

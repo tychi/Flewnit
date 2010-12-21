@@ -42,7 +42,7 @@ bool LightingSimulator::stepSimulation()  throw(SimulatorException)
 bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 {
 	// TODO Auto-generated destructor stub
-	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  initPipeLine()";
+	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  initPipeLine() \n";
 	return true;
 }
 
@@ -51,7 +51,7 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 bool LightingSimulator::validatePipeLine()  throw(SimulatorException)
 {
 	// TODO Auto-generated destructor stub
-	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  validatePipeLine()";
+	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  validatePipeLine() \n";
 	return true;
 }
 
