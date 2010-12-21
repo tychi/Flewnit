@@ -11,12 +11,14 @@
 #include "MechanicsSimulator/MechanicsSimulator.h"
 #include "LightingSimulator/LightingSimulator.h"
 #include "SoundSimulator/SoundSimulator.h"
+#include "Util/Loader/Config.h"
 
 
 namespace Flewnit
 {
 
-SimulatorInterface::SimulatorInterface()
+SimulatorInterface::SimulatorInterface(SimulationDomain sd, ConfigStructNode* simConfigNode)
+: mSimulationDomain(sd), mSimConfigNode(simConfigNode)
 {
 	// TODO Auto-generated constructor stub
 
@@ -70,6 +72,29 @@ SoundSimulator*SimulatorInterface:: toSoundSimulator() throw(SimulatorException)
 		throw(SimulatorException(String("bad cast to SoundSimulator* !")));
 		//assert("Bad cast of SimulatorInterface!" && 0);
 	}
+}
+
+SimulatorInterface* SimulatorInterface::create(ConfigStructNode* simConfigNode) throw(SimulatorException)
+{
+	if(simConfigNode->getName() == "SPHFluidMechanicsSimulator")
+	{
+		return new MechanicsSimulator(simConfigNode);
+	}
+
+	if(simConfigNode->getName() == "LightingSimulator")
+	{
+		return new LightingSimulator(simConfigNode);
+	}
+
+	if(simConfigNode->getName() == "SoundSimulator")
+	{
+		return new SoundSimulator(simConfigNode);
+	}
+
+	String errorString ("Unknown Simulator type: ");
+	errorString.append(simConfigNode->getName());
+	throw (SimulatorException(errorString));
+
 }
 
 }

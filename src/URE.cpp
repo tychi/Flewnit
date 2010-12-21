@@ -40,7 +40,7 @@
 
 
 #include <boost/filesystem/path.hpp>
-
+#include <boost/foreach.hpp>
 
 
 
@@ -87,9 +87,9 @@ URE::URE()
 
   mGeometryConverter(0)
 {
-	mSimulators[MECHANICAL_SIM_DOMAIN]=0;
-	mSimulators[VISUAL_SIM_DOMAIN]=0;
-	mSimulators[ACUSTIC_SIM_DOMAIN]=0;
+//	mSimulators[MECHANICAL_SIM_DOMAIN]=0;
+//	mSimulators[VISUAL_SIM_DOMAIN]=0;
+//	mSimulators[ACUSTIC_SIM_DOMAIN]=0;
 }
 
 URE::~URE()
@@ -133,18 +133,50 @@ bool URE::init(Path& pathToGlobalConfigFile)
 	mSimulationResourceManager =  FLEWNIT_INSTANTIATE(new SimulationResourceManager());
 
 
-	mSimulators[MECHANICAL_SIM_DOMAIN]= FLEWNIT_INSTANTIATE(new MechanicsSimulator());
-	mSimulators[VISUAL_SIM_DOMAIN]=FLEWNIT_INSTANTIATE(new LightingSimulator());
-	mSimulators[ACUSTIC_SIM_DOMAIN]=FLEWNIT_INSTANTIATE(new SoundSimulator());
+//	mSimulators[MECHANICAL_SIM_DOMAIN]= FLEWNIT_INSTANTIATE(new MechanicsSimulator());
+//	mSimulators[VISUAL_SIM_DOMAIN]=FLEWNIT_INSTANTIATE(new LightingSimulator());
+//	mSimulators[ACUSTIC_SIM_DOMAIN]=FLEWNIT_INSTANTIATE(new SoundSimulator());
 
-	for(int runner = 0; runner < __NUM_SIM_DOMAINS__; runner ++)
+//	for(int runner = 0; runner < __NUM_SIM_DOMAINS__; runner ++)
+//	{
+//		mSimulators[runner] -> initPipeLine();
+//	}
+//
+//	for(int runner = 0; runner < __NUM_SIM_DOMAINS__; runner ++)
+//	{
+//		mSimulators[runner] -> validatePipeLine();
+//	}
+
+
+
+	if(mConfig->root().childExists("simulators",0))
 	{
-		mSimulators[runner] -> initPipeLine();
+		ConfigStructNode& simulatorsConfigNode = mConfig->root().get("simulators",0);
+		BOOST_FOREACH( ConfigMap::value_type & singleSimulatorConfigNode, simulatorsConfigNode.getChildren() )
+		{
+			assert("no double definition of a simulator allowed" && singleSimulatorConfigNode.second.size()== 1 );
+			mSimulators[singleSimulatorConfigNode.first] =
+					SimulatorInterface::create(singleSimulatorConfigNode.second[0]);
+		}
+	}
+	else
+	{
+		assert("no simulators defined in config" && 0);
+
 	}
 
-	for(int runner = 0; runner < __NUM_SIM_DOMAINS__; runner ++)
+
+
+	//TODO TODO
+
+	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
 	{
-		mSimulators[runner] -> validatePipeLine();
+		simPair.second -> initPipeLine();
+	}
+
+	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
+	{
+		simPair.second -> validatePipeLine();
 	}
 
 
@@ -184,9 +216,14 @@ void URE::resetEngine()
 
 
 
-	for(int runner =0; runner < __NUM_SIM_DOMAINS__ ; runner ++)
+//	for(int runner =0; runner < __NUM_SIM_DOMAINS__ ; runner ++)
+//	{
+//    	delete mSimulators[runner];
+//	}
+
+	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
 	{
-    	delete mSimulators[runner];
+		delete simPair.second ;
 	}
 
 	//TODO delete classes
@@ -229,11 +266,16 @@ bool URE::stepSimulation()
 
 	//TODO
 
-	success = mSimulators[MECHANICAL_SIM_DOMAIN] -> stepSimulation();
+	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
+	{
+		simPair.second -> stepSimulation();
+	}
 
-	success = mSimulators[VISUAL_SIM_DOMAIN] -> stepSimulation();
-
-	success =mSimulators[ACUSTIC_SIM_DOMAIN] -> stepSimulation();
+//	success = mSimulators[MECHANICAL_SIM_DOMAIN] -> stepSimulation();
+//
+//	success = mSimulators[VISUAL_SIM_DOMAIN] -> stepSimulation();
+//
+//	success =mSimulators[ACUSTIC_SIM_DOMAIN] -> stepSimulation();
 
 	mWindowManager->swapBuffers();
 

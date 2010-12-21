@@ -15,7 +15,8 @@
 namespace Flewnit
 {
 
-MechanicsSimulator::MechanicsSimulator()
+MechanicsSimulator::MechanicsSimulator(ConfigStructNode* simConfigNode)
+:SimulatorInterface(MECHANICAL_SIM_DOMAIN,simConfigNode)
 {
 	// TODO Auto-generated constructor stub
 

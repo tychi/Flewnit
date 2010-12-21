@@ -86,6 +86,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 	ConfigStructNode* returnNode = 0;
 
 	const String* typeOfNode = xmlElementNode->Attribute(String("type"));
+	const String nodeName = xmlElementNode->ValueStr();
 
 
 	if(typeOfNode)
@@ -97,6 +98,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 		if( *typeOfNode == String("STRING") )
 		{
 			returnNode = new ConfigValueNode<String>(
+					nodeName,
 					//dereference String pointer
 					*( xmlElementNode->Attribute(String("value")) )
 					, guiParams);
@@ -105,6 +107,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 		if( *typeOfNode == String("BOOL") )
 		{
 			returnNode = new ConfigValueNode<bool>(
+					nodeName,
 					 *(xmlElementNode->Attribute(String("value"))) == String("true")
 					 ? true : false
 					,guiParams);
@@ -113,6 +116,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 		if( *typeOfNode == String("INT") )
 		{
 			returnNode = new ConfigValueNode<int>(
+					nodeName,
 					 boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("value") )) )
 					,guiParams);
 		}
@@ -120,6 +124,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 		if( *typeOfNode == String("FLOAT") )
 		{
 			returnNode = new ConfigValueNode<float>(
+					nodeName,
 					boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("value") )) )
 					,guiParams);
 		}
@@ -130,6 +135,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 		if( *typeOfNode == String("VEC2I") )
 		{
 			returnNode = new ConfigValueNode<Vector2Di>(
+					nodeName,
 					Vector2Di(
 							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("x") )) ),
 							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("y") )) )
@@ -140,6 +146,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 		if( *typeOfNode == String("VEC3I") )
 		{
 			returnNode = new ConfigValueNode<Vector3Di>(
+					nodeName,
 					Vector3Di(
 							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("x") )) ),
 							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("y") )) ),
@@ -152,6 +159,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 		if( *typeOfNode == String("VEC4I") )
 		{
 			returnNode = new ConfigValueNode<Vector4Di>(
+					nodeName,
 					Vector4Di(
 							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("x") )) ),
 							boost::lexical_cast<int>( *(xmlElementNode->Attribute( String("y") )) ),
@@ -167,6 +175,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 		if( *typeOfNode == String("VEC2") )
 		{
 			returnNode = new ConfigValueNode<Vector2D>(
+					nodeName,
 					Vector2D(
 							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("x") )) ),
 							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("y") )) )
@@ -177,6 +186,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 		if( *typeOfNode == String("VEC3") )
 		{
 			returnNode = new ConfigValueNode<Vector3D>(
+					nodeName,
 					Vector3D(
 							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("x") )) ),
 							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("y") )) ),
@@ -189,6 +199,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 		if( *typeOfNode == String("VEC4") )
 		{
 			returnNode = new ConfigValueNode<Vector4D>(
+					nodeName,
 					Vector4D(
 							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("x") )) ),
 							boost::lexical_cast<float>( *(xmlElementNode->Attribute( String("y") )) ),
@@ -209,7 +220,7 @@ ConfigStructNode* Loader::parseElement(TiXmlElement* xmlElementNode)
 	else
 	{
 		//it's no "value" node but a container node:
-		returnNode = new ConfigStructNode();
+		returnNode = new ConfigStructNode(nodeName);
 	}
 
 	//check for children:

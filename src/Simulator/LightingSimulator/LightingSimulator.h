@@ -16,7 +16,7 @@ class LightingSimulator: public SimulatorInterface
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	LightingSimulator();
+	LightingSimulator(ConfigStructNode* simConfigNode);
 	virtual ~LightingSimulator();
 
 	virtual bool stepSimulation()throw(SimulatorException) ;

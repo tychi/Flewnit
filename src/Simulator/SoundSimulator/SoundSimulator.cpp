@@ -14,7 +14,8 @@
 namespace Flewnit
 {
 
-SoundSimulator::SoundSimulator()
+SoundSimulator::SoundSimulator(ConfigStructNode* simConfigNode)
+:SimulatorInterface(ACUSTIC_SIM_DOMAIN,simConfigNode)
 {
 	// TODO Auto-generated constructor stub
 

@@ -17,6 +17,8 @@
 namespace Flewnit
 {
 
+class ConfigStructNode;
+
 class SimulatorException : public std::exception
 {
 	String mDescription;
@@ -38,9 +40,26 @@ class SimulatorInterface
 :public BasicObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+
+	SimulationDomain mSimulationDomain;
+
+
+
+protected:
+
+	//allow only creation by factory function
+	SimulatorInterface(SimulationDomain sd, ConfigStructNode* simConfigNode);
+
+	ConfigStructNode* mSimConfigNode;
+
 public:
-	SimulatorInterface();
+
 	virtual ~SimulatorInterface();
+
+	//factory function;
+	static SimulatorInterface* create(ConfigStructNode* simConfigNode) throw(SimulatorException);
+
+	SimulationDomain getSimulationDomain() const {return mSimulationDomain;}
 
 	virtual bool stepSimulation() throw(SimulatorException)  =0;
 	//build pipeline according to config;

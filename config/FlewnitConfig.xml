@@ -2,6 +2,20 @@
 
 <flewnitGlobalConfig>
 
+	<!-- convention: lower case names for everythin but proper names and class names -->
+
+	<generalSettings>
+		<pathToData type="STRING" value="." />
+
+		<!-- simulationPipelineConfig type="STRING" value="SimulationPipeLineConfig.xml"/ -->
+
+		<sceneFile type="STRING" value="../Assets/LakeScene/LakeScene.blend" />
+
+		<sceneAnnotationsFile type="STRING" value="LakeSceneAnnotations.xml" />
+
+	</generalSettings>
+
+
 	<UI_Settings>
 
 		<windowSettings>
@@ -46,24 +60,15 @@
 
 	</UI_Settings>
 
-	<generalSettings>
-		<pathToData type="STRING" value="." />
 
-		<!-- simulationPipelineConfig type="STRING" value="SimulationPipeLineConfig.xml"/ -->
 
-		<sceneFile type="STRING" value="../Assets/LakeScene/LakeScene.blend" />
-
-		<sceneAnnotationsFile type="STRING" value="LakeSceneAnnotations.xml" />
-
-	</generalSettings>
-
-	<simulatorSettings>
+	<simulators>
 		<!--  -->
 
 
 		<SPHFluidMechanicsSimulator>
 
-			<simulatorGeneralSettings>
+			<generalSettings>
 
 				<targetMinSimulationStepsPerSecond type="INT" value="60" GUIVisibility="read/write"	tweakConfigString="TODO"/>
 				<numFluidParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -79,17 +84,16 @@
 				<rigidBodyParticleMass type="FLOAT" value="0.5" GUIVisibility="read/write"
 					tweakConfigString="TODO"/>
 
-			</simulatorGeneralSettings>
+			</generalSettings>
 
 
-			<AccelerationStructureUpdater>
+			<UniformGridUpdater>
 
-			</AccelerationStructureUpdater>
+			</UniformGridUpdater>
 
 
 
-			<!-- the following stages two could be joined in trade of stability/accuracy
-				-->
+			<!-- the following  two stages two could be joined in trade of stability/accuracy-->
 			<ParticleDensityComputation>
 
 			</ParticleDensityComputation>
@@ -114,10 +118,10 @@
 
 		<LightingSimulator>
 
-			<simulatorGeneralSettings>
+			<generalSettings>
 
 
-			</simulatorGeneralSettings>
+			</generalSettings>
 
 			<SkyBoxRenderer>
 
@@ -134,11 +138,12 @@
 			</ShadowedLightingStage>
 
 			<!-- Fluid rendering specific stages to go -->
+			
 
 		</LightingSimulator>
 
 
-	</simulatorSettings>
+	</simulators>
 
 
 

@@ -148,15 +148,17 @@ private:
 
 };
 
-
+class ConfigStructNode;
+typedef Map<String, List<ConfigStructNode*> > ConfigMap;
 
 class ConfigStructNode: public BasicObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 
-	Map<String, List<ConfigStructNode*> > mChildren;
 
-	//String mName;
+	ConfigMap mChildren;
+
+	String mName;
 
 protected:
 
@@ -164,9 +166,11 @@ protected:
 
 public:
 
-	ConfigStructNode(): mValueType(TYPE_STRUCTURE){}
+	ConfigStructNode(String name): mName(name), mValueType(TYPE_STRUCTURE){}
 	virtual ~ConfigStructNode();
 
+
+	String getName()const{return mName;}
 
 	bool isLeafNode()const{return (mChildren.size()==0);}
 
@@ -174,6 +178,8 @@ public:
 
 	List<ConfigStructNode*>& get(String name);
 	ConfigStructNode& get(String name, int index);
+	bool childExists(String name, int index);
+	ConfigMap& getChildren(){return mChildren;}
 
 	//ConfigStructNode*& get(String name){return mChildren[name];}
 
@@ -192,7 +198,7 @@ class ConfigValueNode: public ConfigStructNode
 
 public:
 
-	ConfigValueNode( T value, GUIParams guiParams = GUIParams() ):ConfigStructNode(), mValue(value), mGUIParams(guiParams)
+	ConfigValueNode(String name, T value, GUIParams guiParams = GUIParams() ):ConfigStructNode(name), mValue(value), mGUIParams(guiParams)
 	{
 		mValueType = initType();
 	}
@@ -203,7 +209,7 @@ public:
 	}
 
 	ConfigValueNode( const ConfigValueNode& other)
-	: mValue(other.value()), mGUIParams(other.getGUIParams())
+	: ConfigStructNode(other.getName()), mValue(other.value()), mGUIParams(other.getGUIParams())
 	{}
 
 
@@ -296,7 +302,7 @@ class Config : public BasicObject
 public:
 	Config(): mRootNode(0)
 	{
-		mRootNode=FLEWNIT_INSTANTIATE(new ConfigStructNode());
+		mRootNode=FLEWNIT_INSTANTIATE(new ConfigStructNode("flewnitGlobalConfig"));
 	}
 
 	virtual ~Config(){delete mRootNode;}

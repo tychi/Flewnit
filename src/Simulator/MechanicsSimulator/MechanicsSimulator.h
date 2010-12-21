@@ -16,7 +16,7 @@ class MechanicsSimulator: public SimulatorInterface
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	MechanicsSimulator();
+	MechanicsSimulator(ConfigStructNode* simConfigNode);
 	virtual ~MechanicsSimulator();
 
 	virtual bool stepSimulation() throw(SimulatorException) ;

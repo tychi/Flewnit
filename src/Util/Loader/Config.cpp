@@ -22,8 +22,8 @@ namespace Flewnit
 
 ConfigStructNode::~ConfigStructNode()
 {
-	typedef Map<String, List<ConfigStructNode*> > mapDummyType;
-	BOOST_FOREACH( mapDummyType::value_type & mapNode, mChildren )
+
+	BOOST_FOREACH( ConfigMap::value_type & mapNode, mChildren )
 	{
 		BOOST_FOREACH(ConfigStructNode* vecNode, mapNode.second )
 		{
@@ -60,7 +60,18 @@ List<ConfigStructNode*>& ConfigStructNode::operator[](String name)
 
 ConfigStructNode& ConfigStructNode::get(String name, int index)
 {
+	assert("requested config entry exists" && childExists(name,index));
 	return *(mChildren[name][index]);
+}
+
+bool ConfigStructNode::childExists(String name, int index)
+{
+	return 	//map entry exists?
+			(mChildren.find(name) != mChildren.end() ) &&
+			//index range valid?
+			//TODO check if c++ really does early evaluation cancellation;
+			//if not, this would create an invalid entry!
+			( (unsigned int) (index) < mChildren[name].size()) ;
 }
 
 

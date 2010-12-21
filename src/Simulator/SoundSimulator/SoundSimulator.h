@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "../SimulatorInterface.h"
+#include "Simulator/SimulatorInterface.h"
 
 namespace Flewnit
 {
@@ -16,7 +16,7 @@ class SoundSimulator: public SimulatorInterface
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	SoundSimulator();
+	SoundSimulator(ConfigStructNode* simConfigNode);
 	virtual ~SoundSimulator();
 
 	virtual bool stepSimulation()throw(SimulatorException) ;
