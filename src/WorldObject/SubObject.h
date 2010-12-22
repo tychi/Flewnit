@@ -1,5 +1,5 @@
 /*
- * WorldObject.h
+ * SubObject.h
  *
  *  Created on: Dec 21, 2010
  *      Author: tychi
@@ -12,13 +12,17 @@ namespace Flewnit
 
 #include "Common/BasicObject.h"
 
-//class WorldObject : public BasicObject
-//{
-//	FLEWNIT_BASIC_OBJECT_DECLARATIONS
-//public:
-//	WorldObject();
-//	virtual ~WorldObject();
-//};
+class SubObject : public BasicObject
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS
+
+	SimulationDomain mSimDomain;
+public:
+	SubObject(SimulationDomain simDomain,);
+	virtual ~SubObject();
+
+	SimulationDomain getSimDomain()const {return mSimDomain;}
+};
 
 }
 

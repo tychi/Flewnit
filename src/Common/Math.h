@@ -9,32 +9,33 @@
 
 #include "Common/FlewnitSharedDefinitions.h"
 
-//--------------------------------------------------------------
-#if FLEWNIT_USE_QT_MATH
-
-#	include <QVector2D>
-#	include <QVector3D>
-#	include <QVector4D>
-
-
-#	include <QMatrix3x3>
-#	include <QMatrix4x4>
-
-namespace Flewnit
-{
-	typedef QVector2D Vector2D;
-	typedef QVector3D Vector3D;
-	typedef QVector4D Vector4D;
-
-	typedef QMatrix3x3 Matrix3x3;
-	typedef QMatrix4x4 Matrix4x4;
-
-	//typedefs not complete, but I don't plan to use QT math anyway; just if glm should suck inexpectedly...
-}
-
-
-//--------------------------------------------------------------
-#elif FLEWNIT_USE_GLM_MATH
+//ok, the math stuff is too depp in code to wrap it, i'll take glm now, without any fallback to switch to another lib easily ;)
+////--------------------------------------------------------------
+//#if FLEWNIT_USE_QT_MATH
+//
+//#	include <QVector2D>
+//#	include <QVector3D>
+//#	include <QVector4D>
+//
+//
+//#	include <QMatrix3x3>
+//#	include <QMatrix4x4>
+//
+//namespace Flewnit
+//{
+//	typedef QVector2D Vector2D;
+//	typedef QVector3D Vector3D;
+//	typedef QVector4D Vector4D;
+//
+//	typedef QMatrix3x3 Matrix3x3;
+//	typedef QMatrix4x4 Matrix4x4;
+//
+//	//typedefs not complete, but I don't plan to use QT math anyway; just if glm should suck inexpectedly...
+//}
+//
+//
+////--------------------------------------------------------------
+//#elif FLEWNIT_USE_GLM_MATH
 
 #	include  <glm/setup.hpp>
 //no swizzling for the moment
@@ -68,7 +69,7 @@ namespace Flewnit
 }
 
 //--------------------------------------------------------------
-#endif //FLEWNIT_USE_QT_MATH
+//#endif //FLEWNIT_USE_QT_MATH
 
 
 namespace Flewnit
@@ -76,10 +77,19 @@ namespace Flewnit
 	class AABB
 	{
 	public:
-		AABB(): min(0),max(0){}
-		AABB(const Vector3D min, const Vector3D max  ): min(min),max(max){}
-		Vector3D min;
-		Vector3D max;
+		AABB(): mMin(0),mMax(0){}
+		AABB(const Vector4D min, const Vector4D max  ): mMin(min),mMax(max){}
+
+		inline const Vector4D& getMin()const{return mMin;}
+		inline const Vector4D& getMax()const{return mMax;}
+
+		void include(const AABB& other);
+		void include(const Vector4D& other);
+
+		void reset();
+	private:
+		Vector4D mMin;
+		Vector4D mMax;
 	};
 }
 

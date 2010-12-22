@@ -28,6 +28,7 @@ bool OpenCL_Manager::init(bool useCPU)
 {
 	//TODO
 	LOG<<WARNING_LOG_LEVEL<<" OpenCL Stuff not yet implemented;\n";
+	return true;
 }
 
 }

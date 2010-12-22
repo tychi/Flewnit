@@ -29,10 +29,10 @@ Loader::~Loader()
 	// TODO Auto-generated destructor stub
 }
 
-Scene* Loader::loadScene()
+void Loader::loadScene()
 {
-	// createHardCodedSceneStuff();
-	// return NULL;
+	createHardCodedSceneStuff();
+
 }
 
 

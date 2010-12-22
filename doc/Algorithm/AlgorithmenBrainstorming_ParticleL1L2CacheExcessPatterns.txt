@@ -1,0 +1,18 @@
+Annahme: für gutes Latency-Hiding sind pro workgroup mehere warps nötig, beispielsweise 256 work items = 256/32= 8 Warps;
+
+Nun besteht die Aufgabe darin, 48 KB L1-Cache so zu nutzen, dass möglichst viele hits entstehen, möglichst viel coalescing und möglichst wenig bank conflicts;
+
+Bei 8 Warps müssen also im Schlimmstenfalls 8*27 = 216 Voxel pro work group(= streaming multiprocessor) abgearbeitet werden;
+Der Memory-Access sollte coalesced passieren: Also sollten pro nachbarvoxel 8 Partikel auf einmal gezogen werden (4Byte*4*float*8 Üartikel =128 Byte);
+Das ergäbe eine L1-Cahcebelegung von 216 Voxeln *128 ByteProVoxelProPartikelFeature * 2 FeaturesProBerechnung(masse/dichte/position/druck) (Faktor 2 is geraten, könnte mehr oder weniger sein :[ ) = etwas 55KB <-- ZU VIEL!
+Lösung für "zuviel": 
+Entweder: 
+1. WorkGroupSize auf 128 beschränken; Gefahr: Latency Hiding durch nunmehr nur 4 Warps evtl nicht mehr ausreichend.
+2. Coalsecing auf 64Byte-Anfragen reduzieren <-- MÄP, Cache Line-Size is fixed to 128 Bytes; Würde nur zu Bandbreiten-Vergeudung und cahce-misses führen;
+3. ParticleFeatures interleaven, so dass mit weniger Partikeln dennoch alle Features in einem Zug gezogen werden können; <-- gibt evtl bank conflicts und weitere miese nebenwirkungen, wie dass man nicht jedes feature bei jedem kernel braucht; Sollte man auch verwerfen, den Ansatz, bzw nur als allerletzten Versuch erwägen;
+4. Da Partikel Z-Curve-sortiert sind, ist die Wahrscheinlichkeit recht hoch, dass bestimmte der theoretisch bis zu 216 verschiedenen Nachbar-Voxel bis zu 8 mal einen nachbarschaftsvoxel darstellen; In diesem Falle spielt der automatische L1-Cache seine Stärke aus, und der tatsächliche Speicherbadraf schrumpft; Nun bleibt allerdings zu befürchten, dass der Cache Line-Austausch-Algo nicht so komplex ist, dass er die "fruchtbaren" cachelines auch verschont; Man sollte sich also nicht zu sehr auf den Cache verlassen; Es bleibt evtl nur Ausprobieren oder Recherche zum Scheduler (da wird Nvidia wohl kaum was offen gelegt haben, befürchte ich);
+5. Kein Coalscing betreiben, sondern es so machen wie es in dem "2010"er Paper steht, allerdings direkt auf dem glaobel Memory arbeiten statt mit Texturzugriffen; Das 128Byte-Cacheline-Laden geshciet ohnehin, so dass mann beim Lesen EINES Partikel-Features anschließend seiben weitere geschenkt bekommt. Somit geschieht das Coalsecing quasi implizit; 
+	5. a) Damit die Cache Lines nicht ständig sich gegenseitig überschrieben, sollte dennoch sichergestellt sein, dass weniger als 48KB genutzt werden;
+	Alle 8 Partikel wird der Cache komplett ausetauscht und es entsteht ein 900-Zyklen-Stall; Dieser könnte durch die 8 Warps cahciert werden, sofern man sie nicht synchronisieren muss; Leider muss man dies evtl, um das Cache-Überschreiben zu vermeiden;
+	
+NeuerAnsatz, den ich nicht bedacht hatte: Für Parallelität muss jä nicht ZWINGEND die Threadblockgröße hoch sein, es können ja auch mehrere Threadblocks alternierend, "automatisch" auf einem SMP laufen, sofern die LocalMemoryUsage und die Registernutzung das zulässt; Es ist mir aber unklar, wie es gehandhabt wird, wenn der shared mamory quasi nicht benutzt wird, die Register auch sparsam verwendet sind, und eigentlich nur mit dem L1-Cache gearbeitet wird; Befürchtung: Es werden dann ganz viele threadblocks alternierend laufen gelassen, und diese überschrieben sich alle gegenseitig mit ihren Speicherzugriffen ihre Cachelines... wie kriegt man den Cacheline-Replacement-Algo heraus?

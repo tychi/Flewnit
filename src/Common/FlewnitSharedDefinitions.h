@@ -84,9 +84,9 @@ typedef unsigned int		uint;
 #define FLEWNIT_DO_CONSOLE_DEBUG_OUTPUT 1
 //-----------------------------------------------------------------------
 
-//there is no alternatic in sight now, but let's consider there might be one ;)
-#define FLEWNIT_USE_QT_MATH 0
-#define FLEWNIT_USE_GLM_MATH 1
+//stuff from time where i wasn't sure what math lib to use
+//#define FLEWNIT_USE_QT_MATH 0
+//#define FLEWNIT_USE_GLM_MATH 1
 
 
 }

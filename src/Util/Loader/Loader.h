@@ -34,7 +34,7 @@ public:
 	void loadGlobalConfig( Config& config, const Path& pathToGlobalConfigFile	);
 	void loadGlobalConfig( Config& config);
 
-	Scene* loadScene();
+	void loadScene();
 
 private:
 	void loadUISettings(TiXmlElement* xmlElementNode, Config& config);
