@@ -17,7 +17,7 @@ namespace Flewnit
 class PhysicalRepresentation
 {
 	friend class WorldObject;
-	List<Subobject*> mSubObjects[__NUM_SIM_DOMAINS__];
+	List<SubObject*> mSubObjects[__NUM_SIM_DOMAINS__];
 };
 
 class WorldObject : public SceneNode
@@ -33,7 +33,7 @@ public:
 
 	virtual ~WorldObject();
 
-	List<Subobject*>& getSubObjects(SimulationDomain whichDomain);
+	List<SubObject*>& getSubObjects(SimulationDomain whichDomain);
 
 	//in which of the lists it will be inserted is determined by the SimulationDomain flag of the subObject;
 	void addSubObject(SubObject* so);

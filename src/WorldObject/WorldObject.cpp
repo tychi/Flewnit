@@ -16,7 +16,7 @@ namespace Flewnit
 
 WorldObject::WorldObject(String name,
 		SceneNodeTypeFlags typeflags,
-		Matrix4x4 localtransform = Matrix4x4() )
+		Matrix4x4 localtransform)
 : SceneNode(name, typeflags, localtransform)
 {
 	// TODO Auto-generated constructor stub
@@ -29,10 +29,10 @@ WorldObject::~WorldObject()
 }
 
 
-List<Subobject*>& WorldObject::getSubObjects(SimulationDomain whichDomain)
+List<SubObject*>& WorldObject::getSubObjects(SimulationDomain whichDomain)
 {
 	assert(whichDomain < __NUM_SIM_DOMAINS__);
-	return mPhysicalRep[whichDomain];
+	return mPhysicalRep.mSubObjects[whichDomain];
 }
 
 //in which of the lists it will be inserted is determined by the SimulationDomain flag of the subObject;

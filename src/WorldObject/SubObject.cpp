@@ -1,11 +1,14 @@
 /*
- * WorldObject.cpp
+ * SubObject.cpp
  *
  *  Created on: Dec 21, 2010
  *      Author: tychi
  */
 
-#include "WorldObject.h"
+#include "SubObject.h"
+
+#include "Geometry/Geometry.h"
+#include "Material/Material.h"
 
 namespace Flewnit
 {
@@ -20,5 +23,17 @@ namespace Flewnit
 //{
 //	// TODO Auto-generated destructor stub
 //}
+
+SubObject::SubObject(WorldObject* owningWorldObject ,SimulationDomain simDomain, Geometry* geo, Material* mat)
+: mOwningWorldObject(owningWorldObject), mSimDomain(simDomain), mGeometry(geo), mMaterial(mat)
+{
+
+}
+
+SubObject::~SubObject()
+{
+	delete mGeometry;
+	delete mMaterial;
+}
 
 }
