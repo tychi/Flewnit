@@ -30,14 +30,18 @@ class SubObject
 	Geometry* mGeometry;
 	Material* mMaterial;
 
-
+	//TODO IN KIEL FUCKING INSTANCE MANAGER
+	//is NULL if subobject is not instanced
+	InstanceManager* mInstanceManager;
+	// is FLEWNIT_INVALID_ID if subobject is not instanced
+	ID mInstanceID;
 
 public:
 	SubObject(WorldObject* owningWorldObject ,SimulationDomain simDomain, Geometry* geo, Material* mat);
 	virtual ~SubObject();
 
 	Geometry* getGeometry()const{return mGeometry;}
-	Material* getmMaterial()const{return mMaterial;}
+	Material* getMaterial()const{return mMaterial;}
 
 	inline SimulationDomain getSimDomain()const {return mSimDomain;}
 };

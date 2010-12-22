@@ -120,12 +120,13 @@ class Texture3D;
 
 ///\brief Scene forwards;
 ///\{
-class SceneGraph;
+class Scene;
 class SceneNode;
 class WorldObject;
 class Camera;
 
-//abstract generic intercae classes for all simulation domains to derive from them spcifically
+class InstanceManager;
+//abstract generic interface classes for all simulation domains to derive from them spcifically
 class SubObject;
 class Geometry;
 class Material;

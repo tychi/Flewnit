@@ -26,7 +26,9 @@ public:
 
 private:
 
-	SceneGraph* mSceneGraph;
+	Scene* mScene;
+
+	Map<ID, InstanceManager*> mRegisteredInstanceManagers;
 
 	Map<String, SimulationPipelineStage*> mRegisteredPipeLineStages;
 

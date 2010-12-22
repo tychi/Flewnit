@@ -1,5 +1,5 @@
 /*
- * Material.h
+ * LightingMaterial.h
  *
  *  Created on: Dec 21, 2010
  *      Author: tychi
@@ -7,27 +7,23 @@
 
 #pragma once
 
-#include "Common/BasicObject.h"
+#include "Material.h"
 
 #include "Simulator/SimulatorMetaInfos.h"
 
 namespace Flewnit
 {
 
-class Material
-: public BasicObject
+class LightingMaterial
+: public Material
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
 	SimulationDomain mSimDomain;
-	String mName;
-
-	SubObject* mOwningSubObject;
 
 public:
-	//TODO IN KIEL INTEGRATE INSTANCING STUFF ETC IN CONCEPT AND IMPLEMENT IT DIRECTLY
-	Material(SimulationDomain sd);
-	virtual ~Material();
+	LightingMaterial();
+	virtual ~LightingMaterial();
 
 
 	inline SimulationDomain getSimDomain()const {return mSimDomain;}
@@ -37,4 +33,3 @@ public:
 };
 
 }
-
