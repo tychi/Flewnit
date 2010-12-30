@@ -1,6 +1,7 @@
 CMakeFiles/
 bin/
 lib/
+include/GL3/
 Makefile
 CMakeCache.txt
 flewnitLog.txt
