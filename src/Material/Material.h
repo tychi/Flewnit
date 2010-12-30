@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Common/BasicObject.h"
+#include "Simulator/SimulationObject.h"
 
 #include "Simulator/SimulatorMetaInfos.h"
 
@@ -15,23 +15,17 @@ namespace Flewnit
 {
 
 class Material
-: public BasicObject
+: public SimulationObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-
-	SimulationDomain mSimDomain;
-	String mName;
 
 	SubObject* mOwningSubObject;
 
 public:
 	//TODO IN KIEL INTEGRATE INSTANCING STUFF ETC IN CONCEPT AND IMPLEMENT IT DIRECTLY
-	Material(SimulationDomain sd);
+	Material(SimulationDomain sd, String name);
 	virtual ~Material();
 
-
-	inline SimulationDomain getSimDomain()const {return mSimDomain;}
-	inline String getName()const{return mName;}
 
 	virtual bool activate()=0;
 	virtual bool deactivate()=0;

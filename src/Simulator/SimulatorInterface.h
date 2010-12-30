@@ -19,22 +19,6 @@ namespace Flewnit
 
 class ConfigStructNode;
 
-class SimulatorException : public std::exception
-{
-	String mDescription;
- public:
-	SimulatorException(String description = "unspecified simulator error") throw()
-	: mDescription(description)
-	{ }
-
-	virtual ~SimulatorException() throw(){}
-
-	virtual const char* what() const throw()
-	{
-	    return mDescription.c_str();
-	}
-};
-
 
 class SimulatorInterface
 :public SimulationObject

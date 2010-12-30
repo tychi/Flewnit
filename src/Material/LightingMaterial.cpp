@@ -10,8 +10,8 @@
 namespace Flewnit
 {
 
-LightingMaterial::LightingMaterial()
-: Material(VISUAL_SIM_DOMAIN)
+LightingMaterial::LightingMaterial(String name)
+: Material(VISUAL_SIM_DOMAIN, name)
 {
 	// TODO Auto-generated constructor stub
 

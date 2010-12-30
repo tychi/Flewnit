@@ -10,8 +10,8 @@
 namespace Flewnit
 {
 
-Material::Material(SimulationDomain sd)
-:mSimDomain(sd)
+Material::Material(SimulationDomain sd, String name)
+:SimulationObject(sd, name)
 {
 	// TODO Auto-generated constructor stub
 

@@ -28,6 +28,9 @@ public:
 	inline SimulationPipelineStage* getCurrentSimulationPipelineStage()const
 			{return mCurrentSimulationPipelineStage;}
 
+
+	RenderTarget* getGlobalRenderTarget()const;
+
 private:
 
 	friend class URE;
@@ -36,6 +39,7 @@ private:
 	SimulationPipelineStage* mCurrentSimulationPipelineStage;
 
 	Scene* mScene;
+	//RenderTarget* mGlobalRenderTarget;
 
 	Map<ID, InstanceManager*> mRegisteredInstanceManagers;
 

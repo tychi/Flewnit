@@ -8,7 +8,7 @@
 #pragma once
 
 
-#include "Common/BasicObject.h"
+#include "SimulationObject.h"
 
 #include  "SimulatorMetaInfos.h"
 
@@ -16,20 +16,22 @@ namespace Flewnit
 {
 
 class SimulationPipelineStage
-: public BasicObject
+: public SimulationObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
-	SimulationPipelineRequirements* mSimulationPipelineRequirements;
-	SimulationPipelineFeatures*  mSimulationPipelineFeatures;
+	//SimulationPipelineRequirements* mSimulationPipelineRequirements;
+	//SimulationPipelineFeatures*  mSimulationPipelineFeatures;
 
 	Map<String,BufferInterface*> mRenderingResults;
 
 public:
-	SimulationPipelineStage();
+	SimulationPipelineStage(SimulationDomain sd,String name);
 	virtual ~SimulationPipelineStage();
 
+	virtual void validateStage() throw(SimulatorException) = 0;
 
+	BufferInterface* getRenderingResult(String what);
 
 
 };

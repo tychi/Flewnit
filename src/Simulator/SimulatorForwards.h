@@ -29,15 +29,15 @@ enum SimulationDomain
 	__NO_SIM_DOMAIN__		= 4
 };
 
-class SimulationDomainIdentifier
-{
-public:
-	virtual SimulationDomain getSimDomain()const = 0;
-
-//ad this macro to every class definition deriving from this class;
-#define DECLARE_SIM_DOMAIN(simDomain) virtual SimulationDomain getSimDomain()const {return simDomain;}
-
-};
+//class SimulationDomainIdentifier
+//{
+//public:
+//	virtual SimulationDomain getSimDomain()const = 0;
+//
+////ad this macro to every class definition deriving from this class;
+//#define DECLARE_SIM_DOMAIN(simDomain) virtual SimulationDomain getSimDomain()const {return simDomain;}
+//
+//};
 
 //settings to configure a simulation step:
 //debug draw, time interval, etc;

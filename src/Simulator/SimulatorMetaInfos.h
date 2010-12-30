@@ -19,15 +19,31 @@ namespace Flewnit
 {
 
 
-
-class SimulatorMetaInfos
-: public BasicObject
+class SimulatorException : public std::exception
 {
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-public:
-	SimulatorMetaInfos();
-	virtual ~SimulatorMetaInfos();
+	String mDescription;
+ public:
+	SimulatorException(String description = "unspecified simulator error") throw()
+	: mDescription(description)
+	{ }
+
+	virtual ~SimulatorException() throw(){}
+
+	virtual const char* what() const throw()
+	{
+	    return mDescription.c_str();
+	}
 };
+
+
+//class SimulatorMetaInfos
+//: public BasicObject
+//{
+//	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+//public:
+//	SimulatorMetaInfos();
+//	virtual ~SimulatorMetaInfos();
+//};
 
 enum RenderTargetType
 {
@@ -58,7 +74,10 @@ enum LightingFeatures
 //	ENVIRONMENT_MAPPING,
 //	PHONG_SHADING,
 //	NORMAL_MAPPING,
-//	TESSELATION
+//	TESSELATION,
+//	AMBIENT_OCCLUSION,
+//	GAS_RENDERING,
+//	LIQUID_REDNERING
 };
 
 

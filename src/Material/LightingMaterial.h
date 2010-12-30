@@ -19,14 +19,11 @@ class LightingMaterial
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
-	SimulationDomain mSimDomain;
 
 public:
-	LightingMaterial();
+	LightingMaterial(String name);
 	virtual ~LightingMaterial();
 
-
-	inline SimulationDomain getSimDomain()const {return mSimDomain;}
 
 	virtual bool activate()=0;
 	virtual bool deactivate()=0;

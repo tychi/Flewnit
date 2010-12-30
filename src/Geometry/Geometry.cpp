@@ -10,7 +10,8 @@
 namespace Flewnit
 {
 
-Geometry::Geometry()
+Geometry::Geometry(GeometryRepresentation geoRep, String name)
+:mGeometryRepresentation(geoRep), mName(name)
 {
 	// TODO Auto-generated constructor stub
 

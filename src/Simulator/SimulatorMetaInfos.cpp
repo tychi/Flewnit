@@ -10,15 +10,15 @@
 namespace Flewnit
 {
 
-SimulatorMetaInfos::SimulatorMetaInfos()
-{
-	// TODO Auto-generated constructor stub
-
-}
-
-SimulatorMetaInfos::~SimulatorMetaInfos()
-{
-	// TODO Auto-generated destructor stub
-}
+//SimulatorMetaInfos::SimulatorMetaInfos()
+//{
+//	// TODO Auto-generated constructor stub
+//
+//}
+//
+//SimulatorMetaInfos::~SimulatorMetaInfos()
+//{
+//	// TODO Auto-generated destructor stub
+//}
 
 }
