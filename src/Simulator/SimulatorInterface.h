@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Common/BasicObject.h"
+#include "SimulationObject.h"
 
 #include "SimulatorForwards.h"
 
@@ -37,13 +37,9 @@ class SimulatorException : public std::exception
 
 
 class SimulatorInterface
-:public BasicObject
+:public SimulationObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-
-	SimulationDomain mSimulationDomain;
-
-
 
 protected:
 
@@ -59,7 +55,6 @@ public:
 	//factory function;
 	static SimulatorInterface* create(ConfigStructNode* simConfigNode) throw(SimulatorException);
 
-	SimulationDomain getSimulationDomain() const {return mSimulationDomain;}
 
 	virtual bool stepSimulation() throw(SimulatorException)  =0;
 	//build pipeline according to config;

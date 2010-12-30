@@ -11,6 +11,7 @@
 #include "MechanicsSimulator/MechanicsSimulator.h"
 #include "LightingSimulator/LightingSimulator.h"
 #include "SoundSimulator/SoundSimulator.h"
+
 #include "Util/Loader/Config.h"
 
 
@@ -18,7 +19,7 @@ namespace Flewnit
 {
 
 SimulatorInterface::SimulatorInterface(SimulationDomain sd, ConfigStructNode* simConfigNode)
-: mSimulationDomain(sd), mSimConfigNode(simConfigNode)
+: SimulationObject( sd, simConfigNode->getName()), mSimConfigNode(simConfigNode)
 {
 	// TODO Auto-generated constructor stub
 
