@@ -31,6 +31,7 @@ public:
 
 
 	inline SimulationDomain getSimDomain()const {return mSimDomain;}
+	inline String getName()const{return mName;}
 
 	virtual bool activate()=0;
 	virtual bool deactivate()=0;

@@ -24,7 +24,16 @@ public:
 	SimulationResourceManager();
 	virtual ~SimulationResourceManager();
 
+	//neede by materials to get info about current sim pipeline
+	inline SimulationPipelineStage* getCurrentSimulationPipelineStage()const
+			{return mCurrentSimulationPipelineStage;}
+
 private:
+
+	friend class URE;
+	void setCurrentSimulationPipelineStage(SimulationPipelineStage* current);
+
+	SimulationPipelineStage* mCurrentSimulationPipelineStage;
 
 	Scene* mScene;
 
@@ -35,9 +44,11 @@ private:
 
 	Map<String, WorldObject*> mWorldObjects;
 	Map<ID, SubObject*>	mSubObjects;
-	Map<String, Geometry*> mGeometries;
+
+
 
 	Map<String, Material*> mMaterials;
+	Map<String, Geometry*> mGeometries;
 
 	Map<ID, BufferInterface* > mBuffers;
 

@@ -21,4 +21,10 @@ SimulationResourceManager::~SimulationResourceManager()
 	// TODO Auto-generated destructor stub
 }
 
+
+void SimulationResourceManager::setCurrentSimulationPipelineStage(SimulationPipelineStage* current)
+{
+	mCurrentSimulationPipelineStage = current;
+}
+
 }
