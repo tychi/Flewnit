@@ -10,10 +10,6 @@
 namespace Flewnit
 {
 
-class BufferInfo
-{
-	//TODO implement
-};
 
 
 }

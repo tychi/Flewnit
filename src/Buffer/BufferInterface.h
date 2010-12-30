@@ -19,18 +19,45 @@
 
 #include "Common/Math.h"
 
+#include "Common/CL_GL_Common.h"
+
 
 namespace Flewnit
 {
 
-class BufferInterface : public BasicObject
+//class BufferHandles
+//{
+//public:
+//	void* mHostBuffer;
+//	GLuint mGLBuffer;
+//
+//	cl::Buffer mCLBuffer;
+//
+//	cl::BufferRenderGL
+//
+//	cl::BufferGL mCLGLBuffer;
+//
+//};
+
+class BufferInfo
 {
+	//TODO implement
+};
+
+
+
+class BufferInterface
+: public BasicObject
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
+
 	BufferInterface();
 	virtual ~BufferInterface();
 
 
 protected:
+
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	//friend Profiler so that he can set the ID of the BasicObjects;
@@ -42,7 +69,26 @@ protected:
 
 
 
-	const BufferInfo* getBufferInfo();
+public:
+	virtual bool isAllocated(ContextType type) = 0;
+	virtual bool allocMem(ContextType type) = 0;
+	virtual bool freeMem(ContextType type) = 0;
+
+	virtual void bind(ContextType type) = 0;
+	//virtual void unBind()=0;
+
+	virtual BufferTypeFlags getBufferTypeFlags()const =0;
+	virtual String getName() const = 0;
+
+	virtual void setData(void* data, ContextType type);
+
+	virtual int  getNumElements() const = 0;
+	virtual int  getElementSize() = 0;
+
+	virtual bool isPingPongBuffer(ContextType type) = 0;
+
+
+	virtual BufferInfo* getBufferInfo() const =0;
 
 protected:
 
