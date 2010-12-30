@@ -270,7 +270,7 @@ elseif(MEDIA_LAYER STREQUAL "XCB")
 	
 elseif(MEDIA_LAYER STREQUAL "GLFW")
     message("trying to link against GLFW")
-    target_link_libraries(flewnit glfw)	
+    target_link_libraries(flewnit glfw Xrandr)	
 	
 else()
     message("should never ended up here as script should have terminated earlies due to an error")
