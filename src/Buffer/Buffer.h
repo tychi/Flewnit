@@ -1,5 +1,5 @@
 /*
- * BufferInterface.h
+ * Buffer.h
  *
  *  Created on: Nov 27, 2010
  *      Author: tychi
@@ -14,9 +14,6 @@
 
 namespace Flewnit
 {
-
-
-
 
 
 class Buffer
@@ -42,6 +39,8 @@ protected:
 	BufferInfo mBufferInfo;
 
 public:
+	virtual bool operator==(const BufferInterface& rhs) const;
+
 	virtual bool isAllocated(ContextType type) const;
 	virtual bool allocMem(ContextType type);
 	virtual bool freeMem(ContextType type) ;
@@ -55,9 +54,9 @@ public:
 	virtual void setData(void* data, ContextType type);
 
 	virtual int  getNumElements() const;
-	virtual int  getElementSize() const;
+	virtual size_t  getElementSize() const;
 	virtual Type getElementType() const;
-	virtual cl_GLenum getElementInternalFormat() const;
+	//virtual cl_GLenum getElementInternalFormat() const;
 
 	virtual bool isPingPongBuffer()const;
 

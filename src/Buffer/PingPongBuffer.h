@@ -1,5 +1,5 @@
 /*
- * BufferInterface.h
+ * PingPongBuffer.h
  *
  *  Created on: Nov 27, 2010
  *      Author: tychi
@@ -9,44 +9,64 @@
 
 #pragma once
 
-#include "Common/FlewnitSharedDefinitions.h"
-
-#include "Common/BasicObject.h"
-
-#include "Buffer/BufferSharedDefinitions.h"
-
-#include "Buffer/BufferHelperUtils.h"
-
-#include "Common/Math.h"
+#include "BufferInterface.h"
 
 
 namespace Flewnit
 {
 
-class BufferInterface : public BasicObject
+
+class PingPongBuffer
+: public BufferInterface
 {
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	BufferInterface();
-	virtual ~BufferInterface();
+
+	PingPongBuffer(String name,BufferInterface* ping, BufferInterface* pong );
+	virtual ~PingPongBuffer();
 
 
 protected:
 
-#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-	//friend Profiler so that he can set the ID of the BasicObjects;
-	friend class Profiler;
-
-	void registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
-	void unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
-#endif
+	BufferInfo mBufferInfo;
+	BufferInterface* mPingPongBuffers[2];
+	int mRecentlyUpdatedBufferIndex;
+	int mCurrentActiveBufferIndex;
 
 
+public:
+	void toggleBuffers();
+	BufferInterface* getRecentlyUpdatedBuffer()const;
+	BufferInterface* getCurrentActiveBuffer()const;
 
-	const BufferInfo* getBufferInfo();
 
-protected:
 
-	BufferInfo* mBufferInfo;
+	virtual bool operator==(const BufferInterface& rhs) const;
+
+	virtual bool isAllocated(ContextType type) const;
+	virtual bool allocMem(ContextType type);
+	virtual bool freeMem(ContextType type) ;
+
+	virtual void bind(ContextType type) ;
+	//virtual void unBind()=0;
+
+	virtual BufferTypeFlags getBufferTypeFlags()const ;
+	virtual String getName() const ;
+
+	virtual void setData(void* data, ContextType type);
+
+	virtual int  getNumElements() const;
+	virtual size_t  getElementSize() const;
+	virtual Type getElementType() const;
+	//virtual cl_GLenum getElementInternalFormat() const;
+
+	virtual bool isPingPongBuffer()const;
+
+
+	virtual const BufferInfo& getBufferInfo() const;
+
+private:
+	void checkPingPongError()const;
 
 };
 

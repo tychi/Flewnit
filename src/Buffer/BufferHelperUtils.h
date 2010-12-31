@@ -17,6 +17,7 @@ namespace Flewnit
 
 class BufferHelper
 {
+public:
 	static size_t elementSize(Type type)
 	{
 		//not all types define in teh Type-enum are checked, but only the most common;

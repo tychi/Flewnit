@@ -26,6 +26,11 @@ Buffer::~Buffer()
 }
 
 
+bool Buffer::operator==(const BufferInterface& rhs) const
+{
+
+}
+
 bool Buffer::isAllocated(ContextType type) const
 {
 
@@ -79,7 +84,7 @@ int  Buffer::getNumElements() const
 }
 
 
-int  Buffer::getElementSize() const
+size_t  Buffer::getElementSize() const
 {
 
 }
@@ -91,10 +96,10 @@ Type Buffer::getElementType() const
 }
 
 
-cl_GLenum Buffer::getElementInternalFormat() const
-{
-
-}
+//cl_GLenum Buffer::getElementInternalFormat() const
+//{
+//
+//}
 
 
 

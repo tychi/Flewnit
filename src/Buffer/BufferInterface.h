@@ -69,6 +69,41 @@ public:
 		allocationGuards[OPEN_GL_CONTEXT_TYPE] = false;
 	}
 
+	bool operator==(const BufferInfo& rhs) const
+	{
+		return bufferTypeFlags == rhs.bufferTypeFlags &&
+				usageContexts == rhs.usageContexts &&
+				isPingPongBuffer == rhs.isPingPongBuffer &&
+				isSharedByCLAndGL == rhs.isSharedByCLAndGL &&
+				allocationGuards[HOST_CONTEXT_TYPE] == rhs.allocationGuards[HOST_CONTEXT_TYPE] &&
+				allocationGuards[OPEN_CL_CONTEXT_TYPE] == rhs.allocationGuards[OPEN_CL_CONTEXT_TYPE] &&
+				allocationGuards[OPEN_GL_CONTEXT_TYPE] == rhs.allocationGuards[OPEN_GL_CONTEXT_TYPE] &&
+				elementType == rhs.elementType &&
+				numElements == rhs.numElements &&
+				dimensionality == rhs.dimensionality &&
+				dimensionExtends.x == rhs.dimensionExtends.x &&
+				dimensionExtends.y == rhs.dimensionExtends.y &&
+				dimensionExtends.z == rhs.dimensionExtends.z ;
+	}
+
+	const BufferInfo& operator=(const BufferInfo& rhs)
+	{
+		bufferTypeFlags = rhs.bufferTypeFlags;
+		usageContexts = rhs.usageContexts ;
+		isPingPongBuffer = rhs.isPingPongBuffer ;
+		isSharedByCLAndGL = rhs.isSharedByCLAndGL ;
+		allocationGuards[HOST_CONTEXT_TYPE] = rhs.allocationGuards[HOST_CONTEXT_TYPE];
+		allocationGuards[OPEN_CL_CONTEXT_TYPE] = rhs.allocationGuards[OPEN_CL_CONTEXT_TYPE];
+		allocationGuards[OPEN_GL_CONTEXT_TYPE] = rhs.allocationGuards[OPEN_GL_CONTEXT_TYPE];
+		elementType = rhs.elementType ;
+		numElements = rhs.numElements ;
+		dimensionality = rhs.dimensionality ;
+		dimensionExtends.x = rhs.dimensionExtends.x ,
+		dimensionExtends.y = rhs.dimensionExtends.y ;
+		dimensionExtends.z = rhs.dimensionExtends.z ;
+	}
+
+
 };
 
 
@@ -98,6 +133,7 @@ protected:
 
 public:
 
+	virtual bool operator==(const BufferInterface& rhs) const = 0;
 
 	virtual bool isAllocated(ContextType type) const = 0;
 	virtual bool allocMem(ContextType type) = 0;
@@ -113,9 +149,9 @@ public:
 
 	//convenience functions to access bufferInfo data;
 	virtual int  getNumElements() const = 0;
-	virtual int  getElementSize() const = 0;
+	virtual size_t  getElementSize() const = 0;
 	virtual Type getElementType() const = 0;
-	virtual cl_GLenum getElementInternalFormat() const = 0;
+	//virtual cl_GLenum getElementInternalFormat() const = 0;
 	virtual bool isPingPongBuffer() const = 0;
 
 	//get the bufferinfo directly:
