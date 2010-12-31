@@ -68,10 +68,14 @@ void Profiler::printMemoryStatus()
 	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
 			<<  mTotalRegisteredObjects << " objects registered;\n"
 			<<  mTotalObjectMemoryFootprint << " bytes are consumed by those objects;\n"
-			<< mPrivateAllocatedBufferMemories[HOST_CONTEXT_TYPE]  << " bytes are consumed by CPU buffers;\n"
-			<< mPrivateAllocatedBufferMemories[OPEN_CL_CONTEXT_TYPE] << " bytes are consumed by privately used OpenCL buffers;\n"
-			<< mPrivateAllocatedBufferMemories[OPEN_GL_CONTEXT_TYPE]  << " bytes are consumed by privately used OpenGL buffers;\n"
-			<< mCLGLSharedAllocatedBufferMemory << " bytes are consumed by shared OpenCL/OpenGL buffers;\n"
+			<< mPrivateAllocatedBufferMemories[HOST_CONTEXT_TYPE]  << " bytes are consumed by "
+					<<mNumPrivateAllocatedBuffers[HOST_CONTEXT_TYPE]<<" CPU buffers;\n"
+			<< mPrivateAllocatedBufferMemories[OPEN_CL_CONTEXT_TYPE] << " bytes are consumed by "
+			<<mNumPrivateAllocatedBuffers[OPEN_CL_CONTEXT_TYPE] <<" privately used OpenCL buffers;\n"
+			<< mPrivateAllocatedBufferMemories[OPEN_GL_CONTEXT_TYPE]  << " bytes are consumed by "
+			<<mNumPrivateAllocatedBuffers[OPEN_GL_CONTEXT_TYPE] <<" privately used OpenGL buffers;\n"
+			<< mCLGLSharedAllocatedBufferMemory << " bytes are consumed by "
+					<<mNumCLGLSharedAllocatedBuffers<<" shared OpenCL/OpenGL buffers;\n"
 			;
 }
 
@@ -195,16 +199,66 @@ void Profiler::registerObjectMemoryFootPrint(BasicObject* bo)
 
 void Profiler::registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte)
 {
-	checkError();
-	//TODO
+	modBufferAllocation_internal(contextTypeFlags,static_cast<int>(sizeInByte),1);
 }
 
 void Profiler::unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte)
 {
-	checkError();
-	//TODO
+	modBufferAllocation_internal(contextTypeFlags, (-1) * static_cast<int>(sizeInByte),-1);
 }
 
+void Profiler::modBufferAllocation_internal(ContextTypeFlags contextTypeFlags, int sizeIncrement, int buffIncrement)
+{
+	bool validFlagsGuard =false;
+	assert(	(buffIncrement == 1 && sizeIncrement > 0) ||
+			(buffIncrement ==-1 && sizeIncrement < 0)   );
+
+	//host stuff
+	if( (contextTypeFlags & HOST_CONTEXT_TYPE_FLAG ) )
+	{
+		assert("no other context flags allowed" && contextTypeFlags == HOST_CONTEXT_TYPE_FLAG);
+
+		mNumPrivateAllocatedBuffers[HOST_CONTEXT_TYPE] += buffIncrement ;
+		mPrivateAllocatedBufferMemories[HOST_CONTEXT_TYPE] += sizeIncrement;
+
+		validFlagsGuard=true;
+	}
+
+	//graphics stuff
+	if(		 (contextTypeFlags & OPEN_CL_CONTEXT_TYPE_FLAG )
+		&& ! (contextTypeFlags & OPEN_GL_CONTEXT_TYPE_FLAG ) )
+	{
+		mNumPrivateAllocatedBuffers[OPEN_CL_CONTEXT_TYPE] += buffIncrement ;
+		mPrivateAllocatedBufferMemories[OPEN_CL_CONTEXT_TYPE] += sizeIncrement;
+
+		validFlagsGuard=true;
+	}
+
+	//compute stuff
+	if(		 (contextTypeFlags & OPEN_GL_CONTEXT_TYPE_FLAG )
+		&& ! (contextTypeFlags & OPEN_CL_CONTEXT_TYPE_FLAG ) )
+	{
+		mNumPrivateAllocatedBuffers[OPEN_GL_CONTEXT_TYPE] += buffIncrement ;
+		mPrivateAllocatedBufferMemories[OPEN_GL_CONTEXT_TYPE] += sizeIncrement;
+
+		validFlagsGuard=true;
+	}
+
+	//interop stuff
+	if(		 (contextTypeFlags & OPEN_GL_CONTEXT_TYPE_FLAG )
+		&& 	 (contextTypeFlags & OPEN_CL_CONTEXT_TYPE_FLAG ) )
+	{
+		mNumCLGLSharedAllocatedBuffers += buffIncrement ;
+		mCLGLSharedAllocatedBufferMemory += sizeIncrement;
+
+		validFlagsGuard=true;
+	}
+
+	assert("flags valid" && validFlagsGuard);
+
+	printMemoryStatus();
+	checkError();
+}
 
 void Profiler::checkError()
 {

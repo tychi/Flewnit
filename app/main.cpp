@@ -22,7 +22,7 @@
 int main(int argc, char *argv[])
 {
 	//run bootstrap before acually instancing the render library; This is because the profiler must be instance at first;
-	bool disableMemoryTrackLogging = true;
+	bool disableMemoryTrackLogging = false;
 	Flewnit::URE::bootstrap(disableMemoryTrackLogging);
 	//now instantiate the Engine singleton
 	FLEWNIT_INSTANTIATE(new Flewnit::URE());

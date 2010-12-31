@@ -111,7 +111,8 @@ private:
 	void registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 	void unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 
-
+	//internat routine to omit boilerplate
+	void modBufferAllocation_internal(ContextTypeFlags contextTypeFlags, int sizeIncrement, int buffIncrement);
 
 	///\{
 	///\brief Members to track IDs and freed IDs for re-usage;
