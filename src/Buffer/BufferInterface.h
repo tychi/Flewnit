@@ -9,6 +9,8 @@
 
 #pragma once
 
+//TODO from/to typeid stuff
+
 #include "Common/FlewnitSharedDefinitions.h"
 
 #include "Common/BasicObject.h"
@@ -70,8 +72,10 @@ protected:
 
 
 public:
+
+
 	virtual bool isAllocated(ContextType type) = 0;
-	virtual bool allocMem(ContextType type) = 0;
+	virtual bool allocMem(ContextType type, size_t sizeInByte) = 0;
 	virtual bool freeMem(ContextType type) = 0;
 
 	virtual void bind(ContextType type) = 0;
@@ -80,10 +84,11 @@ public:
 	virtual BufferTypeFlags getBufferTypeFlags()const =0;
 	virtual String getName() const = 0;
 
-	virtual void setData(void* data, ContextType type);
+	virtual void setData(void* data, ContextType type) = 0;
 
 	virtual int  getNumElements() const = 0;
 	virtual int  getElementSize() = 0;
+	virtual Type getElementType() = 0;
 
 	virtual bool isPingPongBuffer(ContextType type) = 0;
 
