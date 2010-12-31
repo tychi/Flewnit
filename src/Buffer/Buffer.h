@@ -25,17 +25,11 @@ class Buffer
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 
-	Buffer(String name, cl_GLint numElements, cl_GLint elementSize);
+	Buffer(String name, Type elementType, cl_GLint numElements );
 	virtual ~Buffer();
 
 
 protected:
-
-	String mName;
-	BufferTypeFlags mBufferTypeFlags;
-
-	cl_GLint mNumElements;
-	cl_GLint mEelementSize;
 
 	//NULL if no host pointer exists;
 	void* mHostPtr;
@@ -44,11 +38,12 @@ protected:
 	//mCLBuffer() (operator()) is NULL if no Buffer exists;
 	cl::Buffer mCLBuffer;
 
-	//interop
+	//interop handle classes (e.g. cl::BufferGL etc.) will be used in specialized derived buffer classes
+	BufferInfo mBufferInfo;
 
 public:
-	virtual bool isAllocated(ContextType type) ;
-	virtual bool allocMem(ContextType type, size_t sizeInByte);
+	virtual bool isAllocated(ContextType type) const;
+	virtual bool allocMem(ContextType type);
 	virtual bool freeMem(ContextType type) ;
 
 	virtual void bind(ContextType type) ;
@@ -60,17 +55,14 @@ public:
 	virtual void setData(void* data, ContextType type);
 
 	virtual int  getNumElements() const;
-	virtual int  getElementSize();
-	virtual Type getElementType();
+	virtual int  getElementSize() const;
+	virtual Type getElementType() const;
+	virtual cl_GLenum getElementInternalFormat() const;
 
-	virtual bool isPingPongBuffer(ContextType type);
+	virtual bool isPingPongBuffer()const;
 
 
-	virtual BufferInfo* getBufferInfo() const;
-
-protected:
-
-	BufferInfo* mBufferInfo;
+	virtual const BufferInfo& getBufferInfo() const;
 
 };
 

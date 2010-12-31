@@ -1,47 +1,116 @@
 /*
- * BufferInterface.cpp
+ * Buffer.cpp
  *
  *  Created on: Nov 27, 2010
  *      Author: tychi
  */
 
-#include "BufferInterface.h"
+#include "Buffer.h"
 
-#include "Common/Profiler.h"
 
-#include "Common/Math.h"
 
 namespace Flewnit
 {
 
-BufferInterface::BufferInterface()
+Buffer::Buffer(String name, Type elementType, cl_GLint numElements )
+: mBufferInfo(name)
 {
 
 	// TODO Auto-generated constructor stub
 
 }
 
-BufferInterface::~BufferInterface()
+Buffer::~Buffer()
 {
 	// TODO Auto-generated destructor stub
 }
 
 
-//---------------------------------------------------------------------------------------------------------
-#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-
-void BufferInterface::registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte)
+bool Buffer::isAllocated(ContextType type) const
 {
-	Profiler::getInstance().registerBufferAllocation(contextTypeFlags,sizeInByte);
+
 }
 
-void BufferInterface::unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte)
+
+bool Buffer::allocMem(ContextType type)
 {
-	Profiler::getInstance().unregisterBufferAllocation(contextTypeFlags,sizeInByte);
+
 }
 
-#endif
-//---------------------------------------------------------------------------------------------------------
+
+bool Buffer::freeMem(ContextType type)
+{
+
+}
+
+
+
+void Buffer::bind(ContextType type)
+{
+
+}
+
+
+//void Buffer::unBind(){}
+
+BufferTypeFlags Buffer::getBufferTypeFlags()const
+{
+
+}
+
+
+String Buffer::getName() const
+{
+
+}
+
+
+
+void Buffer::setData(void* data, ContextType type)
+{
+
+}
+
+
+
+int  Buffer::getNumElements() const
+{
+
+}
+
+
+int  Buffer::getElementSize() const
+{
+
+}
+
+
+Type Buffer::getElementType() const
+{
+
+}
+
+
+cl_GLenum Buffer::getElementInternalFormat() const
+{
+
+}
+
+
+
+bool Buffer::isPingPongBuffer()const
+{
+
+}
+
+
+
+
+const BufferInfo& Buffer::getBufferInfo() const
+{
+
+}
+
 
 
 }

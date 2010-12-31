@@ -17,6 +17,7 @@ namespace Flewnit
 
 enum BufferTypeFlags
 {
+	EMPTY_BUFFER_FLAG				=0,
 	CPU_BUFFER_FLAG  				=1<<0,
 	TEXTURE_BUFFER_FLAG				=1<<1,
 	VERTEX_ATTRIBUTE_BUFFER_FLAG 	=1<<2,
@@ -35,9 +36,10 @@ enum ContextType
 ///\note we need a flag type to indicate GL-CL-interoperation buffers and CPU-memory-mapped buffers
 enum ContextTypeFlags
 {
-	HOST_CONTEXT_TYPE_FLAG				=0,
-	OPEN_CL_CONTEXT_TYPE_FLAG			=1,
-	OPEN_GL_CONTEXT_TYPE_FLAG			=2
+	NO_CONTEXT_TYPE_FLAG				=0,
+	HOST_CONTEXT_TYPE_FLAG				=1<<0,
+	OPEN_CL_CONTEXT_TYPE_FLAG			=1<<1,
+	OPEN_GL_CONTEXT_TYPE_FLAG			=1<<2
 };
 
 
