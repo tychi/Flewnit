@@ -43,7 +43,7 @@ bool Buffer::copyBetweenContexts(ContextType from,ContextType to)throw(BufferExc
 
 
 
-bool Buffer::allocMem(ContextType type)
+bool Buffer::allocMem(ContextType type)throw(BufferException)
 {
 
 }

@@ -96,7 +96,7 @@ public:
 	//memory manipulating stuff:
 	///\{
 	bool isAllocated(ContextType type) const;
-	virtual bool allocMem(ContextType type) = 0;
+	virtual bool allocMem(ContextType type) throw(BufferException) = 0;
 	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
 	virtual bool freeMem(ContextType type) = 0;
 	///\}

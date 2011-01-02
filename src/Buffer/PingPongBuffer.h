@@ -22,7 +22,7 @@ class PingPongBuffer
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 
-	PingPongBuffer(String name,BufferInterface* ping, BufferInterface* pong );
+	PingPongBuffer(String name,BufferInterface* ping, BufferInterface* pong ) throw(BufferException);
 	virtual ~PingPongBuffer();
 
 protected:
@@ -44,8 +44,10 @@ public:
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
 
 
-
-	virtual bool allocMem(ContextType type);
+	//if you are calling the following routines on the pingpong-buffer, the every operation will be performed
+	//on both of the managed buffers ("ping" and "pong"); to do stuff just on one of the both managed buffers,
+	//get them and call those routines driectly on them
+	virtual bool allocMem(ContextType type)throw(BufferException);
 	virtual void setData(void* data, ContextType type);
 	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException);
 	virtual bool freeMem(ContextType type) ;
@@ -60,6 +62,7 @@ public:
 
 private:
 	void checkPingPongError()const;
+	void getHandlesFromCurrentActiveBuffer();
 
 };
 
