@@ -86,6 +86,65 @@ public:
 	virtual ~BufferInterface();
 
 
+	//check for campatibility: not the contents, but the types, dimensions, allocations etc are compared;
+	virtual bool operator==(const BufferInterface& rhs) const = 0;
+	//copy contents of the one buffer to the other, but only if they are of the same leaf type;
+	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException) = 0;
+
+	virtual void bind(ContextType type) = 0;
+
+	//memory manipulating stuff:
+	///\{
+	bool isAllocated(ContextType type) const;
+	virtual bool allocMem(ContextType type) = 0;
+	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
+	virtual bool freeMem(ContextType type) = 0;
+	///\}
+
+
+
+
+	virtual BufferTypeFlags getBufferTypeFlags()const =0;
+	virtual String getName() const = 0;
+
+	virtual void setData(void* data, ContextType type) = 0;
+
+	//convenience functions to access bufferInfo data;
+	///\{
+	int  getNumElements() const;
+	size_t  getElementSize() const;
+	Type getElementType() const;
+
+	//get the bufferinfo directly:
+	const BufferInfo& getBufferInfo() const;
+	///\}
+
+	//convenience caster methods:
+	///\{
+	bool isPingPongBuffer() const;
+	PingPongBuffer& toPingPongBuffer() throw(BufferException);
+
+	bool isDefaultBuffer()const;
+	Buffer& toDefaultBuffer()throw(BufferException);
+
+	bool isTexture() const;
+	bool isTexture1D() const;
+	Texture1D& toTexture1D() throw(BufferException);
+	bool isTexture2D() const;
+	Texture2D& toTexture2D() throw(BufferException);
+	bool isTexture3D() const;
+	Texture3D& toTexture3D() throw(BufferException);
+	bool isRenderBuffer() const;
+	RenderBuffer& toRenderBuffer() throw(BufferException);
+	///\}
+
+
+	//getters n setters for the buffer handles (might need to be exposed due to passing as kernel arguments etc)
+	///\{
+	CPUBufferHandle getCPUBufferHandle()const;
+	GraphicsBufferHandle getGraphicsBufferHandle()const;
+	ComputeBufferHandle getComputeBufferHandle()const;
+	///\}
 protected:
 
 
@@ -97,55 +156,21 @@ protected:
 	void unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 #endif
 
-
-
-public:
-
-	//check for campatibility: not the contents, but the types, dimensions, allocations etc are compared;
-	virtual bool operator==(const BufferInterface& rhs) const = 0;
-	//copy contents of the one buffer to the other, but only if they are of the same leaf type;
-	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException) = 0;
-
-	bool isAllocated(ContextType type) const;
-	virtual bool allocMem(ContextType type) = 0;
-	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
-	virtual bool freeMem(ContextType type) = 0;
-
-
-	virtual void bind(ContextType type) = 0;
-	//virtual void unBind()=0;
-
-	virtual BufferTypeFlags getBufferTypeFlags()const =0;
-	virtual String getName() const = 0;
-
-	virtual void setData(void* data, ContextType type) = 0;
-
-	//convenience functions to access bufferInfo data;
-	int  getNumElements() const;
-	size_t  getElementSize() const;
-	Type getElementType() const;
-
-	//get the bufferinfo directly:
-	const BufferInfo& getBufferInfo() const;
-
-
-	//convenience caster methods:
-	bool isPingPongBuffer() const;
-	PingPongBuffer& toPingPongBuffer() throw(BufferException);
-
-	bool isTexture() const;
-	bool isTexture1D() const;
-	Texture1D& toTexture1D() throw(BufferException);
-	bool isTexture2D() const;
-	Texture2D& toTexture2D() throw(BufferException);
-	bool isTexture3D() const;
-	Texture3D& toTexture3D() throw(BufferException);
-	bool isRenderBuffer() const;
-	RenderBuffer& toRenderBuffer() throw(BufferException);
-
-protected:
-
 	BufferInfo* mBufferInfo;
+
+	//NULL if no host pointer exists;
+	CPUBufferHandle mCPU_Handle;
+	//0 if no openGL buffer exists;
+	GraphicsBufferHandle mGraphicsBufferHandle;
+	//mComputeBufferHandle(), i.e "cl_mem cl::Memory::operator()" is NULL if no Buffer exists;
+	//OpenCL distinguishes between a buffer and an image; I don't like this conceptional
+	//separation, as they are both regions in memory; Thus, the interface in this framework
+	//is different than in openCL: Buffer is the base class, Texture etc. derive from this,
+	//non-image Buffers are derictly implemented and internally acessed by casting
+	//the cl::Memory member to cl::Buffer/cl::BufferGL;
+	//interop handle classes (e.g. cl::BufferGL, cl::Image2D, cl::Image2DGL etc.) will be handled by statically casting the cl::Memory mCLBuffer member;
+	ComputeBufferHandle mComputeBufferHandle;
+
 
 };
 

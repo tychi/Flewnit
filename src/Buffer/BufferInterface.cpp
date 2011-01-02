@@ -98,14 +98,18 @@ const BufferInfo& BufferInfo::operator=(const BufferInfo& rhs)
 
 
 BufferInterface::BufferInterface(String name)
-:mBufferInfo(new BufferInfo(name))
+:mBufferInfo(new BufferInfo(name)), mCPU_Handle(0), mGraphicsBufferHandle(0)
 {
-
+	//the compute-handle manages its initialization for itself due to the cl-c++-bindings :)
 }
 
 BufferInterface::~BufferInterface()
 {
 	delete mBufferInfo;
+	delete mCPU_Handle;
+	//some guard in order to check if the implementor of a derived class has thought about the release of the gl-object
+	//(via glDeleteBuffers(), glDeleteTextures() or glDeleteRenderbuffers())
+	assert("derived classes have to release the GL handle appropriately if the use it!" && mGraphicsBufferHandle==0);
 }
 
 
@@ -174,6 +178,19 @@ Type BufferInterface::getElementType() const
 	return mBufferInfo->elementType;
 }
 
+bool BufferInterface::isDefaultBuffer()const
+{
+	return 		(!(mBufferInfo->isPingPongBuffer))
+			&& 	(!(mBufferInfo->isTexture))
+			&& 	(!(mBufferInfo->isRenderBuffer));
+}
+
+Buffer& BufferInterface::toDefaultBuffer()throw(BufferException)
+{
+	Buffer* toCastPtr = dynamic_cast<Buffer*>(this);
+	if(toCastPtr) return *toCastPtr;
+	else throw(BufferException("Bad cast to default Buffer"));
+}
 
 
 //convenience caster methods:
@@ -246,6 +263,10 @@ RenderBuffer& BufferInterface::toRenderBuffer() throw(BufferException)
 	else
 		throw(BufferException("Bad cast to RenderBuffer"));
 }
+
+CPUBufferHandle BufferInterface::getCPUBufferHandle()const{return mCPU_Handle;}
+GraphicsBufferHandle BufferInterface::getGraphicsBufferHandle()const{return mGraphicsBufferHandle;}
+ComputeBufferHandle BufferInterface::getComputeBufferHandle()const{return mComputeBufferHandle;}
 
 
 

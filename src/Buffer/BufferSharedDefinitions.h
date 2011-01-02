@@ -17,7 +17,7 @@
 namespace Flewnit
 {
 
-typedef void* CPU_Handle;
+typedef void* CPUBufferHandle;
 typedef GLuint GraphicsBufferHandle;
 typedef cl::Memory ComputeBufferHandle;
 

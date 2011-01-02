@@ -26,20 +26,6 @@ public:
 	virtual ~Buffer();
 
 
-protected:
-
-	//NULL if no host pointer exists;
-	void* mHostPtr;
-	//0 if no openGL buffer exists;
-	GLuint mGLBuffer;
-	//mCLBuffer() (operator()) is NULL if no Buffer exists;
-	//OpenCL differences between a buffer and an image; I don't like this conceptional
-	//separation, as they are both regions in memory; Thus, the interface in this framework
-	//is different than in openCL: Buffer is the base class, Texture etc. derive from this,
-	//non-image Buffers are derictly implemented and internally acessed by casting
-	//the cl::Memory member to cl::Buffer/cl::BufferGL;
-	//interop handle classes (e.g. cl::BufferGL etc.) will be handled by statically casting the cl::Memory mCLBuffer member;
-	cl::Memory mCLBuffer;
 
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
@@ -53,6 +39,9 @@ public:
 	virtual bool freeMem(ContextType type) ;
 
 	virtual void bind(ContextType type) ;
+
+	//copyMethods to create a new buffer from a texture or vice versa via copying
+	//TODO when
 
 
 };
