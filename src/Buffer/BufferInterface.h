@@ -141,7 +141,7 @@ public:
 
 	//getters n setters for the buffer handles (might need to be exposed due to passing as kernel arguments etc)
 	///\{
-	CPUBufferHandle getCPUBufferHandle()const;
+	const CPUBufferHandle getCPUBufferHandle()const;
 	GraphicsBufferHandle getGraphicsBufferHandle()const;
 	ComputeBufferHandle getComputeBufferHandle()const;
 	///\}

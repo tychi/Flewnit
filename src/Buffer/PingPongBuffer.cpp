@@ -118,13 +118,13 @@ const BufferInterface& PingPongBuffer::operator=(const BufferInterface& rhs) thr
 {
 	checkPingPongError();
 
-	//bufferst must be not identical (pointers not equal)...
+	//buffers must be not identical (pointers not equal)...
 	if( ! (this == &rhs  ) )
 	{
 		throw(BufferException("operator= not allowed for identical buffers;"));
 	}
 
-	//but compatible (objects "equal")
+	//but compatible (objects "equal", i.e. same subclass and same buffer sizes//allocation schemes;)
 	if( ! (*this == rhs  ) )
 	{
 		throw(BufferException("Ping Pong buffers aren't compatible for assignment;"));
@@ -137,11 +137,14 @@ const BufferInterface& PingPongBuffer::operator=(const BufferInterface& rhs) thr
 		throw(BufferException("PingPongBuffer::operator= : rhs not of same subclass;"));
 	}
 
-	delete mPingPongBuffers[mRecentlyUpdatedBufferIndex];
-	delete mPingPongBuffers[mCurrentActiveBufferIndex];
+//	delete mPingPongBuffers[mRecentlyUpdatedBufferIndex];
+//	delete mPingPongBuffers[mCurrentActiveBufferIndex];
+//
+//	mPingPongBuffers[mRecentlyUpdatedBufferIndex] = castedPtr->getCurrentActiveBuffer();
+//	mPingPongBuffers[mCurrentActiveBufferIndex] = castedPtr->getRecentlyUpdatedBuffer();
 
-	mPingPongBuffers[mRecentlyUpdatedBufferIndex] = castedPtr->getCurrentActiveBuffer();
-	mPingPongBuffers[mCurrentActiveBufferIndex] = castedPtr->getRecentlyUpdatedBuffer();
+	*(mPingPongBuffers[mRecentlyUpdatedBufferIndex]) = *(castedPtr->getCurrentActiveBuffer());
+	*(mPingPongBuffers[mCurrentActiveBufferIndex]) = *(castedPtr->getRecentlyUpdatedBuffer());
 
 	getHandlesFromCurrentActiveBuffer();
 

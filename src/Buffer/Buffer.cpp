@@ -28,6 +28,11 @@ Buffer::~Buffer()
 
 bool Buffer::operator==(const BufferInterface& rhs) const
 {
+	//if everything is implemented and maintained correctly, the pure compraision of the bufferinfo
+	//should be enough; but don't trust the programmer, not even yourself :P
+	return (*mBufferInfo == rhs.getBufferInfo()
+			//is it really of same type?
+			&& dynamic_cast<const Buffer*>(&rhs));
 
 }
 

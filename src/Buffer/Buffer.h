@@ -42,7 +42,7 @@ public:
 	virtual void bind(ContextType type) ;
 
 	//copyMethods to create a new buffer from a texture or vice versa via copying
-	//TODO when
+	//TODO when necessary
 
 
 };

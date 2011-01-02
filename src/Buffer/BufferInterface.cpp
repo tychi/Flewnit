@@ -264,7 +264,7 @@ RenderBuffer& BufferInterface::toRenderBuffer() throw(BufferException)
 		throw(BufferException("Bad cast to RenderBuffer"));
 }
 
-CPUBufferHandle BufferInterface::getCPUBufferHandle()const{return mCPU_Handle;}
+const CPUBufferHandle BufferInterface::getCPUBufferHandle()const{return mCPU_Handle;}
 GraphicsBufferHandle BufferInterface::getGraphicsBufferHandle()const{return mGraphicsBufferHandle;}
 ComputeBufferHandle BufferInterface::getComputeBufferHandle()const{return mComputeBufferHandle;}
 

@@ -21,6 +21,9 @@ typedef void* CPUBufferHandle;
 typedef GLuint GraphicsBufferHandle;
 typedef cl::Memory ComputeBufferHandle;
 
+class BufferInfo;
+class TextureInfo;
+
 //abstract base class for all Buffers;
 class BufferInterface;
 
