@@ -13,7 +13,7 @@ namespace Flewnit
 {
 
 Buffer::Buffer(String name, Type elementType, cl_GLint numElements )
-: mBufferInfo(name)
+: BufferInterface(name)
 {
 
 	// TODO Auto-generated constructor stub
@@ -31,10 +31,16 @@ bool Buffer::operator==(const BufferInterface& rhs) const
 
 }
 
-bool Buffer::isAllocated(ContextType type) const
+const BufferInterface& Buffer::operator=(const BufferInterface& rhs) throw(BufferException)
 {
 
 }
+
+bool Buffer::copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)
+{
+
+}
+
 
 
 bool Buffer::allocMem(ContextType type)
@@ -48,70 +54,13 @@ bool Buffer::freeMem(ContextType type)
 
 }
 
-
-
-void Buffer::bind(ContextType type)
-{
-
-}
-
-
-//void Buffer::unBind(){}
-
-BufferTypeFlags Buffer::getBufferTypeFlags()const
-{
-
-}
-
-
-String Buffer::getName() const
-{
-
-}
-
-
-
 void Buffer::setData(void* data, ContextType type)
 {
 
 }
 
 
-
-int  Buffer::getNumElements() const
-{
-
-}
-
-
-size_t  Buffer::getElementSize() const
-{
-
-}
-
-
-Type Buffer::getElementType() const
-{
-
-}
-
-
-//cl_GLenum Buffer::getElementInternalFormat() const
-//{
-//
-//}
-
-
-
-bool Buffer::isPingPongBuffer()const
-{
-
-}
-
-
-
-
-const BufferInfo& Buffer::getBufferInfo() const
+void Buffer::bind(ContextType type)
 {
 
 }

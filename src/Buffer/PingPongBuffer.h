@@ -25,10 +25,8 @@ public:
 	PingPongBuffer(String name,BufferInterface* ping, BufferInterface* pong );
 	virtual ~PingPongBuffer();
 
-
 protected:
 
-	BufferInfo mBufferInfo;
 	BufferInterface* mPingPongBuffers[2];
 	int mRecentlyUpdatedBufferIndex;
 	int mCurrentActiveBufferIndex;
@@ -42,28 +40,23 @@ public:
 
 
 	virtual bool operator==(const BufferInterface& rhs) const;
+	//copy contents of the one buffer to the other, but only if they are of the same leaf type;
+	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
 
-	virtual bool isAllocated(ContextType type) const;
+
+
 	virtual bool allocMem(ContextType type);
+	virtual void setData(void* data, ContextType type);
+	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException);
 	virtual bool freeMem(ContextType type) ;
 
 	virtual void bind(ContextType type) ;
 	//virtual void unBind()=0;
 
-	virtual BufferTypeFlags getBufferTypeFlags()const ;
-	virtual String getName() const ;
-
-	virtual void setData(void* data, ContextType type);
-
-	virtual int  getNumElements() const;
-	virtual size_t  getElementSize() const;
-	virtual Type getElementType() const;
-	//virtual cl_GLenum getElementInternalFormat() const;
-
-	virtual bool isPingPongBuffer()const;
 
 
-	virtual const BufferInfo& getBufferInfo() const;
+
+
 
 private:
 	void checkPingPongError()const;

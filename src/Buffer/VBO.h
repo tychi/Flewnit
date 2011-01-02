@@ -1,5 +1,5 @@
 /*
- * BufferInterface.h
+ * VBO.h
  *
  *  Created on: Nov 27, 2010
  *      Author: tychi
@@ -9,44 +9,22 @@
 
 #pragma once
 
-#include "Common/FlewnitSharedDefinitions.h"
 
 #include "Common/BasicObject.h"
 
-#include "Buffer/BufferSharedDefinitions.h"
 
-#include "Buffer/BufferHelperUtils.h"
-
-#include "Common/Math.h"
+//#include "Buffer.h"
 
 
 namespace Flewnit
 {
 
-class BufferInterface : public BasicObject
+class VBO
+: public BasicObject
 {
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+
 public:
-	BufferInterface();
-	virtual ~BufferInterface();
-
-
-protected:
-
-#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-	//friend Profiler so that he can set the ID of the BasicObjects;
-	friend class Profiler;
-
-	void registerBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
-	void unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
-#endif
-
-
-
-	const BufferInfo* getBufferInfo();
-
-protected:
-
-	BufferInfo* mBufferInfo;
 
 };
 

@@ -21,25 +21,30 @@
 
 #include "Common/Math.h"
 
-#include "Common/CL_GL_Common.h"
+#include <exception>
+
 
 
 namespace Flewnit
 {
 
-//class BufferHandles
-//{
-//public:
-//	void* mHostBuffer;
-//	GLuint mGLBuffer;
-//
-//	cl::Buffer mCLBuffer;
-//
-//	cl::BufferRenderGL
-//
-//	cl::BufferGL mCLGLBuffer;
-//
-//};
+
+class BufferException : public std::exception
+{
+	String mDescription;
+ public:
+	BufferException(String description = "unspecified Buffer exception") throw()
+	: mDescription(description)
+	{ }
+
+	virtual ~BufferException() throw(){}
+
+	virtual const char* what() const throw()
+	{
+	    return mDescription.c_str();
+	}
+};
+
 
 /**
  * some partially redundant information about the buffer;
@@ -50,59 +55,22 @@ public:
 	String name;
 	BufferTypeFlags bufferTypeFlags;
 	ContextTypeFlags usageContexts;
-	//default false
-	bool isPingPongBuffer;
-	//default false
-	bool isSharedByCLAndGL;
-	bool allocationGuards[__NUM_CONTEXT_TYPES__];
-	Type elementType;
+	bool isPingPongBuffer; //default false
+	bool isTexture; //default false
+	bool isRenderBuffer;//default false
+	bool isSharedByCLAndGL; //default false
+	bool allocationGuards[__NUM_CONTEXT_TYPES__]; //default{false,false,false};
+	Type elementType; //default TYPE_UNDEF
 	cl_GLuint numElements;
-	cl_GLuint dimensionality;
+	cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
 	Vector3Dui dimensionExtends;
 
-	explicit BufferInfo(String name)
-	: name(name),bufferTypeFlags(EMPTY_BUFFER_FLAG), usageContexts(NO_CONTEXT_TYPE_FLAG), isPingPongBuffer(false),isSharedByCLAndGL(false),
-	  elementType(TYPE_UNDEF),numElements(0),dimensionality(1),dimensionExtends(Vector3Dui(0,0,0))
-	{
-		allocationGuards[HOST_CONTEXT_TYPE] = false;
-		allocationGuards[OPEN_CL_CONTEXT_TYPE] = false;
-		allocationGuards[OPEN_GL_CONTEXT_TYPE] = false;
-	}
 
-	bool operator==(const BufferInfo& rhs) const
-	{
-		return bufferTypeFlags == rhs.bufferTypeFlags &&
-				usageContexts == rhs.usageContexts &&
-				isPingPongBuffer == rhs.isPingPongBuffer &&
-				isSharedByCLAndGL == rhs.isSharedByCLAndGL &&
-				allocationGuards[HOST_CONTEXT_TYPE] == rhs.allocationGuards[HOST_CONTEXT_TYPE] &&
-				allocationGuards[OPEN_CL_CONTEXT_TYPE] == rhs.allocationGuards[OPEN_CL_CONTEXT_TYPE] &&
-				allocationGuards[OPEN_GL_CONTEXT_TYPE] == rhs.allocationGuards[OPEN_GL_CONTEXT_TYPE] &&
-				elementType == rhs.elementType &&
-				numElements == rhs.numElements &&
-				dimensionality == rhs.dimensionality &&
-				dimensionExtends.x == rhs.dimensionExtends.x &&
-				dimensionExtends.y == rhs.dimensionExtends.y &&
-				dimensionExtends.z == rhs.dimensionExtends.z ;
-	}
-
-	const BufferInfo& operator=(const BufferInfo& rhs)
-	{
-		bufferTypeFlags = rhs.bufferTypeFlags;
-		usageContexts = rhs.usageContexts ;
-		isPingPongBuffer = rhs.isPingPongBuffer ;
-		isSharedByCLAndGL = rhs.isSharedByCLAndGL ;
-		allocationGuards[HOST_CONTEXT_TYPE] = rhs.allocationGuards[HOST_CONTEXT_TYPE];
-		allocationGuards[OPEN_CL_CONTEXT_TYPE] = rhs.allocationGuards[OPEN_CL_CONTEXT_TYPE];
-		allocationGuards[OPEN_GL_CONTEXT_TYPE] = rhs.allocationGuards[OPEN_GL_CONTEXT_TYPE];
-		elementType = rhs.elementType ;
-		numElements = rhs.numElements ;
-		dimensionality = rhs.dimensionality ;
-		dimensionExtends.x = rhs.dimensionExtends.x ,
-		dimensionExtends.y = rhs.dimensionExtends.y ;
-		dimensionExtends.z = rhs.dimensionExtends.z ;
-	}
-
+	explicit BufferInfo(String name);
+	BufferInfo(const BufferInfo& rhs);
+	virtual ~BufferInfo();
+	bool operator==(const BufferInfo& rhs) const;
+	const BufferInfo& operator=(const BufferInfo& rhs);
 
 };
 
@@ -114,7 +82,7 @@ class BufferInterface
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 
-	BufferInterface();
+	BufferInterface(String name);
 	virtual ~BufferInterface();
 
 
@@ -133,11 +101,16 @@ protected:
 
 public:
 
+	//check for campatibility: not the contents, but the types, dimensions, allocations etc are compared;
 	virtual bool operator==(const BufferInterface& rhs) const = 0;
+	//copy contents of the one buffer to the other, but only if they are of the same leaf type;
+	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException) = 0;
 
-	virtual bool isAllocated(ContextType type) const = 0;
+	bool isAllocated(ContextType type) const;
 	virtual bool allocMem(ContextType type) = 0;
+	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
 	virtual bool freeMem(ContextType type) = 0;
+
 
 	virtual void bind(ContextType type) = 0;
 	//virtual void unBind()=0;
@@ -148,14 +121,27 @@ public:
 	virtual void setData(void* data, ContextType type) = 0;
 
 	//convenience functions to access bufferInfo data;
-	virtual int  getNumElements() const = 0;
-	virtual size_t  getElementSize() const = 0;
-	virtual Type getElementType() const = 0;
-	//virtual cl_GLenum getElementInternalFormat() const = 0;
-	virtual bool isPingPongBuffer() const = 0;
+	int  getNumElements() const;
+	size_t  getElementSize() const;
+	Type getElementType() const;
 
 	//get the bufferinfo directly:
-	virtual const BufferInfo& getBufferInfo() const =0;
+	const BufferInfo& getBufferInfo() const;
+
+
+	//convenience caster methods:
+	bool isPingPongBuffer() const;
+	PingPongBuffer& toPingPongBuffer() throw(BufferException);
+
+	bool isTexture() const;
+	bool isTexture1D() const;
+	Texture1D& toTexture1D() throw(BufferException);
+	bool isTexture2D() const;
+	Texture2D& toTexture2D() throw(BufferException);
+	bool isTexture3D() const;
+	Texture3D& toTexture3D() throw(BufferException);
+	bool isRenderBuffer() const;
+	RenderBuffer& toRenderBuffer() throw(BufferException);
 
 protected:
 
