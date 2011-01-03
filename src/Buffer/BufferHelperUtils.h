@@ -73,7 +73,21 @@ public:
 		if(type == TYPE_STRING )
 			return sizeof(String);
 
+		if(		type == TYPE_PACKED_VEC3_AS_UINT16 ||
+				type == TYPE_PACKED_VEC4_AS_UINT16)
+			return sizeof(unsigned short);
 
+		if(		type == TYPE_PACKED_VEC3_AS_INT16 ||
+				type == TYPE_PACKED_VEC4_AS_INT16)
+			return sizeof(short);
+
+		if(		type == TYPE_PACKED_VEC3_AS_UINT32 ||
+				type == TYPE_PACKED_VEC4_AS_UINT32)
+			return sizeof(unsigned int);
+
+		if(		type == TYPE_PACKED_VEC3_AS_INT32 ||
+				type == TYPE_PACKED_VEC4_AS_INT32)
+			return sizeof(int);
 
 		//default
 		assert("no mathichn type identifier" && 0);
