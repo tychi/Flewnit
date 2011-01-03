@@ -22,7 +22,10 @@ class Buffer
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 
-	Buffer(String name, Type elementType, cl_GLint numElements );
+	Buffer(String name, ContextTypeFlags usageContextFlags, BufferTypeFlags bufferTypes, Type elementType, cl_GLint numElements,
+			//if data!= NULL, the buffers of the desired contexts are allocated and copied to;
+			//the caller is responsible of the deletion of the data pointer;
+			const void* data = NULL);
 	virtual ~Buffer();
 
 
@@ -35,7 +38,7 @@ public:
 
 	virtual bool allocMem(ContextType type)throw(BufferException);
 	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException);
-	virtual void setData(void* data, ContextType type);
+	virtual void setData(void* data, ContextTypeFlags where)throw(BufferException);
 	virtual bool freeMem(ContextType type) ;
 
 	//bind the currently active managed buffer:

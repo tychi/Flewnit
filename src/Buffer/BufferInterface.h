@@ -65,8 +65,15 @@ public:
 	cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
 	Vector3Dui dimensionExtends;
 
+	//texture stuff; only relevant for textures; for the special cas of pure openCL-images, some enum-transform has to be done -.-
+	GLenum textureTarget; //default GL_TEXTURE_2D
+	GLint imageInternalChannelLayout; //default GL_RGBA
+	GLenum imageInternalDataType;	//default GL_FLOAT
 
-	explicit BufferInfo(String name);
+	//guard if some buffer is mapped
+	ContextType mappedToCPUContext; //default NO_CONTEXT_TYPE, valid only the latter and OPEN_CL_CONTEXT_TYPE and OPEN_GL_CONTEXT_TYPE
+
+	explicit BufferInfo(String name,ContextTypeFlags usageContexts);
 	BufferInfo(const BufferInfo& rhs);
 	virtual ~BufferInfo();
 	bool operator==(const BufferInfo& rhs) const;
@@ -82,13 +89,14 @@ class BufferInterface
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 
-	BufferInterface(String name);
+	//planned usage must be determined in the beginning
+	BufferInterface(String name,ContextTypeFlags usageContexts);
 	virtual ~BufferInterface();
 
 
 	//check for campatibility: not the contents, but the types, dimensions, allocations etc are compared;
 	virtual bool operator==(const BufferInterface& rhs) const = 0;
-	//copy contents of the one buffer to the other, but only if they are of the same leaf type;
+	//copy contents of the one buffer to the other, but only if they are of the same leaf type, buffer type, same size, element type, dimensions etc;
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException) = 0;
 
 	virtual void bind(ContextType type) = 0;
@@ -96,9 +104,27 @@ public:
 	//memory manipulating stuff:
 	///\{
 	bool isAllocated(ContextType type) const;
+	//silently ignore if memory is already allocated;
 	virtual bool allocMem(ContextType type) throw(BufferException) = 0;
+	//copy request between GL and CL will cause exception, as the buffers are shared anyway;
 	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
 	virtual bool freeMem(ContextType type) = 0;
+	// memory must be allocated before, else exception;
+	//convention: copy data into cpu buffer if cpu buffer is used and allocated;
+	//throw exception if cpu context is specified in flags, but not used by the buffer object;
+	//the context flags are provided to omit unnecessary copies, e.g. when fresh data is only needed by one "context"
+	virtual void setData(void* data, ContextTypeFlags where)throw(BufferException) = 0;
+
+	virtual void mapCPUAdressSpaceTo(ContextType which)throw(BufferException)
+	{
+		//TODO make pure abstract and implement in the other classes when needed
+		throw(BufferException("mapCPUAdressSpaceTo() not implemented"));
+	}
+	virtual void unmapCPUAdressSpace()
+	{
+		//TODO make pure abstract and implement in the other classes when needed
+		throw(BufferException("unmapCPUAdressSpace() not implemented"));
+	}
 	///\}
 
 
@@ -107,7 +133,6 @@ public:
 	virtual BufferTypeFlags getBufferTypeFlags()const =0;
 	virtual String getName() const = 0;
 
-	virtual void setData(void* data, ContextType type) = 0;
 
 	//convenience functions to access bufferInfo data;
 	///\{

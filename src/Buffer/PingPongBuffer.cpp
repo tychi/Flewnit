@@ -15,7 +15,7 @@ namespace Flewnit
 {
 
 PingPongBuffer::PingPongBuffer(String name,BufferInterface* ping, BufferInterface* pong ) throw(BufferException)
-: BufferInterface(name),
+: BufferInterface(name,ping->getBufferInfo().usageContexts),
 mRecentlyUpdatedBufferIndex(0),
 mCurrentActiveBufferIndex(1)
 {
@@ -161,18 +161,19 @@ bool PingPongBuffer::allocMem(ContextType type)throw(BufferException)
 		mPingPongBuffers[1]->allocMem(type);
 }
 
-void PingPongBuffer::setData(void* data, ContextType type)
+void PingPongBuffer::setData(void* data, ContextTypeFlags where)throw(BufferException)
 {
 	checkPingPongError();
-	mPingPongBuffers[0]->setData(data,type);
-	mPingPongBuffers[1]->setData(data,type);
+	mPingPongBuffers[0]->setData(data,where);
+	mPingPongBuffers[1]->setData(data,where);
 }
 
 bool PingPongBuffer::copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)
 {
 	checkPingPongError();
-	mPingPongBuffers[0]->copyBetweenContexts(from, to);
-	mPingPongBuffers[1]->copyBetweenContexts(from, to);
+	return
+		mPingPongBuffers[0]->copyBetweenContexts(from, to) &&
+		mPingPongBuffers[1]->copyBetweenContexts(from, to);
 }
 
 

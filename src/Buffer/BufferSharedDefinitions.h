@@ -63,7 +63,10 @@ enum BufferTypeFlags
 	TEXTURE_1D_BUFFER_FLAG			=1<<4,
 	TEXTURE_2D_BUFFER_FLAG			=1<<5,
 	TEXTURE_3D_BUFFER_FLAG			=1<<6,
-	RENDER_BUFFER_FLAG				=1<<7
+	RENDER_BUFFER_FLAG				=1<<7,
+
+	//for matrices of instanced geometry etc..
+	UNIFORM_BUFFER_FLAG				=1<<8
 };
 
 enum ContextType
@@ -71,7 +74,8 @@ enum ContextType
 	HOST_CONTEXT_TYPE				=0,
 	OPEN_CL_CONTEXT_TYPE			=1,
 	OPEN_GL_CONTEXT_TYPE			=2,
-	__NUM_CONTEXT_TYPES__			=3
+	__NUM_CONTEXT_TYPES__			=3,
+	NO_CONTEXT_TYPE					=4,
 };
 
 ///\note we need a flag type to indicate GL-CL-interoperation buffers and CPU-memory-mapped buffers

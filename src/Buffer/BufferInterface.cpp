@@ -33,17 +33,21 @@ BufferInfo::~BufferInfo()
 
 }
 
-BufferInfo::BufferInfo(String name)
+BufferInfo::BufferInfo(String name,ContextTypeFlags usageContexts)
 	: name(name),
 	  bufferTypeFlags(EMPTY_BUFFER_FLAG),
-	  usageContexts(NO_CONTEXT_TYPE_FLAG),
+	  usageContexts(usageContexts),
 	  isPingPongBuffer(false),isTexture(false),
 	  isRenderBuffer(false),
 	  isSharedByCLAndGL(false),
 	  elementType(TYPE_UNDEF),
 	  numElements(0),
 	  dimensionality(1),
-	  dimensionExtends(Vector3Dui(0,0,0))
+	  dimensionExtends(Vector3Dui(0,0,0)),
+	  textureTarget(GL_TEXTURE_2D),
+	  imageInternalChannelLayout(GL_RGBA),
+	  imageInternalDataType(GL_FLOAT),
+	  mappedToCPUContext(NO_CONTEXT_TYPE)
 {
 	allocationGuards[HOST_CONTEXT_TYPE] = false;
 	allocationGuards[OPEN_CL_CONTEXT_TYPE] = false;
@@ -71,7 +75,11 @@ bool BufferInfo::operator==(const BufferInfo& rhs) const
 				dimensionality == rhs.dimensionality &&
 				dimensionExtends.x == rhs.dimensionExtends.x &&
 				dimensionExtends.y == rhs.dimensionExtends.y &&
-				dimensionExtends.z == rhs.dimensionExtends.z ;
+				dimensionExtends.z == rhs.dimensionExtends.z &&
+				textureTarget == rhs.textureTarget &&
+				imageInternalChannelLayout  == rhs.imageInternalChannelLayout &&
+				imageInternalDataType == rhs.imageInternalDataType &&
+				mappedToCPUContext == rhs.mappedToCPUContext;
 }
 
 const BufferInfo& BufferInfo::operator=(const BufferInfo& rhs)
@@ -91,14 +99,18 @@ const BufferInfo& BufferInfo::operator=(const BufferInfo& rhs)
 		dimensionExtends.x = rhs.dimensionExtends.x ,
 		dimensionExtends.y = rhs.dimensionExtends.y ;
 		dimensionExtends.z = rhs.dimensionExtends.z ;
+		textureTarget = rhs.textureTarget;
+		imageInternalChannelLayout  = rhs.imageInternalChannelLayout;
+		imageInternalDataType = rhs.imageInternalDataType;
+		mappedToCPUContext = rhs.mappedToCPUContext;
 
 		return *this;
 }
 
 
 
-BufferInterface::BufferInterface(String name)
-:mBufferInfo(new BufferInfo(name)), mCPU_Handle(0), mGraphicsBufferHandle(0)
+BufferInterface::BufferInterface(String name,ContextTypeFlags usageContexts)
+:mBufferInfo(new BufferInfo(name, usageContexts)), mCPU_Handle(0), mGraphicsBufferHandle(0)
 {
 	//the compute-handle manages its initialization for itself due to the cl-c++-bindings :)
 }
@@ -106,7 +118,10 @@ BufferInterface::BufferInterface(String name)
 BufferInterface::~BufferInterface()
 {
 	delete mBufferInfo;
-	delete mCPU_Handle;
+
+	//delete mCPU_Handle;
+	free(mCPU_Handle);
+
 	//some guard in order to check if the implementor of a derived class has thought about the release of the gl-object
 	//(via glDeleteBuffers(), glDeleteTextures() or glDeleteRenderbuffers())
 	assert("derived classes have to release the GL handle appropriately if the use it!" && mGraphicsBufferHandle==0);

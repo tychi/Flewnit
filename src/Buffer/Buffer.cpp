@@ -12,8 +12,16 @@
 namespace Flewnit
 {
 
-Buffer::Buffer(String name, Type elementType, cl_GLint numElements )
-: BufferInterface(name)
+Buffer::Buffer(
+		String name,
+		ContextTypeFlags usageContextFlags,
+		BufferTypeFlags bufferTypes,
+		Type elementType,
+		cl_GLint numElements,
+		//if data!= NULL, the buffers of the desired contexts are allocated and copied to;
+		//the caller is responsible of the deletion of the data pointer;
+		const void* data)
+: BufferInterface(name,usageContextFlags)
 {
 
 	// TODO Auto-generated constructor stub
@@ -59,7 +67,7 @@ bool Buffer::freeMem(ContextType type)
 
 }
 
-void Buffer::setData(void* data, ContextType type)
+void Buffer::setData(void* data, ContextTypeFlags where)throw(BufferException)
 {
 
 }
