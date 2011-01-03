@@ -67,7 +67,7 @@ public:
 	inline Log& operator<<(uint logEntry){return handleGenericValues<uint>(logEntry);}
 	inline Log& operator<<(Scalar logEntry){return handleGenericValues<Scalar>(logEntry);}
 	inline Log& operator<<(double logEntry){return handleGenericValues<double>(logEntry);}
-
+	inline Log& operator<<(size_t logEntry){return handleGenericValues<size_t>(logEntry);}
 
 	inline void enableLogLevel(LogLevel which)
 	{

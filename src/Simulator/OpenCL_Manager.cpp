@@ -26,8 +26,32 @@ OpenCL_Manager::~OpenCL_Manager()
 
 bool OpenCL_Manager::init(bool useCPU)
 {
-	//TODO
-	LOG<<WARNING_LOG_LEVEL<<" OpenCL Stuff not yet implemented;\n";
+	List<cl::Platform> platforms;
+	GUARD( mLastCLError = cl::Platform::get(&platforms) );
+	LOG<<INFO_LOG_LEVEL<<platforms.size()<<" OpenCL platforms found;\n";
+
+	List<cl::Device> devices;
+	if(useCPU)
+	{
+		GUARD( mLastCLError = platforms[0].getDevices(CL_DEVICE_TYPE_CPU, &devices) );
+		LOG<<INFO_LOG_LEVEL<<devices.size()<<" OpenCL CPU devices found;\n";
+		int deviceTypeEnum  = devices.front().getInfo<CL_DEVICE_TYPE>();
+		LOG<<INFO_LOG_LEVEL<< "TEST: numeric value of CL_DEVICE_TYPE_CPU: " <<CL_DEVICE_TYPE_CPU
+			<<"; numeric value of currently selected device: "<<deviceTypeEnum<<";\n";
+		assert(deviceTypeEnum == CL_DEVICE_TYPE_CPU);
+	}
+	else
+	{
+		GUARD( mLastCLError = platforms[0].getDevices(CL_DEVICE_TYPE_GPU, &devices) );
+		 LOG<<INFO_LOG_LEVEL<<devices.size()<<" OpenCL GPU devices found;\n";
+		 int deviceTypeEnum  = devices.front().getInfo<CL_DEVICE_TYPE>();
+		LOG<<INFO_LOG_LEVEL<< "TEST: numeric value of CL_DEVICE_TYPE_GPU: " <<CL_DEVICE_TYPE_GPU
+				<<"; numeric value of currently selected device: "<<deviceTypeEnum<<";\n";
+			assert(deviceTypeEnum == CL_DEVICE_TYPE_GPU);
+	}
+
+
+
 	return true;
 }
 
