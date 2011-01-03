@@ -105,7 +105,7 @@ public:
 	///\{
 	bool isAllocated(ContextType type) const;
 	//silently ignore if memory is already allocated;
-	virtual bool allocMem(ContextType type) throw(BufferException) = 0;
+	virtual bool allocMem(ContextTypeFlags typeFlags)throw(BufferException) = 0;
 	//copy request between GL and CL will cause exception, as the buffers are shared anyway;
 	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
 	virtual bool freeMem(ContextType type) = 0;
@@ -113,7 +113,7 @@ public:
 	//convention: copy data into cpu buffer if cpu buffer is used and allocated;
 	//throw exception if cpu context is specified in flags, but not used by the buffer object;
 	//the context flags are provided to omit unnecessary copies, e.g. when fresh data is only needed by one "context"
-	virtual void setData(void* data, ContextTypeFlags where)throw(BufferException) = 0;
+	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException) = 0;
 
 	virtual void mapCPUAdressSpaceTo(ContextType which)throw(BufferException)
 	{

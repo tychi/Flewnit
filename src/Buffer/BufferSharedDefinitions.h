@@ -51,22 +51,24 @@ enum BufferTypeFlags
 
 	VERTEX_ATTRIBUTE_BUFFER_FLAG 	=1<<1,
 	VERTEX_INDEX_BUFFER_FLAG		=1<<2,
+
+	//for matrices of instanced geometry etc..
+	UNIFORM_BUFFER_FLAG				=1<<3,
+
 	//the interface of this framework doesn't distinguish between "pure" openCL-image objects and cl-gl-interop-images;
 	//usually, the cl-gl-interop-stuff will be used;
-	OPEN_CL_BUFFER_FLAG				=1<<3,
+	OPEN_CL_BUFFER_FLAG				=1<<4,
 
 	//there is one big flaw in openCL compared to CUDA:
 	// 1. casting between image objects and buffer objects won't work without copying every time;
 	// 2. there is no OpenCL-1D-image object,
 	// Thus, a (1D)-CL-Buffer can't profit from the texture cache of the GPU for even two reasons!
 	// Let's hope that the fermi architecture has made the "buffer-as-texture"-performance-optimazation-hack obsolete ;(
-	TEXTURE_1D_BUFFER_FLAG			=1<<4,
-	TEXTURE_2D_BUFFER_FLAG			=1<<5,
-	TEXTURE_3D_BUFFER_FLAG			=1<<6,
-	RENDER_BUFFER_FLAG				=1<<7,
+	TEXTURE_1D_BUFFER_FLAG			=1<<5,
+	TEXTURE_2D_BUFFER_FLAG			=1<<6,
+	TEXTURE_3D_BUFFER_FLAG			=1<<7,
+	RENDER_BUFFER_FLAG				=1<<8
 
-	//for matrices of instanced geometry etc..
-	UNIFORM_BUFFER_FLAG				=1<<8
 };
 
 enum ContextType

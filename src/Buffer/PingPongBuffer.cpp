@@ -153,15 +153,15 @@ const BufferInterface& PingPongBuffer::operator=(const BufferInterface& rhs) thr
 
 
 
-bool PingPongBuffer::allocMem(ContextType type)throw(BufferException)
+bool PingPongBuffer::allocMem(ContextTypeFlags typeFlags)throw(BufferException)
 {
 	checkPingPongError();
 	return
-		mPingPongBuffers[0]->allocMem(type) &&
-		mPingPongBuffers[1]->allocMem(type);
+		mPingPongBuffers[0]->allocMem(typeFlags) &&
+		mPingPongBuffers[1]->allocMem(typeFlags);
 }
 
-void PingPongBuffer::setData(void* data, ContextTypeFlags where)throw(BufferException)
+void PingPongBuffer::setData(const void* data, ContextTypeFlags where)throw(BufferException)
 {
 	checkPingPongError();
 	mPingPongBuffers[0]->setData(data,where);

@@ -20,9 +20,14 @@ class Buffer
 : public BufferInterface
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+
+	bool mContentsAreModified;
 public:
 
-	Buffer(String name, ContextTypeFlags usageContextFlags, BufferTypeFlags bufferTypes, Type elementType, cl_GLint numElements,
+	Buffer(String name, ContextTypeFlags usageContextFlags, BufferTypeFlags bufferTypeFlags, Type elementType, cl_GLint numElements,
+			//normally, a vertex attribute buffer is seldom modified; but for the special case of particle simulation via ocl and point rendering via ogl,
+			//the pasition and pressure etc. buffer will be completely updated every frame;
+			bool contentsAreModified,
 			//if data!= NULL, the buffers of the desired contexts are allocated and copied to;
 			//the caller is responsible of the deletion of the data pointer;
 			const void* data = NULL);
@@ -36,9 +41,9 @@ public:
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
 
 
-	virtual bool allocMem(ContextType type)throw(BufferException);
+	virtual bool allocMem(ContextTypeFlags typeFlags)throw(BufferException);
 	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException);
-	virtual void setData(void* data, ContextTypeFlags where)throw(BufferException);
+	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException);
 	virtual bool freeMem(ContextType type) ;
 
 	//bind the currently active managed buffer:

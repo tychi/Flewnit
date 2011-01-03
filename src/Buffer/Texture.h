@@ -28,7 +28,7 @@ public:
 			ContextTypeFlags usageContextFlags,
 			GLint imageInternalChannelLayout, //GL_RGBA or stuff
 			GLenum imageInternalDataType,	//GL_FLOAT or  GL_UNSIGNED_BYTE, or some stuff like  GL_UNSIGNED_SHORT_5_6_5
-			Type elementType,
+			Type elementType,				//must fit  imageInternalDataType and imageInternalChannelLayout
 			cl_GLint numElements );
 	virtual ~Texture();
 
@@ -40,13 +40,13 @@ public:
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
 
 
-	virtual bool allocMem(ContextType type)throw(BufferException);
-	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException);
-	virtual void setData(void* data, ContextTypeFlags where)throw(BufferException);
-	virtual bool freeMem(ContextType type) ;
+	virtual bool allocMem(ContextTypeFlags typeFlags)throw(BufferException) =0;
+	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
+	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException)=0;
+	virtual bool freeMem(ContextType type)=0 ;
 
 	//bind the currently active managed buffer:
-	virtual void bind(ContextType type) ;
+	virtual void bind(ContextType type) =0 ;
 
 	//copyMethods to create a new buffer from a texture or vice versa via copying
 	//TODO when necessary

@@ -31,4 +31,23 @@ bool OpenCL_Manager::init(bool useCPU)
 	return true;
 }
 
+
+cl::Context& OpenCL_Manager::getCLContext()
+{
+	return mCLContext;
+}
+cl::CommandQueue& OpenCL_Manager::getCommandQueue()
+{
+	return mCommandQueue;
+}
+
+cl::Device& OpenCL_Manager::getUsedDevice()
+{
+	return mUsedDevice;
+}
+cl::Event& OpenCL_Manager::getLastEvent()
+{
+	return mLastEvent;
+}
+
 }
