@@ -21,21 +21,23 @@ class Buffer
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
-	bool mContentsAreModified;
+	//indicator do define GL_STATIC_DRAW or GL_DYNAMIC_DRAW for GL buffers;
+	bool mContentsAreModifiedFrequently;
+
+	GLenum mGlBufferTargetEnum; // GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER or GL_UNIFORM_BUFFER; will be set according to bufferTypeFlags;
+	cl_GLuint mBufferSizeInByte;
 public:
 
 	Buffer(String name, ContextTypeFlags usageContextFlags, BufferTypeFlags bufferTypeFlags, Type elementType, cl_GLint numElements,
 			//normally, a vertex attribute buffer is seldom modified; but for the special case of particle simulation via ocl and point rendering via ogl,
 			//the pasition and pressure etc. buffer will be completely updated every frame;
-			bool contentsAreModified,
+			bool contentsAreModifiedFrequently,
 			//if data!= NULL, the buffers of the desired contexts are allocated and copied to;
 			//the caller is responsible of the deletion of the data pointer;
 			const void* data = NULL);
 	virtual ~Buffer();
 
 
-
-public:
 	virtual bool operator==(const BufferInterface& rhs) const;
 	//copy contents of the one buffer to the other, but only if they are of the same leaf type;
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);

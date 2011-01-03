@@ -71,6 +71,30 @@ enum BufferTypeFlags
 
 };
 
+//-------------------------
+enum GLBufferType
+{
+	NO_GL_BUFFER =0,
+	VERTEX_ATTRIBUTE_BUFFER = 1,
+	VERTEX_INDEX_BUFFER = 2,
+	UNIFORM_BUFFER
+};
+
+enum TextureType
+{
+	NO_TEXTURE_BUFFER 		=0,
+	TEXTURE_1D_BUFFER		=1,
+	TEXTURE_2D_BUFFER		=2,
+	TEXTURE_3D_BUFFER		=3
+};
+
+enum GLRenderBufferType
+{
+	RENDER_DEPTH_BUFFER =0,
+	RENDER_STENCIL_BUFFER =1
+};
+//--------------------------
+
 enum ContextType
 {
 	HOST_CONTEXT_TYPE				=0,
