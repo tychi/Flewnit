@@ -9,6 +9,15 @@
 
 #include "Util/Log/Log.h"
 
+#if defined __APPLE__ || defined(MACOSX)
+#else
+    #if defined WIN32
+    #else
+        //needed for context sharing functions
+        #include <GL/glx.h>
+    #endif
+#endif
+
 namespace Flewnit
 {
 
@@ -26,6 +35,10 @@ OpenCL_Manager::~OpenCL_Manager()
 
 bool OpenCL_Manager::init(bool useCPU)
 {
+	/*
+	 * Code ideas from "Adventures with OpenCL, part2 from enja;
+	 * */
+
 	List<cl::Platform> platforms;
 	GUARD( mLastCLError = cl::Platform::get(&platforms) );
 	LOG<<INFO_LOG_LEVEL<<platforms.size()<<" OpenCL platforms found;\n";
@@ -33,12 +46,14 @@ bool OpenCL_Manager::init(bool useCPU)
 	List<cl::Device> devices;
 	if(useCPU)
 	{
+		LOG<<WARNING_LOG_LEVEL<<"Using CPU instead of GPU; Expect a heavy performance impact!\n";
+		//code crashes already here; maybe it's an nvidia driver's problem...
 		GUARD( mLastCLError = platforms[0].getDevices(CL_DEVICE_TYPE_CPU, &devices) );
 		LOG<<INFO_LOG_LEVEL<<devices.size()<<" OpenCL CPU devices found;\n";
 		int deviceTypeEnum  = devices.front().getInfo<CL_DEVICE_TYPE>();
 		LOG<<INFO_LOG_LEVEL<< "TEST: numeric value of CL_DEVICE_TYPE_CPU: " <<CL_DEVICE_TYPE_CPU
 			<<"; numeric value of currently selected device: "<<deviceTypeEnum<<";\n";
-		assert(deviceTypeEnum == CL_DEVICE_TYPE_CPU);
+		assert(deviceTypeEnum == CL_DEVICE_TYPE_CPU && devices.size()>0);
 	}
 	else
 	{
@@ -47,9 +62,81 @@ bool OpenCL_Manager::init(bool useCPU)
 		 int deviceTypeEnum  = devices.front().getInfo<CL_DEVICE_TYPE>();
 		LOG<<INFO_LOG_LEVEL<< "TEST: numeric value of CL_DEVICE_TYPE_GPU: " <<CL_DEVICE_TYPE_GPU
 				<<"; numeric value of currently selected device: "<<deviceTypeEnum<<";\n";
-			assert(deviceTypeEnum == CL_DEVICE_TYPE_GPU);
+			assert(deviceTypeEnum == CL_DEVICE_TYPE_GPU && devices.size()>0);
 	}
 
+	mUsedDevice = devices.front();
+	int deviceType = useCPU ? CL_DEVICE_TYPE_CPU : CL_DEVICE_TYPE_GPU;
+
+
+    // Define OS-specific context properties and create the OpenCL context
+    // We setup OpenGL context sharing slightly differently on each OS
+    // this code comes mostly from NVIDIA's SDK examples
+    // we could also check to see if the device supports GL sharing
+    // but that is just searching through the properties
+    // an example is avaible in the NVIDIA code
+    #if defined (__APPLE__) || defined(MACOSX)
+        CGLContextObj kCGLContext = CGLGetCurrentContext();
+        CGLShareGroupObj kCGLShareGroup = CGLGetShareGroup(kCGLContext);
+        cl_context_properties props[] =
+        {
+            CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE, (cl_context_properties)kCGLShareGroup,
+            0
+        };
+        //Apple's implementation is weird, and the default values assumed by cl.hpp don't work
+        //this works
+        //cl_context cxGPUContext = clCreateContext(props, 0, 0, NULL, NULL, &err);
+        //these dont
+        //cl_context cxGPUContext = clCreateContext(props, 1,(cl_device_id*)&devices.front(), NULL, NULL, &err);
+        //cl_context cxGPUContext = clCreateContextFromType(props, CL_DEVICE_TYPE_GPU, NULL, NULL, &err);
+        //printf("error? %s\n", oclErrorString(err));
+        try{
+        	mCLContext = cl::Context(props);   //had to edit line 1448 of cl.hpp to add this constructor
+        }
+        catch (cl::Error er) {
+            printf("ERROR: %s(%s)\n", er.what(), oclErrorString(er.err()));
+        }
+    #else
+        #if defined WIN32 // Win32
+            cl_context_properties props[] =
+            {
+                CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
+                CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
+                CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0])(),
+                0
+            };
+            //cl_context cxGPUContext = clCreateContext(props, 1, &cdDevices[uiDeviceUsed], NULL, NULL, &err);
+            try{
+            	mCLContext = cl::Context(deviceType, props);
+            }
+            catch (cl::Error er) {
+                printf("ERROR: %s(%s)\n", er.what(), oclErrorString(er.err()));
+            }
+        #else
+            cl_context_properties props[] =
+            {
+                CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
+                CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
+                CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0])(),
+                0
+            };
+            //cl_context cxGPUContext = clCreateContext(props, 1, &cdDevices[uiDeviceUsed], NULL, NULL, &err);
+            try{
+            	mCLContext = cl::Context(deviceType, props);
+            }
+            catch (cl::Error er) {
+                printf("ERROR: %s(%s)\n", er.what(), oclErrorString(er.err()));
+            }
+        #endif
+    #endif
+
+    //create the command queue we will use to execute OpenCL commands
+    try{
+        mCommandQueue = cl::CommandQueue(mCLContext, mUsedDevice, 0, &mLastCLError);
+    }
+    catch (cl::Error er) {
+        printf("ERROR: %s(%d)\n", er.what(), er.err());
+    }
 
 
 	return true;

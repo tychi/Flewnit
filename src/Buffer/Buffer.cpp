@@ -65,7 +65,14 @@ bool Buffer::operator==(const BufferInterface& rhs) const
 
 const BufferInterface& Buffer::operator=(const BufferInterface& rhs) throw(BufferException)
 {
+	if( (*this) == rhs )
+	{
 
+	}
+	else
+	{
+		throw(BufferException("Buffer::operator= : Buffers not compatible"));
+	}
 }
 
 bool Buffer::copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)

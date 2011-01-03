@@ -44,13 +44,17 @@ class OpenCL_Manager
     GLenum mLastGLError;
     cl::Event mLastEvent;
 
+    bool mBlockAfterEnqueue;
+
     bool init(bool useCPU =false);
 
     const char* oclErrorString(cl_int error);
     const char* oglErrorString(GLenum error);
 
 public:
-	OpenCL_Manager( bool useCPU =false){init(useCPU);}
+	OpenCL_Manager( bool useCPU = false)
+	:mBlockAfterEnqueue(false)
+	{init(useCPU);}
 
 	virtual ~OpenCL_Manager();
 
@@ -61,6 +65,9 @@ public:
 	cl::CommandQueue& getCommandQueue();
 	cl::Device& getUsedDevice();
 	cl::Event& getLastEvent();
+
+	void setBlockAfterEnqueue(bool val){mBlockAfterEnqueue = val;}
+	bool getBlockAfterEnqueue()const{return mBlockAfterEnqueue;}
 
     inline cl_int& getLastCLError(){return mLastCLError;}
     inline GLenum getLastGLError(){return mLastGLError;}
