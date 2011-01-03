@@ -46,6 +46,9 @@ class OpenCL_Manager
 
     bool init(bool useCPU =false);
 
+    const char* oclErrorString(cl_int error);
+    const char* oglErrorString(GLenum error);
+
 public:
 	OpenCL_Manager( bool useCPU =false){init(useCPU);}
 
