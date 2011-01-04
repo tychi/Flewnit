@@ -118,7 +118,7 @@ bool Buffer::allocMem()throw(BufferException)
 		throw(BufferException("Buffer::allocMem(): some buffers already allocated"));
 	}
 
-	if( (mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG) )
+	if( mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG )
 	{
 			mCPU_Handle = malloc(mBufferSizeInByte);
 	}
@@ -194,7 +194,47 @@ bool Buffer::allocMem()throw(BufferException)
 
 void Buffer::setData(const void* data, ContextTypeFlags where)throw(BufferException)
 {
+	//CPU
+	if( where & HOST_CONTEXT_TYPE_FLAG )
+	{
+		if( ! (mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG))
+		{throw(BufferException("data copy to cpu buffer requested, but this buffer has no CPU storage!"));}
 
+		//TODO
+		memcpy(mCPU_Handle,data, mBufferSizeInByte);
+
+	}
+
+	//GL
+	if( where & OPEN_GL_CONTEXT_TYPE_FLAG )
+	{
+		if( ! (mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG))
+		{throw(BufferException("data copy to GL buffer requested, but this buffer has no GL storage!"));}
+
+		bind(OPEN_GL_CONTEXT_TYPE);
+		GUARD(
+				glBufferSubData(mGlBufferTargetEnum,0,mBufferSizeInByte,data);
+		);
+	}
+
+	//CL
+	if( mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG )
+	{
+		if( ! (mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG))
+		{throw(BufferException("data copy to CL buffer requested, but this buffer has no CL storage!"));}
+
+
+		//interop
+		if( where & OPEN_GL_CONTEXT_TYPE_FLAG )
+		{
+			//storage has already been set by the GL context; do nothing
+		}
+		//pure CL
+		else
+		{
+			//TODO
+		}
+	}
 }
 
 

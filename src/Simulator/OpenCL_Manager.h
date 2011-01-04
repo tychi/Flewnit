@@ -47,7 +47,9 @@ class OpenCL_Manager
     GLenum mLastGLError;
     cl::Event mLastEvent;
 
-    bool mBlockAfterEnqueue;
+    cl_bool mBlockAfterEnqueue;
+
+
 
     bool init(bool useCPU =false);
 
@@ -56,7 +58,10 @@ class OpenCL_Manager
 
 public:
 	OpenCL_Manager( bool useCPU = false)
-	:mBlockAfterEnqueue(false)
+	:
+		//let's be careful first, as there may be serious synch overhead with events etc.
+		//when doing asynchronous calls to the GPU
+		mBlockAfterEnqueue(CL_TRUE)
 	{init(useCPU);}
 
 	virtual ~OpenCL_Manager();
@@ -69,8 +74,8 @@ public:
 	cl::Device& getUsedDevice();
 	cl::Event& getLastEvent();
 
-	void setBlockAfterEnqueue(bool val){mBlockAfterEnqueue = val;}
-	bool getBlockAfterEnqueue()const{return mBlockAfterEnqueue;}
+	void setBlockAfterEnqueue(cl_bool val){mBlockAfterEnqueue = val;}
+	cl_bool getBlockAfterEnqueue()const{return mBlockAfterEnqueue;}
 
     inline cl_int& getLastCLError(){return mLastCLError;}
     inline GLenum getLastGLError(){return mLastGLError;}
@@ -80,4 +85,5 @@ public:
 };
 
 }
+
 

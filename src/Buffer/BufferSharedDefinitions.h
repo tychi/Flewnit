@@ -153,3 +153,50 @@ enum BufferSemantics
 };
 
 }
+
+
+/*
+ * What  follows is a structure for coordinating buffer stuff which will be frequently used;
+ * So, copypaste might be useful sometimes... (I don't know a boilerplate-free way yet ;( )
+ *
+
+ 	//CPU
+	if( where & HOST_CONTEXT_TYPE_FLAG )
+	{
+		if( ! (mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG))
+		{throw(BufferException("data copy to cpu buffer requested, but this buffer has no CPU storage!"));}
+
+		//TODO
+
+	}
+
+	//GL
+	if( where & OPEN_GL_CONTEXT_TYPE_FLAG )
+	{
+		if( ! (mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG))
+		{throw(BufferException("data copy to GL buffer requested, but this buffer has no GL storage!"));}
+
+		//TODO
+	}
+
+	//CL
+	if( mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG )
+	{
+		if( ! (mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG))
+		{throw(BufferException("data copy to CL buffer requested, but this buffer has no CL storage!"));}
+
+
+		//interop
+		if( where & OPEN_GL_CONTEXT_TYPE_FLAG )
+		{
+			//storage has already been set by the GL context; do nothing
+		}
+		//pure CL
+		else
+		{
+			//TODO
+		}
+	}
+
+ */
+
