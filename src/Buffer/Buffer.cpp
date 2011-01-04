@@ -202,7 +202,9 @@ void Buffer::setData(const void* data, ContextTypeFlags where)throw(BufferExcept
 		if( ! (mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG))
 		{throw(BufferException("data copy to cpu buffer requested, but this buffer has no CPU storage!"));}
 
-		//TODO
+		if(! mCPU_Handle)
+		{throw(BufferException(" Buffer::setData: mCPU_Handle is NULL; some implementing of (calling)  allocMem() went terribly wrong"));}
+
 		memcpy(mCPU_Handle,data, mBufferSizeInByte);
 
 	}
@@ -220,7 +222,7 @@ void Buffer::setData(const void* data, ContextTypeFlags where)throw(BufferExcept
 	}
 
 	//CL
-	if( mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG )
+	if( where & OPEN_CL_CONTEXT_TYPE_FLAG )
 	{
 		if( ! (mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG))
 		{throw(BufferException("data copy to CL buffer requested, but this buffer has no CL storage!"));}
@@ -231,10 +233,26 @@ void Buffer::setData(const void* data, ContextTypeFlags where)throw(BufferExcept
 		{
 			//storage has already been set by the GL context; do nothing
 		}
-		//pure CL
+		//pure CL data transfer; but maybe the buffer is shared anyway, then the cl buffer must be aquired;
 		else
 		{
-			//TODO
+			if(mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
+			{
+				//the special case of transferring data explcitely to the CL stuff, although the buffer is shared;
+				//one could be lazy and do..
+				//.. TODO research a way to most efficiently transfer host data to a shared buffer, where the data shall end up explicitely at the CL side...
+				// synch overhead would be bad... gonna eat now :P
+
+				CLMANAGER->acquireSharedBuffersForCompute();
+				GUARD(
+
+				);
+			}
+			else
+			{
+				//TODO the classic enqueueWriteBuffer or so..
+			}
+
 		}
 	}
 }
@@ -242,6 +260,18 @@ void Buffer::setData(const void* data, ContextTypeFlags where)throw(BufferExcept
 
 void Buffer::bind(ContextType type)
 {
+	if(type == OPEN_GL_CONTEXT_TYPE)
+	{
+		//TODO
+		return;
+	}
+	if(type == OPEN_CL_CONTEXT_TYPE)
+	{
+		//TODO
+		return;
+	}
+
+	assert("binding a buffer to the haost context makes no sense to me at the moment ;)"&&0);
 
 }
 

@@ -23,13 +23,12 @@ namespace Flewnit
 
 //OpenCL_Manager::OpenCL_Manager( bool useCPU )
 //{
-//	// TODO Auto-generated constructor stub
 //
 //}
 
 OpenCL_Manager::~OpenCL_Manager()
 {
-	// TODO Auto-generated destructor stub
+	// nothing to clean up, as no pointer members exist, and the cl-c++-binding makes the cleanup for itself;
 }
 
 
@@ -188,6 +187,7 @@ void OpenCL_Manager::acquireSharedBuffersForGraphics()
 
 	//the stupidest and slowes way of synchronization:
 	//TODO make this more efficient
+	//maybe TODO: in case of an inexcplicable bug, try glFinish() here
 	///\{
 	//force to wait for all other CL commands to complete;
 	//nb: no synch with GL seems necessary
