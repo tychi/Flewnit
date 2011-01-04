@@ -28,10 +28,12 @@ class Buffer
 	cl_GLuint mBufferSizeInByte;
 public:
 
-	Buffer(String name, ContextTypeFlags usageContextFlags, BufferTypeFlags bufferTypeFlags, Type elementType, cl_GLint numElements,
+	Buffer(String name, ContextTypeFlags usageContextFlags, Type elementType, cl_GLint numElements,
+			//may only be != NO_GL_BUFFER_TYPE if usageContextFlags&OPEN_GL_CONTEXT_TYPE_FLAG != 0
+			GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
 			//normally, a vertex attribute buffer is seldom modified; but for the special case of particle simulation via ocl and point rendering via ogl,
 			//the pasition and pressure etc. buffer will be completely updated every frame;
-			bool contentsAreModifiedFrequently,
+			bool contentsAreModifiedFrequently = false ,
 			//if data!= NULL, the buffers of the desired contexts are allocated and copied to;
 			//the caller is responsible of the deletion of the data pointer;
 			const void* data = NULL);
@@ -43,10 +45,9 @@ public:
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
 
 
-	virtual bool allocMem(ContextTypeFlags typeFlags)throw(BufferException);
 	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException);
 	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException);
-	virtual bool freeMem(ContextType type) ;
+
 
 	//bind the currently active managed buffer:
 	virtual void bind(ContextType type) ;
@@ -54,6 +55,8 @@ public:
 	//copyMethods to create a new buffer from a texture or vice versa via copying
 	//TODO when necessary
 
+protected:
+	virtual bool allocMem()throw(BufferException);
 
 };
 

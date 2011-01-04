@@ -40,16 +40,19 @@ public:
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
 
 
-	virtual bool allocMem(ContextTypeFlags typeFlags)throw(BufferException) =0;
+
 	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
 	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException)=0;
-	virtual bool freeMem(ContextType type)=0 ;
+
 
 	//bind the currently active managed buffer:
 	virtual void bind(ContextType type) =0 ;
 
 	//copyMethods to create a new buffer from a texture or vice versa via copying
 	//TODO when necessary
+
+protected:
+	virtual bool allocMem()throw(BufferException) = 0;
 
 
 };

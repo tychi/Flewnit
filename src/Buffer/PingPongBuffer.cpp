@@ -178,15 +178,6 @@ bool PingPongBuffer::copyBetweenContexts(ContextType from,ContextType to)throw(B
 
 
 
-bool PingPongBuffer::freeMem(ContextType type)
-{
-	checkPingPongError();
-	return
-		mPingPongBuffers[0]->freeMem(type) &&
-		mPingPongBuffers[1]->freeMem(type);
-}
-
-
 
 void PingPongBuffer::bind(ContextType type)
 {

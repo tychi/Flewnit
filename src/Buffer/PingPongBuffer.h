@@ -44,20 +44,20 @@ public:
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
 
 
-	//if you are calling the following routines on the pingpong-buffer, the every operation will be performed
-	//on both of the managed buffers ("ping" and "pong"); to do stuff just on one of the both managed buffers,
-	//get them and call those routines driectly on them
-	virtual bool allocMem(ContextTypeFlags typeFlags)throw(BufferException);
+
 	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException);
 	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException);
-	virtual bool freeMem(ContextType type) ;
+
 
 	virtual void bind(ContextType type) ;
 	//virtual void unBind()=0;
 
 
-
-
+protected:
+	//if you are calling the following routines on the pingpong-buffer, the every operation will be performed
+	//on both of the managed buffers ("ping" and "pong"); to do stuff just on one of the both managed buffers,
+	//get them and call those routines driectly on them
+	virtual bool allocMem()throw(BufferException);
 
 
 private:

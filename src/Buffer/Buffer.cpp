@@ -17,9 +17,10 @@ namespace Flewnit
 Buffer::Buffer(
 		String name,
 		ContextTypeFlags usageContextFlags,
-		BufferTypeFlags bufferTypeFlags,
 		Type elementType,
 		cl_GLint numElements,
+		//may only be != NO_GL_BUFFER_TYPE if usageContextFlags&OPEN_GL_CONTEXT_TYPE_FLAG != 0
+		GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
 		//normally, a vertex attribute buffer is seldom modified; but for the special case of particle simulation via ocl and point rendering via ogl,
 		//the pasition and pressure etc. buffer will be completely updated every frame;
 		bool contentsAreModifiedFrequently,
@@ -89,7 +90,7 @@ bool Buffer::copyBetweenContexts(ContextType from,ContextType to)throw(BufferExc
 
 
 
-bool Buffer::allocMem(ContextTypeFlags typeFlags)throw(BufferException)
+bool Buffer::allocMem()throw(BufferException)
 {
 	if( (typeFlags & HOST_CONTEXT_TYPE_FLAG) )
 	{
@@ -200,10 +201,6 @@ bool Buffer::allocMem(ContextTypeFlags typeFlags)throw(BufferException)
 }
 
 
-bool Buffer::freeMem(ContextType type)
-{
-
-}
 
 void Buffer::setData(const void* data, ContextTypeFlags where)throw(BufferException)
 {

@@ -53,22 +53,22 @@ class BufferInfo
 {
 public:
 	String name;
-	BufferTypeFlags bufferTypeFlags;
+	//BufferTypeFlags bufferTypeFlags;
 	ContextTypeFlags usageContexts;
 	bool isPingPongBuffer; //default false
-	bool isTexture; //default false
-	bool isRenderBuffer;//default false
-	bool isSharedByCLAndGL; //default false
-	bool allocationGuards[__NUM_CONTEXT_TYPES__]; //default{false,false,false};
+	//bool isTexture; //default false
+	//bool isRenderBuffer;//default false
+	//bool isSharedByCLAndGL; //default false
+	//bool allocationGuards[__NUM_CONTEXT_TYPES__]; //default{false,false,false};
 	Type elementType; //default TYPE_UNDEF
 	cl_GLuint numElements;
-	cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
-	Vector3Dui dimensionExtends;
+	//cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
+	//Vector3Dui dimensionExtends;
 
 	//texture stuff; only relevant for textures; for the special cas of pure openCL-images, some enum-transform has to be done -.-
-	GLenum textureTarget; //default GL_TEXTURE_2D
-	GLint imageInternalChannelLayout; //default GL_RGBA
-	GLenum imageInternalDataType;	//default GL_FLOAT
+	//GLenum textureTarget; //default GL_TEXTURE_2D
+	//GLint imageInternalChannelLayout; //default GL_RGBA
+	//GLenum imageInternalDataType;	//default GL_FLOAT
 
 	//guard if some buffer is mapped
 	ContextType mappedToCPUContext; //default NO_CONTEXT_TYPE, valid only the latter and OPEN_CL_CONTEXT_TYPE and OPEN_GL_CONTEXT_TYPE
@@ -81,6 +81,16 @@ public:
 
 };
 
+class TextureInfo
+:public BufferInfo
+ {
+	cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
+	Vector3Dui dimensionExtends;
+
+	GLenum textureTarget; //default GL_TEXTURE_2D
+	GLint imageInternalChannelLayout; //default GL_RGBA
+	GLenum imageInternalDataType;	//default GL_FLOAT
+ };
 
 
 class BufferInterface
@@ -103,12 +113,12 @@ public:
 
 	//memory manipulating stuff:
 	///\{
-	bool isAllocated(ContextType type) const;
+	bool hasBufferInContext(ContextType type) const;
 	//silently ignore if memory is already allocated;
-	virtual bool allocMem(ContextTypeFlags typeFlags)throw(BufferException) = 0;
+
 	//copy request between GL and CL will cause exception, as the buffers are shared anyway;
 	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
-	virtual bool freeMem(ContextType type) = 0;
+
 	// memory must be allocated before, else exception;
 	//convention: copy data into cpu buffer if cpu buffer is used and allocated;
 	//throw exception if cpu context is specified in flags, but not used by the buffer object;
@@ -172,6 +182,7 @@ public:
 	///\}
 protected:
 
+	virtual bool allocMem()throw(BufferException) = 0;
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	//friend Profiler so that he can set the ID of the BasicObjects;

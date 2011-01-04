@@ -146,9 +146,10 @@ void BufferInterface::unregisterBufferAllocation(ContextTypeFlags contextTypeFla
 
 
 
-bool BufferInterface::isAllocated(ContextType type) const
+bool BufferInterface::hasBufferInContext(ContextType type) const
 {
-	return mBufferInfo->allocationGuards[type];
+	//return mBufferInfo->allocationGuards[type];
+	return (mBufferInfo->bufferTypeFlags & FLEWNIT_FLAGIFY(type)) != 0;
 }
 
 
