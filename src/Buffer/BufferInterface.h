@@ -53,27 +53,26 @@ class BufferInfo
 {
 public:
 	String name;
-	//BufferTypeFlags bufferTypeFlags;
 	ContextTypeFlags usageContexts;
-	bool isPingPongBuffer; //default false
-	//bool isTexture; //default false
-	//bool isRenderBuffer;//default false
-	//bool isSharedByCLAndGL; //default false
-	//bool allocationGuards[__NUM_CONTEXT_TYPES__]; //default{false,false,false};
+	BufferSemantics bufferSemantics;
+
+
 	Type elementType; //default TYPE_UNDEF
 	cl_GLuint numElements;
-	//cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
-	//Vector3Dui dimensionExtends;
 
-	//texture stuff; only relevant for textures; for the special cas of pure openCL-images, some enum-transform has to be done -.-
-	//GLenum textureTarget; //default GL_TEXTURE_2D
-	//GLint imageInternalChannelLayout; //default GL_RGBA
-	//GLenum imageInternalDataType;	//default GL_FLOAT
-
+	GLBufferType glBufferType; //default NO_GL_BUFFER_TYPE; must have other value if the GL-flag is set in usageContexs
+	bool isPingPongBuffer; //default false, set by the appropriate class;
 	//guard if some buffer is mapped
 	ContextType mappedToCPUContext; //default NO_CONTEXT_TYPE, valid only the latter and OPEN_CL_CONTEXT_TYPE and OPEN_GL_CONTEXT_TYPE
 
-	explicit BufferInfo(String name,ContextTypeFlags usageContexts);
+
+	explicit BufferInfo(String name,
+			ContextTypeFlags usageContexts,
+			BufferSemantics bufferSemantics,
+			Type elementType,
+			cl_GLuint numElements,
+			GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
+			ContextType mappedToCPUContext = NO_CONTEXT_TYPE);
 	BufferInfo(const BufferInfo& rhs);
 	virtual ~BufferInfo();
 	bool operator==(const BufferInfo& rhs) const;
@@ -81,15 +80,38 @@ public:
 
 };
 
+//additional image-specific information to the "generic" BufferInfo above;
 class TextureInfo
-:public BufferInfo
  {
+public:
 	cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
-	Vector3Dui dimensionExtends;
+	Vector3Dui dimensionExtends; //must be zero for unused dimensions;
 
 	GLenum textureTarget; //default GL_TEXTURE_2D
-	GLint imageInternalChannelLayout; //default GL_RGBA
-	GLenum imageInternalDataType;	//default GL_FLOAT
+	GLint imageInternalChannelLayout; //usually GL_RGBA or GL_LUMINANCE
+	GLenum imageInternalDataType;	//usually GL_UNSIGNED_INT or GL_FLOAT
+
+	GLint numMultiSamples; //default 0 to indicate no multisampling
+	bool isMipMapped;		//default false;
+
+private:
+
+
+	explicit TextureInfo(
+			cl_GLuint dimensionality,
+			Vector3Dui dimensionExtends,
+
+			GLenum textureTarget,
+			GLint imageInternalChannelLayout,
+			GLenum imageInternalDataType,
+
+			GLint numMultiSamples,
+			bool isMipMapped
+			);
+	TextureInfo(const TextureInfo& rhs);
+	virtual ~TextureInfo();
+	bool operator==(const TextureInfo& rhs) const;
+	const TextureInfo& operator=(const TextureInfo& rhs);
  };
 
 
@@ -100,7 +122,7 @@ class BufferInterface
 public:
 
 	//planned usage must be determined in the beginning
-	BufferInterface(String name,ContextTypeFlags usageContexts);
+	explicit BufferInterface(const BufferInfo& buffi);
 	virtual ~BufferInterface();
 
 
@@ -140,12 +162,10 @@ public:
 
 
 
-	virtual BufferTypeFlags getBufferTypeFlags()const =0;
-	virtual String getName() const = 0;
-
-
 	//convenience functions to access bufferInfo data;
 	///\{
+	String getName()const;
+	ContextTypeFlags getContextTypeFlags()const;
 	int  getNumElements() const;
 	size_t  getElementSize() const;
 	Type getElementType() const;
@@ -192,7 +212,7 @@ protected:
 	void unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 #endif
 
-	BufferInfo* mBufferInfo;
+	BufferInfo mBufferInfo;
 
 	//NULL if no host pointer exists;
 	CPUBufferHandle mCPU_Handle;

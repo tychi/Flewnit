@@ -28,103 +28,145 @@ namespace Flewnit
 {
 
 
-BufferInfo::~BufferInfo()
-{
 
-}
 
-BufferInfo::BufferInfo(String name,ContextTypeFlags usageContexts)
+BufferInfo::BufferInfo(String name,
+		ContextTypeFlags usageContexts,
+		BufferSemantics bufferSemantics,
+		Type elementType,
+		cl_GLuint numElements,
+		GLBufferType glBufferType,
+		ContextType mappedToCPUContext)
 	: name(name),
-	  bufferTypeFlags(EMPTY_BUFFER_FLAG),
 	  usageContexts(usageContexts),
-	  isPingPongBuffer(false),isTexture(false),
-	  isRenderBuffer(false),
-	  isSharedByCLAndGL(false),
-	  elementType(TYPE_UNDEF),
-	  numElements(0),
-	  dimensionality(1),
-	  dimensionExtends(Vector3Dui(0,0,0)),
-	  textureTarget(GL_TEXTURE_2D),
-	  imageInternalChannelLayout(GL_RGBA),
-	  imageInternalDataType(GL_FLOAT),
-	  mappedToCPUContext(NO_CONTEXT_TYPE)
-{
-	allocationGuards[HOST_CONTEXT_TYPE] = false;
-	allocationGuards[OPEN_CL_CONTEXT_TYPE] = false;
-	allocationGuards[OPEN_GL_CONTEXT_TYPE] = false;
-}
+	  bufferSemantics(bufferSemantics),
+	  elementType(elementType),
+	  numElements(numElements),
+	  glBufferType(glBufferType),
+	  isPingPongBuffer(false),
+	  mappedToCPUContext(mappedToCPUContext)
+{}
 
 BufferInfo::BufferInfo(const BufferInfo& rhs)
 {
 	(*this) = rhs;
 }
 
+BufferInfo::~BufferInfo()
+{
+
+}
+
 bool BufferInfo::operator==(const BufferInfo& rhs) const
 {
-		return bufferTypeFlags == rhs.bufferTypeFlags &&
-				usageContexts == rhs.usageContexts &&
-				isPingPongBuffer == rhs.isPingPongBuffer &&
-				isTexture == rhs.isTexture &&
-				isRenderBuffer == rhs.isRenderBuffer &&
-				isSharedByCLAndGL == rhs.isSharedByCLAndGL &&
-				allocationGuards[HOST_CONTEXT_TYPE] == rhs.allocationGuards[HOST_CONTEXT_TYPE] &&
-				allocationGuards[OPEN_CL_CONTEXT_TYPE] == rhs.allocationGuards[OPEN_CL_CONTEXT_TYPE] &&
-				allocationGuards[OPEN_GL_CONTEXT_TYPE] == rhs.allocationGuards[OPEN_GL_CONTEXT_TYPE] &&
-				elementType == rhs.elementType &&
-				numElements == rhs.numElements &&
-				dimensionality == rhs.dimensionality &&
-				dimensionExtends.x == rhs.dimensionExtends.x &&
-				dimensionExtends.y == rhs.dimensionExtends.y &&
-				dimensionExtends.z == rhs.dimensionExtends.z &&
-				textureTarget == rhs.textureTarget &&
-				imageInternalChannelLayout  == rhs.imageInternalChannelLayout &&
-				imageInternalDataType == rhs.imageInternalDataType &&
-				mappedToCPUContext == rhs.mappedToCPUContext;
+		return
+				//NOT name equality, this doesn't matter, in the contrary, the names should be unique for convenient referancation in the data base!
+				name==rhs.name	&&
+				usageContexts==rhs.usageContexts &&
+				bufferSemantics==rhs.bufferSemantics &&
+				elementType==rhs.elementType &&
+				numElements==rhs.numElements &&
+				glBufferType==rhs.glBufferType &&
+				isPingPongBuffer==rhs.isPingPongBuffer &&
+				mappedToCPUContext==rhs.mappedToCPUContext
+				;
 }
 
 const BufferInfo& BufferInfo::operator=(const BufferInfo& rhs)
 {
-		bufferTypeFlags = rhs.bufferTypeFlags;
-		usageContexts = rhs.usageContexts ;
-		isPingPongBuffer = rhs.isPingPongBuffer ;
-		isTexture = rhs.isTexture;
-		isRenderBuffer = rhs.isRenderBuffer;
-		isSharedByCLAndGL = rhs.isSharedByCLAndGL ;
-		allocationGuards[HOST_CONTEXT_TYPE] = rhs.allocationGuards[HOST_CONTEXT_TYPE];
-		allocationGuards[OPEN_CL_CONTEXT_TYPE] = rhs.allocationGuards[OPEN_CL_CONTEXT_TYPE];
-		allocationGuards[OPEN_GL_CONTEXT_TYPE] = rhs.allocationGuards[OPEN_GL_CONTEXT_TYPE];
-		elementType = rhs.elementType ;
-		numElements = rhs.numElements ;
-		dimensionality = rhs.dimensionality ;
-		dimensionExtends.x = rhs.dimensionExtends.x ,
-		dimensionExtends.y = rhs.dimensionExtends.y ;
-		dimensionExtends.z = rhs.dimensionExtends.z ;
-		textureTarget = rhs.textureTarget;
-		imageInternalChannelLayout  = rhs.imageInternalChannelLayout;
-		imageInternalDataType = rhs.imageInternalDataType;
-		mappedToCPUContext = rhs.mappedToCPUContext;
+	name=rhs.name; //TODO check if name copying has side effects;
+	usageContexts=rhs.usageContexts;
+	bufferSemantics=rhs.bufferSemantics;
+	elementType=rhs.elementType;
+	numElements=rhs.numElements;
+	glBufferType=rhs.glBufferType;
+	isPingPongBuffer=rhs.isPingPongBuffer;
+	mappedToCPUContext=rhs.mappedToCPUContext;
 
-		return *this;
+	return *this;
+}
+
+
+//----------------------------------------------------------------
+
+TextureInfo::TextureInfo(
+		cl_GLuint dimensionality,
+		Vector3Dui dimensionExtends,
+
+		GLenum textureTarget,
+		GLint imageInternalChannelLayout,
+		GLenum imageInternalDataType,
+
+		GLint numMultiSamples,
+		bool isMipMapped
+		)
+: dimensionality(dimensionality),
+  dimensionExtends(dimensionExtends),
+  textureTarget(textureTarget),
+  imageInternalChannelLayout(imageInternalChannelLayout),
+  imageInternalDataType(imageInternalDataType),
+  numMultiSamples(numMultiSamples),
+  isMipMapped(isMipMapped)
+{}
+
+TextureInfo::TextureInfo(const TextureInfo& rhs)
+{
+	(*this) = rhs;
+}
+
+TextureInfo::~TextureInfo()
+{}
+
+
+bool TextureInfo::operator==(const TextureInfo& rhs) const
+{
+	return
+		dimensionality==rhs.dimensionality &&
+		glm::all(glm::equal(dimensionExtends, rhs.dimensionExtends)) &&
+//		dimensionExtends.x==rhs.dimensionExtends.x &&
+//		dimensionExtends.y==rhs.dimensionExtends.y &&
+//		dimensionExtends.z==rhs.dimensionExtends.z &&
+		textureTarget==rhs.textureTarget &&
+		imageInternalChannelLayout==rhs.imageInternalChannelLayout &&
+		imageInternalDataType==rhs.imageInternalDataType &&
+		numMultiSamples==rhs.numMultiSamples &&
+		isMipMapped==rhs.isMipMapped
+		;
+}
+
+const TextureInfo& TextureInfo::operator=(const TextureInfo& rhs)
+{
+	dimensionality=rhs.dimensionality;
+	dimensionExtends=rhs.dimensionExtends ;
+	textureTarget=rhs.textureTarget ;
+	imageInternalChannelLayout=rhs.imageInternalChannelLayout;
+	imageInternalDataType=rhs.imageInternalDataType;
+	numMultiSamples=rhs.numMultiSamples;
+	isMipMapped=rhs.isMipMapped;
+
+	return *this;
 }
 
 
 
-BufferInterface::BufferInterface(String name,ContextTypeFlags usageContexts)
-:mBufferInfo(new BufferInfo(name, usageContexts)), mCPU_Handle(0), mGraphicsBufferHandle(0)
+//----------------------------------------------------------------
+
+
+BufferInterface::BufferInterface(const BufferInfo& buffi)
+:mBufferInfo(buffi), mCPU_Handle(0), mGraphicsBufferHandle(0)
 {
 	//the compute-handle manages its initialization for itself due to the cl-c++-bindings :)
 }
 
 BufferInterface::~BufferInterface()
 {
-	delete mBufferInfo;
-
-	//delete mCPU_Handle;
-	free(mCPU_Handle);
+	//DON'T delete the handles; can cause conflicts with ping pong buffer, plus, the correct deletion instruction isn't known directly;
+	//better assert that derived classes free the mem for themselves and set the appropriate pointers to zero;
 
 	//some guard in order to check if the implementor of a derived class has thought about the release of the gl-object
 	//(via glDeleteBuffers(), glDeleteTextures() or glDeleteRenderbuffers())
 	assert("derived classes have to release the GL handle appropriately if the use it!" && mGraphicsBufferHandle==0);
+	assert("derived classes have to release the CPU handle appropriately if the use it!" && mCPU_Handle==0);
 }
 
 
@@ -149,7 +191,7 @@ void BufferInterface::unregisterBufferAllocation(ContextTypeFlags contextTypeFla
 bool BufferInterface::hasBufferInContext(ContextType type) const
 {
 	//return mBufferInfo->allocationGuards[type];
-	return (mBufferInfo->bufferTypeFlags & FLEWNIT_FLAGIFY(type)) != 0;
+	return (mBufferInfo.usageContexts & FLEWNIT_FLAGIFY(type)) != 0;
 }
 
 
@@ -157,21 +199,21 @@ bool BufferInterface::hasBufferInContext(ContextType type) const
 //get the bufferinfo directly:
 const BufferInfo& BufferInterface::getBufferInfo() const
 {
-	return *mBufferInfo;
+	return mBufferInfo;
 }
 
 
 //convenience functions to access bufferInfo data;
 
-BufferTypeFlags BufferInterface::getBufferTypeFlags()const
+ContextTypeFlags BufferInterface::getContextTypeFlags()const
 {
-	return mBufferInfo->bufferTypeFlags;
+	return mBufferInfo.usageContexts;
 }
 
 
 String BufferInterface::getName() const
 {
-	return mBufferInfo->name;
+	return mBufferInfo.name;
 }
 
 
@@ -179,26 +221,24 @@ String BufferInterface::getName() const
 
 int  BufferInterface::getNumElements() const
 {
-	return mBufferInfo->numElements;
+	return mBufferInfo.numElements;
 }
 
 
 size_t  BufferInterface::getElementSize() const
 {
-	return BufferHelper::elementSize( mBufferInfo->elementType );
+	return BufferHelper::elementSize( mBufferInfo.elementType );
 }
 
 
 Type BufferInterface::getElementType() const
 {
-	return mBufferInfo->elementType;
+	return mBufferInfo.elementType;
 }
 
 bool BufferInterface::isDefaultBuffer()const
 {
-	return 		(!(mBufferInfo->isPingPongBuffer))
-			&& 	(!(mBufferInfo->isTexture))
-			&& 	(!(mBufferInfo->isRenderBuffer));
+	return 	dynamic_cast<const Buffer*>(this) ? true : false;
 }
 
 Buffer& BufferInterface::toDefaultBuffer()throw(BufferException)
@@ -212,7 +252,7 @@ Buffer& BufferInterface::toDefaultBuffer()throw(BufferException)
 //convenience caster methods:
 bool BufferInterface::isPingPongBuffer()const
 {
-	return mBufferInfo->isPingPongBuffer;
+	return mBufferInfo.isPingPongBuffer;
 }
 
 PingPongBuffer& BufferInterface::toPingPongBuffer() throw(BufferException)
@@ -225,11 +265,11 @@ PingPongBuffer& BufferInterface::toPingPongBuffer() throw(BufferException)
 
 bool BufferInterface::isTexture() const
 {
-	return mBufferInfo->isTexture;
+	return 	dynamic_cast<const Texture*>(this) ? true : false;
 }
 bool BufferInterface::isTexture1D() const
 {
-	return isTexture() && mBufferInfo->dimensionality == 1;
+	return 	dynamic_cast<const Texture1D*>(this) ? true : false;
 }
 
 Texture1D& BufferInterface::toTexture1D() throw(BufferException)
@@ -241,7 +281,7 @@ Texture1D& BufferInterface::toTexture1D() throw(BufferException)
 
 bool BufferInterface::isTexture2D() const
 {
-	return isTexture() && mBufferInfo->dimensionality == 2;
+	return 	dynamic_cast<const Texture2D*>(this) ? true : false;
 }
 
 Texture2D& BufferInterface::toTexture2D() throw(BufferException)
@@ -255,7 +295,7 @@ Texture2D& BufferInterface::toTexture2D() throw(BufferException)
 
 bool BufferInterface::isTexture3D() const
 {
-	return isTexture() && mBufferInfo->dimensionality == 3;
+	return 	dynamic_cast<const Texture3D*>(this) ? true : false;
 }
 Texture3D& BufferInterface::toTexture3D() throw(BufferException)
 {
@@ -268,7 +308,7 @@ Texture3D& BufferInterface::toTexture3D() throw(BufferException)
 
 bool BufferInterface::isRenderBuffer() const
 {
-	return mBufferInfo->isRenderBuffer;
+	return 	dynamic_cast<const RenderBuffer*>(this) ? true : false;
 }
 
 RenderBuffer& BufferInterface::toRenderBuffer() throw(BufferException)

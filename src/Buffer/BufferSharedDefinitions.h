@@ -44,40 +44,44 @@ class Texture3D;
 class RenderBuffer;
 
 
-enum BufferTypeFlags
-{
-	EMPTY_BUFFER_FLAG				=0,
-	CPU_BUFFER_FLAG  				=1<<0,
-
-	VERTEX_ATTRIBUTE_BUFFER_FLAG 	=1<<1,
-	VERTEX_INDEX_BUFFER_FLAG		=1<<2,
-
-	//for matrices of instanced geometry etc..
-	UNIFORM_BUFFER_FLAG				=1<<3,
-
-	//the interface of this framework doesn't distinguish between "pure" openCL-image objects and cl-gl-interop-images;
-	//usually, the cl-gl-interop-stuff will be used;
-	OPEN_CL_BUFFER_FLAG				=1<<4,
-
-	//there is one big flaw in openCL compared to CUDA:
-	// 1. casting between image objects and buffer objects won't work without copying every time;
-	// 2. there is no OpenCL-1D-image object,
-	// Thus, a (1D)-CL-Buffer can't profit from the texture cache of the GPU for even two reasons!
-	// Let's hope that the fermi architecture has made the "buffer-as-texture"-performance-optimazation-hack obsolete ;(
-	TEXTURE_1D_BUFFER_FLAG			=1<<5,
-	TEXTURE_2D_BUFFER_FLAG			=1<<6,
-	TEXTURE_3D_BUFFER_FLAG			=1<<7,
-	RENDER_BUFFER_FLAG				=1<<8
-
-};
+//became obsolete as there is only one cpu-only resp. cl-only buffer type,
+//the rest is distinguished by gl types, see below;
+//the seperation makes buffer handling less error porne and more intuive,
+//as fewer invalid flag-combinations are possible
+//enum BufferTypeFlags
+//{
+//	EMPTY_BUFFER_FLAG				=0,
+//	CPU_BUFFER_FLAG  				=1<<0,
+//
+//	VERTEX_ATTRIBUTE_BUFFER_FLAG 	=1<<1,
+//	VERTEX_INDEX_BUFFER_FLAG		=1<<2,
+//
+//	//for matrices of instanced geometry etc..
+//	UNIFORM_BUFFER_FLAG				=1<<3,
+//
+//	//the interface of this framework doesn't distinguish between "pure" openCL-image objects and cl-gl-interop-images;
+//	//usually, the cl-gl-interop-stuff will be used;
+//	OPEN_CL_BUFFER_FLAG				=1<<4,
+//
+//	//there is one big flaw in openCL compared to CUDA:
+//	// 1. casting between image objects and buffer objects won't work without copying every time;
+//	// 2. there is no OpenCL-1D-image object,
+//	// Thus, a (1D)-CL-Buffer can't profit from the texture cache of the GPU for even two reasons!
+//	// Let's hope that the fermi architecture has made the "buffer-as-texture"-performance-optimazation-hack obsolete ;(
+//	TEXTURE_1D_BUFFER_FLAG			=1<<5,
+//	TEXTURE_2D_BUFFER_FLAG			=1<<6,
+//	TEXTURE_3D_BUFFER_FLAG			=1<<7,
+//	RENDER_BUFFER_FLAG				=1<<8
+//
+//};
 
 //-------------------------
 enum GLBufferType
 {
-	NO_GL_BUFFER_TYPE =0,
+	NO_GL_BUFFER_TYPE = 0,
 	VERTEX_ATTRIBUTE_BUFFER_TYPE = 1,
 	VERTEX_INDEX_BUFFER_TYPE = 2,
-	UNIFORM_BUFFER_TYPE
+	UNIFORM_BUFFER_TYPE = 3
 };
 
 enum TextureType
@@ -94,6 +98,8 @@ enum GLRenderBufferType
 	RENDER_STENCIL_BUFFER_TYPE =1
 };
 //--------------------------
+
+
 
 enum ContextType
 {
@@ -128,6 +134,10 @@ enum BufferSemantics
 	PRIMITIVE_ID_SEMANTICS,
 	SHADOW_MAP_SEMANTICS,
 	AMBIENT_OCCLUSION_SEMANTICS,
+	NOISE_SEMANTICS,
+
+	//for a uniform buffer for matrices of instanced rendering
+	TRANSFORMATION_MATRICES_SEMANTICS,
 
 	INTERMEDIATE_RENDERING_SEMANTICS,
 

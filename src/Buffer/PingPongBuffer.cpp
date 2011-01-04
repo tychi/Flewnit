@@ -15,11 +15,13 @@ namespace Flewnit
 {
 
 PingPongBuffer::PingPongBuffer(String name,BufferInterface* ping, BufferInterface* pong ) throw(BufferException)
-: BufferInterface(name,ping->getBufferInfo().usageContexts),
+: BufferInterface(ping->getBufferInfo()),
 mRecentlyUpdatedBufferIndex(0),
 mCurrentActiveBufferIndex(1)
 {
-	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Creating PingPongBuffer named "<<name<<" ;\n";
+	mBufferInfo.isPingPongBuffer = true;
+
+	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Creating PingPongBuffer named "<<mBufferInfo.name<<" ;\n";
 
 	if( !( ping || pong ) )
 	{
@@ -38,22 +40,16 @@ mCurrentActiveBufferIndex(1)
 
 	mPingPongBuffers[mRecentlyUpdatedBufferIndex] = ping;
 	mPingPongBuffers[mCurrentActiveBufferIndex] = pong;
-
-
-	(*mBufferInfo) = ping->getBufferInfo();
-	//override pingpongsetting in mBufferInfo
-	mBufferInfo->isPingPongBuffer = true;
-
-
 }
 
 PingPongBuffer::~PingPongBuffer()
 {
-	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Destroying PingPongBuffer named "<<mBufferInfo->name<<" ;\n";
+	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Destroying PingPongBuffer named "<<mBufferInfo.name<<" ;\n";
 
 	delete mPingPongBuffers[mRecentlyUpdatedBufferIndex];
 	delete mPingPongBuffers[mCurrentActiveBufferIndex];
 
+	mCPU_Handle=0;
 	//demonstrate that one has thought about gl-buffer deletiion(the managed buffers will delete themselves)
 	mGraphicsBufferHandle = 0;
 }
@@ -88,10 +84,11 @@ void PingPongBuffer::checkPingPongError() const
 	assert( "pingpong buffers still in synch" && *(mPingPongBuffers[0]) == *(mPingPongBuffers[1]));
 
 	//haxx to make the bufferinfs equal :P
-	BufferInfo tmp  = *mBufferInfo;
+	BufferInfo tmp(mBufferInfo);
 	tmp.isPingPongBuffer=false;
 	assert( "bufferinfo of pingPongBuffer object is in synch with those of the managed buffers"
-			&& tmp == mPingPongBuffers[0]->getBufferInfo() );
+			&& tmp == mPingPongBuffers[0]->getBufferInfo()
+			&& tmp == mPingPongBuffers[1]->getBufferInfo() );
 
 
 
@@ -105,7 +102,7 @@ bool PingPongBuffer::operator==(const BufferInterface& rhs) const
 
 	if(!castedPtr) return false;
 
-	//ok, it is a ping pong buffer; now compar the pings and pongs to each other (comparing twice is redundant, but ... :P)
+	//ok, it is a ping pong buffer; now compare the pings and pongs to each other (comparing twice is redundant, but ... :P)
 	return ( 	*(mPingPongBuffers[mRecentlyUpdatedBufferIndex])
 			==  *(castedPtr->getRecentlyUpdatedBuffer()) )
 			&&
@@ -143,22 +140,24 @@ const BufferInterface& PingPongBuffer::operator=(const BufferInterface& rhs) thr
 //	mPingPongBuffers[mRecentlyUpdatedBufferIndex] = castedPtr->getCurrentActiveBuffer();
 //	mPingPongBuffers[mCurrentActiveBufferIndex] = castedPtr->getRecentlyUpdatedBuffer();
 
+	//perform copyings of all data stores;
 	*(mPingPongBuffers[mRecentlyUpdatedBufferIndex]) = *(castedPtr->getCurrentActiveBuffer());
 	*(mPingPongBuffers[mCurrentActiveBufferIndex]) = *(castedPtr->getRecentlyUpdatedBuffer());
 
-	getHandlesFromCurrentActiveBuffer();
+	//getHandlesFromCurrentActiveBuffer();
 
 	return *this;
 }
 
 
 
-bool PingPongBuffer::allocMem(ContextTypeFlags typeFlags)throw(BufferException)
+bool PingPongBuffer::allocMem()throw(BufferException)
 {
 	checkPingPongError();
-	return
-		mPingPongBuffers[0]->allocMem(typeFlags) &&
-		mPingPongBuffers[1]->allocMem(typeFlags);
+//	return
+//		mPingPongBuffers[0]->allocMem(typeFlags) &&
+//		mPingPongBuffers[1]->allocMem(typeFlags);
+	throw(BufferException("PingPongBuffer::allocMem() not allowed"));
 }
 
 void PingPongBuffer::setData(const void* data, ContextTypeFlags where)throw(BufferException)

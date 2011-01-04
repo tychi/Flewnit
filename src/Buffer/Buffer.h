@@ -24,13 +24,11 @@ class Buffer
 	//indicator do define GL_STATIC_DRAW or GL_DYNAMIC_DRAW for GL buffers;
 	bool mContentsAreModifiedFrequently;
 
-	GLenum mGlBufferTargetEnum; // GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER or GL_UNIFORM_BUFFER; will be set according to bufferTypeFlags;
+	GLenum mGlBufferTargetEnum; // GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER or GL_UNIFORM_BUFFER; will be set according to glBufferType;
 	cl_GLuint mBufferSizeInByte;
 public:
 
-	Buffer(String name, ContextTypeFlags usageContextFlags, Type elementType, cl_GLint numElements,
-			//may only be != NO_GL_BUFFER_TYPE if usageContextFlags&OPEN_GL_CONTEXT_TYPE_FLAG != 0
-			GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
+	Buffer( const BufferInfo& buffi,
 			//normally, a vertex attribute buffer is seldom modified; but for the special case of particle simulation via ocl and point rendering via ogl,
 			//the pasition and pressure etc. buffer will be completely updated every frame;
 			bool contentsAreModifiedFrequently = false ,
