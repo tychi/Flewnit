@@ -18,10 +18,13 @@
 	//Macro to permanently check for errors in debug mode
 #	define GUARD(expression) \
 	expression; \
-	OpenCL_Manager::getInstance().checkCLGLErrors()
+	OpenCL_Manager::getInstancePtr()->checkCLGLErrors()
 #else
 #	define GUARD(expression) expression
 #endif
+
+//shortcut macro for the OpenCL Manager, as it if often needed;
+#define CLMANAGER OpenCL_Manager::getInstancePtr()
 
 namespace Flewnit
 {
