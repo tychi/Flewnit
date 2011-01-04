@@ -12,7 +12,6 @@
 
 #include "DemoInputInterpreter.h"
 
-
 //class Foo : public Flewnit::BasicObject
 //{
 //public:

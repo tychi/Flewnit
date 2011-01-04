@@ -163,6 +163,8 @@ bool Buffer::allocMem()throw(BufferException)
 					& CLMANAGER->getLastCLError()
 					)
 			);
+
+			CLMANAGER->registerSharedBuffer(mComputeBufferHandle);
 		}
 		else
 		{

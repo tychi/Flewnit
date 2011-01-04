@@ -143,6 +143,72 @@ bool OpenCL_Manager::init(bool useCPU)
 }
 
 
+//to be called by buffer implementations at the end of memory allocation;
+void OpenCL_Manager::registerSharedBuffer(cl::Memory newSharedBuffer)
+{
+	mRegisteredCLGLSharedBuffers.push_back(newSharedBuffer);
+	checkCLGLErrors();
+}
+
+
+void OpenCL_Manager::acquireSharedBuffersForCompute()
+{
+	//skip if not necessary;
+	if(computeIsInControl()) return;
+
+	//the stupidest and slowes way of synchronization:
+	//TODO make this more efficient
+	///\{
+	//force to wait for all GL commands to complete
+	GUARD(glFinish());
+	//force to wait for all other CL commands to complete;
+	GUARD(mCommandQueue.enqueueBarrier());
+	///\}
+
+
+	GUARD(
+		mLastCLError = mCommandQueue.enqueueAcquireGLObjects(
+			& mRegisteredCLGLSharedBuffers,
+			//TODO maybe manage a set of events in order for more efficient synch;
+			//at the moment, we
+			0,
+			& mLastEvent
+			)
+	);
+
+	mCLhasAcquiredSharedObjects = true;
+
+
+}
+
+void OpenCL_Manager::acquireSharedBuffersForGraphics()
+{
+	//skip if not necessary;
+	if(graphicsAreInControl()) return;
+
+	//the stupidest and slowes way of synchronization:
+	//TODO make this more efficient
+	///\{
+	//force to wait for all other CL commands to complete;
+	//nb: no synch with GL seems necessary
+	GUARD(mCommandQueue.enqueueBarrier());
+	///\}
+
+	GUARD(
+		mLastCLError = mCommandQueue.enqueueReleaseGLObjects(
+			& mRegisteredCLGLSharedBuffers,
+			//TODO maybe manage a set of events in order for more efficient synch;
+			//at the moment, we
+			0,
+			& mLastEvent
+			)
+	);
+
+	mCLhasAcquiredSharedObjects = false;
+
+}
+
+
 
 cl::Context& OpenCL_Manager::getCLContext()
 {

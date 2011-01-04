@@ -49,6 +49,10 @@ class OpenCL_Manager
 
     cl_bool mBlockAfterEnqueue;
 
+    //the Manager class tracks all shared buffers, as they shall be acquired
+    //at once when passing control from GL to CL; this hopefully improves performance;
+    List<cl::Memory> mRegisteredCLGLSharedBuffers;
+    bool mCLhasAcquiredSharedObjects;
 
 
     bool init(bool useCPU =false);
@@ -74,13 +78,23 @@ public:
 	cl::Device& getUsedDevice();
 	cl::Event& getLastEvent();
 
+	//to be called by buffer implementations at the end of memory allocation;
+	void registerSharedBuffer(cl::Memory newSharedBuffer);
+
+	//checker for non-conflicting interop:
+    inline bool computeIsInControl()const{return  mCLhasAcquiredSharedObjects;}
+    inline bool graphicsAreInControl()const{return !mCLhasAcquiredSharedObjects;}
+
+    //aquire/ release all shared buffers to/from the compute world ;)
+    void acquireSharedBuffersForCompute();
+    void acquireSharedBuffersForGraphics();
+
+
 	void setBlockAfterEnqueue(cl_bool val){mBlockAfterEnqueue = val;}
 	cl_bool getBlockAfterEnqueue()const{return mBlockAfterEnqueue;}
 
     inline cl_int& getLastCLError(){return mLastCLError;}
     inline GLenum getLastGLError(){return mLastGLError;}
-
-
 
 };
 
