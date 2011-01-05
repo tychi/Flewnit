@@ -43,7 +43,6 @@ public:
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
 
 
-	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException);
 	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException);
 
 
@@ -55,6 +54,19 @@ public:
 
 protected:
 	virtual bool allocMem()throw(BufferException);
+
+	virtual void generateGL();
+	virtual void generateCL();
+	virtual void bindGL();
+	virtual void bindCL();
+	virtual void allocGL();
+	virtual void allocCL();
+	virtual void writeGL(const void* data);
+	virtual void writeCL(const void* data);
+	virtual void readGL(void* data);
+	virtual void readCL(void* data);
+	virtual void freeGL();
+	virtual void freeCL();
 
 };
 

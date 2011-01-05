@@ -131,7 +131,7 @@ public:
 	//copy contents of the one buffer to the other, but only if they are of the same leaf type, buffer type, same size, element type, dimensions etc;
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException) = 0;
 
-	virtual void bind(ContextType type) = 0;
+	virtual void bind(ContextType type);
 
 	//memory manipulating stuff:
 	///\{
@@ -139,22 +139,25 @@ public:
 	//silently ignore if memory is already allocated;
 
 	//copy request between GL and CL will cause exception, as the buffers are shared anyway;
-	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
+	//virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
+
+	void readBack()throw(BufferException);
+
 
 	// memory must be allocated before, else exception;
 	//convention: copy data into cpu buffer if cpu buffer is used and allocated;
 	//throw exception if cpu context is specified in flags, but not used by the buffer object;
 	//the context flags are provided to omit unnecessary copies, e.g. when fresh data is only needed by one "context"
-	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException) = 0;
+	void setData(const void* data, ContextTypeFlags where)throw(BufferException);
 
-	virtual void mapCPUAdressSpaceTo(ContextType which)throw(BufferException)
+	void mapCPUAdressSpaceTo(ContextType which)throw(BufferException)
 	{
-		//TODO make pure abstract and implement in the other classes when needed
+		//TODO implement when needed
 		throw(BufferException("mapCPUAdressSpaceTo() not implemented"));
 	}
-	virtual void unmapCPUAdressSpace()
+	void unmapCPUAdressSpace()
 	{
-		//TODO make pure abstract and implement in the other classes when needed
+		//TODO implement when needed
 		throw(BufferException("unmapCPUAdressSpace() not implemented"));
 	}
 	///\}
@@ -202,7 +205,31 @@ public:
 	///\}
 protected:
 
-	virtual bool allocMem()throw(BufferException) = 0;
+	//to be called by the constructor;
+	bool allocMem()throw(BufferException);
+
+	//wrapper functions to GL and CL calls without any error checking,
+	//i.e. semantic checks/flag delegation/verifiaction must be done before those calls;
+	//those routines are introduced to reduce boilerplate code;
+	virtual void generateGL()=0;
+	virtual void generateCL()=0;
+	virtual void bindGL()=0;
+	virtual void bindCL()=0;
+	virtual void allocGL()=0;
+	virtual void allocCL()=0;
+	virtual void writeGL(const void* data)=0;
+	virtual void writeCL(const void* data)=0;
+	virtual void readGL(void* data)=0;
+	virtual void readCL(void* data)=0;
+	virtual void copyGL(GraphicsBufferHandle bufferToCopyContentsTo)=0;
+	virtual void copyGL(ComputeBufferHandle bufferToCopyContentsTo)=0;
+	virtual void freeGL()=0;
+	virtual void freeCL()=0;
+	virtual void mapGLToHost(void* data)=0;
+	virtual void mapCLToHost(void* data)=0;
+	virtual void unmapGL()=0;
+	virtual void unmapCL()=0;
+
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	//friend Profiler so that he can set the ID of the BasicObjects;

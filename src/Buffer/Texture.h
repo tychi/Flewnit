@@ -41,8 +41,9 @@ public:
 
 
 
-	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
-	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException)=0;
+	//virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
+	virtual void readBack()throw(BufferException);
+	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException);
 
 
 	//bind the currently active managed buffer:

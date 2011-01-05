@@ -46,7 +46,8 @@ public:
 
 
 	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException);
-	virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException);
+	//read back form the currently active buffer
+	virtual void readBack()throw(BufferException);
 
 
 	virtual void bind(ContextType type) ;
@@ -54,10 +55,34 @@ public:
 
 
 protected:
-	//if you are calling the following routines on the pingpong-buffer, the every operation will be performed
-	//on both of the managed buffers ("ping" and "pong"); to do stuff just on one of the both managed buffers,
-	//get them and call those routines driectly on them
-	virtual bool allocMem()throw(BufferException);
+//	//if you are calling the following routines on the pingpong-buffer, the every operation will be performed
+//	//on both of the managed buffers ("ping" and "pong"); to do stuff just on one of the both managed buffers,
+//	//get them and call those routines driectly on them
+//	virtual bool allocMem()throw(BufferException);
+
+
+	//wrapper functions to GL and CL calls without any error checking,
+	//i.e. semantic checks/flag delegation/verifiaction must be done before those calls;
+	//those routines are introduced to reduce boilerplate code;
+	virtual void generateGL();
+	virtual void generateCL();
+	virtual void bindGL();
+	virtual void bindCL();
+	virtual void allocGL();
+	virtual void allocCL();
+	virtual void writeGL(const void* data);
+	virtual void writeCL(const void* data);
+	virtual void readGL(void* data);
+	virtual void readCL(void* data);
+	virtual void copyGL(GraphicsBufferHandle bufferToCopyContentsTo);
+	virtual void copyGL(ComputeBufferHandle bufferToCopyContentsTo);
+	virtual void freeGL();
+	virtual void freeCL();
+	virtual void mapGLToHost(void* data);
+	virtual void mapCLToHost(void* data);
+	virtual void unmapGL();
+	virtual void unmapCL();
+
 
 
 private:

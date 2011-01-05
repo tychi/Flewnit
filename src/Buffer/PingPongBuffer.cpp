@@ -134,11 +134,6 @@ const BufferInterface& PingPongBuffer::operator=(const BufferInterface& rhs) thr
 		throw(BufferException("PingPongBuffer::operator= : rhs not of same subclass;"));
 	}
 
-//	delete mPingPongBuffers[mRecentlyUpdatedBufferIndex];
-//	delete mPingPongBuffers[mCurrentActiveBufferIndex];
-//
-//	mPingPongBuffers[mRecentlyUpdatedBufferIndex] = castedPtr->getCurrentActiveBuffer();
-//	mPingPongBuffers[mCurrentActiveBufferIndex] = castedPtr->getRecentlyUpdatedBuffer();
 
 	//perform copyings of all data stores;
 	*(mPingPongBuffers[mRecentlyUpdatedBufferIndex]) = *(castedPtr->getCurrentActiveBuffer());
@@ -150,39 +145,91 @@ const BufferInterface& PingPongBuffer::operator=(const BufferInterface& rhs) thr
 }
 
 
+//generators empty, as managed buffers generate and alloc themselves
+virtual void PingPongBuffer::generateGL()
+{}
+virtual void PingPongBuffer::generateCL()
+{}
 
-bool PingPongBuffer::allocMem()throw(BufferException)
-{
-	checkPingPongError();
+virtual void PingPongBuffer::bindGL()
+{mPingPongBuffers[mCurrentActiveBufferIndex]->bindGL();}
+virtual void PingPongBuffer::bindCL()
+{mPingPongBuffers[mCurrentActiveBufferIndex]->bindCL();}
+
+//allocators empty, as managed buffers generate and alloc themselves
+virtual void PingPongBuffer::allocGL()
+{}
+virtual void PingPongBuffer::allocCL()
+{}
+
+//write only to
+virtual void PingPongBuffer::writeGL(const void* data)
+{}
+virtual void PingPongBuffer::writeCL(const void* data)
+{}
+virtual void PingPongBuffer::readGL(void* data)
+{}
+virtual void PingPongBuffer::readCL(void* data)
+{}
+virtual void PingPongBuffer::copyGL(GraphicsBufferHandle bufferToCopyContentsTo)
+{}
+virtual void PingPongBuffer::copyGL(ComputeBufferHandle bufferToCopyContentsTo)
+{}
+virtual void PingPongBuffer::freeGL()
+{}
+virtual void PingPongBuffer::freeCL()
+{}
+virtual void PingPongBuffer::mapGLToHost(void* data)
+{}
+virtual void PingPongBuffer::mapCLToHost(void* data)
+{}
+virtual void PingPongBuffer::unmapGL()
+{}
+virtual void PingPongBuffer::unmapCL()
+{}
+
+
+
+
+
+
+//bool PingPongBuffer::allocMem()throw(BufferException)
+//{
+//	checkPingPongError();
+////	return
+////		mPingPongBuffers[0]->allocMem(typeFlags) &&
+////		mPingPongBuffers[1]->allocMem(typeFlags);
+//	throw(BufferException("PingPongBuffer::allocMem() not allowed"));
+//}
+
+//void PingPongBuffer::setData(const void* data, ContextTypeFlags where)throw(BufferException)
+//{
+//	checkPingPongError();
+//	mPingPongBuffers[0]->setData(data,where);
+//	mPingPongBuffers[1]->setData(data,where);
+//}
+//
+//bool PingPongBuffer::readBack()throw(BufferException)
+//{
+//	mPingPongBuffers[mCurrentActiveBufferIndex]->readBack();
+//}
+
+//bool PingPongBuffer::copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)
+//{
+//	checkPingPongError();
 //	return
-//		mPingPongBuffers[0]->allocMem(typeFlags) &&
-//		mPingPongBuffers[1]->allocMem(typeFlags);
-	throw(BufferException("PingPongBuffer::allocMem() not allowed"));
-}
-
-void PingPongBuffer::setData(const void* data, ContextTypeFlags where)throw(BufferException)
-{
-	checkPingPongError();
-	mPingPongBuffers[0]->setData(data,where);
-	mPingPongBuffers[1]->setData(data,where);
-}
-
-bool PingPongBuffer::copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)
-{
-	checkPingPongError();
-	return
-		mPingPongBuffers[0]->copyBetweenContexts(from, to) &&
-		mPingPongBuffers[1]->copyBetweenContexts(from, to);
-}
+//		mPingPongBuffers[0]->copyBetweenContexts(from, to) &&
+//		mPingPongBuffers[1]->copyBetweenContexts(from, to);
+//}
 
 
 
 
-void PingPongBuffer::bind(ContextType type)
-{
-	checkPingPongError();
-	mPingPongBuffers[mCurrentActiveBufferIndex]->bind(type);
-}
+//void PingPongBuffer::bind(ContextType type)
+//{
+//	checkPingPongError();
+//	mPingPongBuffers[mCurrentActiveBufferIndex]->bind(type);
+//}
 
 
 
