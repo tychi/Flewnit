@@ -147,74 +147,71 @@ const BufferInterface& PingPongBuffer::operator=(const BufferInterface& rhs) thr
 
 
 //generators empty, as managed buffers generate and alloc themselves
-virtual void PingPongBuffer::generateGL()
+void PingPongBuffer::generateGL()
 {}
-virtual void PingPongBuffer::generateCL()
+void PingPongBuffer::generateCL()
 {}
 
-virtual void PingPongBuffer::bindGL()
+void PingPongBuffer::bindGL()
 {mPingPongBuffers[mCurrentActiveBufferIndex]->bindGL();}
-virtual void PingPongBuffer::bindCL()
-{mPingPongBuffers[mCurrentActiveBufferIndex]->bindCL();}
 
-//allocators empty, as managed buffers generate and alloc themselves
-virtual void PingPongBuffer::allocGL()
+//allocator empty, as managed pingpong buffers alloc their store themselves
+void PingPongBuffer::allocGL()
 {}
-virtual void PingPongBuffer::allocCL()
-{}
+
 
 //write data to both buffers; if the programmaer want to write only one of the managed buffers,
 //he will have to get them directly
-virtual void PingPongBuffer::writeGL(const void* data)
+void PingPongBuffer::writeGL(const void* data)
 {
 	mPingPongBuffers[0]->writeGL(data);
 	mPingPongBuffers[1]->writeGL(data);
 }
-virtual void PingPongBuffer::writeCL(const void* data)
+void PingPongBuffer::writeCL(const void* data)
 {
 	mPingPongBuffers[0]->writeCL(data);
 	mPingPongBuffers[1]->writeCL(data);
 }
-virtual void PingPongBuffer::readGL(void* data)
+void PingPongBuffer::readGL(void* data)
 {
 	assert("PingPongBuffer::readGL: don't know which Buffer to take"&&0);
 }
-virtual void PingPongBuffer::readCL(void* data)
+void PingPongBuffer::readCL(void* data)
 {
 	assert("PingPongBuffer::readCL: don't know which Buffer to take"&&0);
 }
-virtual void PingPongBuffer::copyGL(GraphicsBufferHandle bufferToCopyContentsTo)
+void PingPongBuffer::copyGL(GraphicsBufferHandle bufferToCopyContentsTo)
 {
 	assert("PingPongBuffer::copyGL: don't know which Buffer to take"&&0);
 }
-virtual void PingPongBuffer::copyCL(ComputeBufferHandle bufferToCopyContentsTo)
+void PingPongBuffer::copyCL(ComputeBufferHandle bufferToCopyContentsTo)
 {
 	assert("PingPongBuffer::copyCL: don't know which Buffer to take"&&0);
 }
 //deleters empty as managed buffers delete their data stor on destruction themselves
-virtual void PingPongBuffer::freeGL()
+void PingPongBuffer::freeGL()
 {}
-virtual void PingPongBuffer::freeCL()
+void PingPongBuffer::freeCL()
 {}
 
-virtual void PingPongBuffer::mapGLToHost(void* data)
+void PingPongBuffer::mapGLToHost(void* data)
 {
 	LOG<<WARNING_LOG_LEVEL<<"PingPongBuffer::mapGLToHost: are you sure to map both buffers of a ping pong buffer to host mem?\n";
-	mPingPongBuffers[0]->mapGLToHost();
-	mPingPongBuffers[1]->mapGLToHost();
+	mPingPongBuffers[0]->mapGLToHost(data);
+	mPingPongBuffers[1]->mapGLToHost(data);
 }
-virtual void PingPongBuffer::mapCLToHost(void* data)
+void PingPongBuffer::mapCLToHost(void* data)
 {
 	LOG<<WARNING_LOG_LEVEL<<"PingPongBuffer::mapCLToHost: are you sure to map both buffers of a ping pong buffer to host mem?\n";
-	mPingPongBuffers[0]->mapCLToHost();
-	mPingPongBuffers[1]->mapCLToHost();
+	mPingPongBuffers[0]->mapCLToHost(data);
+	mPingPongBuffers[1]->mapCLToHost(data);
 }
-virtual void PingPongBuffer::unmapGL()
+void PingPongBuffer::unmapGL()
 {
 	mPingPongBuffers[0]->unmapGL();
 	mPingPongBuffers[1]->unmapGL();
 }
-virtual void PingPongBuffer::unmapCL()
+void PingPongBuffer::unmapCL()
 {
 	mPingPongBuffers[0]->unmapCL();
 	mPingPongBuffers[1]->unmapCL();

@@ -48,7 +48,9 @@ BufferInfo::BufferInfo(String name,
 	  glBufferType(glBufferType),
 	  isPingPongBuffer(false),
 	  mappedToCPUContext(mappedToCPUContext)
-{}
+{
+	bufferSizeInByte = numElements * BufferHelper::elementSize(elementType);
+}
 
 BufferInfo::BufferInfo(const BufferInfo& rhs)
 {
@@ -172,13 +174,13 @@ BufferInterface::~BufferInterface()
 	if(mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
 	{
 		if(mGraphicsBufferHandle)
-			freeGL();
+			GUARD(freeGL());
 	}
 
 	//CL stuff deletes itself;
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-	unregisterBufferAllocation(mBufferInfo.usageContexts, mBufferSizeInByte);
+	unregisterBufferAllocation(mBufferInfo.usageContexts, mBufferInfo.bufferSizeInByte);
 #endif
 
 }
@@ -188,10 +190,10 @@ void BufferInterface::bind(ContextType type)throw(BufferException)
 {
 	if(type == OPEN_GL_CONTEXT_TYPE)
 	{
-		if(  (mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) == 0)
+		if( (mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) == 0)
 		{throw(BufferException("BufferInterface::bind: GL binding requested, but this Buffer has no GL context;"));}
 		CLMANAGER->acquireSharedBuffersForGraphics();
-		bindGL();
+		GUARD(bindGL());
 		return;
 	}
 	if(type == OPEN_CL_CONTEXT_TYPE)
@@ -201,8 +203,7 @@ void BufferInterface::bind(ContextType type)throw(BufferException)
 		LOG<<WARNING_LOG_LEVEL<<"binding a buffer to an OpenCL context makes no big sense to me at the moment ;). Try just assuring "<<
 				"the Buffer is acquired for the CL context and it is set as a kernel argument properly;\n";
 		CLMANAGER->acquireSharedBuffersForCompute();
-		//call this virtual function anyway, in case the implemantation might have a use for this in the future; symmetry is everything :P
-		bindCL();
+		//GUARD(bindCL()); <-- bullshat :P
 		return;
 	}
 
@@ -212,7 +213,7 @@ void BufferInterface::bind(ContextType type)throw(BufferException)
 		return;
 	}
 
-	assert("should never end up here" && 0);
+	assert("should never end down here" && 0);
 
 }
 
@@ -227,31 +228,24 @@ bool BufferInterface::allocMem()throw(BufferException)
 
 	if( mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG )
 	{
-			mCPU_Handle = malloc(mBufferSizeInByte);
+			mCPU_Handle = malloc(mBufferInfo.bufferSizeInByte);
 	}
 
 	if(mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
 	{
 		//ok, there is a need for an openGL buffer; maybe it will be shared with openCL,
 		//but that doesn't matter for the GL buffer creation :)
-		if( mBufferInfo.glBufferType == NO_GL_BUFFER_TYPE	)
+		if( isDefaultBuffer() && (mBufferInfo.glBufferType == NO_GL_BUFFER_TYPE)	)
 		{
-			throw(BufferException("no gl buffer type specified, although a gl usage context was requested"));
+			throw(BufferException("no gl buffer type specified for a non-texture or non-renderbuffer Buffer, although a gl usage context was requested"));
 		}
+		//no special treatment for texture types, as we use native GL-#defines
 
-		GUARD(glGenBuffers(1, &mGraphicsBufferHandle));
-		GUARD(glBindBuffer(mGlBufferTargetEnum, mGraphicsBufferHandle));
-
-		GUARD(glBufferData(
-						//which target?
-						mGlBufferTargetEnum,
-						// size of storage
-						mBufferSizeInByte ,
-						//data will be passed in setData();
-						NULL,
-						//draw static if not modded, dynamic otherwise ;)
-						mContentsAreModifiedFrequently ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW));
-
+		GUARD(generateGL());
+		//"direct" call of "bindGL()" here isn't dangerous, as the buffer is not shared (yet),
+		//as it has just been created;
+		GUARD(bindGL());
+		GUARD(allocGL());
 	}
 
 	//ok, the GL stuff is allocated if it was requested; Now let's check for the "compute" world;
@@ -260,39 +254,22 @@ bool BufferInterface::allocMem()throw(BufferException)
 		if(mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
 		{
 			//both CL and GL are requested, that means interop:
-			GUARD(
-				mComputeBufferHandle = cl::BufferGL(
-					CLMANAGER->getCLContext(),
-					//TODO check performance and interface "set-ability" of CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY
-					CL_MEM_READ_WRITE,
-					mGraphicsBufferHandle,
-					//TODO check if adress of a reference is the same as the adress of a variable
-					& CLMANAGER->getLastCLError()
-					)
-			);
+			//neither bind nor alloc necessary, just generating:
+			GUARD(generateCLGL());
 
-			CLMANAGER->registerSharedBuffer(mComputeBufferHandle);
 		}
 		else
 		{
 			//a CL-only buffer is requested:
-			GUARD(
-					mComputeBufferHandle = cl::Buffer(
-							CLMANAGER->getCLContext(),
-							//TODO check performance and interface "set-ability" of CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY
-							CL_MEM_READ_WRITE,
-							mBufferSizeInByte,
-							NULL,
-							//TODO check if adress of a reference is the same as the adress of a variable
-							& CLMANAGER->getLastCLError()
-							)
-			);
+			//in OpenCL, alloc is done at the same time of generation; so, no allocCL() routine must be called
+			GUARD(generateCL());
+			//GUARD(allocCL()); <--bullshaat ;)
 		}
 	}
 
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-		registerBufferAllocation(mBufferInfo.usageContexts,mBufferSizeInByte);
+		registerBufferAllocation(mBufferInfo.usageContexts,mBufferInfo.bufferSizeInByte);
 #endif
 
 	return true;
@@ -311,8 +288,7 @@ void BufferInterface::setData(const void* data, ContextTypeFlags where)throw(Buf
 		if(! mCPU_Handle)
 		{throw(BufferException(" Buffer::setData: mCPU_Handle is NULL; some implementing of (calling)  allocMem() went terribly wrong"));}
 
-		memcpy(mCPU_Handle,data, mBufferSizeInByte);
-
+		memcpy(mCPU_Handle,data, mBufferInfo.bufferSizeInByte);
 	}
 
 	//GL
@@ -321,12 +297,19 @@ void BufferInterface::setData(const void* data, ContextTypeFlags where)throw(Buf
 		if( ! (mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG))
 		{throw(BufferException("data copy to GL buffer requested, but this buffer has no GL storage!"));}
 
-		//we can call this often, as a guard omits obsolete CL calls;
-		CLMANAGER->acquireSharedBuffersForGraphics();
+
+		//omit possible cl-release call where it is'nt necessary;
+		//commented out the guard in case of driver bugs fu**ing up when doing too mush time-shared CL-GL-stuff
+		//TODO uncomment when stable work is assured
+		//if(isCLGLShared())
+		{
+
+			CLMANAGER->acquireSharedBuffersForGraphics();
+		}
+
 		bind(OPEN_GL_CONTEXT_TYPE);
-		GUARD(
-				glBufferSubData(mGlBufferTargetEnum,0,mBufferSizeInByte,data);
-		);
+
+		GUARD(writeGL(data));
 	}
 	else
 	//CL; Handle this only if no GL copy was requested, as a shared buffer is sufficient to be set up
@@ -337,19 +320,15 @@ void BufferInterface::setData(const void* data, ContextTypeFlags where)throw(Buf
 			if( ! (mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG))
 			{throw(BufferException("data copy to CL buffer requested, but this buffer has no CL storage!"));}
 
-			//it is not necessary to distinguish between a cl::Buffer and a cl::BufferGL here :).
+			//commented out the guard in case of driver bugs fu**ing up when doing too mush time-shared CL-GL-stuff
+			//TODO uncomment when stable work is assured
+			//if(isCLGLShared())
+			{
+				CLMANAGER->acquireSharedBuffersForCompute();
+			}
 
-			CLMANAGER->acquireSharedBuffersForCompute();
-			GUARD(
-					CLMANAGER->getCommandQueue().enqueueWriteBuffer(
-							static_cast<cl::Buffer&>(mComputeBufferHandle),
-							CLMANAGER->getBlockAfterEnqueue(),
-							0,
-							mBufferSizeInByte,
-							data,
-							0,
-							& CLMANAGER->getLastEvent());
-			);
+			//it is not necessary to distinguish between a cl::Buffer and a cl::BufferGL here :).
+			GUARD(writeCL(data));
 
 		}
 	}
@@ -371,13 +350,46 @@ void BufferInterface::unregisterBufferAllocation(ContextTypeFlags contextTypeFla
 #endif
 //---------------------------------------------------------------------------------------------------------
 
-
-
-bool BufferInterface::hasBufferInContext(ContextType type) const
+void BufferInterface::readBack()throw(BufferException)
 {
-	//return mBufferInfo->allocationGuards[type];
-	return (mBufferInfo.usageContexts & FLEWNIT_FLAGIFY(type)) != 0;
+	if(
+		( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && CLMANAGER->graphicsAreInControl() )
+		||
+		! (hasBufferInContext(OPEN_CL_CONTEXT_TYPE))
+	)
+	{
+		//commented out the guard in case of driver bugs fu**ing up when doing too mush time-shared CL-GL-stuff
+		//TODO uncomment when stable work is assured
+		//if(isCLGLShared())
+		{
+			CLMANAGER->acquireSharedBuffersForGraphics();
+		}
+
+		GUARD(readGL(mCPU_Handle));
+		return;
+	}
+
+	if(
+		( hasBufferInContext(OPEN_CL_CONTEXT_TYPE) && CLMANAGER->computeIsInControl() )
+		||
+		! (hasBufferInContext(OPEN_GL_CONTEXT_TYPE))
+	)
+	{
+		//commented out the guard in case of driver bugs fu**ing up when doing too mush time-shared CL-GL-stuff
+		//TODO uncomment when stable work is assured
+		//if(isCLGLShared())
+		{
+			CLMANAGER->acquireSharedBuffersForCompute();
+		}
+
+		GUARD(readCL(mCPU_Handle));
+		return;
+	}
+
+	throw(BufferException("BufferInterface::readBack(): need at least one GL or GL usage context in Buffer"));
 }
+
+
 
 
 
@@ -394,6 +406,21 @@ ContextTypeFlags BufferInterface::getContextTypeFlags()const
 {
 	return mBufferInfo.usageContexts;
 }
+
+bool BufferInterface::hasBufferInContext(ContextType type) const
+{
+	//return mBufferInfo->allocationGuards[type];
+	return (mBufferInfo.usageContexts & FLEWNIT_FLAGIFY(type)) != 0;
+}
+
+bool BufferInterface::isCLGLShared()const
+{
+	return
+			((mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG) != 0)
+			&&
+			((mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) != 0);
+}
+
 
 
 String BufferInterface::getName() const

@@ -45,12 +45,12 @@ public:
 
 
 
-	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException);
+	//virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException);
 	//read back form the currently active buffer
-	virtual void readBack()throw(BufferException);
+	//virtual void readBack()throw(BufferException);
 
 
-	virtual void bind(ContextType type) ;
+	//virtual void bind(ContextType type) ;
 	//virtual void unBind()=0;
 
 
@@ -66,10 +66,10 @@ protected:
 	//those routines are introduced to reduce boilerplate code;
 	virtual void generateGL();
 	virtual void generateCL();
+
 	virtual void bindGL();
-	virtual void bindCL();
 	virtual void allocGL();
-	virtual void allocCL();
+
 	virtual void writeGL(const void* data);
 	virtual void writeCL(const void* data);
 	virtual void readGL(void* data);

@@ -65,6 +65,8 @@ public:
 	//guard if some buffer is mapped
 	ContextType mappedToCPUContext; //default NO_CONTEXT_TYPE, valid only the latter and OPEN_CL_CONTEXT_TYPE and OPEN_GL_CONTEXT_TYPE
 
+	//value automatically calulated by  numElements * BufferHelper::elementSize(elementType);
+	cl_GLuint bufferSizeInByte;
 
 	explicit BufferInfo(String name,
 			ContextTypeFlags usageContexts,
@@ -135,20 +137,13 @@ public:
 
 	//memory manipulating stuff:
 	///\{
-	bool hasBufferInContext(ContextType type) const;
-	//silently ignore if memory is already allocated;
-
-	//copy request between GL and CL will cause exception, as the buffers are shared anyway;
-	//virtual bool copyBetweenContexts(ContextType from,ContextType to)throw(BufferException)=0;
-
-	void readBack()throw(BufferException);
-
-
-	// memory must be allocated before, else exception;
+	// memory must be allocated before (done by constructors of derived classes), else exception;
 	//convention: copy data into cpu buffer if cpu buffer is used and allocated;
 	//throw exception if cpu context is specified in flags, but not used by the buffer object;
 	//the context flags are provided to omit unnecessary copies, e.g. when fresh data is only needed by one "context"
 	void setData(const void* data, ContextTypeFlags where)throw(BufferException);
+
+	void readBack()throw(BufferException);
 
 	void mapCPUAdressSpaceTo(ContextType which)throw(BufferException)
 	{
@@ -168,7 +163,11 @@ public:
 	//convenience functions to access bufferInfo data;
 	///\{
 	String getName()const;
+
 	ContextTypeFlags getContextTypeFlags()const;
+	bool hasBufferInContext(ContextType type) const;
+	bool isCLGLShared()const;
+
 	int  getNumElements() const;
 	size_t  getElementSize() const;
 	Type getElementType() const;
@@ -211,12 +210,18 @@ protected:
 	//wrapper functions to GL and CL calls without any error checking,
 	//i.e. semantic checks/flag delegation/verifiaction must be done before those calls;
 	//those routines are introduced to reduce boilerplate code;
+	///\{
+	//PingPongBuffer calls following routines of his managed buffers; so let's make him friend
+	friend class PingPongBuffer;
+
 	virtual void generateGL()=0;
 	virtual void generateCL()=0;
+	virtual void generateCLGL()=0;
+
+	//the two non-symmetrci GL-only routines:
 	virtual void bindGL()=0;
-	virtual void bindCL()=0;
 	virtual void allocGL()=0;
-	virtual void allocCL()=0;
+
 	virtual void writeGL(const void* data)=0;
 	virtual void writeCL(const void* data)=0;
 	virtual void readGL(void* data)=0;
@@ -230,6 +235,9 @@ protected:
 	virtual void unmapGL()=0;
 	virtual void unmapCL()=0;
 
+	//virtual void allocCL()=0; <-- bullshaat ;)
+	//virtual void bindCL()=0; <-- bullshaat ;)
+	///\}
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	//friend Profiler so that he can set the ID of the BasicObjects;

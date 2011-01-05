@@ -25,7 +25,7 @@ class Buffer
 	bool mContentsAreModifiedFrequently;
 
 	GLenum mGlBufferTargetEnum; // GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER or GL_UNIFORM_BUFFER; will be set according to glBufferType;
-	cl_GLuint mBufferSizeInByte;
+
 public:
 
 	Buffer( const BufferInfo& buffi,
@@ -60,10 +60,11 @@ protected:
 	//those routines are introduced to reduce boilerplate code;
 	virtual void generateGL();
 	virtual void generateCL();
+	virtual void generateCLGL();
+
 	virtual void bindGL();
-	virtual void bindCL();
 	virtual void allocGL();
-	virtual void allocCL();
+
 	virtual void writeGL(const void* data);
 	virtual void writeCL(const void* data);
 	virtual void readGL(void* data);
