@@ -131,7 +131,7 @@ public:
 	//copy contents of the one buffer to the other, but only if they are of the same leaf type, buffer type, same size, element type, dimensions etc;
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException) = 0;
 
-	virtual void bind(ContextType type);
+	void bind(ContextType type)throw(BufferException);
 
 	//memory manipulating stuff:
 	///\{
@@ -153,12 +153,12 @@ public:
 	void mapCPUAdressSpaceTo(ContextType which)throw(BufferException)
 	{
 		//TODO implement when needed
-		throw(BufferException("mapCPUAdressSpaceTo() not implemented"));
+		throw(BufferException("mapCPUAdressSpaceTo() not implemented yet"));
 	}
 	void unmapCPUAdressSpace()
 	{
 		//TODO implement when needed
-		throw(BufferException("unmapCPUAdressSpace() not implemented"));
+		throw(BufferException("unmapCPUAdressSpace() not implemented yet"));
 	}
 	///\}
 
@@ -222,7 +222,7 @@ protected:
 	virtual void readGL(void* data)=0;
 	virtual void readCL(void* data)=0;
 	virtual void copyGL(GraphicsBufferHandle bufferToCopyContentsTo)=0;
-	virtual void copyGL(ComputeBufferHandle bufferToCopyContentsTo)=0;
+	virtual void copyCL(ComputeBufferHandle bufferToCopyContentsTo)=0;
 	virtual void freeGL()=0;
 	virtual void freeCL()=0;
 	virtual void mapGLToHost(void* data)=0;

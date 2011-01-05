@@ -81,6 +81,8 @@ const BufferInterface& Buffer::operator=(const BufferInterface& rhs) throw(Buffe
 	{
 		throw(BufferException("Buffer::operator= : Buffers not compatible"));
 	}
+
+	return *this;
 }
 
 
@@ -88,47 +90,49 @@ const BufferInterface& Buffer::operator=(const BufferInterface& rhs) throw(Buffe
 
 
 
-
-void Buffer::bind(ContextType type)
-{
-	if(type == OPEN_GL_CONTEXT_TYPE)
-	{
-		CLMANAGER->acquireSharedBuffersForGraphics();
-		GUARD(glBindBuffer(mGlBufferTargetEnum, mGraphicsBufferHandle););
-		return;
-	}
-	if(type == OPEN_CL_CONTEXT_TYPE)
-	{
-		LOG<<WARNING_LOG_LEVEL<<"binding a buffer to an OpenCL context makes no big sense to me at the moment ;). Try just assuring the Buffer is aqcquired for the CL context and it is set as a kernel argument properly;\n";
-		CLMANAGER->acquireSharedBuffersForCompute();
-		return;
-	}
-
-	if(type == HOST_CONTEXT_TYPE)
-	{
-		assert("binding a buffer to the host context makes no sense to me at the moment ;)"&&0);
-		return;
-	}
-
-	assert("should never end up here" && 0);
-
-}
-
-virtual void Buffer::generateGL()
+//------------------------------------------------------
+//wrapper functions to GL and CL calls without any error checking,
+//i.e. semantic checks/flag delegation/verifiaction must be done before those calls;
+//those routines are introduced to reduce boilerplate code;
+void Buffer::generateGL()
 {}
-virtual void Buffer::generateCL();
-virtual void Buffer::bindGL();
-virtual void Buffer::bindCL();
-virtual void Buffer::allocGL();
-virtual void Buffer::allocCL();
-virtual void Buffer::writeGL(const void* data);
-virtual void Buffer::writeCL(const void* data);
-virtual void Buffer::readGL(void* data);
-virtual void Buffer::readCL(void* data);
-virtual void Buffer::freeGL()
+void Buffer::generateCL()
+{}
+void Buffer::bindGL()
+{GUARD(glBindBuffer(mGlBufferTargetEnum, mGraphicsBufferHandle););}
+//empty on purpose
+void Buffer::bindCL()
+{}
+void Buffer::allocGL()
+{}
+void Buffer::allocCL()
+{}
+void Buffer::writeGL(const void* data)
+{}
+void Buffer::writeCL(const void* data)
+{}
+void Buffer::readGL(void* data)
+{}
+void Buffer::readCL(void* data)
+{}
+void Buffer::copyGL(GraphicsBufferHandle bufferToCopyContentsTo)
+{}
+void Buffer::copyCL(ComputeBufferHandle bufferToCopyContentsTo)
+{}
+void Buffer::freeGL()
 {GUARD(glDeleteBuffers(1, &mGraphicsBufferHandle));}
-virtual void Buffer::freeCL()
+void Buffer::freeCL()
 {/*do nothing*/}
+void Buffer::mapGLToHost(void* data)
+{}
+void Buffer::mapCLToHost(void* data)
+{}
+void Buffer::unmapGL()
+{}
+void Buffer::unmapCL()
+{}
+
+
 
 
 

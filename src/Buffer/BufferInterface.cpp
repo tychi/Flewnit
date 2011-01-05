@@ -11,6 +11,9 @@
 
 #include "Common/Math.h"
 
+#include "Util/Log/Log.h"
+#include "Simulator/OpenCL_Manager.h"
+
 //for casting:
 ///\{
 #include "PingPongBuffer.h"
@@ -177,6 +180,39 @@ BufferInterface::~BufferInterface()
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	unregisterBufferAllocation(mBufferInfo.usageContexts, mBufferSizeInByte);
 #endif
+
+}
+
+
+void BufferInterface::bind(ContextType type)throw(BufferException)
+{
+	if(type == OPEN_GL_CONTEXT_TYPE)
+	{
+		if(  (mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) == 0)
+		{throw(BufferException("BufferInterface::bind: GL binding requested, but this Buffer has no GL context;"));}
+		CLMANAGER->acquireSharedBuffersForGraphics();
+		bindGL();
+		return;
+	}
+	if(type == OPEN_CL_CONTEXT_TYPE)
+	{
+		if(  (mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG) == 0)
+				{throw(BufferException("BufferInterface::bind: CL binding requested, but this Buffer has no CL context;"));}
+		LOG<<WARNING_LOG_LEVEL<<"binding a buffer to an OpenCL context makes no big sense to me at the moment ;). Try just assuring "<<
+				"the Buffer is acquired for the CL context and it is set as a kernel argument properly;\n";
+		CLMANAGER->acquireSharedBuffersForCompute();
+		//call this virtual function anyway, in case the implemantation might have a use for this in the future; symmetry is everything :P
+		bindCL();
+		return;
+	}
+
+	if(type == HOST_CONTEXT_TYPE)
+	{
+		assert("binding a buffer to the host context makes no sense to me at the moment ;)"&&0);
+		return;
+	}
+
+	assert("should never end up here" && 0);
 
 }
 

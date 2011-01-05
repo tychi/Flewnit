@@ -43,11 +43,11 @@ public:
 	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
 
 
-	virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException);
+	//virtual void setData(const void* data, ContextTypeFlags where)throw(BufferException);
 
 
 	//bind the currently active managed buffer:
-	virtual void bind(ContextType type) ;
+	//virtual void bind(ContextType type) ;
 
 	//copyMethods to create a new buffer from a texture or vice versa via copying
 	//TODO when necessary
@@ -55,6 +55,9 @@ public:
 protected:
 	virtual bool allocMem()throw(BufferException);
 
+	//wrapper functions to GL and CL calls without any error checking,
+	//i.e. semantic checks/flag delegation/verifiaction must be done before those calls;
+	//those routines are introduced to reduce boilerplate code;
 	virtual void generateGL();
 	virtual void generateCL();
 	virtual void bindGL();
@@ -65,8 +68,14 @@ protected:
 	virtual void writeCL(const void* data);
 	virtual void readGL(void* data);
 	virtual void readCL(void* data);
+	virtual void copyGL(GraphicsBufferHandle bufferToCopyContentsTo);
+	virtual void copyCL(ComputeBufferHandle bufferToCopyContentsTo);
 	virtual void freeGL();
 	virtual void freeCL();
+	virtual void mapGLToHost(void* data);
+	virtual void mapCLToHost(void* data);
+	virtual void unmapGL();
+	virtual void unmapCL();
 
 };
 

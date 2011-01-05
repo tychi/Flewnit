@@ -76,6 +76,7 @@ class RenderBuffer;
 //};
 
 //-------------------------
+//enumerate all non-texture- or render buffer types currently supported by the framework
 enum GLBufferType
 {
 	NO_GL_BUFFER_TYPE = 0,
