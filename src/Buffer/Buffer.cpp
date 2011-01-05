@@ -215,43 +215,35 @@ void Buffer::setData(const void* data, ContextTypeFlags where)throw(BufferExcept
 		if( ! (mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG))
 		{throw(BufferException("data copy to GL buffer requested, but this buffer has no GL storage!"));}
 
+		//we can call this often, as a guard omits obsolete CL calls;
+		CLMANAGER->acquireSharedBuffersForGraphics();
 		bind(OPEN_GL_CONTEXT_TYPE);
 		GUARD(
 				glBufferSubData(mGlBufferTargetEnum,0,mBufferSizeInByte,data);
 		);
 	}
-
-	//CL
-	if( where & OPEN_CL_CONTEXT_TYPE_FLAG )
+	else
+	//CL; Handle this only if no GL copy was requested, as a shared buffer is sufficient to be set up
+	//by one API ;)
 	{
-		if( ! (mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG))
-		{throw(BufferException("data copy to CL buffer requested, but this buffer has no CL storage!"));}
-
-
-		//interop
-		if( where & OPEN_GL_CONTEXT_TYPE_FLAG )
+		if( where & OPEN_CL_CONTEXT_TYPE_FLAG )
 		{
-			//storage has already been set by the GL context; do nothing
-		}
-		//pure CL data transfer; but maybe the buffer is shared anyway, then the cl buffer must be aquired;
-		else
-		{
-			if(mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
-			{
-				//the special case of transferring data explcitely to the CL stuff, although the buffer is shared;
-				//one could be lazy and do..
-				//.. TODO research a way to most efficiently transfer host data to a shared buffer, where the data shall end up explicitely at the CL side...
-				// synch overhead would be bad... gonna eat now :P
+			if( ! (mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG))
+			{throw(BufferException("data copy to CL buffer requested, but this buffer has no CL storage!"));}
 
-				CLMANAGER->acquireSharedBuffersForCompute();
-				GUARD(
+			//it is not necessary to distinguish between a cl::Buffer and a cl::BufferGL here :).
 
-				);
-			}
-			else
-			{
-				//TODO the classic enqueueWriteBuffer or so..
-			}
+			CLMANAGER->acquireSharedBuffersForCompute();
+			GUARD(
+					CLMANAGER->getCommandQueue().enqueueWriteBuffer(
+							static_cast<cl::Buffer&>(mComputeBufferHandle),
+							CLMANAGER->getBlockAfterEnqueue(),
+							0,
+							mBufferSizeInByte,
+							data,
+							0,
+							& CLMANAGER->getLastEvent());
+			);
 
 		}
 	}
@@ -262,16 +254,24 @@ void Buffer::bind(ContextType type)
 {
 	if(type == OPEN_GL_CONTEXT_TYPE)
 	{
-		//TODO
+		CLMANAGER->acquireSharedBuffersForGraphics();
+		GUARD(glBindBuffer(mGlBufferTargetEnum, mGraphicsBufferHandle););
 		return;
 	}
 	if(type == OPEN_CL_CONTEXT_TYPE)
 	{
-		//TODO
+		LOG<<WARNING_LOG_LEVEL<<"binding a buffer to an OpenCL context makes no big sense to me at the moment ;). Try just assuring the Buffer is qcquired for the CL context and it is set as a kernel argument properly;\n";
+		CLMANAGER->acquireSharedBuffersForCompute();
 		return;
 	}
 
-	assert("binding a buffer to the haost context makes no sense to me at the moment ;)"&&0);
+	if(type == HOST_CONTEXT_TYPE)
+	{
+		assert("binding a buffer to the host context makes no sense to me at the moment ;)"&&0);
+		return;
+	}
+
+	assert("should never end up here" && 0);
 
 }
 
