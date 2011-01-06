@@ -112,38 +112,38 @@ bool PingPongBuffer::operator==(const BufferInterface& rhs) const
 	;
 }
 
-const BufferInterface& PingPongBuffer::operator=(const BufferInterface& rhs) throw(BufferException)
-{
-	checkPingPongError();
-
-	//buffers must be not identical (pointers not equal)...
-	if( ! (this == &rhs  ) )
-	{
-		throw(BufferException("operator= not allowed for identical buffers;"));
-	}
-
-	//but compatible (objects "equal", i.e. same subclass and same buffer sizes//allocation schemes;)
-	if( ! (*this == rhs  ) )
-	{
-		throw(BufferException("Ping Pong buffers aren't compatible for assignment;"));
-	}
-
-
-	const PingPongBuffer* castedPtr = dynamic_cast<const PingPongBuffer*>(&rhs);
-	if(!castedPtr)
-	{
-		throw(BufferException("PingPongBuffer::operator= : rhs not of same subclass;"));
-	}
-
-
-	//perform copyings of all data stores;
-	*(mPingPongBuffers[mRecentlyUpdatedBufferIndex]) = *(castedPtr->getCurrentActiveBuffer());
-	*(mPingPongBuffers[mCurrentActiveBufferIndex]) = *(castedPtr->getRecentlyUpdatedBuffer());
-
-	//getHandlesFromCurrentActiveBuffer();
-
-	return *this;
-}
+//const BufferInterface& PingPongBuffer::operator=(const BufferInterface& rhs) throw(BufferException)
+//{
+//	checkPingPongError();
+//
+//	//buffers must be not identical (pointers not equal)...
+//	if( ! (this == &rhs  ) )
+//	{
+//		throw(BufferException("operator= not allowed for identical buffers;"));
+//	}
+//
+//	//but compatible (objects "equal", i.e. same subclass and same buffer sizes//allocation schemes;)
+//	if( ! (*this == rhs  ) )
+//	{
+//		throw(BufferException("Ping Pong buffers aren't compatible for assignment;"));
+//	}
+//
+//
+//	const PingPongBuffer* castedPtr = dynamic_cast<const PingPongBuffer*>(&rhs);
+//	if(!castedPtr)
+//	{
+//		throw(BufferException("PingPongBuffer::operator= : rhs not of same subclass;"));
+//	}
+//
+//
+//	//perform copyings of all data stores;
+//	*(mPingPongBuffers[mRecentlyUpdatedBufferIndex]) = *(castedPtr->getCurrentActiveBuffer());
+//	*(mPingPongBuffers[mCurrentActiveBufferIndex]) = *(castedPtr->getRecentlyUpdatedBuffer());
+//
+//	//getHandlesFromCurrentActiveBuffer();
+//
+//	return *this;
+//}
 
 
 //generators empty, as managed buffers generate and alloc themselves
@@ -164,29 +164,29 @@ void PingPongBuffer::allocGL()
 //he will have to get them directly
 void PingPongBuffer::writeGL(const void* data)
 {
-	mPingPongBuffers[0]->writeGL(data);
-	mPingPongBuffers[1]->writeGL(data);
+	mPingPongBuffers[mCurrentActiveBufferIndex]->writeGL(data);
+	//mPingPongBuffers[1]->writeGL(data);
 }
 void PingPongBuffer::writeCL(const void* data)
 {
-	mPingPongBuffers[0]->writeCL(data);
-	mPingPongBuffers[1]->writeCL(data);
+	mPingPongBuffers[mCurrentActiveBufferIndex]->writeCL(data);
+	//mPingPongBuffers[1]->writeCL(data);
 }
 void PingPongBuffer::readGL(void* data)
 {
-	assert("PingPongBuffer::readGL: don't know which Buffer to take"&&0);
+	mPingPongBuffers[mCurrentActiveBufferIndex]->readGL(data);
 }
 void PingPongBuffer::readCL(void* data)
 {
-	assert("PingPongBuffer::readCL: don't know which Buffer to take"&&0);
+	mPingPongBuffers[mCurrentActiveBufferIndex]->readCL(data);
 }
 void PingPongBuffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)
 {
-	assert("PingPongBuffer::copyGL: don't know which Buffer to take"&&0);
+	assert("PingPongBuffer::operator=() forbidden due to too much ambiguity; assign desired pingpong managed buffers directly!"&&0);
 }
 void PingPongBuffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)
 {
-	assert("PingPongBuffer::copyCL: don't know which Buffer to take"&&0);
+	assert("PingPongBuffer::operator=() forbidden due to too much ambiguity; assign desired pingpong managed buffers directly!"&&0);
 }
 //deleters empty as managed buffers delete their data stor on destruction themselves
 void PingPongBuffer::freeGL()

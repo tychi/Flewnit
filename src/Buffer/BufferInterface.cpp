@@ -186,6 +186,68 @@ BufferInterface::~BufferInterface()
 }
 
 
+const BufferInterface& BufferInterface::operator=(const BufferInterface& rhs) throw(BufferException)
+{
+	if( (*this) == rhs )
+	{
+		if((mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG) !=0)
+		{
+			memcpy(mCPU_Handle,rhs.getCPUBufferHandle(),mBufferInfo.bufferSizeInByte);
+		}
+
+		//GL
+		if(
+			( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && CLMANAGER->graphicsAreInControl() )
+			||
+			! (hasBufferInContext(OPEN_CL_CONTEXT_TYPE))
+		)
+		{
+			//commented out the guard in case of driver bugs fu**ing up when doing too mush time-shared CL-GL-stuff
+			//TODO uncomment when stable work is assured
+			//if(isCLGLShared())
+			{
+				CLMANAGER->acquireSharedBuffersForGraphics();
+			}
+			//do a barrier in by all means to assure buffer integrity;
+			CLMANAGER->barrierGraphics();
+
+			GUARD(copyGLFrom(rhs.getGraphicsBufferHandle()));
+			//return, as a shared buffer does need only copy via one context;
+			return *this;
+		}
+
+		//CL
+		if(
+			( hasBufferInContext(OPEN_CL_CONTEXT_TYPE) && CLMANAGER->computeIsInControl() )
+			||
+			! (hasBufferInContext(OPEN_GL_CONTEXT_TYPE))
+		)
+		{
+			//commented out the guard in case of driver bugs fu**ing up when doing too mush time-shared CL-GL-stuff
+			//TODO uncomment when stable work is assured
+			//if(isCLGLShared())
+			{
+				CLMANAGER->acquireSharedBuffersForCompute();
+			}
+
+			//do a barrier in by all means to assure buffer integrity;
+			CLMANAGER->barrierCompute();
+			GUARD(copyCLFrom(rhs.getComputeBufferHandle()));
+			return *this;
+		}
+
+	}
+	else
+	{
+		throw(BufferException("Buffer::operator= : Buffers not compatible"));
+	}
+
+
+	return *this;
+}
+
+
+
 void BufferInterface::bind(ContextType type)throw(BufferException)
 {
 	if(type == OPEN_GL_CONTEXT_TYPE)

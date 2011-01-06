@@ -41,7 +41,7 @@ public:
 
 	virtual bool operator==(const BufferInterface& rhs) const;
 	//copy contents of the one buffer to the other, but only if they are of the same leaf type;
-	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
+	//virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
 
 
 

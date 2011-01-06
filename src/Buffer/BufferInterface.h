@@ -5,6 +5,7 @@
  *      Author: tychi
  *
  * \brief The base class of all buffers;
+ *
  */
 
 #pragma once
@@ -131,7 +132,7 @@ public:
 	//check for campatibility: not the contents, but the types, dimensions, allocations etc are compared;
 	virtual bool operator==(const BufferInterface& rhs) const = 0;
 	//copy contents of the one buffer to the other, but only if they are of the same leaf type, buffer type, same size, element type, dimensions etc;
-	virtual const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException) = 0;
+	const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
 
 	void bind(ContextType type)throw(BufferException);
 
