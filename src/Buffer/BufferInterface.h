@@ -226,8 +226,8 @@ protected:
 	virtual void writeCL(const void* data)=0;
 	virtual void readGL(void* data)=0;
 	virtual void readCL(void* data)=0;
-	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsTo)=0;
-	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsTo)=0;
+	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)=0;
+	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)=0;
 	virtual void freeGL()=0;
 	virtual void freeCL()=0;
 

@@ -73,12 +73,58 @@ const BufferInterface& Buffer::operator=(const BufferInterface& rhs) throw(Buffe
 {
 	if( (*this) == rhs )
 	{
-		//TODO after alloc and setData() stuff :P
+		if((mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG) !=0)
+		{
+			memcpy(mCPU_Handle,rhs.getCPUBufferHandle(),mBufferInfo.bufferSizeInByte);
+		}
+
+		//GL
+		if(
+			( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && CLMANAGER->graphicsAreInControl() )
+			||
+			! (hasBufferInContext(OPEN_CL_CONTEXT_TYPE))
+		)
+		{
+			//commented out the guard in case of driver bugs fu**ing up when doing too mush time-shared CL-GL-stuff
+			//TODO uncomment when stable work is assured
+			//if(isCLGLShared())
+			{
+				CLMANAGER->acquireSharedBuffersForGraphics();
+			}
+			//do a barrier in by all means to assure buffer integrity;
+			CLMANAGER->barrierGraphics();
+
+			GUARD(copyGLFrom(rhs.getGraphicsBufferHandle()));
+			//return, as a shared buffer does need only copy via one context;
+			return *this;
+		}
+
+		//CL
+		if(
+			( hasBufferInContext(OPEN_CL_CONTEXT_TYPE) && CLMANAGER->computeIsInControl() )
+			||
+			! (hasBufferInContext(OPEN_GL_CONTEXT_TYPE))
+		)
+		{
+			//commented out the guard in case of driver bugs fu**ing up when doing too mush time-shared CL-GL-stuff
+			//TODO uncomment when stable work is assured
+			//if(isCLGLShared())
+			{
+				CLMANAGER->acquireSharedBuffersForCompute();
+			}
+
+			//do a barrier in by all means to assure buffer integrity;
+			CLMANAGER->barrierCompute();
+			GUARD(copyCLFrom(rhs.getComputeBufferHandle()));
+			return *this;
+		}
+
 	}
 	else
 	{
 		throw(BufferException("Buffer::operator= : Buffers not compatible"));
 	}
+
 
 	return *this;
 }
@@ -174,10 +220,24 @@ void Buffer::readCL(void* data)
 			& CLMANAGER->getLastEvent());
 }
 
-void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsTo)
-{}
-void Buffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsTo)
-{}
+void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)
+{
+
+}
+void Buffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)
+{
+	CLMANAGER->getCommandQueue().enqueueCopyBuffer(
+			static_cast<cl::Buffer&>(bufferToCopyContentsFrom),
+			static_cast<cl::Buffer&>(mComputeBufferHandle),
+			0,
+			0,
+			mBufferInfo.bufferSizeInByte,
+			0,
+			& CLMANAGER->getLastEvent()
+			);
+}
+
+
 void Buffer::freeGL()
 {
 	GUARD(glDeleteBuffers(1, &mGraphicsBufferHandle));
@@ -185,6 +245,9 @@ void Buffer::freeGL()
 
 void Buffer::freeCL()
 {/*do nothing*/}
+
+
+
 
 //void Buffer::mapGLToHost(void* data)
 //{}

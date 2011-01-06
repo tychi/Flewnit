@@ -213,7 +213,7 @@ void BufferInterface::bind(ContextType type)throw(BufferException)
 		return;
 	}
 
-	assert("should never end down here" && 0);
+	assert("should never end dowglBlitFramebuffern here" && 0);
 
 }
 

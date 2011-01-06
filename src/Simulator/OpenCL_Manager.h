@@ -89,6 +89,9 @@ public:
     void acquireSharedBuffersForCompute();
     void acquireSharedBuffersForGraphics();
 
+    void barrierGraphics();
+    void barrierCompute();
+
 
 	void setBlockAfterEnqueue(cl_bool val){mBlockAfterEnqueue = val;}
 	cl_bool getBlockAfterEnqueue()const{return mBlockAfterEnqueue;}

@@ -159,9 +159,9 @@ void OpenCL_Manager::acquireSharedBuffersForCompute()
 	//TODO make this more efficient
 	///\{
 	//force to wait for all GL commands to complete
-	GUARD(glFinish());
+	barrierGraphics();
 	//force to wait for all other CL commands to complete;
-	GUARD(mCommandQueue.enqueueBarrier());
+	barrierCompute();
 	///\}
 
 
@@ -190,8 +190,10 @@ void OpenCL_Manager::acquireSharedBuffersForGraphics()
 	//maybe TODO: in case of an inexcplicable bug, try glFinish() here
 	///\{
 	//force to wait for all other CL commands to complete;
-	//nb: no synch with GL seems necessary
-	GUARD(mCommandQueue.enqueueBarrier());
+	barrierCompute();
+	//nb: no synch with GL seems necessary, as during compute stuff (at first) no GL stuff should be active anyway;
+	//in suspicion of driver bugs, let's glFinish() anyway at first; TODO remove when stable;
+	barrierGraphics();
 	///\}
 
 	GUARD(
@@ -208,6 +210,15 @@ void OpenCL_Manager::acquireSharedBuffersForGraphics()
 
 }
 
+
+void OpenCL_Manager::barrierGraphics()
+{
+	GUARD(glFinish());
+}
+void OpenCL_Manager::barrierCompute()
+{
+	GUARD(mCommandQueue.enqueueBarrier());
+}
 
 
 cl::Context& OpenCL_Manager::getCLContext()

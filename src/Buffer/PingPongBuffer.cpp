@@ -180,11 +180,11 @@ void PingPongBuffer::readCL(void* data)
 {
 	assert("PingPongBuffer::readCL: don't know which Buffer to take"&&0);
 }
-void PingPongBuffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsTo)
+void PingPongBuffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)
 {
 	assert("PingPongBuffer::copyGL: don't know which Buffer to take"&&0);
 }
-void PingPongBuffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsTo)
+void PingPongBuffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)
 {
 	assert("PingPongBuffer::copyCL: don't know which Buffer to take"&&0);
 }
