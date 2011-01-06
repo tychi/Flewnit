@@ -145,15 +145,15 @@ public:
 
 	void readBack()throw(BufferException);
 
-	void mapCPUAdressSpaceTo(ContextType which)throw(BufferException)
+	void* mapBuffer()throw(BufferException)
 	{
 		//TODO implement when needed
 		throw(BufferException("mapCPUAdressSpaceTo() not implemented yet"));
 	}
-	void unmapCPUAdressSpace()
+	void unmapBuffer()throw(BufferException)
 	{
 		//TODO implement when needed
-		throw(BufferException("unmapCPUAdressSpace() not implemented yet"));
+		throw(BufferException("mapCPUAdressSpaceTo() not implemented yet"));
 	}
 	///\}
 
@@ -226,14 +226,16 @@ protected:
 	virtual void writeCL(const void* data)=0;
 	virtual void readGL(void* data)=0;
 	virtual void readCL(void* data)=0;
-	virtual void copyGL(GraphicsBufferHandle bufferToCopyContentsTo)=0;
-	virtual void copyCL(ComputeBufferHandle bufferToCopyContentsTo)=0;
+	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsTo)=0;
+	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsTo)=0;
 	virtual void freeGL()=0;
 	virtual void freeCL()=0;
-	virtual void mapGLToHost(void* data)=0;
-	virtual void mapCLToHost(void* data)=0;
-	virtual void unmapGL()=0;
-	virtual void unmapCL()=0;
+
+//	//not needed (yet?)
+//	virtual void* mapGLToHost()=0;
+//	virtual void* mapCLToHost()=0;
+//	virtual void* unmapGL()=0;
+//	virtual void* unmapCL()=0;
 
 	//virtual void allocCL()=0; <-- bullshaat ;)
 	//virtual void bindCL()=0; <-- bullshaat ;)

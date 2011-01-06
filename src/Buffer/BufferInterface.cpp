@@ -173,8 +173,8 @@ BufferInterface::~BufferInterface()
 
 	if(mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
 	{
-		if(mGraphicsBufferHandle)
-			GUARD(freeGL());
+		assert("due to virtual function call are the derived classes responsible for deletion of their GL buffers"
+				&& (mGraphicsBufferHandle == 0));
 	}
 
 	//CL stuff deletes itself;

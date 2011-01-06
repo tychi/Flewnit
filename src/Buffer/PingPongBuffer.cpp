@@ -180,11 +180,11 @@ void PingPongBuffer::readCL(void* data)
 {
 	assert("PingPongBuffer::readCL: don't know which Buffer to take"&&0);
 }
-void PingPongBuffer::copyGL(GraphicsBufferHandle bufferToCopyContentsTo)
+void PingPongBuffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsTo)
 {
 	assert("PingPongBuffer::copyGL: don't know which Buffer to take"&&0);
 }
-void PingPongBuffer::copyCL(ComputeBufferHandle bufferToCopyContentsTo)
+void PingPongBuffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsTo)
 {
 	assert("PingPongBuffer::copyCL: don't know which Buffer to take"&&0);
 }
@@ -194,28 +194,28 @@ void PingPongBuffer::freeGL()
 void PingPongBuffer::freeCL()
 {}
 
-void PingPongBuffer::mapGLToHost(void* data)
-{
-	LOG<<WARNING_LOG_LEVEL<<"PingPongBuffer::mapGLToHost: are you sure to map both buffers of a ping pong buffer to host mem?\n";
-	mPingPongBuffers[0]->mapGLToHost(data);
-	mPingPongBuffers[1]->mapGLToHost(data);
-}
-void PingPongBuffer::mapCLToHost(void* data)
-{
-	LOG<<WARNING_LOG_LEVEL<<"PingPongBuffer::mapCLToHost: are you sure to map both buffers of a ping pong buffer to host mem?\n";
-	mPingPongBuffers[0]->mapCLToHost(data);
-	mPingPongBuffers[1]->mapCLToHost(data);
-}
-void PingPongBuffer::unmapGL()
-{
-	mPingPongBuffers[0]->unmapGL();
-	mPingPongBuffers[1]->unmapGL();
-}
-void PingPongBuffer::unmapCL()
-{
-	mPingPongBuffers[0]->unmapCL();
-	mPingPongBuffers[1]->unmapCL();
-}
+//void PingPongBuffer::mapGLToHost(void* data)
+//{
+//	LOG<<WARNING_LOG_LEVEL<<"PingPongBuffer::mapGLToHost: are you sure to map both buffers of a ping pong buffer to host mem?\n";
+//	mPingPongBuffers[0]->mapGLToHost(data);
+//	mPingPongBuffers[1]->mapGLToHost(data);
+//}
+//void PingPongBuffer::mapCLToHost(void* data)
+//{
+//	LOG<<WARNING_LOG_LEVEL<<"PingPongBuffer::mapCLToHost: are you sure to map both buffers of a ping pong buffer to host mem?\n";
+//	mPingPongBuffers[0]->mapCLToHost(data);
+//	mPingPongBuffers[1]->mapCLToHost(data);
+//}
+//void PingPongBuffer::unmapGL()
+//{
+//	mPingPongBuffers[0]->unmapGL();
+//	mPingPongBuffers[1]->unmapGL();
+//}
+//void PingPongBuffer::unmapCL()
+//{
+//	mPingPongBuffers[0]->unmapCL();
+//	mPingPongBuffers[1]->unmapCL();
+//}
 
 
 

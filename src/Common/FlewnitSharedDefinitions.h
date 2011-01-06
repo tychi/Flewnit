@@ -89,6 +89,15 @@ typedef unsigned int		uint;
 //#define FLEWNIT_USE_GLM_MATH 1
 
 
+enum Access
+{
+	ACCESS_NONE,  //forbidden for buffer-to-host-mapping
+	ACCESS_READ,
+	ACCESS_WRITE, //forbidden for GUI stuff
+	ACCESS_READWRITE
+};
+
+
 enum Type
 {
 	TYPE_UNDEF,

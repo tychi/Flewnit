@@ -74,14 +74,14 @@ protected:
 	virtual void writeCL(const void* data);
 	virtual void readGL(void* data);
 	virtual void readCL(void* data);
-	virtual void copyGL(GraphicsBufferHandle bufferToCopyContentsTo);
-	virtual void copyCL(ComputeBufferHandle bufferToCopyContentsTo);
+	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsTo);
+	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsTo);
 	virtual void freeGL();
 	virtual void freeCL();
-	virtual void mapGLToHost(void* data);
-	virtual void mapCLToHost(void* data);
-	virtual void unmapGL();
-	virtual void unmapCL();
+//	virtual void* mapGLToHost();
+//	virtual void* mapCLToHost();
+//	virtual void unmapGL();
+//	virtual void unmapCL();
 
 
 

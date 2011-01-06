@@ -54,7 +54,8 @@ Buffer::Buffer(
 
 Buffer::~Buffer()
 {
-
+	GUARD(freeGL());
+	mGraphicsBufferHandle = 0;
 }
 
 
@@ -62,9 +63,9 @@ bool Buffer::operator==(const BufferInterface& rhs) const
 {
 	//if everything is implemented and maintained correctly, the pure compraision of the bufferinfo
 	//should be enough; but don't trust the programmer, not even yourself :P
-	return (mBufferInfo == rhs.getBufferInfo()
-			//is it really of same type?
-			&& dynamic_cast<const Buffer*>(&rhs));
+	return (//is it really of same type?
+			rhs.isDefaultBuffer() &&
+			mBufferInfo == rhs.getBufferInfo() );
 
 }
 
@@ -173,9 +174,9 @@ void Buffer::readCL(void* data)
 			& CLMANAGER->getLastEvent());
 }
 
-void Buffer::copyGL(GraphicsBufferHandle bufferToCopyContentsTo)
+void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsTo)
 {}
-void Buffer::copyCL(ComputeBufferHandle bufferToCopyContentsTo)
+void Buffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsTo)
 {}
 void Buffer::freeGL()
 {
@@ -185,25 +186,25 @@ void Buffer::freeGL()
 void Buffer::freeCL()
 {/*do nothing*/}
 
-void Buffer::mapGLToHost(void* data)
-{}
-void Buffer::mapCLToHost(void* data)
-{
-//	CLMANAGER->getCommandQueue().enqueueMapBuffer(
-//			static_cast<cl::Buffer&>(mComputeBufferHandle),
-//			CLMANAGER->getBlockAfterEnqueue(),
-//			x,
-//			0,
-//			mBufferInfo.bufferSizeInByte,
-//			0,
-//			& CLMANAGER->getLastEvent(),
-//			& CLMANAGER->getLastCLError()
-//			);
-}
-void Buffer::unmapGL()
-{}
-void Buffer::unmapCL()
-{}
+//void Buffer::mapGLToHost(void* data)
+//{}
+//void Buffer::mapCLToHost(void* data)
+//{
+////	CLMANAGER->getCommandQueue().enqueueMapBuffer(
+////			static_cast<cl::Buffer&>(mComputeBufferHandle),
+////			CLMANAGER->getBlockAfterEnqueue(),
+////			x,
+////			0,
+////			mBufferInfo.bufferSizeInByte,
+////			0,
+////			& CLMANAGER->getLastEvent(),
+////			& CLMANAGER->getLastCLError()
+////			);
+//}
+//void Buffer::unmapGL()
+//{}
+//void Buffer::unmapCL()
+//{}
 
 
 

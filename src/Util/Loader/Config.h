@@ -18,13 +18,6 @@ namespace Flewnit
 
 
 
-enum Access
-{
-	ACCESS_NONE,
-	ACCESS_READ,
-	ACCESS_READWRITE
-};
-
 class GUIParams
 {
 	//this class is so tiny, there will be no pointer-f***up, so we need no memory tracking of this class
