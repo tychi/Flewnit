@@ -54,6 +54,17 @@ Buffer::Buffer(
 
 Buffer::~Buffer()
 {
+
+	//	mComputeBufferHandle.release();
+	//	mComputeBufferHandle()=0;
+
+	//gl stuff is deleted BEFORE CL stuff, that migth couse problems;
+	//but when call mComputeBufferHandle.release() exdplicitely before,
+	//then there will be an error when the destructor of the cl::mem object
+	//is called during BufferInterface destruction;
+	//so, no amtter what we do, there might be an error, unless we make the member a pointer;
+	//but that doesn't seem appropriate to me (yet);
+	//TODO check out what happens during buffer deletion;
 	GUARD(freeGL());
 	mGraphicsBufferHandle = 0;
 }

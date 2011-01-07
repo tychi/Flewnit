@@ -90,26 +90,26 @@ public:
 	cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
 	Vector3Dui dimensionExtends; //must be zero for unused dimensions;
 
-	GLenum textureTarget; //default GL_TEXTURE_2D
+
+	GLenum textureTarget; //GL_TEXTURE_2D, GL_TEXTURE_2D_ARRAY, GL_TEXTURE_2D_MULTISAMPLE_ARRAY
 	GLint imageInternalChannelLayout; //usually GL_RGBA or GL_LUMINANCE
 	GLenum imageInternalDataType;	//usually GL_UNSIGNED_INT or GL_FLOAT
 
-	GLint numMultiSamples; //default 0 to indicate no multisampling
+	GLint numMultiSamples; 	 //default 0 to indicate no multisampling
+	GLint numArrayLayers;	 //default 0 to indicate no array stuff
+
+
 	bool isMipMapped;		//default false;
+	bool isRectangleTex;	//default false;
+	bool isCubeTex;			//default false;
 
 private:
 
 
 	explicit TextureInfo(
-			cl_GLuint dimensionality,
-			Vector3Dui dimensionExtends,
-
 			GLenum textureTarget,
 			GLint imageInternalChannelLayout,
-			GLenum imageInternalDataType,
-
-			GLint numMultiSamples,
-			bool isMipMapped
+			GLenum imageInternalDataType
 			);
 	TextureInfo(const TextureInfo& rhs);
 	virtual ~TextureInfo();
@@ -199,48 +199,21 @@ public:
 
 	//getters n setters for the buffer handles (might need to be exposed due to passing as kernel arguments etc)
 	///\{
-	const CPUBufferHandle getCPUBufferHandle()const;
-	GraphicsBufferHandle getGraphicsBufferHandle()const;
-	ComputeBufferHandle getComputeBufferHandle()const;
+	const CPUBufferHandle getCPUBufferHandle()const throw(BufferException);
+	GraphicsBufferHandle getGraphicsBufferHandle()const throw(BufferException);
+	ComputeBufferHandle getComputeBufferHandle()const throw(BufferException);
 	///\}
 protected:
 
 	//to be called by the constructor;
 	bool allocMem()throw(BufferException);
 
-	//wrapper functions to GL and CL calls without any error checking,
-	//i.e. semantic checks/flag delegation/verifiaction must be done before those calls;
-	//those routines are introduced to reduce boilerplate code;
-	///\{
+
 	//PingPongBuffer calls following routines of his managed buffers; so let's make him friend
 	friend class PingPongBuffer;
-
-	virtual void generateGL()=0;
-	virtual void generateCL()=0;
-	virtual void generateCLGL()=0;
-
-	//the two non-symmetrci GL-only routines:
-	virtual void bindGL()=0;
-	virtual void allocGL()=0;
-
-	virtual void writeGL(const void* data)=0;
-	virtual void writeCL(const void* data)=0;
-	virtual void readGL(void* data)=0;
-	virtual void readCL(void* data)=0;
-	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)=0;
-	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)=0;
-	virtual void freeGL()=0;
-	virtual void freeCL()=0;
-
-//	//not needed (yet?)
-//	virtual void* mapGLToHost()=0;
-//	virtual void* mapCLToHost()=0;
-//	virtual void* unmapGL()=0;
-//	virtual void* unmapCL()=0;
-
-	//virtual void allocCL()=0; <-- bullshaat ;)
-	//virtual void bindCL()=0; <-- bullshaat ;)
-	///\}
+#	define FLEWNIT_PURE_VIRTUAL
+#	include "BufferVirtualSignatures.h"
+#	undef FLEWNIT_PURE_VIRTUAL
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	//friend Profiler so that he can set the ID of the BasicObjects;

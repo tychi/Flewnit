@@ -55,33 +55,31 @@ public:
 
 
 protected:
-//	//if you are calling the following routines on the pingpong-buffer, the every operation will be performed
-//	//on both of the managed buffers ("ping" and "pong"); to do stuff just on one of the both managed buffers,
-//	//get them and call those routines driectly on them
-//	virtual bool allocMem()throw(BufferException);
+
+#	include "BufferVirtualSignatures.h"
 
 
-	//wrapper functions to GL and CL calls without any error checking,
-	//i.e. semantic checks/flag delegation/verifiaction must be done before those calls;
-	//those routines are introduced to reduce boilerplate code;
-	virtual void generateGL();
-	virtual void generateCL();
-
-	virtual void bindGL();
-	virtual void allocGL();
-
-	virtual void writeGL(const void* data);
-	virtual void writeCL(const void* data);
-	virtual void readGL(void* data);
-	virtual void readCL(void* data);
-	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom);
-	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom);
-	virtual void freeGL();
-	virtual void freeCL();
-//	virtual void* mapGLToHost();
-//	virtual void* mapCLToHost();
-//	virtual void unmapGL();
-//	virtual void unmapCL();
+//	//wrapper functions to GL and CL calls without any error checking,
+//	//i.e. semantic checks/flag delegation/verifiaction must be done before those calls;
+//	//those routines are introduced to reduce boilerplate code;
+//	virtual void generateGL();
+//	virtual void generateCL();
+//
+//	virtual void bindGL();
+//	virtual void allocGL();
+//
+//	virtual void writeGL(const void* data);
+//	virtual void writeCL(const void* data);
+//	virtual void readGL(void* data);
+//	virtual void readCL(void* data);
+//	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom);
+//	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom);
+//	virtual void freeGL();
+//	virtual void freeCL();
+////	virtual void* mapGLToHost();
+////	virtual void* mapCLToHost();
+////	virtual void unmapGL();
+////	virtual void unmapCL();
 
 
 

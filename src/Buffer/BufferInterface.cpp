@@ -594,9 +594,26 @@ RenderBuffer& BufferInterface::toRenderBuffer() throw(BufferException)
 		throw(BufferException("Bad cast to RenderBuffer"));
 }
 
-const CPUBufferHandle BufferInterface::getCPUBufferHandle()const{return mCPU_Handle;}
-GraphicsBufferHandle BufferInterface::getGraphicsBufferHandle()const{return mGraphicsBufferHandle;}
-ComputeBufferHandle BufferInterface::getComputeBufferHandle()const{return mComputeBufferHandle;}
+const CPUBufferHandle BufferInterface::getCPUBufferHandle()const throw(BufferException)
+{
+	if((mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG) == 0)
+		throw(BufferException("BufferInterface::getCPUBufferHandle: buffer has no CPU attachment"));
+
+	return mCPU_Handle;
+}
+GraphicsBufferHandle BufferInterface::getGraphicsBufferHandle()const  throw(BufferException)
+{
+	if((mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) == 0)
+			throw(BufferException("BufferInterface::getGraphicsBufferHandle: buffer has no GL attachment"));
+	return mGraphicsBufferHandle;
+}
+ComputeBufferHandle BufferInterface::getComputeBufferHandle()const  throw(BufferException)
+{
+	if((mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG) == 0)
+			throw(BufferException("BufferInterface::getComputeBufferHandle: buffer has no CL attachment"));
+
+	return mComputeBufferHandle;
+}
 
 
 
