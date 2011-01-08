@@ -5,20 +5,11 @@
  *      Author: tychi
  */
 
-#include "Texture2D.h"
+#include "Texture.h"
 
 namespace Flewnit
 {
 
-Texture2D::Texture2D()
-{
-	// TODO Auto-generated constructor stub
 
-}
-
-Texture2D::~Texture2D()
-{
-	// TODO Auto-generated destructor stub
-}
 
 }

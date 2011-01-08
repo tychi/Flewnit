@@ -22,9 +22,6 @@
 #include "Buffer.h"
 
 #include "Texture.h"
-#include "Texture1D.h"
-#include "Texture2D.h"
-#include "Texture3D.h"
 #include "RenderBuffer.h"
 ///\}
 

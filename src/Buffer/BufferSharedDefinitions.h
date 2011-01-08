@@ -261,10 +261,10 @@ struct TexelInfo
 	//4
 	bool normalizeIntegralValuesFlag;
 
-	TexelInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsPerChannel, bool isNormalizedFlag);
-	TexelInfo(const TexelInfo& rhs);
+	explicit TexelInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsPerChannel, bool normalizeIntegralValuesFlag);
+	explicit TexelInfo(const TexelInfo& rhs);
 	virtual ~TexelInfo(){}
-	void operator==(const TexelInfo& rhs);
+	bool operator==(const TexelInfo& rhs)const;
 	const TexelInfo& operator=(const TexelInfo& rhs);
 	//called by constructor to early detect invalid values and permutations, like 8-bit float or 32bit normalized (u)int
 	void validate() throw (BufferException);
@@ -298,10 +298,12 @@ struct GLImageFormat
 	//	--				|GL_BYTE	|GL_UNSIGNED_BYTE
 	GLenum	channelDataType;
 
+	//default (invalid) =0 - params for initialization, as value computations must happen in a sophisticated
+	//way in the constructor _body_ ;(
 	explicit GLImageFormat(
-			GLint  	desiredInternalFormat,
-			GLenum channelOrder,
-			GLenum	channelDataType	);
+			GLint  	desiredInternalFormat =0 ,
+			GLenum channelOrder = 0,
+			GLenum	channelDataType =0	);
 	explicit GLImageFormat(const GLImageFormat& rhs);
 	virtual ~GLImageFormat(){}
 	bool operator==(const GLImageFormat& rhs) const;

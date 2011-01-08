@@ -5,20 +5,11 @@
  *      Author: tychi
  */
 
-#include "Texture3D.h"
+#include "Texture.h"
 
 namespace Flewnit
 {
 
-Texture3D::Texture3D()
-{
-	// TODO Auto-generated constructor stub
 
-}
-
-Texture3D::~Texture3D()
-{
-	// TODO Auto-generated destructor stub
-}
 
 }

@@ -165,7 +165,8 @@ public:
 	//must be implemented by concrete textures;
 	virtual bool operator==(const BufferInterface& rhs) const =0;
 
-	const TextureInfo& getTextureInfo()const(){return mTextureInfo;}
+	//virtual void loadFromFile(Path filename) throw(BufferException){throw(BufferException("concete class has no loader functionality"));}
+	const TextureInfo& getTextureInfo()const{return mTextureInfo;}
 protected:
 
 	TextureInfo mTextureInfo;
@@ -190,7 +191,8 @@ class Texture1D: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	Texture1D(int width, const TexelInfo& texeli, const void* data =0,  bool genMipmaps = false);
+	explicit Texture1D(int width, const TexelInfo& texeli, const void* data =0,  bool genMipmaps = false);
+	explicit Texture1D(Path fileName,  bool genMipmaps = false);
 	virtual ~Texture1D();
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
@@ -210,7 +212,8 @@ class Texture2D: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	Texture2D(int width, int height, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
+	explicit Texture2D(int width, int height, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
+	explicit Texture2D(Path fileName, bool clInterOp, bool genMipmaps = false);
 	virtual ~Texture2D();
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
@@ -227,14 +230,39 @@ protected:
  * 		-	CL interOp;
  *
  * 	Drawbacks:
- * 		writing to 3D images in CL kernels might not work with some CL implementations ;( be careful when using this funktionality!
+ * 		-	writing to 3D images in CL kernels might not work with some CL implementations ;( be careful when using this funktionality!
+ * 		- 	array and multisample versions of 3D textures are forbidden (2D tex-arrays logically don't count as 3D tex for me ;) )
  */
 class Texture3D: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	Texture3D(int width, int height, int depth, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
+	explicit Texture3D(int width, int height, int depth, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
+	explicit Texture3D(Path fileName, bool clInterOp, bool genMipmaps = false);
 	virtual ~Texture3D();
+public:
+	virtual bool operator==(const BufferInterface& rhs) const;
+protected:
+#	include "BufferVirtualSignatures.h"
+};
+
+/**
+ * 	2D Texture;
+ *
+ * 	Features:
+ * 		-	MipMapping;
+ * 		-	CL interOp;
+ */
+class Texture2DCube: public Texture
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	explicit Texture2DCube(int quadraticSize, const TexelInfo& texeli, bool clInterOp,
+			/*an array of six void*-data pointers of appropriate size, or NULL */
+			const void** data =0,
+			bool genMipmaps = false);
+	explicit Texture2DCube(Path fileName, bool clInterOp,  bool genMipmaps = false);
+	virtual ~Texture2DCube();
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
 protected:
@@ -243,8 +271,7 @@ protected:
 
 
 
-
-TODO CONTINUE BUT NOW COFFE
+//TODO CONTINUE BUT NOW COFFE
 
 //Texture1D		(bool genMipmaps);	//ocl bindung not supported :@
 //
