@@ -204,8 +204,12 @@ struct TexelInfo
 	Texture2DCube
 	Texture3D	 <-- careful when writing in CL-kernel! CL-implementation must support this (can be queried)
 
+	There is one minor drawback at the moment: CPU data must have the same format as the data which
+	will reside on the GPU;
 
-	Here is a table about the mapping from this TexelInfo struct to real GL and CL enums:
+	Here is a table about the mapping from this TexelInfo struct to real
+	GL "GLint internalFormat"  resp.
+	CL  "cl_channel_type cl_image_format::image_channel_order":
 
 	internal 	||	float		|	signed int	|	unsigned int  |unsigned   	|signed
 	data type	||				|				| 				  |normalized 	|normalized
@@ -236,7 +240,7 @@ struct TexelInfo
 
 	one channel	||	GL_R32F, 	  GL_R32I, 			GL_R32UI,		--			--
 	types:		||	GL_R16F, 	  GL_R16I, 			GL_R16UI, 		GL_R16,		GL_R16_SNORM
-	CL_R		||	GL_R8I, 	  GL_R8UI,		GL_R8,		GL_R8_SNORM
+	CL_R		||	--			  GL_R8I, 	 		 GL_R8UI,		GL_R8,		GL_R8_SNORM
 
 	*/
 
@@ -255,7 +259,7 @@ struct TexelInfo
 	//3.
 	int bitsPerChannel;	//8,16 or 32
 	//4
-	bool isNormalizedFlag;
+	bool normalizeIntegralValuesFlag;
 
 	TexelInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsPerChannel, bool isNormalizedFlag);
 	TexelInfo(const TexelInfo& rhs);
@@ -264,6 +268,44 @@ struct TexelInfo
 	const TexelInfo& operator=(const TexelInfo& rhs);
 	//called by constructor to early detect invalid values and permutations, like 8-bit float or 32bit normalized (u)int
 	void validate() throw (BufferException);
+};
+
+
+//struct definition to make CL/GL-handling more symmetric;
+struct GLImageFormat
+{
+	//"internalformat" paramater of glTexImageXD; specifies
+	//	-	number of channels
+	//	-	number of bits per channel
+	//	-	data type of channel values (float, uint, int)
+	//	-	if (u)int values shall be normalized;
+	// All of this packed in one enum! Plus, this enum must comply with the channelOrder
+	// and the channelDataType below! So much invalid combinations are possible!
+	// Thus, the values of those enums are determined
+	//valid values: see the big table within the comment of TexelInfo: GL_RGBA32F .. GL_R8_SNORM;
+	GLint  	desiredInternalFormat;
+
+
+	//"format" paramater of glTexImageXD resp. cl_channel_order:
+	// texelInfo.numChannels == 1 --> GL_RED, 2 -->	GL_RG, 4 --> GL_RGBA
+	GLenum channelOrder;
+	//"type" parameter of glTexImageXD, i.e cpu data layout;
+	//Compared to OpenCL, the fact if a (u)int- texel is normalized during texture lookup or not is
+	//determined via the "internalformat" param and not together with the CPU data type specifier;
+	//Therefore, only the following values are allowed;
+	//	GL_FLOAT		|GL_INT		|GL_UNSIGNED_INT
+	//	GL_HALF_FLOAT	|GL_SHORT   |GL_UNSIGNED_SHORT
+	//	--				|GL_BYTE	|GL_UNSIGNED_BYTE
+	GLenum	channelDataType;
+
+	explicit GLImageFormat(
+			GLint  	desiredInternalFormat,
+			GLenum channelOrder,
+			GLenum	channelDataType	);
+	explicit GLImageFormat(const GLImageFormat& rhs);
+	virtual ~GLImageFormat(){}
+	bool operator==(const GLImageFormat& rhs) const;
+	const GLImageFormat& operator=(const GLImageFormat& rhs);
 };
 
 
@@ -276,33 +318,60 @@ struct TexelInfo
 class TextureInfo
  {
 public:
+	///\{
+	//general info
 	cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
 	Vector3Dui dimensionExtends; //must be zero for unused dimensions;
+	///\}
 
-	//TODO rethink; ;(
-	GLenum textureTarget; //GL_TEXTURE_2D, GL_TEXTURE_2D_ARRAY, GL_TEXTURE_2D_MULTISAMPLE_ARRAY e
-	GLint imageInternalChannelLayout; //usually GL_RGBA or GL_LUMINANCE
-	GLenum imageInternalDataType;	//usually GL_UNSIGNED_INT or GL_FLOAT
-
+	//"clean" user privided info about the texels in the texture;
 	TexelInfo texelInfo;
 
-	GLint numMultiSamples; 	 //default 0 to indicate no multisampling
-	GLint numArrayLayers;	 //default 0 to indicate no array stuff
 
+	//Flags/values indicating special features, depending on the concrete texture types
+	///\{
 	bool isMipMapped;		//default false;
 	bool isRectangleTex;	//default false;
 	bool isCubeTex;			//default false;
+
+	GLint numMultiSamples; 	 //default 0 to indicate no multisampling
+	GLint numArrayLayers;	 //default 0 to indicate no array stuff
+	///\}
+
+	//automatically determined values; only needed for internal GL/CL calls:
+
+	//texture target, autoumatically determined by the constructors of the concrete Texture classes;
+	GLenum textureTarget; //e.g. GL_TEXTURE_2D, GL_TEXTURE_2D_ARRAY, GL_TEXTURE_2D_MULTISAMPLE_ARRAY etc.
+
+
+	GLImageFormat glImageFormat;
+	//for clImageFormat.image_channel_order: texelInfo.numChannels == 1 --> CL_R, 2 -->	CL_RG, 4 --> CL_RGBA
+	//for clImageFormat.image_channel_data_type	: depending on
+	//		texelInfo.internalGPU_DataType,texelInfo.bitsPerChannel, texelInfo.isNormalizedFlag;
+	//valid values in this framework, see TexelInfo (there are more valid values in OpenCL,
+	//but I don't explicitly support them):
+	//	CL_FLOAT		|CL_SIGNED_INT32|CL_UNSIGNED_INT32|--			|--
+	//	CL_HALF_FLOAT	|CL_SIGNED_INT16|CL_UNSIGNED_INT16|CL_UNORM_INT16|CL_SNORM_INT16
+	//	--				|CL_SIGNED_INT8	|CL_UNSIGNED_INT8 |CL_UNORM_INT8|CL_SNORM_INT8
+	cl::ImageFormat clImageFormat;
+
+
 
 private:
 
 
 	explicit TextureInfo(
-			GLenum textureTarget,
-			GLint imageInternalChannelLayout,
-			GLenum imageInternalDataType
+			cl_GLuint dimensionality,
+			Vector3Dui dimensionExtends,
+			const TexelInfo& texelInfo,
+			bool isMipMapped = false,
+			bool isRectangleTex = false,
+			bool isCubeTex = false,
+			GLint numMultiSamples = 0,
+			GLint numArrayLayers = 0
 			);
-	TextureInfo(const TextureInfo& rhs);
-	virtual ~TextureInfo();
+	explicit TextureInfo(const TextureInfo& rhs);
+	virtual ~TextureInfo(){}
 	bool operator==(const TextureInfo& rhs) const;
 	const TextureInfo& operator=(const TextureInfo& rhs);
  };

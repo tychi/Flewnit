@@ -74,60 +74,109 @@ const BufferInfo& BufferInfo::operator=(const BufferInfo& rhs)
 
 //----------------------------------------------------------------
 
+
+GLImageFormat::GLImageFormat(
+		GLint  	desiredInternalFormat,
+		GLenum 	channelOrder,
+		GLenum	channelDataType	)
+:
+	desiredInternalFormat(desiredInternalFormat),
+	channelOrder(channelOrder),
+	channelDataType(channelDataType)
+{}
+
+GLImageFormat::GLImageFormat(const GLImageFormat& rhs)
+{
+	*this = rhs;
+}
+
+bool GLImageFormat::operator==(const GLImageFormat& rhs) const
+{
+	return
+			desiredInternalFormat == rhs.desiredInternalFormat &&
+			channelOrder == rhs.channelOrder &&
+			channelDataType == rhs.channelDataType
+			;
+}
+
+const GLImageFormat& GLImageFormat::operator=(const GLImageFormat& rhs)
+{
+	desiredInternalFormat = rhs.desiredInternalFormat;
+	channelOrder = rhs.channelOrder;
+	channelDataType = rhs.channelDataType;
+
+	return *this;
+}
+
+
+
+//----------------------------------------------------------------
+
+
+
 TextureInfo::TextureInfo(
 		cl_GLuint dimensionality,
 		Vector3Dui dimensionExtends,
-
-		GLenum textureTarget,
-		GLint imageInternalChannelLayout,
-		GLenum imageInternalDataType,
-
+		const TexelInfo& texelInfo,
+		bool isMipMapped,
+		bool isRectangleTex,
+		bool isCubeTex,
 		GLint numMultiSamples,
-		bool isMipMapped
+		GLint numArrayLayers
 		)
-: dimensionality(dimensionality),
-  dimensionExtends(dimensionExtends),
-  textureTarget(textureTarget),
-  imageInternalChannelLayout(imageInternalChannelLayout),
-  imageInternalDataType(imageInternalDataType),
-  numMultiSamples(numMultiSamples),
-  isMipMapped(isMipMapped)
-{}
+:
+		dimensionality(dimensionality),
+		dimensionExtends(dimensionExtends),
+		texelInfo(texelInfo),
+		isMipMapped(isMipMapped),
+		isRectangleTex(isRectangleTex),
+		isCubeTex(isCubeTex),
+		numMultiSamples(numMultiSamples),
+		numArrayLayers(numArrayLayers)
+{
+	TODO SETUP glImageFormat and clImageFormat
+
+}
+
+
 
 TextureInfo::TextureInfo(const TextureInfo& rhs)
 {
 	(*this) = rhs;
 }
 
-TextureInfo::~TextureInfo()
-{}
 
 
 bool TextureInfo::operator==(const TextureInfo& rhs) const
 {
 	return
-		dimensionality==rhs.dimensionality &&
-		glm::all(glm::equal(dimensionExtends, rhs.dimensionExtends)) &&
-//		dimensionExtends.x==rhs.dimensionExtends.x &&
-//		dimensionExtends.y==rhs.dimensionExtends.y &&
-//		dimensionExtends.z==rhs.dimensionExtends.z &&
-		textureTarget==rhs.textureTarget &&
-		imageInternalChannelLayout==rhs.imageInternalChannelLayout &&
-		imageInternalDataType==rhs.imageInternalDataType &&
-		numMultiSamples==rhs.numMultiSamples &&
-		isMipMapped==rhs.isMipMapped
-		;
+			dimensionality == rhs.dimensionality &&
+			glm::all(glm::equal(dimensionExtends, rhs.dimensionExtends)) &&
+			texelInfo == rhs.texelInfo &&
+			isMipMapped == rhs.isMipMapped &&
+			isRectangleTex == rhs.isRectangleTex &&
+			isCubeTex == rhs.isCubeTex &&
+			numMultiSamples == rhs.numMultiSamples &&
+			numArrayLayers == rhs.numArrayLayers &&
+
+			glImageFormat == rhs.glImageFormat &&
+			clImageFormat == rhs.clImageFormat;
+
 }
 
 const TextureInfo& TextureInfo::operator=(const TextureInfo& rhs)
 {
-	dimensionality=rhs.dimensionality;
-	dimensionExtends=rhs.dimensionExtends ;
-	textureTarget=rhs.textureTarget ;
-	imageInternalChannelLayout=rhs.imageInternalChannelLayout;
-	imageInternalDataType=rhs.imageInternalDataType;
-	numMultiSamples=rhs.numMultiSamples;
-	isMipMapped=rhs.isMipMapped;
+	dimensionality = rhs.dimensionality;
+	dimensionExtends = rhs.dimensionExtends;
+	texelInfo = rhs.texelInfo;
+	isMipMapped = rhs.isMipMapped;
+	isRectangleTex = rhs.isRectangleTex;
+	isCubeTex = rhs.isCubeTex;
+	numMultiSamples = rhs.numMultiSamples;
+	numArrayLayers = rhs.numArrayLayers;
+
+	glImageFormat = rhs.glImageFormat;
+	clImageFormat = rhs.clImageFormat;
 
 	return *this;
 }

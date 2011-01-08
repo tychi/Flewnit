@@ -164,7 +164,12 @@ public:
 	virtual ~Texture();
 	//must be implemented by concrete textures;
 	virtual bool operator==(const BufferInterface& rhs) const =0;
+
+	const TextureInfo& getTextureInfo()const(){return mTextureInfo;}
 protected:
+
+	TextureInfo mTextureInfo;
+
 #	define FLEWNIT_PURE_VIRTUAL
 #		include "BufferVirtualSignatures.h"
 #	undef FLEWNIT_PURE_VIRTUAL
