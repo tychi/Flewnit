@@ -65,12 +65,16 @@ namespace Flewnit
 		//Flewnit::BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject()
 
 
+///\{
 # 	define FLEWNIT_BASIC_OBJECT_DECLARATIONS \
-		virtual void initBasicObject() \
-		{ \
-			mMemoryFootPrint = (int) sizeof(*this); \
-			mClassName = String(typeid(*this).name()); \
-		}
+		public:\
+			virtual void initBasicObject() \
+			{ \
+				mMemoryFootPrint = (int) sizeof(*this); \
+				mClassName = String(typeid(*this).name()); \
+			} \
+		private:
+///\}
 
 
 		virtual void initBasicObject()=0;

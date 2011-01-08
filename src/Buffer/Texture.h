@@ -5,6 +5,13 @@
  *      Author: tychi
  *
  * \brief The base class of all buffers;
+ *
+ *
+ * ((( the below restriction might not apply anymore ;(
+ * For the sake of not too much special cases, there will be no "pure CL texture" possible
+ * in this framework; It will always be a GL texture, and if supported by CL, there will be
+ * an option to enable interop; )))
+ *
  */
 
 #pragma once
@@ -155,8 +162,8 @@ class Texture: public BufferInterface
 public:
 	Texture(const BufferInfo& buffi, const TextureInfo& texi);
 	virtual ~Texture();
-public:
-	virtual bool operator==(const BufferInterface& rhs) const;
+	//must be implemented by concrete textures;
+	virtual bool operator==(const BufferInterface& rhs) const =0;
 protected:
 #	define FLEWNIT_PURE_VIRTUAL
 #		include "BufferVirtualSignatures.h"
@@ -167,20 +174,72 @@ protected:
 
 
 /**
- * abstract base class for all textures
+ * 	1D Texture;
+ *
+ * 	Features:
+ * 		-	MipMapping;
+* 	Drawbacks:
+* 		-	no CL interop possible, opposed to CUDA :@
  */
 class Texture1D: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	Texture1D(int width, int NumComponentsPerChannel, bool genMipmaps = false);
-	virtual ~Texture();
+	Texture1D(int width, const TexelInfo& texeli, const void* data =0,  bool genMipmaps = false);
+	virtual ~Texture1D();
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
 protected:
-#		include "BufferVirtualSignatures.h"
+#	include "BufferVirtualSignatures.h"
 };
 
+
+/**
+ * 	2D Texture;
+ *
+ * 	Features:
+ * 		-	MipMapping;
+ * 		-	CL interOp;
+ */
+class Texture2D: public Texture
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	Texture2D(int width, int height, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
+	virtual ~Texture2D();
+public:
+	virtual bool operator==(const BufferInterface& rhs) const;
+protected:
+#	include "BufferVirtualSignatures.h"
+};
+
+
+/**
+ * 	3D Texture;
+ *
+ * 	Features:
+ * 		-	MipMapping;
+ * 		-	CL interOp;
+ *
+ * 	Drawbacks:
+ * 		writing to 3D images in CL kernels might not work with some CL implementations ;( be careful when using this funktionality!
+ */
+class Texture3D: public Texture
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	Texture3D(int width, int height, int depth, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
+	virtual ~Texture3D();
+public:
+	virtual bool operator==(const BufferInterface& rhs) const;
+protected:
+#	include "BufferVirtualSignatures.h"
+};
+
+
+
+
+TODO CONTINUE BUT NOW COFFE
 
 //Texture1D		(bool genMipmaps);	//ocl bindung not supported :@
 //

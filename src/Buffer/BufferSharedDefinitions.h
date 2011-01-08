@@ -262,6 +262,7 @@ struct TexelInfo
 	virtual ~TexelInfo(){}
 	void operator==(const TexelInfo& rhs);
 	const TexelInfo& operator=(const TexelInfo& rhs);
+	//called by constructor to early detect invalid values and permutations, like 8-bit float or 32bit normalized (u)int
 	void validate() throw (BufferException);
 };
 
@@ -278,14 +279,15 @@ public:
 	cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
 	Vector3Dui dimensionExtends; //must be zero for unused dimensions;
 
-
+	//TODO rethink; ;(
 	GLenum textureTarget; //GL_TEXTURE_2D, GL_TEXTURE_2D_ARRAY, GL_TEXTURE_2D_MULTISAMPLE_ARRAY e
 	GLint imageInternalChannelLayout; //usually GL_RGBA or GL_LUMINANCE
 	GLenum imageInternalDataType;	//usually GL_UNSIGNED_INT or GL_FLOAT
 
+	TexelInfo texelInfo;
+
 	GLint numMultiSamples; 	 //default 0 to indicate no multisampling
 	GLint numArrayLayers;	 //default 0 to indicate no array stuff
-
 
 	bool isMipMapped;		//default false;
 	bool isRectangleTex;	//default false;
