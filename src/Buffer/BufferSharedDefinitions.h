@@ -13,6 +13,8 @@
 
 #include "Common/CL_GL_Common.h"
 
+#include "Common/Math.h"
+
 
 namespace Flewnit
 {
@@ -79,146 +81,6 @@ enum GLBufferType
 	UNIFORM_BUFFER_TYPE = 3
 };
 
-enum TextureType
-{
-	NO_TEXTURE_BUFFER_TYPE 		=0,
-	TEXTURE_1D_BUFFER_TYPE		=1,
-	TEXTURE_2D_BUFFER_TYPE		=2,
-	TEXTURE_3D_BUFFER_TYPE		=3
-};
-
-enum TextureFeatureFlags
-{
-
-	/**
-	 * mutual exclusive with:
-	 *   ARRAY_TEXTURE_FLAG  <-- see above
-	 *   RECTANGLE_TEXTURE_FLAG <-- mipmapping on non-square-power-of-2-textures is useless ;(
-	 *	 MULTISAMPLE_TEXTURE_FLAG <-- as no filtering is defined on
-	 *
-	 * NOT mutual exclusive with:
-	 *   OPEN_CL_CONTEXT_TYPE_FLAG <-- but be careful to use only mipmap level 0 for sharing, as there might be driver bugs
-	 *	 CUBE_MAP_TEXTURE_FLAG 		<--filtering appropriate;
-	 */
-	MIPMAP_TEXTURE_FLAG = 1<<0,
-
-
-	/**
-	 * mutual exclusive with:
-	 * 		TEXTURE_3D_BUFFER_TYPE, <-- array of 2d is kind of 3d texture "internally", hence array of 3d doesn't exist
-	 *
-	 * 		OPEN_CL_CONTEXT_TYPE_FLAG, <-- sharing texture arrays with OpenCL is not allowed (afaik)
-	 *
-	 * 		MIPMAP_TEXTURE_FLAG, 	<-- array types "occupy" the logical mip map layers, so mip mapping is impossible
-	 * 		RECTANGLE_TEXTURE_FLAG	<-- Rectangle Tex Arrays seem not be defined in GL
-	 * 		CUBE_MAP_TEXTURE_FLAG	<-- in GL3.3, in GL4, there is a  GL_TEXTURE_CUBE_MAP_ARRAY target
-	 *
-	 * NOT mutual exclusive with:
-	 * 		MULTISAMPLE_TEXTURE_FLAG && TEXTURE_2D_BUFFER_TYPE <--  only valid for GL_TEXTURE_2D_MULTISAMPLE_ARRAY, i.e no 1D or 3D; 1D Multisample don't exist anyway, and 3D Arrays don't exist, see above;
-	 *
-	 */
-	ARRAY_TEXTURE_FLAG = 1<<1,
-
-	/**
-	 * mutual exclusive with:
-	 * 	TEXTURE_1D_BUFFER_TYPE
-	 *
-	 *	CUBE_MAP_TEXTURE_FLAG,	<--	no defined by GL (afaik)
-	 *	RECTANGLE_TEXTURE_FLAG, <-- no defined by GL (afaik)
-	 *	MIPMAP_TEXTURE_FLAG
-	 *
-	 *	OPEN_CL_CONTEXT_TYPE_FLAG <-- not defined in CL (afaik)
-	 *
-	 * NOT mutual exclusive with:
-	 * 	ARRAY_TEXTURE_FLAG	<--but only valid for GL_TEXTURE_2D_MULTISAMPLE_ARRAY, i.e no 1D or 3D; 1D Multisample don't exist anyway, and 3D Arrays don't exist, see above;
-	 *
-	 */
-	MULTISAMPLE_TEXTURE_FLAG = 1<<2,
-
-
-	/**
-	 * mutual exclusive with:
-	 * everything but:
-	 *
-	 * NOT mutual exclusive with:
-	 * 	TEXTURE_2D_BUFFER_TYPE
-	 * 	MIPMAP_TEXTURE_FLAG
-	 * 	OPEN_CL_CONTEXT_TYPE_FLAG
-	 *
-	 */
-	CUBE_MAP_TEXTURE_FLAG = 1<<3,
-
-
-	/**
-	 * mutual exclusive with:
-	 * everything but:
-	 *
-	 * NOT mutual exclusive with:
-	 * 	TEXTURE_2D_BUFFER_TYPE
-	 * 	OPEN_CL_CONTEXT_TYPE_FLAG
-	 *
-	 */
-	RECTANGLE_TEXTURE_FLAG = 1<<4,
-};
-
-/*
-	MipMap
-	{
-		//no multisample with MipMap "per definitionem" ;)
-
-		Array:
-		{
-			Texture1DArray(bool genMipmaps,int numLayers)
-			Texture2DArray(bool genMipmaps,int numLayers)
-		}
-		no Array:
-		{
-			Texture1D		(bool genMipmaps);	//ocl bindung not supported :@
-
-			Texture2D		(bool genMipmaps, bool oclbinding);
-			Texture2DCube	(bool genMipmaps, bool oclbinding); // array (in GL 3.3), multisample forbidden
-
-			Texture3D		(bool genMipmaps, bool oclbinding); //array, multisample forbidden (2D tex-arrays logically don't count as 3D tex)
-		}
-	}
-	no MipMap:
-	{
-		Array:
-		{
-			MultiSample:
-			{
-				Texture2DArrayMultiSample(int numMultiSamples, int numLayers)
-			}
-
-		}
-		no Array
-		{
-			MultiSample:
-			{
-				Texture2DMultisample( int numMultiSamples);
-				Texture3DMultisample( int numMultiSamples);
-			}
-			no MultiSample
-			{
-				Texture2DRect	(bool oclbinding); //mipmap, array, multisample forbidden
-			}
-		}
-	}
-*/
-
-;
-
-enum GLRenderBufferType
-{
-	RENDER_DEPTH_BUFFER_TYPE =0,
-	RENDER_STENCIL_BUFFER_TYPE =1
-};
-//--------------------------
-
-
-
-
-
 enum BufferSemantics
 {
 	POSITION_SEMANTICS,
@@ -251,12 +113,217 @@ enum BufferSemantics
 	CUSTOM_SEMANTICS
 };
 
+
+
+//-----------------------------------------------
+
+
+class BufferException : public std::exception
+{
+	String mDescription;
+ public:
+	BufferException(String description = "unspecified Buffer exception") throw()
+	: mDescription(description)
+	{ }
+
+	virtual ~BufferException() throw(){}
+
+	virtual const char* what() const throw()
+	{
+	    return mDescription.c_str();
+	}
+};
+
+
+/**
+ * some partially redundant information about the buffer;
+ */
+class BufferInfo
+{
+public:
+	String name;
+	ContextTypeFlags usageContexts;
+	BufferSemantics bufferSemantics;
+
+
+	Type elementType; //default TYPE_UNDEF
+	cl_GLuint numElements;
+
+	GLBufferType glBufferType; //default NO_GL_BUFFER_TYPE; must have other value if the GL-flag is set in usageContexs
+	bool isPingPongBuffer; //default false, set by the appropriate class;
+	//guard if some buffer is mapped
+	ContextType mappedToCPUContext; //default NO_CONTEXT_TYPE, valid only the latter and OPEN_CL_CONTEXT_TYPE and OPEN_GL_CONTEXT_TYPE
+
+	//value automatically calulated by  numElements * BufferHelper::elementSize(elementType);
+	cl_GLuint bufferSizeInByte;
+
+	explicit BufferInfo(String name,
+			ContextTypeFlags usageContexts,
+			BufferSemantics bufferSemantics,
+			Type elementType,
+			cl_GLuint numElements,
+			GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
+			ContextType mappedToCPUContext = NO_CONTEXT_TYPE);
+	BufferInfo(const BufferInfo& rhs);
+	virtual ~BufferInfo();
+	bool operator==(const BufferInfo& rhs) const;
+	const BufferInfo& operator=(const BufferInfo& rhs);
+
+};
+
+
+enum GPU_DataType
+{
+	GPU_DATA_TYPE_FLOAT,
+	GPU_DATA_TYPE_INT,
+	GPU_DATA_TYPE_UINT
+};
+
+
+struct TexelInfo
+{
+	/*
+	In this framework, it is strongly recommended to specify the desired internal layout:
+	exactly, i.e. specify
+		1. number of channels: 1,2 or 4; three channel types not supported by this framework due to alignment reasons;
+		2. internal data format on GPU memory: float,int, unsigned int
+		3. byte size per element: 8,16, or 32
+		4. flag, if  unsigned integer data formats should be normalized to float in [0..1]
+			resp.if    signed integer data formats should be normalized to float in [-1..1]
+
+	The Constructors of especially the Texture classes will try to enforce that as few as
+	possible invalid parameter permutations are able to specify;
+	The user of this framework shall be freed of the headache, which GL-#define-permutations are
+	valid and which not; Plus, he shall not have to think TOO much about interoperability
+	of certain texture types; The flag "clInterop" will indicate, if the texture is sharable
+	with CL; There is much less share-ability in OpenCL than in CUDA; Thus, there will be
+	relatively few sharable texture types, namely
+
+	Texture2D
+	Texture2DRect
+	Texture2DCube
+	Texture3D	 <-- careful when writing in CL-kernel! CL-implementation must support this (can be queried)
+
+
+	Here is a table about the mapping from this TexelInfo struct to real GL and CL enums:
+
+	internal 	||	float		|	signed int	|	unsigned int  |unsigned   	|signed
+	data type	||				|				| 				  |normalized 	|normalized
+
+	conversion	||	float->float|	int->int	| 	uint->uint	  |uint->float	|int->float
+	on lookup	||
+
+	sampler 	||	(samplerXD)	|	(isamplerXD)| 	(usamplerXD)  |(samplerXD)	|(samplerXD)
+	type		||				|				|				  |				|
+
+	unsupported ||	8 bit 		|				|				  |32 bit 		| 32 bit
+	bit size	||				|				|				  |				|
+
+	OpenCL		||	CL_FLOAT	|CL_SIGNED_INT32|CL_UNSIGNED_INT32|--			|--
+	channel 	||CL_HALF_FLOAT	|CL_SIGNED_INT16|CL_UNSIGNED_INT16|CL_UNORM_INT16|CL_SNORM_INT16
+	data type	||	--			|CL_SIGNED_INT8	|CL_UNSIGNED_INT8 |CL_UNORM_INT8|CL_SNORM_INT8
+
+	===========================================================================================
+
+	four channel|| 	GL_RGBA32F,   GL_RGBA32I, 		GL_RGBA32UI,	--			--
+	types:		||	GL_RGBA16F,   GL_RGBA16I,		GL_RGBA16UI,  	GL_RGBA16,	GL_RGBA16_SNORM
+	CL_RGBA		||	--			  GL_RGBA8I, 		GL_RGBA8UI,		GL_RGBA8,	GL_RGBA8_SNORM
+
+
+	two channel	|| GL_RG32F, 	  GL_RG32I, 		GL_RG32UI,		--			--
+	types:		|| GL_RG16F,	  GL_RG16I, 		GL_RG16UI,  	GL_RG16,	GL_RG16_SNORM,
+	CL_RG		|| --			  GL_RG8I,			GL_RG8UI,	 	GL_RG8,		GL_RG8_SNORM,
+
+	one channel	||	GL_R32F, 	  GL_R32I, 			GL_R32UI,		--			--
+	types:		||	GL_R16F, 	  GL_R16I, 			GL_R16UI, 		GL_R16,		GL_R16_SNORM
+	CL_R		||	GL_R8I, 	  GL_R8UI,		GL_R8,		GL_R8_SNORM
+
+	*/
+
+
+	//GLint  	texelDesiredinternalGPUFormat;
+
+
+	//1.:
+	int numChannels; 	//will be mapped internally to:
+						//the "format" param of glTexImageXD:
+						//GL_RED, 	GL_RG, 	GL_RGB (forbidden), 	GL_RGBA resp.
+						//the  cl::ImageFormat.image_channel_order:
+						//CL_R, 	CL_RG,	CL_RGB (forbidden), CL_RGBA
+	//2.:
+	GPU_DataType internalGPU_DataType;
+	//3.
+	int bitsPerChannel;	//8,16 or 32
+	//4
+	bool isNormalizedFlag;
+
+	TexelInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsPerChannel, bool isNormalizedFlag);
+	TexelInfo(const TexelInfo& rhs);
+	virtual ~TexelInfo(){}
+	void operator==(const TexelInfo& rhs);
+	const TexelInfo& operator=(const TexelInfo& rhs);
+	void validate() throw (BufferException);
+};
+
+
+/**
+ * container class to contain all relevant GL and CL-specific enums, flags, state etc.
+ * so that it can be queried easily by the user;
+ * The values are set by the concrte texture constructors themseves;
+ */
+
+class TextureInfo
+ {
+public:
+	cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
+	Vector3Dui dimensionExtends; //must be zero for unused dimensions;
+
+
+	GLenum textureTarget; //GL_TEXTURE_2D, GL_TEXTURE_2D_ARRAY, GL_TEXTURE_2D_MULTISAMPLE_ARRAY e
+	GLint imageInternalChannelLayout; //usually GL_RGBA or GL_LUMINANCE
+	GLenum imageInternalDataType;	//usually GL_UNSIGNED_INT or GL_FLOAT
+
+	GLint numMultiSamples; 	 //default 0 to indicate no multisampling
+	GLint numArrayLayers;	 //default 0 to indicate no array stuff
+
+
+	bool isMipMapped;		//default false;
+	bool isRectangleTex;	//default false;
+	bool isCubeTex;			//default false;
+
+private:
+
+
+	explicit TextureInfo(
+			GLenum textureTarget,
+			GLint imageInternalChannelLayout,
+			GLenum imageInternalDataType
+			);
+	TextureInfo(const TextureInfo& rhs);
+	virtual ~TextureInfo();
+	bool operator==(const TextureInfo& rhs) const;
+	const TextureInfo& operator=(const TextureInfo& rhs);
+ };
+
+
+
+enum GLRenderBufferType
+{
+	RENDER_DEPTH_BUFFER_TYPE =0,
+	RENDER_STENCIL_BUFFER_TYPE =1
+};
+//--------------------------
+
+
+
 }
 
 
 /*
  * What  follows is a structure for coordinating buffer stuff which will be frequently used;
  * So, copypaste might be useful sometimes... (I don't know a boilerplate-free way yet ;( )
+ *
+ * POSSIBLE OBSOLTE TODO DELETE LATER
  *
 
  	//CPU

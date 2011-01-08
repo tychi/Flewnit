@@ -18,9 +18,8 @@
 
 #include "Buffer/BufferSharedDefinitions.h"
 
-#include "Buffer/BufferHelperUtils.h"
 
-#include "Common/Math.h"
+
 
 #include <exception>
 
@@ -30,92 +29,7 @@ namespace Flewnit
 {
 
 
-class BufferException : public std::exception
-{
-	String mDescription;
- public:
-	BufferException(String description = "unspecified Buffer exception") throw()
-	: mDescription(description)
-	{ }
 
-	virtual ~BufferException() throw(){}
-
-	virtual const char* what() const throw()
-	{
-	    return mDescription.c_str();
-	}
-};
-
-
-/**
- * some partially redundant information about the buffer;
- */
-class BufferInfo
-{
-public:
-	String name;
-	ContextTypeFlags usageContexts;
-	BufferSemantics bufferSemantics;
-
-
-	Type elementType; //default TYPE_UNDEF
-	cl_GLuint numElements;
-
-	GLBufferType glBufferType; //default NO_GL_BUFFER_TYPE; must have other value if the GL-flag is set in usageContexs
-	bool isPingPongBuffer; //default false, set by the appropriate class;
-	//guard if some buffer is mapped
-	ContextType mappedToCPUContext; //default NO_CONTEXT_TYPE, valid only the latter and OPEN_CL_CONTEXT_TYPE and OPEN_GL_CONTEXT_TYPE
-
-	//value automatically calulated by  numElements * BufferHelper::elementSize(elementType);
-	cl_GLuint bufferSizeInByte;
-
-	explicit BufferInfo(String name,
-			ContextTypeFlags usageContexts,
-			BufferSemantics bufferSemantics,
-			Type elementType,
-			cl_GLuint numElements,
-			GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
-			ContextType mappedToCPUContext = NO_CONTEXT_TYPE);
-	BufferInfo(const BufferInfo& rhs);
-	virtual ~BufferInfo();
-	bool operator==(const BufferInfo& rhs) const;
-	const BufferInfo& operator=(const BufferInfo& rhs);
-
-};
-
-//additional image-specific information to the "generic" BufferInfo above;
-class TextureInfo
- {
-public:
-	cl_GLuint dimensionality; //interesting for textures: 1,2 or 3 dimensions;
-	Vector3Dui dimensionExtends; //must be zero for unused dimensions;
-
-
-	GLenum textureTarget; //GL_TEXTURE_2D, GL_TEXTURE_2D_ARRAY, GL_TEXTURE_2D_MULTISAMPLE_ARRAY
-	GLint imageInternalChannelLayout; //usually GL_RGBA or GL_LUMINANCE
-	GLenum imageInternalDataType;	//usually GL_UNSIGNED_INT or GL_FLOAT
-
-	GLint numMultiSamples; 	 //default 0 to indicate no multisampling
-	GLint numArrayLayers;	 //default 0 to indicate no array stuff
-
-
-	bool isMipMapped;		//default false;
-	bool isRectangleTex;	//default false;
-	bool isCubeTex;			//default false;
-
-private:
-
-
-	explicit TextureInfo(
-			GLenum textureTarget,
-			GLint imageInternalChannelLayout,
-			GLenum imageInternalDataType
-			);
-	TextureInfo(const TextureInfo& rhs);
-	virtual ~TextureInfo();
-	bool operator==(const TextureInfo& rhs) const;
-	const TextureInfo& operator=(const TextureInfo& rhs);
- };
 
 
 class BufferInterface
