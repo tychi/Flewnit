@@ -69,12 +69,17 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 	          << "; width: " << image->getWidth()
 	          << "; height" << image->getHeight()<<";\n";
 
+
+	  int dimentionality = (image->getHeight() !=1) ? 2 : 1;
+
 //	  TextureInfo texInfo(
 //				BufferInfo,
 //				cl_GLuint dimensionality,
 //				Vector3Dui dimensionExtends,
 //				const TexelInfo& texelInfo,
 //				GLenum textureTarget,);
+
+	  //TODO
 //
 //	  image->getImageType();
 //	  //source code study seems to promise that to 24bit- RGB will be added an 8bit alpha channel with values 0xFF;

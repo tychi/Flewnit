@@ -395,7 +395,7 @@ public:
 	const TextureInfo& operator=(const TextureInfo& rhs);
 
 
-	bool calculateCLGLImageFormatValues();
+	bool calculateCLGLImageFormatValues()throw (BufferException);
  };
 
 

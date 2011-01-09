@@ -255,9 +255,230 @@ TextureInfo::TextureInfo(
 
 }
 
-bool TextureInfo::calculateCLGLImageFormatValues()
+bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 {
-	//TODO SETUP glImageFormat and clImageFormat from texelInfo;
+	texelInfo.validate();
+
+
+	//first, set the most trivial stuff: the number of channels
+	switch(texelInfo.numChannels)
+	{
+	case 1:
+		glImageFormat.channelOrder  = GL_RED;
+		clImageFormat.image_channel_order = CL_R ;
+		break;
+	case 2:
+		glImageFormat.channelOrder  = GL_RG;
+		clImageFormat.image_channel_order = CL_RG ;
+		break;
+	case 4:
+		glImageFormat.channelOrder  = GL_RGBA;
+		clImageFormat.image_channel_order = CL_RGBA ;
+		break;
+	default:
+		assert(0&&"should never end here");
+	}
+	//------------------------------------------------------
+
+	bool normalize =  texelInfo.normalizeIntegralValuesFlag;
+
+	switch(texelInfo.internalGPU_DataType)
+	{
+	case GPU_DATA_TYPE_UINT :
+		switch(texelInfo.bitsPerChannel)
+		{
+		case 8:
+			glImageFormat.channelDataType = GL_UNSIGNED_BYTE;
+			if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT8;
+			else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT8;
+
+			switch(texelInfo.numChannels)
+			{
+			case 1:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R8;
+				else			glImageFormat.desiredInternalFormat  = GL_R8UI;
+				break;
+			case 2:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG8;
+				else			glImageFormat.desiredInternalFormat  = GL_RG8UI;
+				break;
+			case 4:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA8;
+				else			glImageFormat.desiredInternalFormat  = GL_RGBA8UI;
+				break;
+			default:
+				assert(0&&"should never end here");
+			}
+			break;
+		case 16:
+			glImageFormat.channelDataType = GL_UNSIGNED_SHORT;
+			if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT16;
+			else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT16;
+
+			switch(texelInfo.numChannels)
+			{
+			case 1:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R16;
+				else			glImageFormat.desiredInternalFormat  = GL_R16UI;
+				break;
+			case 2:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG16;
+				else			glImageFormat.desiredInternalFormat  = GL_RG16UI;
+				break;
+			case 4:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA16;
+				else			glImageFormat.desiredInternalFormat  = GL_RGBA16UI;
+				break;
+			default:
+				assert(0&&"should never end here");
+			}
+			break;
+		case 32:
+			//no normalization valid here!
+			glImageFormat.channelDataType = GL_UNSIGNED_INT;
+			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT32;
+
+			switch(texelInfo.numChannels)
+			{
+			case 1:
+				glImageFormat.desiredInternalFormat  = GL_R32UI;
+				break;
+			case 2:
+				glImageFormat.desiredInternalFormat  = GL_RG32UI;
+				break;
+			case 4:
+				glImageFormat.desiredInternalFormat  = GL_RGBA32UI;
+				break;
+			default:
+				assert(0&&"should never end here");
+			}
+			break;
+		default:
+			assert(0&&"should never end here");
+			break;
+		}
+		break;
+	//-----------------------------------------------------------------------------------
+	case GPU_DATA_TYPE_INT:
+		switch(texelInfo.bitsPerChannel)
+		{
+		case 8:
+			glImageFormat.channelDataType = GL_BYTE;
+			if(normalize)	clImageFormat.image_channel_data_type = CL_SNORM_INT8;
+			else			clImageFormat.image_channel_data_type = CL_SIGNED_INT8;
+
+			switch(texelInfo.numChannels)
+			{
+			case 1:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R8_SNORM;
+				else			glImageFormat.desiredInternalFormat  = GL_R8I;
+				break;
+			case 2:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG8_SNORM;
+				else			glImageFormat.desiredInternalFormat  = GL_RG8I;
+				break;
+			case 4:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA8_SNORM;
+				else			glImageFormat.desiredInternalFormat  = GL_RGBA8I;
+				break;
+			default:
+				assert(0&&"should never end here");
+			}
+			break;
+		case 16:
+			glImageFormat.channelDataType = GL_SHORT;
+			if(normalize)	clImageFormat.image_channel_data_type = CL_SNORM_INT16;
+			else			clImageFormat.image_channel_data_type = CL_SIGNED_INT16;
+
+			switch(texelInfo.numChannels)
+			{
+			case 1:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R16_SNORM;
+				else			glImageFormat.desiredInternalFormat  = GL_R16I;
+				break;
+			case 2:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG16_SNORM;
+				else			glImageFormat.desiredInternalFormat  = GL_RG16I;
+				break;
+			case 4:
+				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA16_SNORM;
+				else			glImageFormat.desiredInternalFormat  = GL_RGBA16I;
+				break;
+			default:
+				assert(0&&"should never end here");
+			}
+			break;
+		case 32:
+			//no normalization valid here!
+			glImageFormat.channelDataType = GL_INT;
+			clImageFormat.image_channel_data_type = CL_SIGNED_INT32;
+
+			switch(texelInfo.numChannels)
+			{
+			case 1:
+				glImageFormat.desiredInternalFormat  = GL_R32I;		break;
+			case 2:
+				glImageFormat.desiredInternalFormat  = GL_RG32I;	break;
+			case 4:
+				glImageFormat.desiredInternalFormat  = GL_RGBA32I;	break;
+			default:
+				assert(0&&"should never end here");
+			}
+			break;
+		default:
+			assert(0&&"should never end here");
+			break;
+		}
+		break;
+	//----------------------------------------------------------------------------------
+	case GPU_DATA_TYPE_FLOAT:
+		switch(texelInfo.bitsPerChannel)
+		{
+		case 16:
+			//no normalization valid here!
+			glImageFormat.channelDataType = GL_HALF_FLOAT;
+			clImageFormat.image_channel_data_type = CL_HALF_FLOAT;
+
+			switch(texelInfo.numChannels)
+			{
+			case 1:
+				glImageFormat.desiredInternalFormat  = GL_R16F;		break;
+			case 2:
+				glImageFormat.desiredInternalFormat  = GL_RG16F;	break;
+			case 4:
+				glImageFormat.desiredInternalFormat  = GL_RGBA16F;	break;
+			default:
+				assert(0&&"should never end here");
+			}
+			break;
+		case 32:
+			//no normalization valid here!
+			glImageFormat.channelDataType = GL_FLOAT;
+			clImageFormat.image_channel_data_type = CL_FLOAT;
+
+			switch(texelInfo.numChannels)
+			{
+			case 1:
+				glImageFormat.desiredInternalFormat  = GL_R32F;		break;
+			case 2:
+				glImageFormat.desiredInternalFormat  = GL_RG32F;	break;
+			case 4:
+				glImageFormat.desiredInternalFormat  = GL_RGBA32F;	break;
+			default:
+				assert(0&&"should never end here");
+			}
+			break;
+		default:
+			assert(0&&"should never end here");
+			break;
+		}
+		break;
+	default:
+		assert(0&&"should never and here");
+		break;
+	}
+
+	return true;
 }
 
 TextureInfo::TextureInfo(const TextureInfo& rhs)throw(BufferException)
@@ -296,6 +517,9 @@ bool TextureInfo::operator==(const TextureInfo& rhs) const
 
 const TextureInfo& TextureInfo::operator=(const TextureInfo& rhs)
 {
+	//TODO check if works
+	BufferInfo::operator=(rhs) ;
+
 	dimensionality = rhs.dimensionality;
 	dimensionExtends = rhs.dimensionExtends;
 	texelInfo = rhs.texelInfo;
