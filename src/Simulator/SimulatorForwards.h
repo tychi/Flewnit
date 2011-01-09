@@ -101,6 +101,7 @@ class SimulationPipelineFeatures;
 ///\brief buffer forwards;
 ///\{
 class BufferInterface;
+class Buffer;
 class PingPongBuffer;
 
 class VBO;
@@ -114,6 +115,14 @@ class Screen;
 class FBO;
 
 class Texture;
+class Texture1D;
+
+class Texture2D;
+class Texture2DCube;
+class Texture2DArray;
+class Texture2DMultiSample;
+class Texture2DMultiSampleArray;
+
 class Texture3D;
 ///\}
 

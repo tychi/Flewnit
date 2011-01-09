@@ -13,6 +13,20 @@
 namespace Flewnit
 {
 
+BufferInfo::BufferInfo(String name,
+			ContextTypeFlags usageContexts,
+			BufferSemantics bufferSemantics)
+{
+	BufferInfo(
+		name,
+		usageContexts,
+		bufferSemantics,
+		TYPE_UNDEF,
+		0,
+		NO_GL_BUFFER_TYPE,
+		NO_CONTEXT_TYPE);
+}
+
 
 BufferInfo::BufferInfo(String name,
 		ContextTypeFlags usageContexts,
@@ -84,7 +98,12 @@ TexelInfo::TexelInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsP
 TexelInfo::TexelInfo(const TexelInfo& rhs)
 {
 	*this = rhs;
+	validate();
 }
+
+TexelInfo::TexelInfo()
+: numChannels(0), internalGPU_DataType(GPU_DATA_TYPE_FLOAT),bitsPerChannel(0), normalizeIntegralValuesFlag(false)
+{}
 
 
 bool TexelInfo::operator==(const TexelInfo& rhs)const
@@ -107,7 +126,7 @@ const TexelInfo& TexelInfo::operator=(const TexelInfo& rhs)
 }
 
 //called by constructor to early detect invalid values and permutations, like 8-bit float or 32bit normalized (u)int
-void TexelInfo::validate() throw (BufferException)
+void TexelInfo::validate()const throw (BufferException)
 {
 	//check channel number:
 	if(! ( (numChannels == 1) || (numChannels == 2) || (numChannels ==4)  ))
@@ -199,6 +218,7 @@ TextureInfo::TextureInfo(
 		cl_GLuint dimensionality,
 		Vector3Dui dimensionExtends,
 		const TexelInfo& texelInfo,
+		GLenum textureTarget,
 		bool isMipMapped,
 		bool isRectangleTex,
 		bool isCubeTex,
@@ -209,6 +229,7 @@ TextureInfo::TextureInfo(
 		dimensionality(dimensionality),
 		dimensionExtends(dimensionExtends),
 		texelInfo(texelInfo),
+		textureTarget(textureTarget),
 		isMipMapped(isMipMapped),
 		isRectangleTex(isRectangleTex),
 		isCubeTex(isCubeTex),
@@ -228,12 +249,16 @@ TextureInfo::TextureInfo(
 	//our enums without error checking:
 
 
-	//TODO SETUP glImageFormat and clImageFormat from texelInfo;
-	assert("not implemented yet" && 0);
+
+
+	calculateCLGLImageFormatValues();
 
 }
 
-
+bool TextureInfo::calculateCLGLImageFormatValues()
+{
+	//TODO SETUP glImageFormat and clImageFormat from texelInfo;
+}
 
 TextureInfo::TextureInfo(const TextureInfo& rhs)throw(BufferException)
 //init as the is no default contructor for texelInfo
@@ -248,9 +273,14 @@ TextureInfo::TextureInfo(const TextureInfo& rhs)throw(BufferException)
 bool TextureInfo::operator==(const TextureInfo& rhs) const
 {
 	return
+			//TODO check if works
+			BufferInfo::operator ==(rhs) &&
+
 			dimensionality == rhs.dimensionality &&
 			glm::all(glm::equal(dimensionExtends, rhs.dimensionExtends)) &&
 			texelInfo == rhs.texelInfo &&
+			textureTarget == rhs.textureTarget &&
+
 			isMipMapped == rhs.isMipMapped &&
 			isRectangleTex == rhs.isRectangleTex &&
 			isCubeTex == rhs.isCubeTex &&
@@ -269,6 +299,8 @@ const TextureInfo& TextureInfo::operator=(const TextureInfo& rhs)
 	dimensionality = rhs.dimensionality;
 	dimensionExtends = rhs.dimensionExtends;
 	texelInfo = rhs.texelInfo;
+	textureTarget = rhs.textureTarget;
+
 	isMipMapped = rhs.isMipMapped;
 	isRectangleTex = rhs.isRectangleTex;
 	isCubeTex = rhs.isCubeTex;

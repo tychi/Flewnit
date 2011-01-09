@@ -13,6 +13,8 @@
 
 #include "Common/CL_GL_Common.h"
 
+#include "Simulator/SimulatorForwards.h"
+
 #include "Common/Math.h"
 
 
@@ -83,24 +85,13 @@ enum GLBufferType
 
 enum BufferSemantics
 {
+	//generally semantics of VertexBuffers, partially OpenCL Buffers (shared)
 	POSITION_SEMANTICS,
 	NORMAL_SEMANTICS,
 	TANGENT_SEMANTICS,
 	BINORMAL_SEMANTICS,
 	TEXCOORD_SEMANTICS,
-
-	DECAL_COLOR_SEMANTICS,
-	DISPLACEMENT_SEMANTICS,
-	MATERIAL_ID_SEMANTICS,
-	PRIMITIVE_ID_SEMANTICS,
-	SHADOW_MAP_SEMANTICS,
-	AMBIENT_OCCLUSION_SEMANTICS,
-	NOISE_SEMANTICS,
-
-	//for a uniform buffer for matrices of instanced rendering
-	TRANSFORMATION_MATRICES_SEMANTICS,
-
-	INTERMEDIATE_RENDERING_SEMANTICS,
+	INDEX_SEMANTICS,
 
 	PARTICLE_VELOCITY_SEMANTICS,
 	PARTICLE_MASS_SEMANTICS,
@@ -109,6 +100,23 @@ enum BufferSemantics
 	PARTICLE_FORCE_SEMANTICS,
 
 	Z_INDEX_SEMANTICS,
+
+	//generally texture semantics
+	DECAL_COLOR_SEMANTICS,
+	DISPLACEMENT_SEMANTICS,
+	ENVMAP_SEMANTICS,
+	MATERIAL_ID_SEMANTICS,
+	PRIMITIVE_ID_SEMANTICS,
+	SHADOW_MAP_SEMANTICS,
+	AMBIENT_OCCLUSION_SEMANTICS,
+	NOISE_SEMANTICS,
+	DEPTH_BUFFER_SEMANTICS,
+	STENCIL_BUFFER_SEMANTICS,
+	INTERMEDIATE_RENDERING_SEMANTICS,
+	FINAL_RENDERING_SEMANTICS,
+
+	//for a uniform buffer for matrices of instanced rendering
+	TRANSFORMATION_MATRICES_SEMANTICS,
 
 	CUSTOM_SEMANTICS
 };
@@ -156,6 +164,12 @@ public:
 
 	//value automatically calulated by  numElements * BufferHelper::elementSize(elementType);
 	cl_GLuint bufferSizeInByte;
+
+	//add lean contructor for the cases where the concrete values must be computed later, but things
+	//like the name etc must already be known;
+	explicit BufferInfo(String name,
+				ContextTypeFlags usageContexts,
+				BufferSemantics bufferSemantics);
 
 	explicit BufferInfo(String name,
 			ContextTypeFlags usageContexts,
@@ -261,13 +275,15 @@ struct TexelInfo
 	//4
 	bool normalizeIntegralValuesFlag;
 
+	//default constructor for internal image loading; doesn't validate hence
+	explicit TexelInfo();
 	explicit TexelInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsPerChannel, bool normalizeIntegralValuesFlag);
 	explicit TexelInfo(const TexelInfo& rhs);
 	virtual ~TexelInfo(){}
 	bool operator==(const TexelInfo& rhs)const;
 	const TexelInfo& operator=(const TexelInfo& rhs);
 	//called by constructor to early detect invalid values and permutations, like 8-bit float or 32bit normalized (u)int
-	void validate() throw (BufferException);
+	void validate()const throw (BufferException);
 };
 
 
@@ -330,6 +346,10 @@ public:
 	//"clean" user privided info about the texels in the texture;
 	TexelInfo texelInfo;
 
+	//texture target, autoumatically determined by the constructors of the concrete Texture classes;
+	GLenum textureTarget; //e.g. GL_TEXTURE_2D, GL_TEXTURE_2D_ARRAY, GL_TEXTURE_2D_MULTISAMPLE_ARRAY etc.
+
+
 
 	//Flags/values indicating special features, depending on the concrete texture types
 	///\{
@@ -342,9 +362,6 @@ public:
 	///\}
 
 	//automatically determined values; only needed for internal GL/CL calls:
-
-	//texture target, autoumatically determined by the constructors of the concrete Texture classes;
-	GLenum textureTarget; //e.g. GL_TEXTURE_2D, GL_TEXTURE_2D_ARRAY, GL_TEXTURE_2D_MULTISAMPLE_ARRAY etc.
 
 
 	GLImageFormat glImageFormat;
@@ -365,6 +382,7 @@ public:
 			cl_GLuint dimensionality,
 			Vector3Dui dimensionExtends,
 			const TexelInfo& texelInfo,
+			GLenum textureTarget,
 			bool isMipMapped = false,
 			bool isRectangleTex = false,
 			bool isCubeTex = false,
@@ -375,6 +393,9 @@ public:
 	virtual ~TextureInfo(){}
 	bool operator==(const TextureInfo& rhs) const;
 	const TextureInfo& operator=(const TextureInfo& rhs);
+
+
+	bool calculateCLGLImageFormatValues();
  };
 
 

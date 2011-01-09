@@ -11,6 +11,10 @@
 
 #include <tinyxml.h>
 
+#include "Buffer/Texture.h"
+#include <FreeImagePlus.h>
+
+
 #include <boost/lexical_cast.hpp>
 
 
@@ -45,6 +49,81 @@ void Loader::createHardCodedSceneStuff()
 
 }
 
+
+Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path fileName,
+		const TexelInfo& texelPreferredLayout,
+		bool allocHostMemory, bool shareWithOpenCL,  bool genMipmaps
+) throw(BufferException)
+{
+	 fipImage * image = new fipImage();
+	 Texture* returnTex = 0;
+
+	 texelPreferredLayout.validate();
+
+	 image->load(fileName.string().c_str());
+
+	  LOG<<INFO_LOG_LEVEL<< "Loading image with path "
+	          << fileName.string()
+	          << "; Bits Per Pixel: "
+	          << image->getBitsPerPixel()
+	          << "; width: " << image->getWidth()
+	          << "; height" << image->getHeight()<<";\n";
+
+//	  TextureInfo texInfo(
+//				BufferInfo,
+//				cl_GLuint dimensionality,
+//				Vector3Dui dimensionExtends,
+//				const TexelInfo& texelInfo,
+//				GLenum textureTarget,);
+//
+//	  image->getImageType();
+//	  //source code study seems to promise that to 24bit- RGB will be added an 8bit alpha channel with values 0xFF;
+//	  image->convertTo32Bits();
+//	  image->convertToType(FIT_RGBAF); //FIT_RGBA16
+//	  image->getBitsPerPixel();
+//
+//	  image->getColorType(); // hope to be FIC_RGBALPHA or  FIC_RGB
+//	  image->getImageSize(); //in bytes
+//	  image->getChannel();
+//	  image->accessPixels();
+//
+//
+//	    if (image->getBitsPerPixel() == 32)
+//	    {
+//	      *glChannelOrder = GL_RGBA;
+//	      *texChannelOrder = GL_BGRA;
+//	    } else if (image->getBitsPerPixel() == 24) {
+//	      *glChannelOrder = GL_RGB;
+//	      *texChannelOrder = GL_BGR;
+//	    } else {
+//	      *glChannelOrder = GL_RGB;
+//	      *texChannelOrder = GL_BGR;
+//	      Logger::Instance().log("WARNING",
+//	              "Texture", "Converting "+ path+ " to 24bits.");
+//	      if (image->convertTo24Bits()) {
+//	        Logger::Instance().log("WARNING", "Texture", "SUCESS!");
+//	      } else {
+//	        Logger::Instance().log("ERROR",
+//	                "Texture", "Converting "+ path+ " to 24bit failed.");
+//	      }
+//	    }
+
+	    delete image;
+
+	    return returnTex;
+
+}
+
+
+Texture2DCube* Loader::loadCubeTexture(
+		String name,  BufferSemantics bufferSemantics, Path fileName,
+					const TexelInfo& texelPreferredLayout,
+					bool allocHostMemory,  bool genMipmaps
+)throw(BufferException)
+{
+	const String suffixes[] = {"_RT", "_LF", "_DN", "_UP", "_FR", "_BK"};
+	//TODO
+}
 
 
 

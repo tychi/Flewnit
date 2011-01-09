@@ -81,7 +81,7 @@ class Texture: public BufferInterface
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	Texture();
+	explicit Texture(const TextureInfo& texi);
 	virtual ~Texture();
 	//must be implemented by concrete textures;
 	virtual bool operator==(const BufferInterface& rhs) const =0;
@@ -144,6 +144,7 @@ protected:
 	//lets "implement" it directly
 	virtual void freeCL()throw(BufferException){}
 
+
 };
 
 
@@ -161,8 +162,10 @@ class Texture1D: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	explicit Texture1D(int width, const TexelInfo& texeli, const void* data =0,  bool genMipmaps = false);
-	explicit Texture1D(Path fileName,  bool genMipmaps = false);
+	explicit Texture1D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
+			int width, const TexelInfo& texeli, const void* data =0,  bool genMipmaps = false);
+	explicit Texture1D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
+			Path fileName,  bool genMipmaps = false);
 	virtual ~Texture1D();
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
@@ -188,7 +191,8 @@ class Texture2D: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	explicit Texture2D(int width, int height, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
+	explicit Texture2D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
+			int width, int height, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
 	explicit Texture2D(Path fileName, bool clInterOp, bool genMipmaps = false);
 	virtual ~Texture2D();
 public:
@@ -217,7 +221,8 @@ class Texture3D: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	explicit Texture3D(int width, int height, int depth, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
+	explicit Texture3D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
+			int width, int height, int depth, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
 	explicit Texture3D(Path fileName, bool clInterOp, bool genMipmaps = false);
 	virtual ~Texture3D();
 public:
@@ -250,7 +255,8 @@ class Texture2DCube: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	explicit Texture2DCube(int quadraticSize, const TexelInfo& texeli,
+	explicit Texture2DCube(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
+			int quadraticSize, const TexelInfo& texeli,
 			//an array containing all six images in the following order:
 			// +x,-x,+y,-y,+z,-z
 			const void* data =0,
