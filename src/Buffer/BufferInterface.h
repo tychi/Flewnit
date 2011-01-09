@@ -39,7 +39,7 @@ class BufferInterface
 public:
 
 	//planned usage must be determined in the beginning
-	explicit BufferInterface(const BufferInfo& buffi);
+	explicit BufferInterface();
 	virtual ~BufferInterface();
 
 
@@ -137,7 +137,7 @@ protected:
 	void unregisterBufferAllocation(ContextTypeFlags contextTypeFlags, size_t sizeInByte);
 #endif
 
-	BufferInfo mBufferInfo;
+	BufferInfo* mBufferInfo;
 
 	//NULL if no host pointer exists;
 	CPUBufferHandle mCPU_Handle;

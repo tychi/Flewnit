@@ -195,6 +195,7 @@ const GLImageFormat& GLImageFormat::operator=(const GLImageFormat& rhs)
 
 
 TextureInfo::TextureInfo(
+		const BufferInfo& buffi,
 		cl_GLuint dimensionality,
 		Vector3Dui dimensionExtends,
 		const TexelInfo& texelInfo,
@@ -203,8 +204,8 @@ TextureInfo::TextureInfo(
 		bool isCubeTex,
 		GLint numMultiSamples,
 		GLint numArrayLayers
-		)
-:
+		) throw(BufferException)
+:	BufferInfo(buffi),
 		dimensionality(dimensionality),
 		dimensionExtends(dimensionExtends),
 		texelInfo(texelInfo),
@@ -214,6 +215,19 @@ TextureInfo::TextureInfo(
 		numMultiSamples(numMultiSamples),
 		numArrayLayers(numArrayLayers)
 {
+//	if( (isRectangleTex && (isMipMapped || (numMultiSamples != 0) || (numArrayLayers != 0)) ) ||
+//		(isMipMapped && (numMultiSamples != 0)) ||
+//		(isCubeTex && (numMultiSamples != 0) ) ||
+//		(isCubeTex && (numArrayLayers != 0) )||  //cube map arrays possible in gl4 but not gl3.3
+//		((dimensionality == 1) && ())
+//	)
+//	{
+//
+//	}
+	//TexelInfo class checks itself during construction for integrity; so, we can "construct"
+	//our enums without error checking:
+
+
 	//TODO SETUP glImageFormat and clImageFormat from texelInfo;
 	assert("not implemented yet" && 0);
 
@@ -221,9 +235,10 @@ TextureInfo::TextureInfo(
 
 
 
-TextureInfo::TextureInfo(const TextureInfo& rhs)
+TextureInfo::TextureInfo(const TextureInfo& rhs)throw(BufferException)
 //init as the is no default contructor for texelInfo
-: texelInfo(rhs.texelInfo)
+: 		BufferInfo(rhs),
+		texelInfo(rhs.texelInfo)
 {
 	(*this) = rhs;
 }

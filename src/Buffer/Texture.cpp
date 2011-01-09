@@ -8,3 +8,13 @@
 #include "Texture.h"
 
 
+namespace Flewnit
+{
+
+Texture::Texture()
+:BufferInterface(), mTextureInfoCastPtr(0)
+{
+
+}
+
+}

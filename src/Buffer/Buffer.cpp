@@ -22,10 +22,12 @@ Buffer::Buffer(
 		//if data!= NULL, the buffers of the desired contexts are allocated and copied to;
 		//the caller is responsible of the deletion of the data pointer;
 		const void* data)
-: BufferInterface(buffi),
+: BufferInterface(),
   mContentsAreModifiedFrequently(contentsAreModifiedFrequently)
 {
-	switch(mBufferInfo.glBufferType)
+	 mBufferInfo=new BufferInfo(buffi);
+
+	switch(mBufferInfo->glBufferType)
 	{
 	case 	NO_GL_BUFFER_TYPE :
 		mGlBufferTargetEnum = 0;
@@ -48,7 +50,7 @@ Buffer::Buffer(
 
 	if(data)
 	{
-		setData(data,mBufferInfo.usageContexts);
+		setData(data,mBufferInfo->usageContexts);
 	}
 }
 
@@ -76,7 +78,7 @@ bool Buffer::operator==(const BufferInterface& rhs) const
 	//should be enough; but don't trust the programmer, not even yourself :P
 	return (//is it really of same type?
 			rhs.isDefaultBuffer() &&
-			mBufferInfo == rhs.getBufferInfo() );
+			*mBufferInfo == rhs.getBufferInfo() );
 
 }
 
@@ -99,7 +101,7 @@ void Buffer::generateCL()
 			CLMANAGER->getCLContext(),
 			//TODO check performance and interface "set-ability" of CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY
 			CL_MEM_READ_WRITE,
-			mBufferInfo.bufferSizeInByte,
+			mBufferInfo->bufferSizeInByte,
 			NULL,
 			//TODO check if adress of a reference is the same as the adress of a variable
 			& CLMANAGER->getLastCLError()
@@ -131,7 +133,7 @@ void Buffer::allocGL()
 		//which target?
 		mGlBufferTargetEnum,
 		// size of storage
-		mBufferInfo.bufferSizeInByte,
+		mBufferInfo->bufferSizeInByte,
 		//data will be passed in setData();
 		NULL,
 		//draw static if not modded, dynamic otherwise ;)
@@ -141,7 +143,7 @@ void Buffer::allocGL()
 
 void Buffer::writeGL(const void* data)
 {
-	glBufferSubData(mGlBufferTargetEnum,0,mBufferInfo.bufferSizeInByte,data);
+	glBufferSubData(mGlBufferTargetEnum,0,mBufferInfo->bufferSizeInByte,data);
 }
 void Buffer::writeCL(const void* data)
 {
@@ -149,7 +151,7 @@ void Buffer::writeCL(const void* data)
 			static_cast<cl::Buffer&>(mComputeBufferHandle),
 			CLMANAGER->getBlockAfterEnqueue(),
 			0,
-			mBufferInfo.bufferSizeInByte,
+			mBufferInfo->bufferSizeInByte,
 			data,
 			0,
 			& CLMANAGER->getLastEvent());
@@ -157,7 +159,7 @@ void Buffer::writeCL(const void* data)
 
 void Buffer::readGL(void* data)
 {
-	glGetBufferSubData(mGlBufferTargetEnum,0,mBufferInfo.bufferSizeInByte,data);
+	glGetBufferSubData(mGlBufferTargetEnum,0,mBufferInfo->bufferSizeInByte,data);
 }
 void Buffer::readCL(void* data)
 {
@@ -165,7 +167,7 @@ void Buffer::readCL(void* data)
 			static_cast<cl::Buffer&>(mComputeBufferHandle),
 			CLMANAGER->getBlockAfterEnqueue(),
 			0,
-			mBufferInfo.bufferSizeInByte,
+			mBufferInfo->bufferSizeInByte,
 			data,
 			0,
 			& CLMANAGER->getLastEvent());
@@ -183,7 +185,7 @@ void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)
 			GL_COPY_WRITE_BUFFER,
 			0,
 			0,
-			mBufferInfo.bufferSizeInByte);
+			mBufferInfo->bufferSizeInByte);
 	);
 
 }
@@ -194,7 +196,7 @@ void Buffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)
 			static_cast<cl::Buffer&>(mComputeBufferHandle),
 			0,
 			0,
-			mBufferInfo.bufferSizeInByte,
+			mBufferInfo->bufferSizeInByte,
 			0,
 			& CLMANAGER->getLastEvent()
 			);
@@ -221,7 +223,7 @@ void Buffer::freeCL()
 ////			CLMANAGER->getBlockAfterEnqueue(),
 ////			x,
 ////			0,
-////			mBufferInfo.bufferSizeInByte,
+////			mBufferInfo->bufferSizeInByte,
 ////			0,
 ////			& CLMANAGER->getLastEvent(),
 ////			& CLMANAGER->getLastCLError()

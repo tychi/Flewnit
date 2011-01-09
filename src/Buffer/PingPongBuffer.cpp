@@ -15,13 +15,17 @@ namespace Flewnit
 {
 
 PingPongBuffer::PingPongBuffer(String name,BufferInterface* ping, BufferInterface* pong ) throw(BufferException)
-: BufferInterface(ping->getBufferInfo()),
+: BufferInterface(),
 mRecentlyUpdatedBufferIndex(0),
 mCurrentActiveBufferIndex(1)
 {
-	mBufferInfo.isPingPongBuffer = true;
+	//alloc new one, as we need its info for tracking purposes till the end,
+	//when the managed buffers are alread deleted;
+	mBufferInfo = new BufferInfo(ping->getBufferInfo());
 
-	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Creating PingPongBuffer named "<<mBufferInfo.name<<" ;\n";
+	mBufferInfo->isPingPongBuffer = true;
+
+	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Creating PingPongBuffer named "<<mBufferInfo->name<<" ;\n";
 
 	if( !( ping || pong ) )
 	{
@@ -44,7 +48,7 @@ mCurrentActiveBufferIndex(1)
 
 PingPongBuffer::~PingPongBuffer()
 {
-	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Destroying PingPongBuffer named "<<mBufferInfo.name<<" ;\n";
+	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Destroying PingPongBuffer named "<<mBufferInfo->name<<" ;\n";
 
 	delete mPingPongBuffers[mRecentlyUpdatedBufferIndex];
 	delete mPingPongBuffers[mCurrentActiveBufferIndex];
@@ -53,6 +57,7 @@ PingPongBuffer::~PingPongBuffer()
 	mCPU_Handle=0;
 	//demonstrate that one has thought about gl-buffer deletiion(the Object orientation-managed CL buffers will free themselves)
 	mGraphicsBufferHandle = 0;
+
 }
 
 
@@ -85,7 +90,7 @@ void PingPongBuffer::checkPingPongError() const
 	assert( "pingpong buffers still in synch" && *(mPingPongBuffers[0]) == *(mPingPongBuffers[1]));
 
 	//haxx to make the bufferinfs equal :P
-	BufferInfo tmp(mBufferInfo);
+	BufferInfo tmp(*mBufferInfo);
 	tmp.isPingPongBuffer=false;
 	assert( "bufferinfo of pingPongBuffer object is in synch with those of the managed buffers"
 			&& tmp == mPingPongBuffers[0]->getBufferInfo()
@@ -155,9 +160,11 @@ void PingPongBuffer::generateCL()
 void PingPongBuffer::bindGL()
 {mPingPongBuffers[mCurrentActiveBufferIndex]->bindGL();}
 
-//allocator empty, as managed pingpong buffers alloc their store themselves
+//alloc for the current active buffer:
 void PingPongBuffer::allocGL()
-{}
+{
+	mPingPongBuffers[mCurrentActiveBufferIndex]->allocGL();
+}
 
 
 //write data to both buffers; if the programmaer want to write only one of the managed buffers,

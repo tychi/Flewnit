@@ -317,7 +317,8 @@ struct GLImageFormat
  * The values are set by the concrte texture constructors themseves;
  */
 
-class TextureInfo
+class TextureInfo:
+	public BufferInfo
  {
 public:
 	///\{
@@ -359,10 +360,8 @@ public:
 
 
 
-private:
-
-
 	explicit TextureInfo(
+			const BufferInfo& buffi,
 			cl_GLuint dimensionality,
 			Vector3Dui dimensionExtends,
 			const TexelInfo& texelInfo,
@@ -371,8 +370,8 @@ private:
 			bool isCubeTex = false,
 			GLint numMultiSamples = 0,
 			GLint numArrayLayers = 0
-			);
-	explicit TextureInfo(const TextureInfo& rhs);
+			)throw(BufferException);
+	explicit TextureInfo(const TextureInfo& rhs)throw(BufferException);
 	virtual ~TextureInfo(){}
 	bool operator==(const TextureInfo& rhs) const;
 	const TextureInfo& operator=(const TextureInfo& rhs);
@@ -402,7 +401,7 @@ enum GLRenderBufferType
  	//CPU
 	if( where & HOST_CONTEXT_TYPE_FLAG )
 	{
-		if( ! (mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG))
+		if( ! (mBufferInfo->usageContexts & HOST_CONTEXT_TYPE_FLAG))
 		{throw(BufferException("data copy to cpu buffer requested, but this buffer has no CPU storage!"));}
 
 		//TODO
@@ -412,16 +411,16 @@ enum GLRenderBufferType
 	//GL
 	if( where & OPEN_GL_CONTEXT_TYPE_FLAG )
 	{
-		if( ! (mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG))
+		if( ! (mBufferInfo->usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG))
 		{throw(BufferException("data copy to GL buffer requested, but this buffer has no GL storage!"));}
 
 		//TODO
 	}
 
 	//CL
-	if( mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG )
+	if( mBufferInfo->usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG )
 	{
-		if( ! (mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG))
+		if( ! (mBufferInfo->usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG))
 		{throw(BufferException("data copy to CL buffer requested, but this buffer has no CL storage!"));}
 
 

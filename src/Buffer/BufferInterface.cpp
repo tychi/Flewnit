@@ -32,21 +32,21 @@ namespace Flewnit
 
 
 
-BufferInterface::BufferInterface(const BufferInfo& buffi)
-:mBufferInfo(buffi), mCPU_Handle(0), mGraphicsBufferHandle(0)
+BufferInterface::BufferInterface()
+:mBufferInfo(0), mCPU_Handle(0), mGraphicsBufferHandle(0)
 {
 	//the compute-handle manages its initialization for itself due to the cl-c++-bindings :)
 }
 
 BufferInterface::~BufferInterface()
 {
-	if(mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG)
+	if(mBufferInfo->usageContexts & HOST_CONTEXT_TYPE_FLAG)
 	{
 		if(mCPU_Handle)
 			free(mCPU_Handle);
 	}
 
-	if(mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
+	if(mBufferInfo->usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
 	{
 		assert("due to virtual function call are the derived classes responsible for deletion of their GL buffers"
 				&& (mGraphicsBufferHandle == 0));
@@ -55,8 +55,14 @@ BufferInterface::~BufferInterface()
 	//CL stuff deletes itself;
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-	unregisterBufferAllocation(mBufferInfo.usageContexts, mBufferInfo.bufferSizeInByte);
+	//only track memory for non-pingpongs, as pingpongs only manage, but don't "own" own data store;
+	if(! mBufferInfo->isPingPongBuffer)
+	{
+		unregisterBufferAllocation(mBufferInfo->usageContexts, mBufferInfo->bufferSizeInByte);
+	}
 #endif
+
+	delete mBufferInfo;
 
 }
 
@@ -65,9 +71,9 @@ const BufferInterface& BufferInterface::operator=(const BufferInterface& rhs) th
 {
 	if( (*this) == rhs )
 	{
-		if((mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG) !=0)
+		if((mBufferInfo->usageContexts & HOST_CONTEXT_TYPE_FLAG) !=0)
 		{
-			memcpy(mCPU_Handle,rhs.getCPUBufferHandle(),mBufferInfo.bufferSizeInByte);
+			memcpy(mCPU_Handle,rhs.getCPUBufferHandle(),mBufferInfo->bufferSizeInByte);
 		}
 
 		//GL
@@ -127,7 +133,7 @@ void BufferInterface::bind(ContextType type)throw(BufferException)
 {
 	if(type == OPEN_GL_CONTEXT_TYPE)
 	{
-		if( (mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) == 0)
+		if( (mBufferInfo->usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) == 0)
 		{throw(BufferException("BufferInterface::bind: GL binding requested, but this Buffer has no GL context;"));}
 		CLMANAGER->acquireSharedBuffersForGraphics();
 		GUARD(bindGL());
@@ -135,7 +141,7 @@ void BufferInterface::bind(ContextType type)throw(BufferException)
 	}
 	if(type == OPEN_CL_CONTEXT_TYPE)
 	{
-		if(  (mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG) == 0)
+		if(  (mBufferInfo->usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG) == 0)
 				{throw(BufferException("BufferInterface::bind: CL binding requested, but this Buffer has no CL context;"));}
 		LOG<<WARNING_LOG_LEVEL<<"binding a buffer to an OpenCL context makes no big sense to me at the moment ;). Try just assuring "<<
 				"the Buffer is acquired for the CL context and it is set as a kernel argument properly;\n";
@@ -163,16 +169,16 @@ bool BufferInterface::allocMem()throw(BufferException)
 		throw(BufferException("Buffer::allocMem(): some buffers already allocated"));
 	}
 
-	if( mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG )
+	if( mBufferInfo->usageContexts & HOST_CONTEXT_TYPE_FLAG )
 	{
-			mCPU_Handle = malloc(mBufferInfo.bufferSizeInByte);
+			mCPU_Handle = malloc(mBufferInfo->bufferSizeInByte);
 	}
 
-	if(mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
+	if(mBufferInfo->usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
 	{
 		//ok, there is a need for an openGL buffer; maybe it will be shared with openCL,
 		//but that doesn't matter for the GL buffer creation :)
-		if( isDefaultBuffer() && (mBufferInfo.glBufferType == NO_GL_BUFFER_TYPE)	)
+		if( isDefaultBuffer() && (mBufferInfo->glBufferType == NO_GL_BUFFER_TYPE)	)
 		{
 			throw(BufferException("no gl buffer type specified for a non-texture or non-renderbuffer Buffer, although a gl usage context was requested"));
 		}
@@ -186,9 +192,9 @@ bool BufferInterface::allocMem()throw(BufferException)
 	}
 
 	//ok, the GL stuff is allocated if it was requested; Now let's check for the "compute" world;
-	if(mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG)
+	if(mBufferInfo->usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG)
 	{
-		if(mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
+		if(mBufferInfo->usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)
 		{
 			//both CL and GL are requested, that means interop:
 			//neither bind nor alloc necessary, just generating:
@@ -206,7 +212,11 @@ bool BufferInterface::allocMem()throw(BufferException)
 
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-		registerBufferAllocation(mBufferInfo.usageContexts,mBufferInfo.bufferSizeInByte);
+	//only track memory for non-pingpongs, as pingpongs only manage, but don't "own" own data store;
+	if(! mBufferInfo->isPingPongBuffer)
+	{
+		registerBufferAllocation(mBufferInfo->usageContexts,mBufferInfo->bufferSizeInByte);
+	}
 #endif
 
 	return true;
@@ -219,19 +229,19 @@ void BufferInterface::setData(const void* data, ContextTypeFlags where)throw(Buf
 	//CPU
 	if( where & HOST_CONTEXT_TYPE_FLAG )
 	{
-		if( ! (mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG))
+		if( ! (mBufferInfo->usageContexts & HOST_CONTEXT_TYPE_FLAG))
 		{throw(BufferException("data copy to cpu buffer requested, but this buffer has no CPU storage!"));}
 
 		if(! mCPU_Handle)
 		{throw(BufferException(" Buffer::setData: mCPU_Handle is NULL; some implementing of (calling)  allocMem() went terribly wrong"));}
 
-		memcpy(mCPU_Handle,data, mBufferInfo.bufferSizeInByte);
+		memcpy(mCPU_Handle,data, mBufferInfo->bufferSizeInByte);
 	}
 
 	//GL
 	if( where & OPEN_GL_CONTEXT_TYPE_FLAG )
 	{
-		if( ! (mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG))
+		if( ! (mBufferInfo->usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG))
 		{throw(BufferException("data copy to GL buffer requested, but this buffer has no GL storage!"));}
 
 
@@ -254,7 +264,7 @@ void BufferInterface::setData(const void* data, ContextTypeFlags where)throw(Buf
 	{
 		if( where & OPEN_CL_CONTEXT_TYPE_FLAG )
 		{
-			if( ! (mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG))
+			if( ! (mBufferInfo->usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG))
 			{throw(BufferException("data copy to CL buffer requested, but this buffer has no CL storage!"));}
 
 			//commented out the guard in case of driver bugs fu**ing up when doing too mush time-shared CL-GL-stuff
@@ -333,7 +343,7 @@ void BufferInterface::readBack()throw(BufferException)
 //get the bufferinfo directly:
 const BufferInfo& BufferInterface::getBufferInfo() const
 {
-	return mBufferInfo;
+	return *mBufferInfo;
 }
 
 
@@ -341,28 +351,28 @@ const BufferInfo& BufferInterface::getBufferInfo() const
 
 ContextTypeFlags BufferInterface::getContextTypeFlags()const
 {
-	return mBufferInfo.usageContexts;
+	return mBufferInfo->usageContexts;
 }
 
 bool BufferInterface::hasBufferInContext(ContextType type) const
 {
 	//return mBufferInfo->allocationGuards[type];
-	return (mBufferInfo.usageContexts & FLEWNIT_FLAGIFY(type)) != 0;
+	return (mBufferInfo->usageContexts & FLEWNIT_FLAGIFY(type)) != 0;
 }
 
 bool BufferInterface::isCLGLShared()const
 {
 	return
-			((mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG) != 0)
+			((mBufferInfo->usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG) != 0)
 			&&
-			((mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) != 0);
+			((mBufferInfo->usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) != 0);
 }
 
 
 
 String BufferInterface::getName() const
 {
-	return mBufferInfo.name;
+	return mBufferInfo->name;
 }
 
 
@@ -370,19 +380,19 @@ String BufferInterface::getName() const
 
 int  BufferInterface::getNumElements() const
 {
-	return mBufferInfo.numElements;
+	return mBufferInfo->numElements;
 }
 
 
 size_t  BufferInterface::getElementSize() const
 {
-	return BufferHelper::elementSize( mBufferInfo.elementType );
+	return BufferHelper::elementSize( mBufferInfo->elementType );
 }
 
 
 Type BufferInterface::getElementType() const
 {
-	return mBufferInfo.elementType;
+	return mBufferInfo->elementType;
 }
 
 bool BufferInterface::isDefaultBuffer()const
@@ -401,7 +411,7 @@ Buffer& BufferInterface::toDefaultBuffer()throw(BufferException)
 //convenience caster methods:
 bool BufferInterface::isPingPongBuffer()const
 {
-	return mBufferInfo.isPingPongBuffer;
+	return mBufferInfo->isPingPongBuffer;
 }
 
 PingPongBuffer& BufferInterface::toPingPongBuffer() throw(BufferException)
@@ -471,20 +481,20 @@ RenderBuffer& BufferInterface::toRenderBuffer() throw(BufferException)
 
 const CPUBufferHandle BufferInterface::getCPUBufferHandle()const throw(BufferException)
 {
-	if((mBufferInfo.usageContexts & HOST_CONTEXT_TYPE_FLAG) == 0)
+	if((mBufferInfo->usageContexts & HOST_CONTEXT_TYPE_FLAG) == 0)
 		throw(BufferException("BufferInterface::getCPUBufferHandle: buffer has no CPU attachment"));
 
 	return mCPU_Handle;
 }
 GraphicsBufferHandle BufferInterface::getGraphicsBufferHandle()const  throw(BufferException)
 {
-	if((mBufferInfo.usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) == 0)
+	if((mBufferInfo->usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) == 0)
 			throw(BufferException("BufferInterface::getGraphicsBufferHandle: buffer has no GL attachment"));
 	return mGraphicsBufferHandle;
 }
 ComputeBufferHandle BufferInterface::getComputeBufferHandle()const  throw(BufferException)
 {
-	if((mBufferInfo.usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG) == 0)
+	if((mBufferInfo->usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG) == 0)
 			throw(BufferException("BufferInterface::getComputeBufferHandle: buffer has no CL attachment"));
 
 	return mComputeBufferHandle;
