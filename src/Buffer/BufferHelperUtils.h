@@ -73,24 +73,53 @@ public:
 		if(type == TYPE_STRING )
 			return sizeof(String);
 
-		if(		type == TYPE_PACKED_VEC3_AS_UINT16 ||
-				type == TYPE_PACKED_VEC4_AS_UINT16)
-			return sizeof(unsigned short);
+		//-----------------------
+		//smaller types, for textures etc; experimental!
+		///\{
+		if(type == TYPE_VEC2I8 )
+			return sizeof(Vector2D8i);
+		if(type == TYPE_VEC2UI8 )
+			return sizeof(Vector2D8ui);
 
-		if(		type == TYPE_PACKED_VEC3_AS_INT16 ||
-				type == TYPE_PACKED_VEC4_AS_INT16)
-			return sizeof(short);
+		if(type == TYPE_VEC3I8 )
+			return sizeof(Vector3D8i);
+		if(type == TYPE_VEC3UI8 )
+			return sizeof(Vector3D8ui);
 
-		if(		type == TYPE_PACKED_VEC3_AS_UINT32 ||
-				type == TYPE_PACKED_VEC4_AS_UINT32)
-			return sizeof(unsigned int);
+		if(type == TYPE_VEC4I8 )
+			return sizeof(Vector4D8i);
+		if(type == TYPE_VEC4UI8 )
+			return sizeof(Vector4D8ui);
 
-		if(		type == TYPE_PACKED_VEC3_AS_INT32 ||
-				type == TYPE_PACKED_VEC4_AS_INT32)
-			return sizeof(int);
+		if(type == TYPE_VEC2I16 )
+			return sizeof(Vector2D16i);
+		if(type == TYPE_VEC2UI16 )
+			return sizeof(Vector2D16ui);
+
+		if(type == TYPE_VEC3I16 )
+			return sizeof(Vector3D16i);
+		if(type == TYPE_VEC3UI16 )
+			return sizeof(Vector3D16ui);
+
+		if(type == TYPE_VEC4I16 )
+			return sizeof(Vector4D16i);
+		if(type == TYPE_VEC4UI16 )
+			return sizeof(Vector4D16ui);
+
+
+		if(type == TYPE_HALF_FLOAT )
+			return sizeof(Half);
+		if(type == TYPE_VEC2F16 )
+			return sizeof(Vector2Dhalf);
+		if(type == TYPE_VEC3F16 )
+			return sizeof(Vector3Dhalf);
+		if(type == TYPE_VEC4F16 )
+			return sizeof(Vector4Dhalf);
+		///\}
+		//-----------------------
 
 		//default
-		assert("no mathichn type identifier" && 0);
+		assert("no matchtinh yet supported type identifier" && 0);
 		return 0;
 	}
 };

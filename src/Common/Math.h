@@ -62,6 +62,32 @@ namespace Flewnit
 	typedef glm::uvec4 Vector4Dui;
 
 
+	//experimental lower precision stuff (for textures etc)
+	///\{
+	typedef glm::detail::tvec2<unsigned char> Vector2D8ui;
+	typedef glm::detail::tvec3<unsigned char> Vector3D8ui;
+	typedef glm::detail::tvec4<unsigned char> Vector4D8ui;
+
+	typedef glm::detail::tvec2<signed char> Vector2D8i;
+	typedef glm::detail::tvec3<signed char> Vector3D8i;
+	typedef glm::detail::tvec4<signed char> Vector4D8i;
+
+	typedef glm::detail::tvec2<unsigned short> Vector2D16ui;
+	typedef glm::detail::tvec3<unsigned short> Vector3D16ui;
+	typedef glm::detail::tvec4<unsigned short> Vector4D16ui;
+
+	typedef glm::detail::tvec2<signed short> Vector2D16i;
+	typedef glm::detail::tvec3<signed short> Vector3D16i;
+	typedef glm::detail::tvec4<signed short> Vector4D16i;
+
+	typedef glm::half Half;
+	typedef glm::hvec2 Vector2Dhalf;
+	typedef glm::hvec3 Vector3Dhalf;
+	typedef glm::hvec4 Vector4Dhalf;
+	///\}
+
+
+
 	typedef glm::mat3x3 Matrix3x3;
 	typedef glm::mat4x4 Matrix4x4;
 

@@ -159,6 +159,50 @@ private:
 		if(typeid(mValue) == typeid(Vector4Dui))
 			return TYPE_VEC4UI32;
 
+		//-----------------------
+		//smaller types, for textures etc; experimental!
+		///\{
+		if(typeid(mValue) == typeid(Vector2D8i))
+			return TYPE_VEC2I8;
+		if(typeid(mValue) == typeid(Vector2D8ui))
+			return TYPE_VEC2UI8;
+
+		if(typeid(mValue) == typeid(Vector3D8i))
+			return TYPE_VEC3I8;
+		if(typeid(mValue) == typeid(Vector3D8ui))
+			return TYPE_VEC3UI8;
+
+		if(typeid(mValue) == typeid(Vector4D8i))
+			return TYPE_VEC4I8;
+		if(typeid(mValue) == typeid(Vector4D8ui))
+			return TYPE_VEC4UI8;
+
+		if(typeid(mValue) == typeid(Vector2D16i))
+			return TYPE_VEC2I16;
+		if(typeid(mValue) == typeid(Vector2D16ui))
+			return TYPE_VEC2UI16;
+
+		if(typeid(mValue) == typeid(Vector3D16i))
+			return TYPE_VEC3I16;
+		if(typeid(mValue) == typeid(Vector3D16ui))
+			return TYPE_VEC3UI16;
+
+		if(typeid(mValue) == typeid(Vector4D16i))
+			return TYPE_VEC4I16;
+		if(typeid(mValue) == typeid(Vector4D16ui))
+			return TYPE_VEC4UI16;
+
+		if(typeid(mValue) == typeid(Half))
+			return TYPE_HALF_FLOAT;
+		if(typeid(mValue) == typeid(Vector2Dhalf))
+			return TYPE_VEC2F16;
+		if(typeid(mValue) == typeid(Vector3Dhalf))
+			return TYPE_VEC3F16;
+		if(typeid(mValue) == typeid(Vector4Dhalf))
+			return TYPE_VEC4F16;
+		///\}
+		//-----------------------
+
 		if(typeid(mValue) == typeid(Matrix3x3))
 			return TYPE_MATRIX33F;
 		if(typeid(mValue) == typeid(Matrix4x4))

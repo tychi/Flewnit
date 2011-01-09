@@ -97,20 +97,12 @@ enum Access
 	ACCESS_READWRITE
 };
 
-
+//no compressed/asymmetricly packed (e.g. GL_UNSIGNED_INT_10_10_10_2) types are supported in this framework
+//WARNING: not all types enumerated here are guaranteed to be supported; this is rater a brainstorming list;
 enum Type
 {
 	TYPE_UNDEF,
 
-	TYPE_PACKED_VEC3_AS_UINT16,
-	TYPE_PACKED_VEC3_AS_INT16,
-	TYPE_PACKED_VEC4_AS_UINT16,
-	TYPE_PACKED_VEC4_AS_INT16,
-
-	TYPE_PACKED_VEC3_AS_UINT32,
-	TYPE_PACKED_VEC3_AS_INT32,
-	TYPE_PACKED_VEC4_AS_UINT32,
-	TYPE_PACKED_VEC4_AS_INT32,
 
 	TYPE_STRUCTURE,
 
@@ -135,6 +127,7 @@ enum Type
 	TYPE_INT64,
 	TYPE_UINT64,
 
+	TYPE_HALF_FLOAT,
 	TYPE_FLOAT,
 	TYPE_DOUBLE,
 
@@ -142,6 +135,8 @@ enum Type
 
 	//-----------------
 	//all permutations of integer Vectors to come
+
+	//type for (un)signed normalized RGBA Texel data
 	TYPE_VEC2I8,
 	TYPE_VEC2UI8,
 
@@ -166,6 +161,7 @@ enum Type
 	TYPE_VEC3I64,
 	TYPE_VEC3UI64,
 
+	//typical type for (un)signed normalized RGBA Texel data
 	TYPE_VEC4I8,
 	TYPE_VEC4UI8,
 
@@ -177,6 +173,11 @@ enum Type
 
 	TYPE_VEC4I64,
 	TYPE_VEC4UI64,
+	//-----------------
+	//half type
+	TYPE_VEC2F16,
+	TYPE_VEC3F16,
+	TYPE_VEC4F16,
 	//-----------------
 
 	TYPE_VEC2F,
