@@ -19,31 +19,31 @@
 #	define FLEWNIT_SIGNATURE_PURENESS_TAG
 #endif
 
-	virtual void generateGL()		FLEWNIT_SIGNATURE_PURENESS_TAG;
-	virtual void generateCL()		FLEWNIT_SIGNATURE_PURENESS_TAG;
-	virtual void generateCLGL()		FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void generateGL()	throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void generateCL()		throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void generateCLGL()		throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
 
 	//the two non-symmetrci GL-only routines:
-	virtual void bindGL()			FLEWNIT_SIGNATURE_PURENESS_TAG;
-	virtual void allocGL()			FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void bindGL()			throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void allocGL()			throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
 
-	virtual void writeGL(const void* data)FLEWNIT_SIGNATURE_PURENESS_TAG;
-	virtual void writeCL(const void* data)FLEWNIT_SIGNATURE_PURENESS_TAG;
-	virtual void readGL(void* data)		FLEWNIT_SIGNATURE_PURENESS_TAG;
-	virtual void readCL(void* data)		FLEWNIT_SIGNATURE_PURENESS_TAG;
-	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)FLEWNIT_SIGNATURE_PURENESS_TAG;
-	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)FLEWNIT_SIGNATURE_PURENESS_TAG;
-	virtual void freeGL()			FLEWNIT_SIGNATURE_PURENESS_TAG;
-	virtual void freeCL()			FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void writeGL(const void* data)throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void writeCL(const void* data)throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void readGL(void* data)		throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void readCL(void* data)		throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void freeGL()			throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void freeCL()			throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
 
 //	//not needed (yet?)
-//	virtual void* mapGLToHost()FLEWNIT_SIGNATURE_PURENESS_TAG;
-//	virtual void* mapCLToHost()FLEWNIT_SIGNATURE_PURENESS_TAG;
-//	virtual void* unmapGL()FLEWNIT_SIGNATURE_PURENESS_TAG;
-//	virtual void* unmapCL()FLEWNIT_SIGNATURE_PURENESS_TAG;
+//	virtual void* mapGLToHost()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+//	virtual void* mapCLToHost()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+//	virtual void* unmapGL()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+//	virtual void* unmapCL()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
 
-	//virtual void allocCL()FLEWNIT_SIGNATURE_PURENESS_TAG; <-- bullshaat ;)
-	//virtual void bindCL()FLEWNIT_SIGNATURE_PURENESS_TAG; <-- bullshaat ;)
+	//virtual void allocCL()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG; <-- bullshaat ;)
+	//virtual void bindCL()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG; <-- bullshaat ;)
 	///\}
 
 #undef FLEWNIT_SIGNATURE_PURENESS_TAG

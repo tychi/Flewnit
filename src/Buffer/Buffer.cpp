@@ -91,11 +91,11 @@ bool Buffer::operator==(const BufferInterface& rhs) const
 //wrapper functions to GL and CL calls without any error checking,
 //i.e. semantic checks/flag delegation/verifiaction must be done before those calls;
 //those routines are introduced to reduce boilerplate code;
-void Buffer::generateGL()
+void Buffer::generateGL()throw(BufferException)
 {
 	glGenBuffers(1, &mGraphicsBufferHandle);
 }
-void Buffer::generateCL()
+void Buffer::generateCL()throw(BufferException)
 {
 	mComputeBufferHandle = cl::Buffer(
 			CLMANAGER->getCLContext(),
@@ -108,7 +108,7 @@ void Buffer::generateCL()
 	);
 
 }
-void Buffer::generateCLGL()
+void Buffer::generateCLGL()throw(BufferException)
 {
 	mComputeBufferHandle = cl::BufferGL(
 			CLMANAGER->getCLContext(),
@@ -121,13 +121,13 @@ void Buffer::generateCLGL()
 	CLMANAGER->registerSharedBuffer(mComputeBufferHandle);
 }
 
-void Buffer::bindGL()
+void Buffer::bindGL()throw(BufferException)
 {
 	glBindBuffer(mGlBufferTargetEnum, mGraphicsBufferHandle);
 }
 
 
-void Buffer::allocGL()
+void Buffer::allocGL()throw(BufferException)
 {
 	glBufferData(
 		//which target?
@@ -141,11 +141,11 @@ void Buffer::allocGL()
 }
 
 
-void Buffer::writeGL(const void* data)
+void Buffer::writeGL(const void* data)throw(BufferException)
 {
 	glBufferSubData(mGlBufferTargetEnum,0,mBufferInfo->bufferSizeInByte,data);
 }
-void Buffer::writeCL(const void* data)
+void Buffer::writeCL(const void* data)throw(BufferException)
 {
 	CLMANAGER->getCommandQueue().enqueueWriteBuffer(
 			static_cast<cl::Buffer&>(mComputeBufferHandle),
@@ -157,11 +157,11 @@ void Buffer::writeCL(const void* data)
 			& CLMANAGER->getLastEvent());
 }
 
-void Buffer::readGL(void* data)
+void Buffer::readGL(void* data)throw(BufferException)
 {
 	glGetBufferSubData(mGlBufferTargetEnum,0,mBufferInfo->bufferSizeInByte,data);
 }
-void Buffer::readCL(void* data)
+void Buffer::readCL(void* data)throw(BufferException)
 {
 	CLMANAGER->getCommandQueue().enqueueReadBuffer(
 			static_cast<cl::Buffer&>(mComputeBufferHandle),
@@ -173,7 +173,7 @@ void Buffer::readCL(void* data)
 			& CLMANAGER->getLastEvent());
 }
 
-void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)
+void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
 {
 	//bind other buffer as read target
 	GUARD(glBindBuffer(mGlBufferTargetEnum, bufferToCopyContentsFrom););
@@ -189,7 +189,7 @@ void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)
 	);
 
 }
-void Buffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)
+void Buffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(BufferException)
 {
 	CLMANAGER->getCommandQueue().enqueueCopyBuffer(
 			static_cast<cl::Buffer&>(bufferToCopyContentsFrom),
@@ -203,12 +203,12 @@ void Buffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)
 }
 
 
-void Buffer::freeGL()
+void Buffer::freeGL()throw(BufferException)
 {
 	GUARD(glDeleteBuffers(1, &mGraphicsBufferHandle));
 }
 
-void Buffer::freeCL()
+void Buffer::freeCL()throw(BufferException)
 {/*do nothing*/}
 
 

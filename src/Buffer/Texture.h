@@ -98,34 +98,34 @@ protected:
 //#	undef FLEWNIT_PURE_VIRTUAL
 
 	//not pure, as all the same for every texture;
-	virtual void generateGL();
+	virtual void generateGL()throw(BufferException);
 	//not pure, may not be used (yet)
-	virtual void generateCL(){assert("pure CL textures not implemented; every textur is either pure GL or CL/GL shared" && 0);}
+	virtual void generateCL()throw(BufferException){assert("pure CL textures not implemented; every textur is either pure GL or CL/GL shared" && 0);}
 	//pure virtual, as there is difference between 2D and 3D alloc,
 	//and the non-interoparable-texture types must throw an exception here;
-	virtual void generateCLGL()=0;
+	virtual void generateCLGL()throw(BufferException)=0;
 
 	//the two non-symmetrci GL-only routines:
 	//non-pure, as binding is all the same, only the enum is different, and that can be looked up in mTexturInfo;
-	virtual void bindGL();
+	virtual void bindGL()throw(BufferException);
 	//pure, as there are different glTexImage[1 2 3]+D[MultiSample]?() functions
-	virtual void allocGL()=0;
+	virtual void allocGL()throw(BufferException)=0;
 
 	//pure, as writing via glTexSubImageXD is dependent on dimensionality
 	//must be implemented with  an exception-throw for certain concrete Texture classes
 	//(namely multisample textures), which don't seem to be writable, copyable ar readable
-	virtual void writeGL(const void* data)=0;
+	virtual void writeGL(const void* data)throw(BufferException)=0;
 	//can be non-pure, as clEnqueueWriteImage is quite generic;
-	virtual void writeCL(const void* data);
+	virtual void writeCL(const void* data)throw(BufferException);
 
 	//non-pure, as glGetTexImage is quite generic :); at least one generic GL function ;(
 	//BUT:
 	//must be overidden with an exception-throw-implementation for certain concrete Texture classes
 	//(namely multisample textures), which don't seem to be writable, copyable ar readable
 	//must also be overridden by CubeMap class, as the read call must happen six times;
-	virtual void readGL(void* data);
+	virtual void readGL(void* data)throw(BufferException);
 	//can be non-pure, as clEnqueueReadImage is quite generic;
-	virtual void readCL(void* data)	;
+	virtual void readCL(void* data)throw(BufferException)	;
 
 	//as it seems that a generic copying of many texture types can happen in an agnostic way
 	//via two helper FBOs, this can be non-pure;
@@ -134,15 +134,15 @@ protected:
 	//(namely multisample textures), which don't seem to be writable, copyable ar readable;
 	//must also be overriden by CubeMap, as there are six color attachments to to or to work with
 	//glFrameBufferTextureFace... we'll see
-	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom);
+	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException);
 	//can be non-pure, as clEnqueueCopyImage is quite generic;
-	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom);
+	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(BufferException);
 
 	//non-pure, as glDeleteTextures() applies to every texture type :)
-	virtual void freeGL();
+	virtual void freeGL()throw(BufferException);
 	//non-pure, as c++-cl-object manages deletion for itself;
 	//lets "implement" it directly
-	virtual void freeCL(){}
+	virtual void freeCL()throw(BufferException){}
 
 };
 
@@ -171,9 +171,9 @@ protected:
 
 
 	//throw exception due to non-interoperability
-	virtual void generateCLGL();
-	virtual void allocGL();
-	virtual void writeGL(const void* data);
+	virtual void generateCLGL()throw(BufferException);
+	virtual void allocGL()throw(BufferException);
+	virtual void writeGL(const void* data)throw(BufferException);
 };
 
 
@@ -196,9 +196,9 @@ public:
 protected:
 //#	include "BufferVirtualSignatures.h"
 
-	virtual void generateCLGL();
-	virtual void allocGL();
-	virtual void writeGL(const void* data);
+	virtual void generateCLGL()throw(BufferException);
+	virtual void allocGL()throw(BufferException);
+	virtual void writeGL(const void* data)throw(BufferException);
 };
 
 
@@ -225,9 +225,9 @@ public:
 protected:
 //#	include "BufferVirtualSignatures.h"
 
-	virtual void generateCLGL();
-	virtual void allocGL();
-	virtual void writeGL(const void* data);
+	virtual void generateCLGL()throw(BufferException);
+	virtual void allocGL()throw(BufferException);
+	virtual void writeGL(const void* data)throw(BufferException);
 };
 
 /**
@@ -263,19 +263,19 @@ protected:
 //#	include "BufferVirtualSignatures.h"
 
 	//throw exception, as interop isn't supported (yet) by this framework
-	virtual void generateCLGL();
-	virtual void allocGL();
+	virtual void generateCLGL()throw(BufferException);
+	virtual void allocGL()throw(BufferException);
 
 	//there are several ways to bind a cube map to an FBO
 	//TODO find at least a working one, better a short/efficient one
-	virtual void writeGL(const void* data);
+	virtual void writeGL(const void* data)throw(BufferException);
 
 	//must also be overridden by CubeMap class, as the read call must happen six times instead of one;
 	//be sure that the data buffer is 6 times bigger than one face;
-	virtual void readGL(void* data);
+	virtual void readGL(void* data)throw(BufferException);
 	//must also be overriden by CubeMap, as there are six color attachments to to or to work with
 	//glFrameBufferTextureFace... we'll see
-	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom);
+	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException);
 
 };
 
