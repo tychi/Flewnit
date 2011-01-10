@@ -115,6 +115,7 @@ void Texture::readCL(void* data)throw(BufferException)
 void Texture::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
 {
 	//TODO implement when FBO class exists;
+	throw(BufferException("Texture::copyGLFrom: sorry, for copying, FBOs are needed, and the still must be implemented "));
 }
 
 //can be non-pure, as clEnqueueCopyImage is quite generic;

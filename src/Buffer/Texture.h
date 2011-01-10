@@ -231,6 +231,9 @@ public:
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
 
+	//override to set compare func etc; can maybe bypassed via sampler objects, but for now..
+	virtual void allocGL()throw(BufferException);
+
 };
 
 

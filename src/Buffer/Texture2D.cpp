@@ -130,17 +130,66 @@ bool Texture2DDepth::operator==(const BufferInterface& rhs) const
 
 
 
+
 void Texture2D::generateCLGL()throw(BufferException)
 {
-
+	//TODO
 }
 
 void Texture2D::allocGL()throw(BufferException)
 {
+	glTexImage2D(
+			mTextureInfoCastPtr->textureTarget,
+			0,
+			mTextureInfoCastPtr->glImageFormat.desiredInternalFormat,
+			mTextureInfoCastPtr->dimensionExtends.x,
+			mTextureInfoCastPtr->dimensionExtends.y,
+			0,
+			mTextureInfoCastPtr->glImageFormat.channelOrder,
+			mTextureInfoCastPtr->glImageFormat.channelDataType,
+			//don't set data yet, just alloc mem
+			0
+	);
 
 }
 void Texture2D::writeGL(const void* data)throw(BufferException)
 {
+	glTexSubImage2D(
+			mTextureInfoCastPtr->textureTarget,
+			0,
+			0,0,
+			mTextureInfoCastPtr->dimensionExtends.x,
+			mTextureInfoCastPtr->dimensionExtends.y,
+			mTextureInfoCastPtr->glImageFormat.channelOrder,
+			mTextureInfoCastPtr->glImageFormat.channelDataType,
+			//don't set data yet, just alloc mem
+			data
+	);
+
+	if(mTextureInfoCastPtr->isMipMapped)
+	{
+		glGenerateMipmap( mTextureInfoCastPtr->textureTarget );
+	}
+}
+
+
+void Texture2DDepth::allocGL()throw(BufferException)
+{
+	Texture2D::allocGL();
+
+	//TODO handle this more professionally via sampler objects within material/shader...
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    float fourZeros[] = {0.0f,0.0f,0.0f,0.0f};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, fourZeros);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 }
 

@@ -101,11 +101,6 @@ void Texture1D::allocGL()throw(BufferException)
 			//don't set data yet, just alloc mem
 			0
 	);
-
-	if(mTextureInfoCastPtr->isMipMapped)
-	{
-		glGenerateMipmap( mTextureInfoCastPtr->textureTarget );
-	}
 }
 void Texture1D::writeGL(const void* data)throw(BufferException)
 {
@@ -119,6 +114,11 @@ void Texture1D::writeGL(const void* data)throw(BufferException)
 			//don't set data yet, just alloc mem
 			data
 	);
+
+	if(mTextureInfoCastPtr->isMipMapped)
+	{
+		glGenerateMipmap( mTextureInfoCastPtr->textureTarget );
+	}
 }
 
 }
