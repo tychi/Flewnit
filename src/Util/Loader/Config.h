@@ -118,8 +118,16 @@ private:
 
 		if(typeid(mValue) == typeid(bool))
 			return TYPE_BOOL;
+
+		if(typeid(mValue) == typeid(signed char))
+			return TYPE_INT8;
+		//to be sure without "signed" tag:
+		if(typeid(mValue) == typeid(char))
+			return TYPE_INT8;
+
 		if(typeid(mValue) == typeid(unsigned char))
-			return TYPE_CHAR;
+			return TYPE_UINT8;
+
 		if(typeid(mValue) == typeid(short))
 			return TYPE_INT16;
 		if(typeid(mValue) == typeid(unsigned short))

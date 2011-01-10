@@ -24,8 +24,12 @@ public:
 
 		if(type == TYPE_BOOL)
 			return sizeof(bool);
-		if(type == TYPE_CHAR)
+
+		if(type == TYPE_UINT8)
 			return sizeof(unsigned char);
+		if(type == TYPE_INT8)
+			return sizeof(signed char);
+
 		if(type == TYPE_INT16)
 			return sizeof(short);
 		if(type == TYPE_UINT16)

@@ -103,7 +103,6 @@ enum Type
 {
 	TYPE_UNDEF,
 
-
 	TYPE_STRUCTURE,
 
 	TYPE_BOOL,
@@ -114,7 +113,6 @@ enum Type
 	TYPE_BOOL32,
 	TYPE_BOOL64,
 
-	TYPE_CHAR, //unsigned char, 1 Byte
 	TYPE_INT8, //signed char, 1 Byte
 	TYPE_UINT8,
 

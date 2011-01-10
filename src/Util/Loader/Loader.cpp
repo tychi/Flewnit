@@ -50,8 +50,21 @@ void Loader::createHardCodedSceneStuff()
 }
 
 
+
+void convertBGRAtoRGBA(BYTE* vec4uInt8Image, int numElements)
+{
+	BYTE tmp;
+	for(int i = 0 ; i< numElements; i++ )
+	{
+		//exchange component 0 and 2 (R and G)
+		tmp = vec4uInt8Image[4*i];
+		vec4uInt8Image[4*i]= vec4uInt8Image[4*i + 2];
+		vec4uInt8Image[4*i + 2] = tmp;
+	}
+}
+
 Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path fileName,
-		const TexelInfo& texelPreferredLayout,
+		TexelInfo texelPreferredLayout,
 		bool allocHostMemory, bool shareWithOpenCL,  bool genMipmaps
 ) throw(BufferException)
 {
@@ -72,12 +85,70 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 
 	  int dimentionality = (image->getHeight() !=1) ? 2 : 1;
 
+
+
+	  switch(image->getImageType())
+	  {
+	  case FIT_BITMAP:
+
+		  if(image->getBitsPerPixel() != 32)
+		  {
+			  if ( ! (image->convertTo32Bits()) )
+			  {
+				  throw(BufferException("conversion of image to 32 bit per texel failed"));
+			  }
+#if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR
+			  convertBGRAtoRGBA(image->accessPixels(), image->getWidth()*image->getHeight());
+#endif
+			  //override as i don't have time for sophisticated adoptio atm
+			  texelPreferredLayout = TexelInfo();
+		  }
+		  break;
+	  case FIT_RGBAF:
+
+		  break;
+	  case FIT_RGBF:
+
+		  break;
+	  default:
+		  throw(BufferException("sorry, there is no other image type but "
+				  "floating point or Bitmap(i.e. 8 bit unsigned normalized int) RGB(A) supported yet "));
+	  }
+
+
+
+
+
+
+
+//	  GLenum textureTarget =  (image->getHeight() !=1) ? GL_TEXTURE_2D : GL_TEXTURE_1D;
+//	  ContextTypeFlags contextFlags(
+//			  OPEN_GL_CONTEXT_TYPE_FLAG |
+//			  (allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG ) |
+//			  //only allow CL sharing for 2D textures;
+//			  ( (shareWithOpenCL && (dimentionality ==2) ) ? OPEN_CL_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
+//	  );
+//
+//	  new Texture1D()
+//
 //	  TextureInfo texInfo(
-//				BufferInfo,
-//				cl_GLuint dimensionality,
-//				Vector3Dui dimensionExtends,
-//				const TexelInfo& texelInfo,
-//				GLenum textureTarget,);
+//				BufferInfo(
+//					name,
+//					contextFlags,
+//					bufferSemantics
+//				),
+//				1,
+//				//default invalid
+//				Vector3Dui(0,0,0),
+//				//default invalid
+//				TexelInfo(),
+//				GL_TEXTURE_1D,
+//				genMipmaps,
+//				false,
+//				false,
+//				0,
+//				0
+//			);
 
 	  //TODO
 //
@@ -111,7 +182,25 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 //	        Logger::Instance().log("ERROR",
 //	                "Texture", "Converting "+ path+ " to 24bit failed.");
 //	      }
-//	    }
+//	  	  }
+
+	  //waste:
+	  //	  if(texelPreferredLayout.internalGPU_DataType == GPU_DATA_TYPE_FLOAT &&
+	  //			  texelPreferredLayout.bitsPerChannel == 16)
+	  //	  {
+	  //		  LOG<<WARNING_LOG_LEVEL<<"Sorry but freeimage doesn't seem to support half float; Setting to full float;(\n";
+	  //		  texelPreferredLayout.bitsPerChannel = 32;
+	  //	  }
+	  //
+	  //	  if(texelPreferredLayout.internalGPU_DataType == GPU_DATA_TYPE_FLOAT &&
+	  //		( (image->getImageType() != FIT_RGBAF) ||  (image->getImageType() != FIT_RGBF)   ) )
+	  //	  {
+	  //		  LOG<<WARNING_LOG_LEVEL<<"Sorry but the loaded image has no float type; it would be"<<
+	  //				  "wasted memory to try to convert is, and plus, freeimage doenst support this 'upcast';"<<
+	  //				  "taking instead normalized unsigned byte\n";
+	  //		  texelPreferredLayout.bitsPerChannel = 32;
+	  //	  }
+
 
 	    delete image;
 
@@ -122,9 +211,9 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 
 Texture2DCube* Loader::loadCubeTexture(
 		String name,  BufferSemantics bufferSemantics, Path fileName,
-					const TexelInfo& texelPreferredLayout,
+					TexelInfo texelPreferredLayout,
 					bool allocHostMemory,  bool genMipmaps
-)throw(BufferException)
+)throw(BufferException)//may be changed by the loading routine!
 {
 	const String suffixes[] = {"_RT", "_LF", "_DN", "_UP", "_FR", "_BK"};
 	//TODO

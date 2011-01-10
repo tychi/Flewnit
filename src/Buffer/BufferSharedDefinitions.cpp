@@ -259,6 +259,8 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 {
 	texelInfo.validate();
 
+	glBufferType= NO_GL_BUFFER_TYPE;
+	numElements = dimensionExtends.x * dimensionExtends.y * dimensionExtends.z;
 
 	//first, set the most trivial stuff: the number of channels
 	switch(texelInfo.numChannels)
@@ -289,20 +291,24 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 		{
 		case 8:
 			glImageFormat.channelDataType = GL_UNSIGNED_BYTE;
+
 			if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT8;
 			else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT8;
 
 			switch(texelInfo.numChannels)
 			{
 			case 1:
+				elementType = TYPE_UINT8;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R8;
 				else			glImageFormat.desiredInternalFormat  = GL_R8UI;
 				break;
 			case 2:
+				elementType = TYPE_VEC2UI8;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG8;
 				else			glImageFormat.desiredInternalFormat  = GL_RG8UI;
 				break;
 			case 4:
+				elementType = TYPE_VEC4UI8;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA8;
 				else			glImageFormat.desiredInternalFormat  = GL_RGBA8UI;
 				break;
@@ -312,20 +318,24 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 			break;
 		case 16:
 			glImageFormat.channelDataType = GL_UNSIGNED_SHORT;
+
 			if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT16;
 			else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT16;
 
 			switch(texelInfo.numChannels)
 			{
 			case 1:
+				elementType = TYPE_UINT16;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R16;
 				else			glImageFormat.desiredInternalFormat  = GL_R16UI;
 				break;
 			case 2:
+				elementType = TYPE_VEC2UI16;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG16;
 				else			glImageFormat.desiredInternalFormat  = GL_RG16UI;
 				break;
 			case 4:
+				elementType = TYPE_VEC4UI16;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA16;
 				else			glImageFormat.desiredInternalFormat  = GL_RGBA16UI;
 				break;
@@ -336,17 +346,21 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 		case 32:
 			//no normalization valid here!
 			glImageFormat.channelDataType = GL_UNSIGNED_INT;
+
 			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT32;
 
 			switch(texelInfo.numChannels)
 			{
 			case 1:
+				elementType = TYPE_UINT32;
 				glImageFormat.desiredInternalFormat  = GL_R32UI;
 				break;
 			case 2:
+				elementType = TYPE_VEC2UI32;
 				glImageFormat.desiredInternalFormat  = GL_RG32UI;
 				break;
 			case 4:
+				elementType = TYPE_VEC4UI32;
 				glImageFormat.desiredInternalFormat  = GL_RGBA32UI;
 				break;
 			default:
@@ -370,14 +384,17 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 			switch(texelInfo.numChannels)
 			{
 			case 1:
+				elementType = TYPE_INT8;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R8_SNORM;
 				else			glImageFormat.desiredInternalFormat  = GL_R8I;
 				break;
 			case 2:
+				elementType = TYPE_VEC2I8;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG8_SNORM;
 				else			glImageFormat.desiredInternalFormat  = GL_RG8I;
 				break;
 			case 4:
+				elementType = TYPE_VEC4I8;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA8_SNORM;
 				else			glImageFormat.desiredInternalFormat  = GL_RGBA8I;
 				break;
@@ -393,14 +410,17 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 			switch(texelInfo.numChannels)
 			{
 			case 1:
+				elementType = TYPE_INT16;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R16_SNORM;
 				else			glImageFormat.desiredInternalFormat  = GL_R16I;
 				break;
 			case 2:
+				elementType = TYPE_VEC2I16;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG16_SNORM;
 				else			glImageFormat.desiredInternalFormat  = GL_RG16I;
 				break;
 			case 4:
+				elementType = TYPE_VEC4I16;
 				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA16_SNORM;
 				else			glImageFormat.desiredInternalFormat  = GL_RGBA16I;
 				break;
@@ -416,10 +436,13 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 			switch(texelInfo.numChannels)
 			{
 			case 1:
+				elementType = TYPE_INT32;
 				glImageFormat.desiredInternalFormat  = GL_R32I;		break;
 			case 2:
+				elementType = TYPE_VEC2I32;
 				glImageFormat.desiredInternalFormat  = GL_RG32I;	break;
 			case 4:
+				elementType = TYPE_VEC4I32;
 				glImageFormat.desiredInternalFormat  = GL_RGBA32I;	break;
 			default:
 				assert(0&&"should never end here");
@@ -442,10 +465,13 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 			switch(texelInfo.numChannels)
 			{
 			case 1:
+				elementType = TYPE_HALF_FLOAT;
 				glImageFormat.desiredInternalFormat  = GL_R16F;		break;
 			case 2:
+				elementType = TYPE_VEC2F16;
 				glImageFormat.desiredInternalFormat  = GL_RG16F;	break;
 			case 4:
+				elementType = TYPE_VEC4F16;
 				glImageFormat.desiredInternalFormat  = GL_RGBA16F;	break;
 			default:
 				assert(0&&"should never end here");
@@ -459,10 +485,13 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 			switch(texelInfo.numChannels)
 			{
 			case 1:
+				elementType = TYPE_FLOAT;
 				glImageFormat.desiredInternalFormat  = GL_R32F;		break;
 			case 2:
+				elementType = TYPE_VEC2F;
 				glImageFormat.desiredInternalFormat  = GL_RG32F;	break;
 			case 4:
+				elementType = TYPE_VEC4F;
 				glImageFormat.desiredInternalFormat  = GL_RGBA32F;	break;
 			default:
 				assert(0&&"should never end here");

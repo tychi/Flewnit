@@ -40,7 +40,8 @@ public:
 
 	Texture* loadTexture(String name,  BufferSemantics bufferSemantics, Path fileName,
 			//default layout for non-HDR color images unsigned byte to be normalize to float in [0..1]
-			const TexelInfo& texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_UINT,8,true),
+			//loading routine doesn't guaranty that the preferred layout will be done!
+			TexelInfo texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_UINT,8,true),
 			//for normal maps, one could try the following, i.e. normalized SIGNED int; this way, a bias from [0..1] to [-1..+1] within a pixel shader would become obsolete ;)
 			//TexelInfo(4,GPU_DATA_TYPE_INT,8,true),
 			bool allocHostMemory=true, bool shareWithOpenCL= false, bool genMipmaps = false
@@ -48,8 +49,9 @@ public:
 
 	Texture2DCube* loadCubeTexture(
 			String name,  BufferSemantics bufferSemantics, Path fileName,
+						//loading routine doesn't guaranty that the preferred layout will be done!
 						//default layout for non-HDR color images unsigned byte to be normalize to float in [0..1]
-						const TexelInfo& texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_UINT,8,true),
+						TexelInfo texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_UINT,8,true),
 						bool allocHostMemory=true,  bool genMipmaps = false
 	)throw(BufferException);
 
