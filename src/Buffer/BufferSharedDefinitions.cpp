@@ -167,6 +167,14 @@ void TexelInfo::validate()const throw (BufferException)
 			LOG<<ERROR_LOG_LEVEL << "TexelInfo::validate: normalized integer types need 8 or 16 bits per channel and not "<<bitsPerChannel<<";\n";
 			throw(BufferException("TexelInfo::validate: normalized integer types need 8 or 16 bits per channel;"));
 		}
+
+		//TODO
+		if(internalGPU_DataType == GPU_DATA_TYPE_FLOAT)
+		{
+			LOG<<ERROR_LOG_LEVEL << "TexelInfo::validate: only integral values can be normalized;\n";
+			throw(BufferException("TexelInfo::validate: only integral values can be normalized;"));
+
+		}
 	}
 }
 

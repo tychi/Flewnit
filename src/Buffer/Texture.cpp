@@ -31,21 +31,40 @@ Texture::~Texture()
 //not pure, as all the same for every texture;
 void Texture::generateGL()throw(BufferException)
 {
-
+	glGenTextures(1, & mGraphicsBufferHandle);
 }
 
 //the two non-symmetrci GL-only routines:
 //non-pure, as binding is all the same, only the enum is different, and that can be looked up in mTexturInfo;
 void Texture::bindGL()throw(BufferException)
 {
-
+	glBindTexture(mTextureInfoCastPtr->textureTarget, mGraphicsBufferHandle);
 }
 
 
 //can be non-pure, as clEnqueueWriteImage is quite generic;
 void Texture::writeCL(const void* data)throw(BufferException)
 {
+	cl::size_t<3> origin; origin[0]=0;origin[1]=0;origin[2]=0;
 
+	cl::size_t<3> region;
+	region[0] =	mTextureInfoCastPtr->dimensionExtends.x;
+	region[1] =	mTextureInfoCastPtr->dimensionExtends.y;
+	region[2] =	mTextureInfoCastPtr->dimensionExtends.z;
+
+	CLMANAGER->getCommandQueue().enqueueWriteImage(
+			static_cast<cl::Image&>(mComputeBufferHandle),
+			CLMANAGER->getBlockAfterEnqueue(),
+			origin,
+			region,
+			0,
+			0,
+			//BAAAD haxx due to a bug in the ocl-c++-bindings: a otherwise const-param is non-const here,
+			//although it is const in the wrapped c-function 0_o
+			const_cast<void*>( data ),
+			0,
+			& CLMANAGER->getLastEvent()
+	);
 }
 
 //non-pure, as glGetTexImage is quite generic :); at least one generic GL function ;(
@@ -55,7 +74,12 @@ void Texture::writeCL(const void* data)throw(BufferException)
 //must also be overridden by CubeMap class, as the read call must happen six times;
 void Texture::readGL(void* data)throw(BufferException)
 {
-
+	glGetTexImage(mTextureInfoCastPtr->textureTarget,
+			0,
+			mTextureInfoCastPtr->glImageFormat.channelOrder,
+			mTextureInfoCastPtr->glImageFormat.channelDataType,
+			data
+			);
 }
 //can be non-pure, as clEnqueueReadImage is quite generic;
 void Texture::readCL(void* data)throw(BufferException)
