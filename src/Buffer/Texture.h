@@ -164,10 +164,10 @@ class Texture1D: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	explicit Texture1D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
-			int width, const TexelInfo& texeli, const void* data =0,  bool genMipmaps = false);
-	explicit Texture1D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
-			Path fileName,  bool genMipmaps = false);
+	explicit Texture1D(String name, BufferSemantics bufferSemantics,
+			int width, const TexelInfo& texeli,
+			 bool allocHostMemory, const void* data =0,  bool genMipmaps = false);
+
 	virtual ~Texture1D();
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
@@ -193,9 +193,10 @@ class Texture2D: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	explicit Texture2D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
-			int width, int height, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
-	//explicit Texture2D(Path fileName, bool clInterOp, bool genMipmaps = false);
+	explicit Texture2D(String name, BufferSemantics bufferSemantics,
+			int width, int height, const TexelInfo& texeli,
+			bool allocHostMemory, bool clInterOp, const void* data =0,  bool genMipmaps = false);
+
 	virtual ~Texture2D();
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
@@ -205,6 +206,31 @@ protected:
 	virtual void generateCLGL()throw(BufferException);
 	virtual void allocGL()throw(BufferException);
 	virtual void writeGL(const void* data)throw(BufferException);
+
+	//protected constructor tobe called by Texture2DDepth:
+	explicit Texture2D(String name,
+				int width, int height,
+				bool allocHostMemory, bool clInterOp);
+};
+
+/**
+ * 	2D Depth Texture;
+ *
+ * 	Features:
+ * 		-	MipMapping;
+ * 		-	CL interOp;
+ */
+class Texture2DDepth: public  Texture2D
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	explicit Texture2DDepth(String name,
+				int width, int height,
+				bool allocHostMemory, bool clInterOp);
+	virtual ~Texture2DDepth();
+public:
+	virtual bool operator==(const BufferInterface& rhs) const;
+
 };
 
 

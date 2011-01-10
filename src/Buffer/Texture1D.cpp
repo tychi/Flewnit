@@ -10,8 +10,9 @@
 namespace Flewnit
 {
 
-Texture1D::Texture1D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
-		int width, const TexelInfo& texeli, const void* data,  bool genMipmaps)
+Texture1D::Texture1D(String name, BufferSemantics bufferSemantics,
+		int width, const TexelInfo& texeli,
+		bool allocHostMemory, const void* data,  bool genMipmaps)
 :
 Texture	(
 	TextureInfo(
@@ -74,22 +75,10 @@ Texture1D::~Texture1D()
 
 bool Texture1D::operator==(const BufferInterface& rhs) const
 {
-	const Texture1D* rhsTex1DPtr = dynamic_cast<const Texture1D*>(&rhs);
-	if (rhsTex1DPtr)
-	{
-		if ( (*mTextureInfoCastPtr) == (rhsTex1DPtr->getTextureInfo()) )
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
-		return false;
-	}
+	const Texture1D* rhsTexPtr = dynamic_cast<const Texture1D*>(&rhs);
+	if (rhsTexPtr)
+	{return   (*mTextureInfoCastPtr) == (rhsTexPtr->getTextureInfo()) ;}
+	else {return false;}
 }
 
 //throw exception due to non-interoperability
@@ -112,6 +101,11 @@ void Texture1D::allocGL()throw(BufferException)
 			//don't set data yet, just alloc mem
 			0
 	);
+
+	if(mTextureInfoCastPtr->isMipMapped)
+	{
+		glGenerateMipmap( mTextureInfoCastPtr->textureTarget );
+	}
 }
 void Texture1D::writeGL(const void* data)throw(BufferException)
 {

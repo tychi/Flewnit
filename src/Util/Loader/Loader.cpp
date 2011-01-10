@@ -164,9 +164,9 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 		  returnTex = new Texture1D(
 				  name,
 				  bufferSemantics,
-				  allocHostMemory,
 				  image->getWidth(),
 				  texelPreferredLayout,
+				  allocHostMemory,
 				  tempRGBA32FImage
 				  	  ?	reinterpret_cast<void*>(tempRGBA32FImage)
 					  : reinterpret_cast<void*>(image->accessPixels()),
@@ -178,10 +178,10 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 		  returnTex = new Texture2D(
 				  name,
 				  bufferSemantics,
-				  allocHostMemory,
 				  image->getWidth(),
 				  image->getHeight(),
 				  texelPreferredLayout,
+				  allocHostMemory,
 				  shareWithOpenCL,
 				  tempRGBA32FImage
 				  	  ?	reinterpret_cast<void*>(tempRGBA32FImage)
