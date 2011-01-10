@@ -81,10 +81,28 @@ void Texture::readGL(void* data)throw(BufferException)
 			data
 			);
 }
+
 //can be non-pure, as clEnqueueReadImage is quite generic;
 void Texture::readCL(void* data)throw(BufferException)
 {
+	cl::size_t<3> origin; origin[0]=0;origin[1]=0;origin[2]=0;
 
+	cl::size_t<3> region;
+	region[0] =	mTextureInfoCastPtr->dimensionExtends.x;
+	region[1] =	mTextureInfoCastPtr->dimensionExtends.y;
+	region[2] =	mTextureInfoCastPtr->dimensionExtends.z;
+
+	CLMANAGER->getCommandQueue().enqueueReadImage(
+			static_cast<cl::Image&>(mComputeBufferHandle),
+			CLMANAGER->getBlockAfterEnqueue(),
+			origin,
+			region,
+			0,
+			0,
+			data,
+			0,
+			& CLMANAGER->getLastEvent()
+	);
 }
 
 //as it seems that a generic copying of many texture types can happen in an agnostic way
@@ -96,18 +114,36 @@ void Texture::readCL(void* data)throw(BufferException)
 //glFrameBufferTextureFace... we'll see
 void Texture::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
 {
-
+	//TODO implement when FBO class exists;
 }
+
 //can be non-pure, as clEnqueueCopyImage is quite generic;
 void Texture::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(BufferException)
 {
+	cl::size_t<3> origin; origin[0]=0;origin[1]=0;origin[2]=0;
 
+	cl::size_t<3> region;
+	region[0] =	mTextureInfoCastPtr->dimensionExtends.x;
+	region[1] =	mTextureInfoCastPtr->dimensionExtends.y;
+	region[2] =	mTextureInfoCastPtr->dimensionExtends.z;
+
+	CLMANAGER->getCommandQueue().enqueueCopyImage(
+			//source
+			static_cast<const cl::Image&>(bufferToCopyContentsFrom),
+			//destination
+			static_cast<const cl::Image&>(mComputeBufferHandle),
+			origin,
+			origin,
+			region,
+			0,
+			& CLMANAGER->getLastEvent()
+	);
 }
 
 //non-pure, as glDeleteTextures() applies to every texture type :)
 void Texture::freeGL()throw(BufferException)
 {
-
+	glDeleteTextures(1, & mGraphicsBufferHandle);
 }
 
 

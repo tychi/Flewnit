@@ -69,6 +69,9 @@ BufferInterface::~BufferInterface()
 
 const BufferInterface& BufferInterface::operator=(const BufferInterface& rhs) throw(BufferException)
 {
+	//the buffers must match exactly in all their meta-info in order to be securely copied
+	//OpenGL and OpenCL are less restrictve than me, but in this case, I trade flexibility
+	//for simplicity and robustness;
 	if( (*this) == rhs )
 	{
 		if((mBufferInfo->usageContexts & HOST_CONTEXT_TYPE_FLAG) !=0)
