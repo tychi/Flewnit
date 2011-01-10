@@ -7,6 +7,8 @@
 
 #include "Texture.h"
 
+#include "Simulator/OpenCL_Manager.h"
+
 #include "Util/Log/Log.h"
 
 namespace Flewnit
@@ -133,7 +135,14 @@ bool Texture2DDepth::operator==(const BufferInterface& rhs) const
 
 void Texture2D::generateCLGL()throw(BufferException)
 {
-	//TODO
+	mComputeBufferHandle = cl::Image2DGL(
+			CLMANAGER->getCLContext(),
+			CL_MEM_READ_WRITE,
+			mTextureInfoCastPtr->textureTarget,
+			0,
+			mGraphicsBufferHandle,
+			& CLMANAGER->getLastCLError()
+	);
 }
 
 void Texture2D::allocGL()throw(BufferException)
@@ -190,7 +199,6 @@ void Texture2DDepth::allocGL()throw(BufferException)
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
 }
 
 

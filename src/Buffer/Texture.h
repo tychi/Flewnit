@@ -252,8 +252,9 @@ class Texture3D: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	explicit Texture3D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
-			int width, int height, int depth, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
+	explicit Texture3D(String name, BufferSemantics bufferSemantics,
+			int width, int height, int depth, const TexelInfo& texeli,
+			 bool allocHostMemory, bool clInterOp, const void* data =0,  bool genMipmaps = false);
 	explicit Texture3D(Path fileName, bool clInterOp, bool genMipmaps = false);
 	virtual ~Texture3D();
 public:
