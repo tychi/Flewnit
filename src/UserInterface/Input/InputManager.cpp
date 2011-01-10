@@ -58,6 +58,9 @@ InputManager::InputManager()
 
 InputManager::~InputManager()
 {
+	//there is a bug when shutting down and mouse is still hidden;
+	mMouse->setHidden(false);
+
 	delete mKeyboard;
 	delete mMouse;
 	delete mWiiMote;
