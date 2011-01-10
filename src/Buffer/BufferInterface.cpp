@@ -174,7 +174,7 @@ bool BufferInterface::allocMem()throw(BufferException)
 
 	if( mBufferInfo->usageContexts & HOST_CONTEXT_TYPE_FLAG )
 	{
-			mCPU_Handle = malloc(mBufferInfo->bufferSizeInByte);
+		mCPU_Handle = malloc(mBufferInfo->bufferSizeInByte);
 	}
 
 	if(mBufferInfo->usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG)

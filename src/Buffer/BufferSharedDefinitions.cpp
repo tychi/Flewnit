@@ -518,6 +518,10 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 
 	numElements = dimensionExtends.x * dimensionExtends.y * dimensionExtends.z;
 	bufferSizeInByte = BufferHelper::elementSize(elementType) * numElements;
+	if(isCubeTex)
+	{
+		bufferSizeInByte *= 6;
+	}
 
 	return true;
 }

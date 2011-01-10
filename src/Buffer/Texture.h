@@ -186,8 +186,9 @@ protected:
  * 	2D Texture;
  *
  * 	Features:
- * 		-	MipMapping;
+ * 		-	MipMapping if not Rectangle;
  * 		-	CL interOp;
+ * 		- 	Option to be a Rectangle Texture;
  */
 class Texture2D: public Texture
 {
@@ -195,7 +196,8 @@ class Texture2D: public Texture
 public:
 	explicit Texture2D(String name, BufferSemantics bufferSemantics,
 			int width, int height, const TexelInfo& texeli,
-			bool allocHostMemory, bool clInterOp, const void* data =0,  bool genMipmaps = false);
+			bool allocHostMemory, bool clInterOp,
+			bool makeRectangleTex=false, const void* data =0,  bool genMipmaps = false);
 
 	virtual ~Texture2D();
 public:
@@ -207,17 +209,19 @@ protected:
 	virtual void allocGL()throw(BufferException);
 	virtual void writeGL(const void* data)throw(BufferException);
 
-	//protected constructor tobe called by Texture2DDepth:
+	//protected constructor to be called by Texture2DDepth:
 	explicit Texture2D(String name,
 				int width, int height,
 				bool allocHostMemory, bool clInterOp);
+
+	//protected constructor to be called by Texture1dArray()
+	explicit Texture2D(const TextureInfo& texi, const void* data= 0);
 };
 
 /**
- * 	2D Depth Texture;
+ * 	2D Depth Texture; Usable as shadow map or other depth-buffer related algorithms
  *
  * 	Features:
- * 		-	MipMapping;
  * 		-	CL interOp;
  */
 class Texture2DDepth: public  Texture2D
@@ -228,13 +232,15 @@ public:
 				int width, int height,
 				bool allocHostMemory, bool clInterOp);
 	virtual ~Texture2DDepth();
-public:
+
 	virtual bool operator==(const BufferInterface& rhs) const;
 
-	//override to set compare func etc; can maybe bypassed via sampler objects, but for now..
+	//override to set compare func etc; Probably it's possible to be  bypassed via sampler objects, but for now..
 	virtual void allocGL()throw(BufferException);
 
 };
+
+
 
 
 /**
@@ -265,7 +271,12 @@ protected:
 	virtual void generateCLGL()throw(BufferException);
 	virtual void allocGL()throw(BufferException);
 	virtual void writeGL(const void* data)throw(BufferException);
+
+	//protected constructor to be called by Texture2dArray()
+	explicit Texture3D(const TextureInfo& texi, const void* data= 0);
 };
+
+
 
 /**
  * 	2D CubeMap Texture;
@@ -287,13 +298,14 @@ class Texture2DCube: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	explicit Texture2DCube(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
+	explicit Texture2DCube(String name, BufferSemantics bufferSemantics,
 			int quadraticSize, const TexelInfo& texeli,
+			 bool allocHostMemory,
 			//an array containing all six images in the following order:
 			// +x,-x,+y,-y,+z,-z
 			const void* data =0,
 			bool genMipmaps = false);
-	explicit Texture2DCube(Path fileName, bool clInterOp,  bool genMipmaps = false);
+
 	virtual ~Texture2DCube();
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
@@ -302,19 +314,77 @@ protected:
 
 	//throw exception, as interop isn't supported (yet) by this framework
 	virtual void generateCLGL()throw(BufferException);
+
 	virtual void allocGL()throw(BufferException);
 
-	//there are several ways to bind a cube map to an FBO
-	//TODO find at least a working one, better a short/efficient one
 	virtual void writeGL(const void* data)throw(BufferException);
 
 	//must also be overridden by CubeMap class, as the read call must happen six times instead of one;
 	//be sure that the data buffer is 6 times bigger than one face;
 	virtual void readGL(void* data)throw(BufferException);
-	//must also be overriden by CubeMap, as there are six color attachments to to or to work with
+
+	//there are several ways to bind a cube map to an FBO
+	//TODO find at least a working one, better a short/efficient one
+	//must also be overriden by CubeMap, as there are six color attachments instead of one
 	//glFrameBufferTextureFace... we'll see
 	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException);
 
+};
+
+
+
+
+
+/**
+ * 	1D Texture Array;
+ *
+ * 	Features:
+ * 		-	MipMapping;
+* 	Drawbacks:
+* 		-	no CL interop possible (afaik)
+ */
+class Texture1DArray: public Texture2D
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	explicit Texture1DArray(String name, BufferSemantics bufferSemantics,
+			int width, int numLayers,  const TexelInfo& texeli,
+			 bool allocHostMemory, const void* data =0,  bool genMipmaps = false);
+
+	virtual ~Texture1DArray();
+public:
+	virtual bool operator==(const BufferInterface& rhs) const;
+protected:
+
+	//overrid Texture2D functionality and throw exception due to non-interoperability of array types
+	virtual void generateCLGL()throw(BufferException);
+
+};
+
+
+/**
+ * 	2D Texture Array;
+ *
+ * 	Features:
+ * 		-	MipMapping;
+* 	Drawbacks:
+* 		-	no CL interop possible (afaik)
+ */
+class Texture2DArray: public Texture3D
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	explicit Texture2DArray(String name, BufferSemantics bufferSemantics,
+			int width, int height, int numLayers,  const TexelInfo& texeli,
+			 bool allocHostMemory, const void* data =0,  bool genMipmaps = false);
+
+	virtual ~Texture2DArray();
+public:
+	virtual bool operator==(const BufferInterface& rhs) const;
+protected:
+
+	//override Texture3D functionality and throw exception due to non-interoperability of array types
+	virtual void generateCLGL()throw(BufferException);
 };
 
 

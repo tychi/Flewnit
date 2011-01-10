@@ -183,6 +183,8 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 				  texelPreferredLayout,
 				  allocHostMemory,
 				  shareWithOpenCL,
+				  //dont't make rectangle; Rectangle is good for deferred rendering, not for decal textureing
+				  false,
 				  tempRGBA32FImage
 				  	  ?	reinterpret_cast<void*>(tempRGBA32FImage)
 					  : reinterpret_cast<void*>(image->accessPixels()),

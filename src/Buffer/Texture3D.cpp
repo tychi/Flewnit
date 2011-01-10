@@ -39,14 +39,23 @@ Texture	(
 	)
 )
 {
-	//TODO from here whole file
 	allocMem();
 
 	if(data)
 	{
 		setData(data,mBufferInfo->usageContexts);
 	}
+}
 
+Texture3D::Texture3D(const TextureInfo& texi, const void* data)
+:Texture(texi)
+{
+	allocMem();
+
+	if(data)
+	{
+		setData(data,mBufferInfo->usageContexts);
+	}
 }
 
 
