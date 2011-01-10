@@ -22,6 +22,7 @@
 
 
 #include <exception>
+#include <typeinfo>
 
 
 

@@ -56,10 +56,31 @@ void convertBGRAtoRGBA(BYTE* vec4uInt8Image, int numElements)
 	BYTE tmp;
 	for(int i = 0 ; i< numElements; i++ )
 	{
-		//exchange component 0 and 2 (R and G)
+		//exchange component 0 and 2 (R and B)
 		tmp = vec4uInt8Image[4*i];
 		vec4uInt8Image[4*i]= vec4uInt8Image[4*i + 2];
 		vec4uInt8Image[4*i + 2] = tmp;
+	}
+}
+
+void shiftUnsignedByteToSignedByteForNormalMapping(BYTE* unsignedArray, int sizeInByte)
+{
+	signed char* signedPtrToUnsignedArray = reinterpret_cast<signed char*>(unsignedArray);
+
+	for(int i = 0 ; i< sizeInByte; i++ )
+	{
+		//haxx: work on the same array with different type-interpreters
+		//cast unsigned byte to signed int, because we need "place" for the sign, subtract 128, AND it with an 8-bit-flag(redundant, but to be sure..),
+		//then cast back the int to signed byte, as now, the value is in the valid range [-128..127]
+		signedPtrToUnsignedArray[i] =  static_cast<signed char>( (static_cast<int>(unsignedArray[i]) - 128) & 0xFFFF );
+	}
+}
+
+void  addAlphaChannelToVec3FImage(const Vector3D* vec3Image, Vector4D* newVec4Image, int numElements)
+{
+	for(int i = 0 ; i< numElements; i++ )
+	{
+		newVec4Image[i] = Vector4D( vec3Image[i], 1.0f);
 	}
 }
 
@@ -82,10 +103,8 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 	          << "; width: " << image->getWidth()
 	          << "; height" << image->getHeight()<<";\n";
 
-
-	  int dimentionality = (image->getHeight() !=1) ? 2 : 1;
-
-
+	  Vector4D* tempRGBA32FImage = 0;
+	  assert(sizeof(Vector4D) == 16 && "Vector types must be tightly packed");
 
 	  switch(image->getImageType())
 	  {
@@ -100,15 +119,36 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 #if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR
 			  convertBGRAtoRGBA(image->accessPixels(), image->getWidth()*image->getHeight());
 #endif
-			  //override as i don't have time for sophisticated adoptio atm
-			  texelPreferredLayout = TexelInfo();
+
+			  if(bufferSemantics == DISPLACEMENT_SEMANTICS)
+			  {
+				  LOG<<WARNING_LOG_LEVEL<<"Trying the shiftUnsignedByteToSignedByteForNormalMapping; "
+						 << "This is experimental; in case of bugs, check  Loader::loadTexture()";
+				  //normalmapping adoption :)
+				  shiftUnsignedByteToSignedByteForNormalMapping(image->accessPixels(), image->getImageSize());
+				  texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_INT,8,true);
+			  }
+			  else
+			  {
+				  //override to default as i don't have time for sophisticated adoption atm
+				  texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_UINT,8,true);
+			  }
 		  }
 		  break;
 	  case FIT_RGBAF:
-
+		  	  texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
 		  break;
 	  case FIT_RGBF:
+		  	  //add alpha channel for alignment purposes; freeimange doesn't support this conversion,
+		  	  //so let's hack it for ourselves:
+		  	  tempRGBA32FImage	= new Vector4D[image->getWidth()*image->getHeight()];
 
+		  	  assert((image->getBitsPerPixel()==96) && "it is really 32bit three component image" );
+
+		  	  addAlphaChannelToVec3FImage(reinterpret_cast<Vector3D*>(image->accessPixels()),
+		  			  tempRGBA32FImage, image->getWidth()*image->getHeight());
+
+		  	  texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
 		  break;
 	  default:
 		  throw(BufferException("sorry, there is no other image type but "
@@ -117,95 +157,47 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 
 
 
+	  int dimensionality = (image->getHeight() !=1) ? 2 : 1;
+
+	  if(dimensionality == 1)
+	  {
+		  returnTex = new Texture1D(
+				  name,
+				  bufferSemantics,
+				  allocHostMemory,
+				  image->getWidth(),
+				  texelPreferredLayout,
+				  tempRGBA32FImage
+				  	  ?	reinterpret_cast<void*>(tempRGBA32FImage)
+					  : reinterpret_cast<void*>(image->accessPixels()),
+				  genMipmaps);
+
+	  }
+	  else
+	  {
+		  returnTex = new Texture2D(
+				  name,
+				  bufferSemantics,
+				  allocHostMemory,
+				  image->getWidth(),
+				  image->getHeight(),
+				  texelPreferredLayout,
+				  shareWithOpenCL,
+				  tempRGBA32FImage
+				  	  ?	reinterpret_cast<void*>(tempRGBA32FImage)
+					  : reinterpret_cast<void*>(image->accessPixels()),
+				  genMipmaps);
+	  }
 
 
+	  if(tempRGBA32FImage)
+	  {
+		  delete tempRGBA32FImage;
+	  }
 
+	  delete image;
 
-//	  GLenum textureTarget =  (image->getHeight() !=1) ? GL_TEXTURE_2D : GL_TEXTURE_1D;
-//	  ContextTypeFlags contextFlags(
-//			  OPEN_GL_CONTEXT_TYPE_FLAG |
-//			  (allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG ) |
-//			  //only allow CL sharing for 2D textures;
-//			  ( (shareWithOpenCL && (dimentionality ==2) ) ? OPEN_CL_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
-//	  );
-//
-//	  new Texture1D()
-//
-//	  TextureInfo texInfo(
-//				BufferInfo(
-//					name,
-//					contextFlags,
-//					bufferSemantics
-//				),
-//				1,
-//				//default invalid
-//				Vector3Dui(0,0,0),
-//				//default invalid
-//				TexelInfo(),
-//				GL_TEXTURE_1D,
-//				genMipmaps,
-//				false,
-//				false,
-//				0,
-//				0
-//			);
-
-	  //TODO
-//
-//	  image->getImageType();
-//	  //source code study seems to promise that to 24bit- RGB will be added an 8bit alpha channel with values 0xFF;
-//	  image->convertTo32Bits();
-//	  image->convertToType(FIT_RGBAF); //FIT_RGBA16
-//	  image->getBitsPerPixel();
-//
-//	  image->getColorType(); // hope to be FIC_RGBALPHA or  FIC_RGB
-//	  image->getImageSize(); //in bytes
-//	  image->getChannel();
-//	  image->accessPixels();
-//
-//
-//	    if (image->getBitsPerPixel() == 32)
-//	    {
-//	      *glChannelOrder = GL_RGBA;
-//	      *texChannelOrder = GL_BGRA;
-//	    } else if (image->getBitsPerPixel() == 24) {
-//	      *glChannelOrder = GL_RGB;
-//	      *texChannelOrder = GL_BGR;
-//	    } else {
-//	      *glChannelOrder = GL_RGB;
-//	      *texChannelOrder = GL_BGR;
-//	      Logger::Instance().log("WARNING",
-//	              "Texture", "Converting "+ path+ " to 24bits.");
-//	      if (image->convertTo24Bits()) {
-//	        Logger::Instance().log("WARNING", "Texture", "SUCESS!");
-//	      } else {
-//	        Logger::Instance().log("ERROR",
-//	                "Texture", "Converting "+ path+ " to 24bit failed.");
-//	      }
-//	  	  }
-
-	  //waste:
-	  //	  if(texelPreferredLayout.internalGPU_DataType == GPU_DATA_TYPE_FLOAT &&
-	  //			  texelPreferredLayout.bitsPerChannel == 16)
-	  //	  {
-	  //		  LOG<<WARNING_LOG_LEVEL<<"Sorry but freeimage doesn't seem to support half float; Setting to full float;(\n";
-	  //		  texelPreferredLayout.bitsPerChannel = 32;
-	  //	  }
-	  //
-	  //	  if(texelPreferredLayout.internalGPU_DataType == GPU_DATA_TYPE_FLOAT &&
-	  //		( (image->getImageType() != FIT_RGBAF) ||  (image->getImageType() != FIT_RGBF)   ) )
-	  //	  {
-	  //		  LOG<<WARNING_LOG_LEVEL<<"Sorry but the loaded image has no float type; it would be"<<
-	  //				  "wasted memory to try to convert is, and plus, freeimage doenst support this 'upcast';"<<
-	  //				  "taking instead normalized unsigned byte\n";
-	  //		  texelPreferredLayout.bitsPerChannel = 32;
-	  //	  }
-
-
-	    delete image;
-
-	    return returnTex;
-
+	  return returnTex;
 }
 
 

@@ -21,8 +21,9 @@ Texture	(
 			bufferSemantics
 		),
 		1,
-		Vector3Dui(width,0,0),
+		Vector3Dui(width,1,1),
 		texeli,
+		GL_TEXTURE_1D,
 		genMipmaps,
 		false,
 		false,
@@ -31,35 +32,40 @@ Texture	(
 	)
 )
 {
+	allocMem();
 
+	if(data)
+	{
+		setData(data,mBufferInfo->usageContexts);
+	}
 }
 
-Texture1D::Texture1D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
-		Path fileName,  bool genMipmaps)
-:
-		Texture	(
-			TextureInfo(
-				BufferInfo(
-					name,
-					ContextTypeFlags( (allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG ) | OPEN_GL_CONTEXT_TYPE_FLAG ),
-					bufferSemantics
-				),
-				1,
-				//default invalid
-				Vector3Dui(0,0,0),
-				//default invalid
-				TexelInfo(),
-				GL_TEXTURE_1D,
-				genMipmaps,
-				false,
-				false,
-				0,
-				0
-			)
-		)
-{
-
-}
+//Texture1D::Texture1D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
+//		Path fileName,  bool genMipmaps)
+//:
+//		Texture	(
+//			TextureInfo(
+//				BufferInfo(
+//					name,
+//					ContextTypeFlags( (allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG ) | OPEN_GL_CONTEXT_TYPE_FLAG ),
+//					bufferSemantics
+//				),
+//				1,
+//				//default invalid
+//				Vector3Dui(0,0,0),
+//				//default invalid
+//				TexelInfo(),
+//				GL_TEXTURE_1D,
+//				genMipmaps,
+//				false,
+//				false,
+//				0,
+//				0
+//			)
+//		)
+//{
+//
+//}
 
 Texture1D::~Texture1D()
 {

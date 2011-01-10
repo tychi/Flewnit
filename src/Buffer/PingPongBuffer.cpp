@@ -156,6 +156,8 @@ void PingPongBuffer::generateGL()throw(BufferException)
 {}
 void PingPongBuffer::generateCL()throw(BufferException)
 {}
+void PingPongBuffer::generateCLGL()throw(BufferException)
+{}
 
 void PingPongBuffer::bindGL()throw(BufferException)
 {mPingPongBuffers[mCurrentActiveBufferIndex]->bindGL();}

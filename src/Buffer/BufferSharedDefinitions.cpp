@@ -236,6 +236,9 @@ TextureInfo::TextureInfo(
 		numMultiSamples(numMultiSamples),
 		numArrayLayers(numArrayLayers)
 {
+
+//TODO validate that there are no bad combinations:
+
 //	if( (isRectangleTex && (isMipMapped || (numMultiSamples != 0) || (numArrayLayers != 0)) ) ||
 //		(isMipMapped && (numMultiSamples != 0)) ||
 //		(isCubeTex && (numMultiSamples != 0) ) ||
@@ -245,12 +248,10 @@ TextureInfo::TextureInfo(
 //	{
 //
 //	}
+
+
 	//TexelInfo class checks itself during construction for integrity; so, we can "construct"
 	//our enums without error checking:
-
-
-
-
 	calculateCLGLImageFormatValues();
 
 }
@@ -506,6 +507,9 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 		assert(0&&"should never and here");
 		break;
 	}
+
+	numElements = dimensionExtends.x * dimensionExtends.y * dimensionExtends.z;
+	bufferSizeInByte = BufferHelper::elementSize(elementType) * numElements;
 
 	return true;
 }

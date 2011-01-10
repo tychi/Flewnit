@@ -18,6 +18,8 @@
 
 #include "BufferInterface.h"
 
+#include <typeinfo>
+
 
 namespace Flewnit
 {
@@ -193,7 +195,7 @@ class Texture2D: public Texture
 public:
 	explicit Texture2D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
 			int width, int height, const TexelInfo& texeli, bool clInterOp, const void* data =0,  bool genMipmaps = false);
-	explicit Texture2D(Path fileName, bool clInterOp, bool genMipmaps = false);
+	//explicit Texture2D(Path fileName, bool clInterOp, bool genMipmaps = false);
 	virtual ~Texture2D();
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
