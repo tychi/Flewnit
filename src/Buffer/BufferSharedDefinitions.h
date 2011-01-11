@@ -357,8 +357,8 @@ public:
 	bool isRectangleTex;	//default false;
 	bool isCubeTex;			//default false;
 
-	GLint numMultiSamples; 	 //default 0 to indicate no multisampling
-	GLint numArrayLayers;	 //default 0 to indicate no array stuff
+	GLint numMultiSamples; 	 //default 1 to indicate no multisampling
+	GLint numArrayLayers;	 //default 1 to indicate no array stuff
 	///\}
 
 	//automatically determined values; only needed for internal GL/CL calls:
@@ -386,8 +386,8 @@ public:
 			bool isMipMapped = false,
 			bool isRectangleTex = false,
 			bool isCubeTex = false,
-			GLint numMultiSamples = 0,
-			GLint numArrayLayers = 0
+			GLint numMultiSamples = 1,
+			GLint numArrayLayers = 1
 			)throw(BufferException);
 	explicit TextureInfo(const TextureInfo& rhs)throw(BufferException);
 	virtual ~TextureInfo(){}

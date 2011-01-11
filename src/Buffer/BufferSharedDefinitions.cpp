@@ -516,7 +516,18 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 		break;
 	}
 
-	numElements = dimensionExtends.x * dimensionExtends.y * dimensionExtends.z;
+	GLint maxNumMultiSamples;
+	glGetIntegerv(GL_MAX_COLOR_TEXTURE_SAMPLES, & maxNumMultiSamples);
+
+	if(! BufferHelper::isPowerOfTwo(numMultiSamples) ||
+			(numMultiSamples > maxNumMultiSamples))
+	{
+		throw(BufferException("numMultiSamples must be power of two "
+				"and <= GL_MAX_COLOR_TEXTURE_SAMPLES"));
+	}
+
+	numElements = dimensionExtends.x * dimensionExtends.y * dimensionExtends.z
+			* numArrayLayers * numMultiSamples;
 	bufferSizeInByte = BufferHelper::elementSize(elementType) * numElements;
 	if(isCubeTex)
 	{
