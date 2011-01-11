@@ -81,12 +81,7 @@ bool Texture1D::operator==(const BufferInterface& rhs) const
 	else {return false;}
 }
 
-//throw exception due to non-interoperability
-void Texture1D::generateCLGL()throw(BufferException)
-{
-	throw(BufferException("Texture1D has no interop posibility with OpenCL yet,"
-			" altough it is possible in CUDA! This is frustrating, but we have to accept it ;(."));
-}
+
 
 void Texture1D::allocGL()throw(BufferException)
 {
@@ -120,5 +115,8 @@ void Texture1D::writeGL(const void* data)throw(BufferException)
 		glGenerateMipmap( mTextureInfoCastPtr->textureTarget );
 	}
 }
+
+
+
 
 }

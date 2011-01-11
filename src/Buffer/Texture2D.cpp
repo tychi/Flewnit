@@ -254,12 +254,6 @@ bool Texture1DArray::operator==(const BufferInterface& rhs) const
 	else {return false;}
 }
 
-//override Texture2D functionality and throw exception due to non-interoperability of array types
-void Texture1DArray::generateCLGL()throw(BufferException)
-{
-	throw(BufferException("CL/GL interop doesn't seem possible for texture arrays at the moment; sry ;("));
-}
-
 //--------------------------------------------------------------------------
 
 Texture2DArray::Texture2DArray(String name, BufferSemantics bufferSemantics,
@@ -305,12 +299,7 @@ bool Texture2DArray::operator==(const BufferInterface& rhs) const
 	else {return false;}
 }
 
-//override Texture3D functionality and throw exception due to non-interoperability of array types
-void Texture2DArray::generateCLGL()throw(BufferException)
-{
-	throw(BufferException(
-			"CL/GL interop doesn't seem possible for texture arrays at the moment; sry ;("));
-}
+
 
 //------------------------------------------------------------------------------
 

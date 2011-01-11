@@ -118,6 +118,8 @@ protected:
 	//(namely multisample textures), which don't seem to be writable, copyable ar readable
 	virtual void writeGL(const void* data)throw(BufferException)=0;
 	//can be non-pure, as clEnqueueWriteImage is quite generic;
+	//must be implemented with  an exception-throw for certain concrete Texture classes
+	//which don't have interop features
 	virtual void writeCL(const void* data)throw(BufferException);
 
 	//non-pure, as glGetTexImage is quite generic :); at least one generic GL function ;(
@@ -127,6 +129,8 @@ protected:
 	//must also be overridden by CubeMap class, as the read call must happen six times;
 	virtual void readGL(void* data)throw(BufferException);
 	//can be non-pure, as clEnqueueReadImage is quite generic;
+	//must be implemented with  an exception-throw for certain concrete Texture classes
+	//which don't have interop features
 	virtual void readCL(void* data)throw(BufferException)	;
 
 	//as it seems that a generic copying of many texture types can happen in an agnostic way
@@ -138,6 +142,8 @@ protected:
 	//glFrameBufferTextureFace... we'll see
 	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException);
 	//can be non-pure, as clEnqueueCopyImage is quite generic;
+	//must be implemented with  an exception-throw for certain concrete Texture classes
+	//which don't have interop features
 	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(BufferException);
 
 	//non-pure, as glDeleteTextures() applies to every texture type :)
@@ -172,11 +178,10 @@ public:
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
 protected:
-//#	include "BufferVirtualSignatures.h"
+
+#include "TextureNonCLInteropImplementations.h"
 
 
-	//throw exception due to non-interoperability
-	virtual void generateCLGL()throw(BufferException);
 	virtual void allocGL()throw(BufferException);
 	virtual void writeGL(const void* data)throw(BufferException);
 };
@@ -203,11 +208,12 @@ public:
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
 protected:
-//#	include "BufferVirtualSignatures.h"
+
 
 	virtual void generateCLGL()throw(BufferException);
 	virtual void allocGL()throw(BufferException);
 	virtual void writeGL(const void* data)throw(BufferException);
+
 
 	//protected constructor to be called by Texture2DDepth:
 	explicit Texture2D(String name,
@@ -310,10 +316,10 @@ public:
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;
 protected:
-//#	include "BufferVirtualSignatures.h"
 
-	//throw exception, as interop isn't supported (yet) by this framework
-	virtual void generateCLGL()throw(BufferException);
+
+#	include "TextureNonCLInteropImplementations.h"
+
 
 	virtual void allocGL()throw(BufferException);
 
@@ -325,7 +331,7 @@ protected:
 
 	//there are several ways to bind a cube map to an FBO
 	//TODO find at least a working one, better a short/efficient one
-	//must also be overriden by CubeMap, as there are six color attachments instead of one
+	//must also be overridden by CubeMap, as there are six color attachments instead of one
 	//glFrameBufferTextureFace... we'll see
 	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException);
 
@@ -356,8 +362,8 @@ public:
 	virtual bool operator==(const BufferInterface& rhs) const;
 protected:
 
-	//overrid Texture2D functionality and throw exception due to non-interoperability of array types
-	virtual void generateCLGL()throw(BufferException);
+#include "TextureNonCLInteropImplementations.h"
+
 
 };
 
@@ -383,14 +389,100 @@ public:
 	virtual bool operator==(const BufferInterface& rhs) const;
 protected:
 
-	//override Texture3D functionality and throw exception due to non-interoperability of array types
-	virtual void generateCLGL()throw(BufferException);
+#include "TextureNonCLInteropImplementations.h"
+
 };
 
 
 
-//TODO CONTINUE BUT NOW COFFE
 
+/**
+ * 	2D Multisample Texture;
+ *
+ *	Features:
+ *		- antialiasing possible with an MS Texture bound to an FBO
+ *		- stencil routed k-buffering possible for efficient depth peeling
+ *
+ * 	Drawbacks:
+ * 		-	no CL interop possible (afaik)
+ * 		-	no filtering, so no mipmapping
+ * 		-   no explicit data transfer from CPU memory known to me ;(
+ * 		- 	I don't know if a readback and/or copying between MS textures is possible;
+ * 			It won't be supported; The primaray Use of an
+ * 			MS Texture is as Render Target for Antialiasing and efficient depth peeling
+ */
+class Texture2DMultisample: public Texture
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	explicit Texture2DMultisample(String name, BufferSemantics bufferSemantics,
+			int width, int height, int numMultiSamples,  const TexelInfo& texeli);
+
+	virtual ~Texture2DMultisample();
+public:
+	virtual bool operator==(const BufferInterface& rhs) const;
+
+protected:
+
+	virtual void allocGL()throw(BufferException);
+
+#	include "TextureNonCLInteropImplementations.h"
+
+	//must be overidden with an exception-throw-implementation for certain concrete Texture classes
+	//(namely multisample textures), which don't seem to be writable, copyable ar readable
+	virtual void writeGL(const void* data)throw(BufferException)
+	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
+	virtual void readGL(void* data)throw(BufferException)
+	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
+	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
+	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
+
+};
+
+/**
+ * 	2D Multisample Array Texture;
+ *
+ *	Features:
+ *		- layered multisampled rendering; Don't know if this framework has any use of it, but
+ *		  every technique shall be ready to use, if there is not TOO much implementation overhead du to too much special cases;
+ *		- antialiasing possible with an MS Texture bound to an FBO
+ *		- stencil routed k-buffering possible for efficient depth peeling
+ *
+ * 	Drawbacks:
+ * 		-	no CL interop possible (afaik)
+ * 		-	no filtering, so no mipmapping
+ * 		-   no explicit data transfer from and to CPU memory known to me ;(
+ * 		- 	I don't know if a readback and/or copying between MS textures is possible;
+ * 			It won't be supported; The primary use of an
+ * 			MS Texture is as RenderTarget for anti aliasing and efficient depth peeling
+ */
+class Texture2DArrayMultiSample: public Texture
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	explicit Texture2DArrayMultiSample(String name, BufferSemantics bufferSemantics,
+			int width, int height, int numLayers, int numMultiSamples,  const TexelInfo& texeli);
+
+	virtual ~Texture2DArrayMultiSample();
+public:
+	virtual bool operator==(const BufferInterface& rhs) const;
+
+protected:
+
+	virtual void allocGL()throw(BufferException);
+
+#	include "TextureNonCLInteropImplementations.h"
+
+	//must be overidden with an exception-throw-implementation for certain concrete Texture classes
+	//(namely multisample textures), which don't seem to be writable, copyable ar readable
+	virtual void writeGL(const void* data)throw(BufferException)
+	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
+	virtual void readGL(void* data)throw(BufferException)
+	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
+	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
+	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
+
+};
 
 
 
