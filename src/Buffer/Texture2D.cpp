@@ -162,6 +162,131 @@ void Texture2D::writeGL(const void* data)throw(BufferException)
 		glGenerateMipmap( mTextureInfoCastPtr->textureTarget );
 	}
 }
+//-----------------------------------------------------------------------
+
+Texture2DCube::Texture2DCube(String name,
+		int quadraticSize, const TexelInfo& texeli,
+		 bool allocHostMemory,
+		//an array containing all six images in the following order:
+		// +x,-x,+y,-y,+z,-z
+		const void* data,
+		bool genMipmaps)
+:
+	Texture	(
+		TextureInfo(
+			BufferInfo(
+				name,
+				ContextTypeFlags(
+						(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
+						| OPEN_GL_CONTEXT_TYPE_FLAG
+				),
+				ENVMAP_SEMANTICS
+			),
+			2,
+			Vector3Dui(quadraticSize,quadraticSize,1),
+			texeli,
+			GL_TEXTURE_CUBE_MAP,
+			genMipmaps,
+			false,
+			true,
+			1,
+			1
+		)
+	)
+{
+	allocMem();
+
+	if(data)
+	{
+		setData(data,mBufferInfo->usageContexts);
+	}
+}
+Texture2DCube::~Texture2DCube()
+{
+	//do nothing
+}
+
+bool Texture2DCube::operator==(const BufferInterface& rhs) const
+{
+	const Texture2DCube* rhsTexPtr = dynamic_cast<const Texture2DCube*>(&rhs);
+	if (rhsTexPtr)
+	{return   (*mTextureInfoCastPtr) == (rhsTexPtr->getTextureInfo()) ;}
+	else {return false;}
+}
+
+void Texture2DCube::allocGL()throw(BufferException)
+{
+	for(int i=0; i<6; i++)
+	{
+		glTexImage2D(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0,
+				mTextureInfoCastPtr->glImageFormat.desiredInternalFormat,
+				mTextureInfoCastPtr->dimensionExtends.x,
+				mTextureInfoCastPtr->dimensionExtends.y,
+				0,
+				mTextureInfoCastPtr->glImageFormat.channelOrder,
+				mTextureInfoCastPtr->glImageFormat.channelDataType,
+				//don't set data yet, just alloc mem
+				0
+		);
+	}
+}
+
+void Texture2DCube::writeGL(const void* data)throw(BufferException)
+{
+	assert( ((mTextureInfoCastPtr->bufferSizeInByte % 6) == 0)
+			&& "buffer size of cube map  must be multiple of 6");
+	int sizeInByteOfOneFace = mTextureInfoCastPtr->bufferSizeInByte / 6;
+	for(int i=0; i<6; i++)
+	{
+		glTexSubImage2D(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0,
+				0,0,
+				mTextureInfoCastPtr->dimensionExtends.x,
+				mTextureInfoCastPtr->dimensionExtends.y,
+
+				mTextureInfoCastPtr->glImageFormat.channelOrder,
+				mTextureInfoCastPtr->glImageFormat.channelDataType,
+				//pointer to beginning of current face
+				&  (reinterpret_cast<const GLubyte*>(data)[i* sizeInByteOfOneFace])
+		);
+	}
+}
+
+//must also be overridden by CubeMap class, as the read call must happen six times instead of one;
+//be sure that the data buffer is 6 times bigger than one face;
+void Texture2DCube::readGL(void* data)throw(BufferException)
+{
+	assert( ((mTextureInfoCastPtr->bufferSizeInByte % 6) == 0)
+				&& "buffer size of cube map  must be multiple of 6");
+		int sizeInByteOfOneFace = mTextureInfoCastPtr->bufferSizeInByte / 6;
+
+	for(int i=0; i<6; i++)
+	{
+		glGetTexImage(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0,
+				mTextureInfoCastPtr->glImageFormat.channelOrder,
+				mTextureInfoCastPtr->glImageFormat.channelDataType,
+				//pointer to beginning of current face
+				&  (reinterpret_cast<GLubyte*>(data)[i* sizeInByteOfOneFace])
+				);
+	}
+}
+
+//there are several ways to bind a cube map to an FBO
+//TODO find at least a working one, better a short/efficient one
+//must also be overridden by CubeMap, as there are six color attachments instead of one
+//glFrameBufferTextureFace... we'll see
+void Texture2DCube::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
+{
+	//TODO implement when FBO class exists;
+	throw(BufferException("Texture::copyGLFrom: sorry, for copying, FBOs are needed, and the still must be implemented;"
+			" Plus useful framebuffer binding of a cube map for blitting is still a TODO"));
+}
+
 
 
 //-----------------------------------------------------------------------

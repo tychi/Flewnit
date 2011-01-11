@@ -304,7 +304,7 @@ class Texture2DCube: public Texture
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	explicit Texture2DCube(String name, BufferSemantics bufferSemantics,
+	explicit Texture2DCube(String name,
 			int quadraticSize, const TexelInfo& texeli,
 			 bool allocHostMemory,
 			//an array containing all six images in the following order:

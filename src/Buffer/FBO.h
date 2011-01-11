@@ -29,6 +29,8 @@ class FBO
 
 public:
 
+	FBO(String name);
+
 };
 
 }
