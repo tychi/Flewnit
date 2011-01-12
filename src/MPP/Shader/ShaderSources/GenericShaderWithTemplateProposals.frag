@@ -113,6 +113,9 @@ uniform float minimalshadowAttenuation = 0.2;
 #ifdef SHADER_FEATURE_LIGHTING
 uniform float shininess = 1.0;
 #endif
+#ifdef SHADER_FEATURE_CUBE_MAPPING
+uniform float cubeMapReflectivity = 0.5;
+#endif
 //}
 //------------------------------------------------------------------------------------------------
 
@@ -130,6 +133,10 @@ uniform sampler2DShadow shadowMap;
 
 #ifdef SHADER_FEATURE_NORMAL_MAPPING
 uniform sampler2D normalMap;
+#endif
+
+#ifdef SHADER_FEATURE_CUBE_MAPPING
+uniform samplerCube cubeMap;
 #endif
 //}
 //------------------------------------------------------------------------------------------------
@@ -174,17 +181,15 @@ void main()
 {
 	finalLuminance = vec4(0.0,0.0,0.0,0.0);
 
+	vec4 fragmentColor =
+#		ifdef  SHADER_FEATURE_DECAL_TEXTURING
+		texture(decalTexture,texCoords.xy);
+#		else
+		vec4(1.0,1.0,1.0,1.0);
+#		endif
+
 #	ifdef SHADER_FEATURE_LIGHTING
 	vec3 fragToCamN = normalize(eyeVecInWorldCoords - positionInWorldCoords);
-
-
-	vec4 fragmentColor =
-#	ifdef  SHADER_FEATURE_DECAL_TEXTURING
-		texture(decalTexture,texCoords.xy);
-#	else
-		vec4(1.0,1.0,1.0,1.0);
-#	endif
-
 
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -270,7 +275,7 @@ void main()
 			{
 				spotLightConeAttenuation = lightSource.ambientFactor;
 			}
-#			endif	
+#			endif	//SHADER_FEATURE_USE_SPOTLIGHTS
 
 	
 			finalLuminance + =
@@ -286,11 +291,20 @@ void main()
 					( vec4(lightSource.diffuseColor,1.0) *  diffuseFactor ) +
 					( vec4(lightSource.specularColor,1.0) *  specularFactor )
 				);
+
 		} //endif(cosFragToLight_Normal > 0)	
 
 #	ifdef SHADER_FEATURE_MANY_LIGHTSOURCES
 	} //end of for-loop
 #	endif
+
+#	ifdef SHADER_FEATURE_CUBE_MAPPING
+	//lerp between actual color and cubemap color
+	finalLuminance = mix( 	finalLuminance, 
+				texture(cubeMap, normalWN),
+				cubeMapReflectivity );
+#	endif
+
 
 #	else 	//SHADER_FEATURE_LIGHTING
 	finalLuminance = fragmentColor;
