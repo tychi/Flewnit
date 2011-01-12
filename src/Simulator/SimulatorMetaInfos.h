@@ -53,17 +53,19 @@ enum RenderTargetType
 
 enum SceneNodeTypeFlags
 {
-	PURE_NODE =0,
-	CAMERA_NODE = 0<<1,
+	PURE_NODE 		=	0,
+	CAMERA_NODE		= 	1<<0,
+	LIGHT_NODE		= 	1<<1,
 
-	RIGID_BODY = 0<<2,
-	FLUID_OBJECT = 0<<3,
-	SOFT_BODY_OBJECT = 0<<4,
-	CLOTH_OBJECT = 0<<5,
-	HAIR_OBJECT = 0<<6,
+	RIGID_BODY 		= 1<<2,
+	FLUID_OBJECT 	= 1<<3,
+	SOFT_BODY_OBJECT = 1<<4,
+	CLOTH_OBJECT	 = 1<<5,
+	HAIR_OBJECT 	= 1<<6,
+	STATIC_OBJECT	= 1<<7,
 
-	VISUAL_OBJECT = 0<<7,
-	SOUND_OBJECT = 0<<8
+	VISUAL_OBJECT 	= 1<<7,
+	SOUND_OBJECT 	= 1<<8
 
 };
 

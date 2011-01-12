@@ -24,12 +24,16 @@ public:
 	SimulationResourceManager();
 	virtual ~SimulationResourceManager();
 
-	//neede by materials to get info about current sim pipeline
+	//neede by materials to get info about current sim pipeline stage
 	inline SimulationPipelineStage* getCurrentSimulationPipelineStage()const
 			{return mCurrentSimulationPipelineStage;}
 
 
 	RenderTarget* getGlobalRenderTarget()const;
+
+	Scene* getScene()const;
+
+	void registerInstanceManager();
 
 private:
 
@@ -41,7 +45,7 @@ private:
 	Scene* mScene;
 	//RenderTarget* mGlobalRenderTarget;
 
-	Map<ID, InstanceManager*> mRegisteredInstanceManagers;
+	Map<String, InstanceManager*> mRegisteredInstanceManagers;
 
 	Map<String, SimulationPipelineStage*> mRegisteredPipeLineStages;
 

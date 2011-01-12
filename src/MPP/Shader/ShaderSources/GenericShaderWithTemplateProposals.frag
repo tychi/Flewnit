@@ -106,7 +106,9 @@ uniform LightSource lightSource;
 #endif
 
 #ifdef	SHADER_FEATURE_SHADOWING
+#ifndef SHADER_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER
 uniform mat4 worldToShadowMapMatrix; //bias*perspLight*viewLight
+#endif
 //clamp the attenuation due to shadowmapping to [minimalshadowAttenuation, 1.0]
 uniform float minimalshadowAttenuation = 0.2;
 #endif
@@ -202,11 +204,14 @@ void main()
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #	ifdef SHADER_FEATURE_SHADOWING
 	float shadowAttenuation = minimalshadowAttenuation;
-	vec4 shadowCoord =positionInWorldCoords * WorldToShadowMapMatrix;
+
+#	ifndef SHADER_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER
+	vec4 shadowCoord =positionInWorldCoords * worldToShadowMapMatrix;
+#	endif
 	//divide by homogene coord:
 	shadowCoord /= shadowCoord.w;
 	//we don't want a squared shadow-throwing lightsource impression, but a circled one:	
-	if( length(vec2(shadowCoord.x, shadowCoord.y)) < 1.0 )
+	if( length(vec2(0.5 + shadowCoord.x, 0.5  shadowCoord.y)) < 0.5 )
 	{
 		shadowAttenuation = clamp(texture(shadowMap, shadowCoord.xyz),minimalshadowAttenuation , 1.0);	
 	}
