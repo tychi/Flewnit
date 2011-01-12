@@ -39,6 +39,8 @@ precision highp float;
 #define SHADER_FEATURE_MANY_LIGHTSOURCES
 
 #define	SHADER_FEATURE_SHADOWING
+//#define SHADER_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER
+
 #define SHADER_FEATURE_NORMAL_MAPPING
 #define SHADER_FEATURE_CUBE_MAPPING
 
@@ -95,6 +97,10 @@ uniform mat4 normalMatrix;
 //uniform mat4 viewMatrix;
 //uniform mat4 projectionMatrix;
 uniform mat4 viewProjectionMatrix;
+
+#if (defined(SHADER_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER) && defined(SHADER_FEATURE_SHADOWING) )
+uniform mat4 worldToShadowMapMatrix; //bias*perspLight*viewLight
+#endif
 //}
 //----------------------------------------------------------------------------------------------------
 
@@ -138,12 +144,20 @@ layout(location = Z_INDEX_SEMANTICS ) 	in vec4 inVZIndex;
 //{%vertShaderOutput}
 //{
 out vec4 positionInWorldCoords;
+
 out vec4 normalInWorldCoords;
-out  vec4 texCoords;
+#ifdef SHADER_FEATURE_DECAL_TEXTURING
+out vec4 texCoords;
+#endif
 #ifdef SHADER_FEATURE_NORMAL_MAPPING
 //create TBN-matrix in fragment shader due to the several lightsources;
 //we transform from tangent space to view space via putting the vectors column-wise into a 3x3-matrix: mat3(t,b,n);
 out vec4 tangentInWorldCoords;
+#endif
+
+#if (defined(SHADER_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER) && defined(SHADER_FEATURE_SHADOWING) )
+out vec4 shadowCoord;
+#endif
 //}
 //----------------------------------------------------------------------------------------------------
 
@@ -151,7 +165,27 @@ out vec4 tangentInWorldCoords;
 
 void main()
 {
+#	ifdef SHADER_FEATURE_INSTANCING
+	mat4 modelMatrix = modelMatrices[gl_InstanceID];
 
+	mat4 normalMatrix = normalMatrices[gl_InstanceID];
+#	endif
 
+	positionInWorldCoords =  	modelMatrix * inVPosition;
+	normalInWorldCoords = 		normalMatrix * inVNormal;
+
+#	ifdef SHADER_FEATURE_NORMAL_MAPPING
+	tangentInWorldCoords = 		normalMatrix * inVTangent;
+#	endif
+
+#	ifdef SHADER_FEATURE_DECAL_TEXTURING
+	texCoords = inVTexCoord;
+#	endif
+
+#if 	(defined(SHADER_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER) && defined(SHADER_FEATURE_SHADOWING) )
+	shadowCoord = worldToShadowMapMatrix *  positionInWorldCoords;
+#	endif
+
+	gl_Position = viewProjectionMatrix * positionInWorldCoords;
 
 }

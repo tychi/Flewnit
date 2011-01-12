@@ -38,6 +38,8 @@ precision highp float;
 #define SHADER_FEATURE_MANY_LIGHTSOURCES
 
 #define	SHADER_FEATURE_SHADOWING
+//#define SHADER_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER
+
 #define SHADER_FEATURE_NORMAL_MAPPING
 #define SHADER_FEATURE_CUBE_MAPPING
 
@@ -104,7 +106,7 @@ uniform LightSource lightSource;
 #endif
 
 #ifdef	SHADER_FEATURE_SHADOWING
-uniform mat4 WorldToShadowMapMatrix; //bias*perspLight*viewLight
+uniform mat4 worldToShadowMapMatrix; //bias*perspLight*viewLight
 //clamp the attenuation due to shadowmapping to [minimalshadowAttenuation, 1.0]
 uniform float minimalshadowAttenuation = 0.2;
 #endif
@@ -154,6 +156,11 @@ in vec4 texCoords;
 //we transform from tangent space to view space via putting the vectors column-wise into a 3x3-matrix: mat3(t,b,n);
 in vec4 tangentInWorldCoords;
 #endif
+
+#if (defined(SHADER_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER) && defined(SHADER_FEATURE_SHADOWING) )
+in vec4 shadowCoord;
+#endif
+
 //}
 //------------------------------------------------------------------------------------------------
 //section 8: Fragment outputs
