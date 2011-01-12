@@ -11,8 +11,9 @@
 //{
 precision highp float;
 //}
+//----------------------------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 //section 2: defines:
 //{%defines}
 //{
@@ -49,18 +50,19 @@ precision highp float;
 #define NUM_LIGHTSOURCES 4
 
 //}
-
 //----------------------------------------------------------------------------------------------------
 
+
+//----------------------------------------------------------------------------------------------------
 //section 3: Data type definitions:
 //{%typeDefinitions}
 //{
 
 //}
-
 //----------------------------------------------------------------------------------------------------
 
 
+//----------------------------------------------------------------------------------------------------
 //section 4:  uniform buffers:
 //{%uniformBuffers}
 //{
@@ -76,7 +78,10 @@ layout(shared) uniform ModelMatrixBuffer
 #endif
 
 //}
+//----------------------------------------------------------------------------------------------------
 
+
+//----------------------------------------------------------------------------------------------------
 //section 5: standard uniforms:
 //{%standardUniforms}
 //{
@@ -90,22 +95,18 @@ uniform mat4 normalMatrix;
 //uniform mat4 viewMatrix;
 //uniform mat4 projectionMatrix;
 uniform mat4 viewProjectionMatrix;
-
 //}
-
+//----------------------------------------------------------------------------------------------------
 
 //section 6:  uniform samplers:
 //{%uniformSamplers}
 //{
-
 //normally, there is no texturing in the vertex shader;
-
 //}
-
-
 //----------------------------------------------------------------------------------------------------
 
 
+//----------------------------------------------------------------------------------------------------
 //section 7: shader specific input:
 //{%vertShaderInput}
 //{
@@ -130,28 +131,27 @@ layout(location = Z_INDEX_SEMANTICS ) 	in vec4 inVZIndex;
 #endif
 
 //}
-
 //----------------------------------------------------------------------------------------------------
 
-
+//----------------------------------------------------------------------------------------------------
 //section 8:  shader specific output:
 //{%vertShaderOutput}
 //{
-in vec4 positionInWorldCoords;
-in vec4 normalInWorldCoords;
-in vec4 texCoords;
+out vec4 positionInWorldCoords;
+out vec4 normalInWorldCoords;
+out  vec4 texCoords;
 #ifdef SHADER_FEATURE_NORMAL_MAPPING
 //create TBN-matrix in fragment shader due to the several lightsources;
 //we transform from tangent space to view space via putting the vectors column-wise into a 3x3-matrix: mat3(t,b,n);
-out vec4 biNormalInWorldCoords;
-
+out vec4 tangentInWorldCoords;
 //}
-
 //----------------------------------------------------------------------------------------------------
 
 
 
 void main()
 {
+
+
 
 }
