@@ -5,6 +5,7 @@ include/GL3/
 Makefile
 CMakeCache.txt
 flewnitLog.txt
+.csettings
 cmake_install.cmake
 *.dia~
 *.dia.autosave

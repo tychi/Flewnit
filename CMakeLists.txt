@@ -59,7 +59,7 @@ if(UNIX)
     endif()
     
     #Set c++0x
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
     
 elseif(WIN32)
 
