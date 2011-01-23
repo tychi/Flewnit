@@ -1,0 +1,10 @@
+//HAXX to get rid of this compiler error rising when grabbing assimp from git:
+//assimp/code/SplitByBoneCountProcess.cpp:265: error: ‘SIZE_MAX’ was not declared in this scope
+#ifndef _MSC_VER
+/* Limit of `size_t' type.  */
+# if __WORDSIZE == 64
+#  define SIZE_MAX		(18446744073709551615UL)
+# else
+#  define SIZE_MAX		(4294967295U)
+# endif
+#endif

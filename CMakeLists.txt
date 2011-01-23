@@ -27,7 +27,7 @@ if(UNIX)
 
     option(RELEASE "build in Release mode for more performance but no debugging features" OFF)
     
-    set(GLM_DIRECTORY "../../thirdParty/ogl-math/glm" CACHE PATH "Path to glm Math library")
+    set(GLM_DIRECTORY "../thirdParty/ogl-math" CACHE PATH "Path to glm Math library")
 
 elseif(WIN32)
 
@@ -162,6 +162,10 @@ endif(UNIX)
      ${GLM_DIRECTORY}  	
      include/opencl10
  )
+
+link_directories(
+	/usr/local/lib
+)
  
  
  #choose window manager library-----------------------------------------------------------------------------
