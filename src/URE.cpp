@@ -160,11 +160,20 @@ bool URE::init(Path& pathToGlobalConfigFile)
 	if(mConfig->root().childExists("simulators",0))
 	{
 		ConfigStructNode& simulatorsConfigNode = mConfig->root().get("simulators",0);
-		BOOST_FOREACH( ConfigMap::value_type & singleSimulatorConfigNode, simulatorsConfigNode.getChildren() )
+
+
+		//BOOST_FOREACH( ConfigMap::value_type & singleSimulatorConfigNode, simulatorsConfigNode.getChildren() )
+		for(int i = 0 ; i < simulatorsConfigNode.get("Simulator").size() ;i++)
 		{
-			assert("no double definition of a simulator allowed" && singleSimulatorConfigNode.second.size()== 1 );
-			mSimulators[singleSimulatorConfigNode.first] =
-					SimulatorInterface::create(singleSimulatorConfigNode.second[0]);
+			mSimulators.push_back(
+					SimulatorInterface::create(
+												simulatorsConfigNode.get("Simulator")[i]
+					)
+			);
+
+//			assert("no double definition of a simulator allowed" && singleSimulatorConfigNode.second.size()== 1 );
+//			mSimulators[singleSimulatorConfigNode.first] =
+//					SimulatorInterface::create(singleSimulatorConfigNode.second[0]);
 		}
 	}
 	else
@@ -176,16 +185,24 @@ bool URE::init(Path& pathToGlobalConfigFile)
 	//load the scene
 	mLoader->loadScene();
 
-
-	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
+	BOOST_FOREACH(SimulatorInterface* simulator, mSimulators)
 	{
-		simPair.second -> initPipeLine();
+		simulator->initPipeLine();
 	}
 
-	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
+	BOOST_FOREACH(SimulatorInterface* simulator, mSimulators)
 	{
-		simPair.second -> validatePipeLine();
+		simulator->validatePipeLine();
 	}
+//	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
+//	{
+//		simPair.second -> initPipeLine();
+//	}
+//
+//	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
+//	{
+//		simPair.second -> validatePipeLine();
+//	}
 
 
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
@@ -207,11 +224,6 @@ bool URE::init()
 	return init(dummy  );
 }
 
-void URE::createOpenCLContext()
-{
-	//TODO
-	LOG<<DEBUG_LOG_LEVEL << " OpenCL Context Setup TODO ;(; ";
-}
 
 
 void URE::resetEngine()
@@ -229,10 +241,15 @@ void URE::resetEngine()
 //    	delete mSimulators[runner];
 //	}
 
-	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
+	BOOST_FOREACH(SimulatorInterface* simulator, mSimulators)
 	{
-		delete simPair.second ;
+		delete simulator;
 	}
+
+//	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
+//	{
+//		delete simPair.second ;
+//	}
 
 	//TODO delete classes
 	//delete mGeometryConverter;
@@ -274,10 +291,16 @@ bool URE::stepSimulation()
 
 	//TODO
 
-	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
+
+	BOOST_FOREACH(SimulatorInterface* simulator, mSimulators)
 	{
-		simPair.second -> stepSimulation();
+		simulator->stepSimulation();
 	}
+
+//	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
+//	{
+//		simPair.second -> stepSimulation();
+//	}
 
 //	success = mSimulators[MECHANICAL_SIM_DOMAIN] -> stepSimulation();
 //

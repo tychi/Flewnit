@@ -1,7 +1,7 @@
 #!/bin/bash
 #this script is not yet tested, just a brainstorming yet...
 
-sudo aptitude install build-essential cmake libboost-dev libfreeimage-dev libtinyxml-dev libxrandr-dev
+sudo aptitude install build-essential cmake git libboost-dev libfreeimage-dev libtinyxml-dev libxrandr-dev
 
 #install boost
 #sudo aptitude install libboost-all-dev

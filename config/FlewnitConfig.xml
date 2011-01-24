@@ -67,8 +67,8 @@
 	<simulators>
 		<!--  -->
 
-
-		<SPHFluidMechanicsSimulator>
+		<Simulator>
+			<Type type="STRING" value="SPHFluidMechanicsSimulator"/>
 
 			<generalSettings>
 
@@ -88,37 +88,48 @@
 
 			</generalSettings>
 
+			<SimulationPipelineStage>
+				<Type type="STRING" value="UniformGridUpdater"/>
 
-			<UniformGridUpdater>
-
-			</UniformGridUpdater>
+			</SimulationPipelineStage>
+			
 
 
 
 			<!-- the following  two stages two could be joined in trade of stability/accuracy-->
-			<ParticleDensityComputation>
+			
+			<SimulationPipelineStage>
+				<Type type="STRING" value="ParticleDensityComputation"/>
 
-			</ParticleDensityComputation>
+			</SimulationPipelineStage>
+			
+			<SimulationPipelineStage>
+				<Type type="STRING" value="ParticlePressureComputation"/>
 
-
-			<ParticlePressureComputation>
-
-			</ParticlePressureComputation>
-
-
-			<FluidParticleIntegrator>
-
-			</FluidParticleIntegrator>
+			</SimulationPipelineStage>
 
 
-			<ParticleizedRigidBodyIntegrator>
 
-			</ParticleizedRigidBodyIntegrator>
+			<SimulationPipelineStage>
+				<Type type="STRING" value="FluidParticleIntegrator"/>
+
+			</SimulationPipelineStage>
+
+			<!-- 
+			<SimulationPipelineStage>
+				<Type type="STRING" value="ParticleizedRigidBodyIntegrator"/>
+
+			</SimulationPipelineStage>
+			-->
+			
 
 
-		</SPHFluidMechanicsSimulator>
 
-		<LightingSimulator>
+
+		</Simulator>
+
+		<Simulator>
+			<Type type="STRING" value="LightingSimulator"/>
 
 			<generalSettings>
 				<Camera>
@@ -131,23 +142,27 @@
 
 			</generalSettings>
 
-			<SkyBoxRenderer>
+			
+			<SimulationPipelineStage>
+				<Type type="STRING" value="SkyBoxRenderer"/>
 
+			</SimulationPipelineStage>
+						
+			<SimulationPipelineStage>
+				<Type type="STRING" value="ShadowMapGenerator"/>
 
-			</SkyBoxRenderer>
+			</SimulationPipelineStage>
+						
+			<SimulationPipelineStage>
+				<Type type="STRING" value="ShadowedLightingStage"/>
 
-			<ShadowMapGenerator>
+			</SimulationPipelineStage>
+						
 
-			</ShadowMapGenerator>
-
-			<ShadowedLightingStage>
-
-
-			</ShadowedLightingStage>
 
 			<!-- Fluid rendering specific stages to go -->
 			
-		</LightingSimulator>
+		</Simulator>
 
 
 	</simulators>

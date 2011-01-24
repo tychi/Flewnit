@@ -13,6 +13,7 @@
 #include "SoundSimulator/SoundSimulator.h"
 
 #include "Util/Loader/Config.h"
+#include "../Util/Loader/LoaderHelper.h"
 
 
 namespace Flewnit
@@ -77,17 +78,18 @@ SoundSimulator*SimulatorInterface:: toSoundSimulator() throw(SimulatorException)
 
 SimulatorInterface* SimulatorInterface::create(ConfigStructNode* simConfigNode) throw(SimulatorException)
 {
-	if(simConfigNode->getName() == "SPHFluidMechanicsSimulator")
+	String simulatorType = ConfigCaster::cast<String>(simConfigNode->get("Type",0));
+	if(simulatorType  == "SPHFluidMechanicsSimulator")
 	{
 		return new MechanicsSimulator(simConfigNode);
 	}
 
-	if(simConfigNode->getName() == "LightingSimulator")
+	if(simulatorType == "LightingSimulator")
 	{
 		return new LightingSimulator(simConfigNode);
 	}
 
-	if(simConfigNode->getName() == "SoundSimulator")
+	if(simulatorType == "SoundSimulator")
 	{
 		return new SoundSimulator(simConfigNode);
 	}

@@ -58,6 +58,12 @@ List<ConfigStructNode*>& ConfigStructNode::operator[](String name)
 	return mChildren[name];
 }
 
+List<ConfigStructNode*>& ConfigStructNode::get(String name)
+{
+	assert("requested config entry exists" && childExists(name,0));
+	return mChildren[name];
+}
+
 ConfigStructNode& ConfigStructNode::get(String name, int index)
 {
 	assert("requested config entry exists" && childExists(name,index));
