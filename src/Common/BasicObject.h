@@ -56,13 +56,14 @@ namespace Flewnit
 
 
 
-
+/* not needed anymore
 ///\note  I'm doing some crazy haxx here in order to both
 ///	-assure usage of this macro instead of direct constructor calling by flag setting and
 ///	-enable support for using this macro like a instatiator function returning a pointer to the instance;
 #	define FLEWNIT_INSTANTIATE(instantiationExpression) \
 		instantiationExpression ;
 		//Flewnit::BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject()
+*/
 
 
 ///\{

@@ -35,9 +35,9 @@ InputManager::InputManager()
 	// TODO Auto-generated constructor stub
 #ifdef FLEWNIT_USE_GLFW
 
-	mKeyboard = FLEWNIT_INSTANTIATE( new Keyboard() );
-	mMouse =  FLEWNIT_INSTANTIATE ( new Mouse() );
-	mWiiMote =  FLEWNIT_INSTANTIATE ( new WiiMote() );
+	mKeyboard =  new Keyboard();
+	mMouse =    new Mouse();
+	mWiiMote =   new WiiMote();
 
 	glfwSetKeyCallback(keyPressedCallback);
 

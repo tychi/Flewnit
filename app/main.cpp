@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	bool disableMemoryTrackLogging = false;
 	Flewnit::URE::bootstrap(disableMemoryTrackLogging);
 	//now instantiate the Engine singleton
-	FLEWNIT_INSTANTIATE(new Flewnit::URE());
+	new Flewnit::URE();
 
 
 

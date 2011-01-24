@@ -247,7 +247,7 @@ class Config : public BasicObject
 public:
 	Config(): mRootNode(0)
 	{
-		mRootNode=FLEWNIT_INSTANTIATE(new ConfigStructNode("flewnitGlobalConfig"));
+		mRootNode=new ConfigStructNode("flewnitGlobalConfig");
 	}
 
 	virtual ~Config(){delete mRootNode;}

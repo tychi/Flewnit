@@ -112,13 +112,13 @@ bool URE::init(Path& pathToGlobalConfigFile)
 	Log::getInstance()<<INFO_LOG_LEVEL<<"initializing URE ...\n";
 	Log::getInstance()<<DEBUG_LOG_LEVEL<<"The Config Path is"<< pathToGlobalConfigFile.string() <<"\n";
 
-	mConfig = FLEWNIT_INSTANTIATE(new Config());
-	mLoader= FLEWNIT_INSTANTIATE(new Loader());
+	mConfig = new Config();
+	mLoader= new Loader();
 
 	mLoader->loadGlobalConfig(*mConfig,pathToGlobalConfigFile);
 
 #ifdef FLEWNIT_USE_GLFW
-	mWindowManager = FLEWNIT_INSTANTIATE(new GLFWWindowManager());
+	mWindowManager = new GLFWWindowManager();
 #else
 #	ifdef	FLEWNIT_USE_XCB
 	assert(0 && "Sorry, XCB Windowmanager not implemented");
@@ -131,29 +131,14 @@ bool URE::init(Path& pathToGlobalConfigFile)
 #	endif
 #endif
 
-	mInputManager =  FLEWNIT_INSTANTIATE(new InputManager());
-	mFPSCounter = FLEWNIT_INSTANTIATE(new FPSCounter());
+	mInputManager =  new InputManager();
+	mFPSCounter = new FPSCounter();
 
 
-	mOpenCL_Manager =  FLEWNIT_INSTANTIATE(new OpenCL_Manager());
+	mOpenCL_Manager = new OpenCL_Manager();
 
 
-	mSimulationResourceManager =  FLEWNIT_INSTANTIATE(new SimulationResourceManager());
-
-
-//	mSimulators[MECHANICAL_SIM_DOMAIN]= FLEWNIT_INSTANTIATE(new SPHFluidMechanicsSimulator());
-//	mSimulators[VISUAL_SIM_DOMAIN]=FLEWNIT_INSTANTIATE(new LightingSimulator());
-//	mSimulators[ACUSTIC_SIM_DOMAIN]=FLEWNIT_INSTANTIATE(new SoundSimulator());
-
-//	for(int runner = 0; runner < __NUM_SIM_DOMAINS__; runner ++)
-//	{
-//		mSimulators[runner] -> initPipeLine();
-//	}
-//
-//	for(int runner = 0; runner < __NUM_SIM_DOMAINS__; runner ++)
-//	{
-//		mSimulators[runner] -> validatePipeLine();
-//	}
+	mSimulationResourceManager =  new SimulationResourceManager();
 
 
 

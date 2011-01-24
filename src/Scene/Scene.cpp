@@ -13,7 +13,7 @@ namespace Flewnit
 Scene::Scene(): mRootNode(0)
 {
 	//TODO
-	mRootNode=FLEWNIT_INSTANTIATE(new SceneNode("root",PURE_NODE));
+	mRootNode=new SceneNode("root",PURE_NODE);
 }
 
 Scene::~Scene()
