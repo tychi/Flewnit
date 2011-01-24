@@ -47,7 +47,7 @@ public:
 	virtual bool validatePipeLine() throw(SimulatorException) =0;
 
 	//casting functions, assert(0) if wrong casted ;(
-	MechanicsSimulator* toMechanicsSimulator()throw(SimulatorException) ;
+	SPHFluidMechanicsSimulator* toSPHFluidMechanicsSimulator()throw(SimulatorException) ;
 	LightingSimulator* toLightingSimulator()throw(SimulatorException) ;
 	SoundSimulator* toSoundSimulator()throw(SimulatorException) ;
 };

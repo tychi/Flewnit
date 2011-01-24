@@ -29,7 +29,7 @@
 #include "Simulator/SimulationResourceManager.h"
 
 
-#include "Simulator/MechanicsSimulator/MechanicsSimulator.h"
+#include "Simulator/SPHFluidMechanicsSimulator/SPHFluidMechanicsSimulator.h"
 #include "Simulator/LightingSimulator/LightingSimulator.h"
 #include "Simulator/SoundSimulator/SoundSimulator.h"
 
@@ -141,7 +141,7 @@ bool URE::init(Path& pathToGlobalConfigFile)
 	mSimulationResourceManager =  FLEWNIT_INSTANTIATE(new SimulationResourceManager());
 
 
-//	mSimulators[MECHANICAL_SIM_DOMAIN]= FLEWNIT_INSTANTIATE(new MechanicsSimulator());
+//	mSimulators[MECHANICAL_SIM_DOMAIN]= FLEWNIT_INSTANTIATE(new SPHFluidMechanicsSimulator());
 //	mSimulators[VISUAL_SIM_DOMAIN]=FLEWNIT_INSTANTIATE(new LightingSimulator());
 //	mSimulators[ACUSTIC_SIM_DOMAIN]=FLEWNIT_INSTANTIATE(new SoundSimulator());
 
@@ -163,7 +163,7 @@ bool URE::init(Path& pathToGlobalConfigFile)
 
 
 		//BOOST_FOREACH( ConfigMap::value_type & singleSimulatorConfigNode, simulatorsConfigNode.getChildren() )
-		for(int i = 0 ; i < simulatorsConfigNode.get("Simulator").size() ;i++)
+		for(unsigned int i = 0 ; i < simulatorsConfigNode.get("Simulator").size() ;i++)
 		{
 			mSimulators.push_back(
 					SimulatorInterface::create(

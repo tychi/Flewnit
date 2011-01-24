@@ -8,7 +8,7 @@
 #include "SimulatorInterface.h"
 
 //must be include for casting functions ;(
-#include "MechanicsSimulator/MechanicsSimulator.h"
+#include "SPHFluidMechanicsSimulator/SPHFluidMechanicsSimulator.h"
 #include "LightingSimulator/LightingSimulator.h"
 #include "SoundSimulator/SoundSimulator.h"
 
@@ -34,16 +34,16 @@ SimulatorInterface::~SimulatorInterface()
 
 
 //casting functions, assert(0) if wrong casted ;(
-MechanicsSimulator* SimulatorInterface::toMechanicsSimulator() throw(SimulatorException)
+SPHFluidMechanicsSimulator* SimulatorInterface::toSPHFluidMechanicsSimulator() throw(SimulatorException)
 {
-	MechanicsSimulator* casted = dynamic_cast< MechanicsSimulator* > (this);
+	SPHFluidMechanicsSimulator* casted = dynamic_cast< SPHFluidMechanicsSimulator* > (this);
 	if(casted)
 	{
 		return casted;
 	}
 	else
 	{
-		throw(SimulatorException(String("bad cast to MechanicsSimulator* !")));
+		throw(SimulatorException(String("bad cast to SPHFluidMechanicsSimulator* !")));
 		//assert("Bad cast of SimulatorInterface!" && 0);
 	}
 }
@@ -81,7 +81,7 @@ SimulatorInterface* SimulatorInterface::create(ConfigStructNode* simConfigNode) 
 	String simulatorType = ConfigCaster::cast<String>(simConfigNode->get("Type",0));
 	if(simulatorType  == "SPHFluidMechanicsSimulator")
 	{
-		return new MechanicsSimulator(simConfigNode);
+		return new SPHFluidMechanicsSimulator(simConfigNode);
 	}
 
 	if(simulatorType == "LightingSimulator")

@@ -81,7 +81,7 @@ public:
     inline WindowManager* getWindowManager()const{return mWindowManager;}
     inline SimulationResourceManager* getSimulationResourceManager()const{return mSimulationResourceManager;}
     inline int getNumSimulators()const{return mSimulators.size();}
-    inline SimulatorInterface* getSimulator(int index)const{ assert(index < mSimulators.size()); return mSimulators[index];}
+    inline SimulatorInterface* getSimulator(unsigned int index)const{ assert(index < mSimulators.size()); return mSimulators[index];}
 
     //intitialization per config won't be realized via annoying pointer passing to the constructors of all classes;
     //instead, the classes grab the Config from the URE Singleton if the need it^^.

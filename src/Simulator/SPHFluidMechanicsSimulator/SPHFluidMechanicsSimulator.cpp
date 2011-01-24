@@ -1,11 +1,11 @@
 /*
- * MechanicsSimulator.cpp
+ * SPHFluidMechanicsSimulator.cpp
  *
  *  Created on: Dec 16, 2010
  *      Author: tychi
  */
 
-#include "MechanicsSimulator.h"
+#include "SPHFluidMechanicsSimulator.h"
 
 #include "Util/Log/Log.h"
 
@@ -15,19 +15,19 @@
 namespace Flewnit
 {
 
-MechanicsSimulator::MechanicsSimulator(ConfigStructNode* simConfigNode)
+SPHFluidMechanicsSimulator::SPHFluidMechanicsSimulator(ConfigStructNode* simConfigNode)
 :SimulatorInterface(MECHANICAL_SIM_DOMAIN,simConfigNode)
 {
 	// TODO Auto-generated constructor stub
 
 }
 
-MechanicsSimulator::~MechanicsSimulator()
+SPHFluidMechanicsSimulator::~SPHFluidMechanicsSimulator()
 {
 	// TODO Auto-generated destructor stub
 }
 
-bool MechanicsSimulator::stepSimulation() throw(SimulatorException)
+bool SPHFluidMechanicsSimulator::stepSimulation() throw(SimulatorException)
 {
 	// TODO Auto-generated destructor stub
 	//LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
@@ -36,7 +36,7 @@ bool MechanicsSimulator::stepSimulation() throw(SimulatorException)
 
 
 //build pipeline according to config;
-bool MechanicsSimulator::initPipeLine() throw(SimulatorException)
+bool SPHFluidMechanicsSimulator::initPipeLine() throw(SimulatorException)
 {
 	// TODO Auto-generated destructor stub
 	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  initPipeLine()\n";
@@ -45,7 +45,7 @@ bool MechanicsSimulator::initPipeLine() throw(SimulatorException)
 
 
 //check if pipeline stages are compatible to each other (also to those stages form other simulators (they might have to interact!))
-bool MechanicsSimulator::validatePipeLine() throw(SimulatorException)
+bool SPHFluidMechanicsSimulator::validatePipeLine() throw(SimulatorException)
 {
 	// TODO Auto-generated destructor stub
 	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  validatePipeLine()\n";
