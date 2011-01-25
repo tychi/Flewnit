@@ -14,13 +14,16 @@
 
 
 #include "Simulator/SimulatorForwards.h"
+
 #include "../Simulator/SimulationObject.h"
+
+#include "Buffer/BufferSharedDefinitions.h"
 
 namespace Flewnit
 {
 
 /*
- * Representation enums for both Drawing and Simulation; It is rather a brainstorming but a complete
+ * Representation enums for both Drawing and Simulation; It is rather a brainstorming than a complete
  * list
  */
 enum GeometryRepresentation
@@ -64,21 +67,7 @@ enum GeometryRepresentation
 };
 
 
-////decouple draw mode from geom. representation, as some rep.s can be drawn in different ways, e.g. triangle meshes as points, wireframe
-//enum DrawMode
-//{
-//	DEFAULT_DRAW_MODE,
-//
-//	POINTS_STATIC_SIZE,
-//	//desired draw mode for initial liquid particle rendering
-//	POINTS_DYNAMIC_SIZE,
-//
-//	TRIANGLES,
-//	TRIANGLES_ADJACENCY,
-//
-//	WIRE_FRAME
-//
-//};
+
 
 class Geometry
 : public SimulationObject
@@ -86,15 +75,20 @@ class Geometry
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
 	GeometryRepresentation mGeometryRepresentation;
-	SubObject* mOwningSubObject;
+	//if the Geometry is shared by several sim. domains, is has several Subobjects to backtrack:
+	SubObject* mOwningSubObjects[__NUM_SIM_DOMAINS__];
+
+	friend class SubObject;
+	void setOwningSubObject(SimulationDomain sd, SubObject* so){mOwningSubObjects[sd]= so;}
 
 public:
-	Geometry( String name, SimulationDomain sd, GeometryRepresentation geoRep, SubObject* owningSO);
+	Geometry( String name, SimulationDomain sd, GeometryRepresentation geoRep);
 	virtual ~Geometry();
 
 	GeometryRepresentation getGeometryRepresentation()const{return mGeometryRepresentation;}
 
-	virtual void render(SimulationPipelineStage* currentStage, GeometryRepresentation geomRep = DEFAULT_GEOMETRY_REPRESENTATION) =0;
+	virtual void render(SimulationPipelineStage* currentStage,
+			GeometryRepresentation geomRep = DEFAULT_GEOMETRY_REPRESENTATION) =0;
 
 
 };
@@ -112,10 +106,27 @@ class InstancedGeometry : public Geometry
 
 };
 
+
+/*
+ * The most common geometry Representation; Owns and maintains an OpenGL Vertex Buffer Object;
+ * Is shareable with OpenCL; Is used for point, line and triangle rendering;
+ */
 class VertexBasedGeometry : public Geometry
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
+	VertexBasedGeometry()
+
+	//the semantics of the buffer is readable from its bufferInfo
+	//@param useInGLRendering controls if the buffer will be bound as a generic attribute buffer
+	//to the VBO for usage in vertex/geometry shaders; if false, the buffer will only have
+	//any use in OpenCL contexts; (Example: We need z-index etc in openCL, but in OpenGL
+	//at most for debug drawing;)
+	void setAttributeBuffer(BufferInterface* buffi, bool useInGLRendering) throw(BufferException);
+
+	void setIndexBuffer(BufferInterface* buffi) throw(BufferException);
+
+	//TODO maybe some activation getter/setter to change GL rendering behaviour at runtime;
 
 private:
 
@@ -139,8 +150,38 @@ private:
 
 		Z_INDEX_SEMANTICS,
 	*/
-	Map<BufferSemantics, BufferInterface*> mFluidSimulationBuffers;
+
+	//handle to the OpenGL Vertex Buffer Object;
+	GLuint mGLVBO;
+	bool mIsSharedWithOpenCL;
+
+	BufferInterface* mAttributeBuffers[__NUM_VALID_VERTEX_ATTRIBUTE_SEMANTICS__];
+	//buffers can be set, but may be not used while openGL rendering
+	//(as e.g. their values are only needed in openCL)
+	bool mGLactiveGuards[__NUM_VALID_VERTEX_ATTRIBUTE_SEMANTICS__];
+
+	BufferInterface* mIndexBuffer;
+
+	//compare buffers for sizees, types, number of elements etc;
+	void validateBufferIntegrity()throw(BufferException);
 };
 
 }
+
+//became obsolete TODO delete when sure it won't be needed
+////decouple draw mode from geom. representation, as some rep.s can be drawn in different ways, e.g. triangle meshes as points, wireframe
+//enum DrawMode
+//{
+//	DEFAULT_DRAW_MODE,
+//
+//	POINTS_STATIC_SIZE,
+//	//desired draw mode for initial liquid particle rendering
+//	POINTS_DYNAMIC_SIZE,
+//
+//	TRIANGLES,
+//	TRIANGLES_ADJACENCY,
+//
+//	WIRE_FRAME
+//
+//};
 

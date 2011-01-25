@@ -55,7 +55,9 @@ enum SimulationDomain
 	VISUAL_SIM_DOMAIN 		= 1,
 	ACUSTIC_SIM_DOMAIN		= 2,
 	__NUM_SIM_DOMAINS__		= 3,
-	__NO_SIM_DOMAIN__		= 4
+	//useful for stuff like vertex based geometry, which can be shared in several domains
+	GENERIC_SIM_DOMAIN		= 4,
+	__NO_SIM_DOMAIN__		= 5
 };
 
 //ID flags for Simulators and their pipeline stages

@@ -14,13 +14,13 @@
 namespace Flewnit
 {
 
-class PhysicalRepresentation
-{
-	friend class WorldObject;
-	//if more than one SubObject for the mechanical domain is useful is in doubt.
-	//But it makes sense for lighting and sound domains. Flexibility brings responsiblity :P.
-	List<SubObject*> mSubObjects[__NUM_SIM_DOMAINS__];
-};
+//class PhysicalRepresentation
+//{
+//	friend class WorldObject;
+//	//if more than one SubObject for the mechanical domain is useful is in doubt.
+//	//But it makes sense for lighting and sound domains. Flexibility brings responsiblity :P.
+//	List<SubObject*> mSubObjects[__NUM_SIM_DOMAINS__];
+//};
 
 class WorldObject : public SceneNode
 {
@@ -45,7 +45,9 @@ public:
 
 private:
 
-	PhysicalRepresentation mPhysicalRep;
+	//if more than one SubObject for the mechanical domain is useful is in doubt.
+	//But it makes sense for lighting and sound domains. Flexibility brings responsiblity :P.
+	List<SubObject*> mPhysicalReps[__NUM_SIM_DOMAINS__];
 
 
 };

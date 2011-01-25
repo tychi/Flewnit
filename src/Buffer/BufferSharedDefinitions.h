@@ -85,13 +85,15 @@ enum GLBufferType
 
 enum BufferSemantics
 {
-	//generally semantics of VertexBuffers, partially OpenCL Buffers (shared)
+	// following semantics generally used in
+	//Generic Vertex Attribute Buffers and/or OpenCL (interop) Buffers
+	///\{
 	POSITION_SEMANTICS,
 	NORMAL_SEMANTICS,
 	TANGENT_SEMANTICS,
 	//BINORMAL_SEMANTICS,
 	TEXCOORD_SEMANTICS,
-	INDEX_SEMANTICS,
+
 
 	VELOCITY_SEMANTICS,
 	MASS_SEMANTICS,
@@ -101,9 +103,23 @@ enum BufferSemantics
 
 	Z_INDEX_SEMANTICS,
 
-	//generally texture semantics
 	DECAL_COLOR_SEMANTICS,
-	DISPLACEMENT_SEMANTICS,
+
+	CUSTOM_SEMANTICS,
+
+	//we need tha value to have static-length arrays holding VBO maintainance information
+	__NUM_VALID_VERTEX_ATTRIBUTE_SEMANTICS__,
+
+	//Semantic of the index buffer from a VBO used via glDrawElements()
+	INDEX_SEMANTICS,
+
+	//for a uniform buffer for matrices of instanced rendering
+	TRANSFORMATION_MATRICES_SEMANTICS,
+	///\}
+
+	//following texture-only semantics; Texture can also have the above Semantics
+
+	DISPLACEMENT_SEMANTICS, //normal-depth or normal map
 	ENVMAP_SEMANTICS,
 	MATERIAL_ID_SEMANTICS,
 	PRIMITIVE_ID_SEMANTICS,
@@ -113,12 +129,9 @@ enum BufferSemantics
 	DEPTH_BUFFER_SEMANTICS,
 	STENCIL_BUFFER_SEMANTICS,
 	INTERMEDIATE_RENDERING_SEMANTICS,
-	FINAL_RENDERING_SEMANTICS,
+	FINAL_RENDERING_SEMANTICS
 
-	//for a uniform buffer for matrices of instanced rendering
-	TRANSFORMATION_MATRICES_SEMANTICS,
 
-	CUSTOM_SEMANTICS
 };
 
 

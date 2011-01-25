@@ -10,10 +10,10 @@
 
 #pragma once
 
-#include "../Simulator/SimulationObject.h"
+#include "Common/BasicObject.h"
 
 #include "Simulator/SimulatorMetaInfos.h"
-
+#include "Simulator/SimulationObject.h"
 
 namespace Flewnit
 {
@@ -23,7 +23,6 @@ class SubObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 
-
 	//backtracking, to get transform and all stuff ;)
 	WorldObject* mOwningWorldObject;
 
@@ -31,14 +30,18 @@ class SubObject
 	Geometry* mGeometry;
 	Material* mMaterial;
 
+	friend class WorldObject;
+	void setOwningWorldObject(WorldObject* wo){mOwningWorldObject= wo;}
 
 public:
-	SubObject(String name, SimulationDomain simDomain, WorldObject* owningWorldObject , Geometry* geo, Material* mat);
+	SubObject(String name, SimulationDomain simDomain, Geometry* geo, Material* mat);
 	virtual ~SubObject();
 
-	inline Geometry* getGeometry()const{return mGeometry;}
-	inline Material* getMaterial()const{return mMaterial;}
-	inline WorldObject* getOwningWorldObject()const{return mOwningWorldObject;}
+	Geometry* getGeometry()const{return mGeometry;}
+	Material* getMaterial()const{return mMaterial;}
+
+	inline SimulationDomain getSimDomain()const {return mSimDomain;}
+	WorldObject* getOwningWorldObject(){return mOwningWorldObject;}
 };
 
 }

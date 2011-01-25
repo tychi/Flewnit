@@ -19,6 +19,7 @@ WorldObject::WorldObject(String name,
 		Matrix4x4 localtransform)
 : SceneNode(name, typeflags, localtransform)
 {
+
 	// TODO Auto-generated constructor stub
 
 }
@@ -32,13 +33,14 @@ WorldObject::~WorldObject()
 List<SubObject*>& WorldObject::getSubObjects(SimulationDomain whichDomain)
 {
 	assert(whichDomain < __NUM_SIM_DOMAINS__);
-	return mPhysicalRep.mSubObjects[whichDomain];
+	return mPhysicalReps[whichDomain];
 }
 
 //in which of the lists it will be inserted is determined by the SimulationDomain flag of the subObject;
 void WorldObject::addSubObject(SubObject* so)
 {
-	mPhysicalRep.mSubObjects[so->getSimDomain()].push_back(so);
+	mPhysicalReps[so->getSimDomain()].push_back(so);
+	so->setOwningWorldObject(this);
 }
 
 

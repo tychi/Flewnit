@@ -16,7 +16,10 @@ Geometry::Geometry( String name, SimulationDomain sd, GeometryRepresentation geo
 		mGeometryRepresentation(geoRep),
 		mOwningSubObject(owningSO)
 {
-	// TODO Auto-generated constructor stub
+	for(SimulationDomain runner = SimulationDomain(0); runner < __NUM_SIM_DOMAINS__; runner++)
+	{
+		mOwningSubObjects[runner]=0;
+	}
 
 }
 
