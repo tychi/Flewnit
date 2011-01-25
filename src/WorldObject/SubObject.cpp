@@ -24,8 +24,10 @@ namespace Flewnit
 //	// TODO Auto-generated destructor stub
 //}
 
-SubObject::SubObject(WorldObject* owningWorldObject ,SimulationDomain simDomain, Geometry* geo, Material* mat)
-: mOwningWorldObject(owningWorldObject), mSimDomain(simDomain), mGeometry(geo), mMaterial(mat)
+SubObject::SubObject(String name, SimulationDomain simDomain, WorldObject* owningWorldObject , Geometry* geo, Material* mat)
+:
+	SimulationObject(name, simDomain),
+	mOwningWorldObject(owningWorldObject), mGeometry(geo), mMaterial(mat)
 {
 
 }

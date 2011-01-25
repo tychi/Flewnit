@@ -20,6 +20,8 @@ class BufferHelper
 public:
 	static bool isPowerOfTwo(int value);
 
+	static String BufferSemanticsToString(BufferSemantics bs);
+
 	static size_t elementSize(Type type)
 	{
 		//not all types define in teh Type-enum are checked, but only the most common;

@@ -23,18 +23,18 @@ class SimulationObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
-	SimulationDomain mSimDomain;
 	String mName;
+	SimulationDomain mSimDomain;
 
 
 public:
 
-	SimulationObject(SimulationDomain sd, String name);
+	SimulationObject( String name, SimulationDomain sd);
 	virtual ~SimulationObject();
 
 
-	inline SimulationDomain getSimDomain()const {return mSimDomain;}
 	inline String getName()const{return mName;}
+	inline SimulationDomain getSimDomain()const {return mSimDomain;}
 
 };
 

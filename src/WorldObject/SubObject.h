@@ -10,40 +10,35 @@
 
 #pragma once
 
-#include "Common/BasicObject.h"
+#include "../Simulator/SimulationObject.h"
 
 #include "Simulator/SimulatorMetaInfos.h"
+
 
 namespace Flewnit
 {
 
 class SubObject
-: public BasicObject
+: public SimulationObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
+
 
 	//backtracking, to get transform and all stuff ;)
 	WorldObject* mOwningWorldObject;
 
-	SimulationDomain mSimDomain;
 
 	Geometry* mGeometry;
 	Material* mMaterial;
 
-	//TODO IN KIEL FUCKING INSTANCE MANAGER
-	//is NULL if subobject is not instanced
-	InstanceManager* mInstanceManager;
-	// is FLEWNIT_INVALID_ID if subobject is not instanced
-	ID mInstanceID;
 
 public:
-	SubObject(WorldObject* owningWorldObject ,SimulationDomain simDomain, Geometry* geo, Material* mat);
+	SubObject(String name, SimulationDomain simDomain, WorldObject* owningWorldObject , Geometry* geo, Material* mat);
 	virtual ~SubObject();
 
-	Geometry* getGeometry()const{return mGeometry;}
-	Material* getMaterial()const{return mMaterial;}
-
-	inline SimulationDomain getSimDomain()const {return mSimDomain;}
+	inline Geometry* getGeometry()const{return mGeometry;}
+	inline Material* getMaterial()const{return mMaterial;}
+	inline WorldObject* getOwningWorldObject()const{return mOwningWorldObject;}
 };
 
 }

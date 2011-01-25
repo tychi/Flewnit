@@ -9,6 +9,18 @@
 
 #include "../SimulatorInterface.h"
 
+struct SPHFluidSettings
+{
+	int targetMinSimulationStepsPerSecond ;
+	int numFluidParticles;
+	float particleRadius;
+	float fluidParticleMass;
+
+	int particlesPerRigidBody;
+	bool particelizeBordersOnly;
+	float rigidBodyParticleMass;
+};
+
 namespace Flewnit
 {
 
@@ -25,7 +37,14 @@ public:
 	//check if pipeline stages are compatible to each other (also to those stages form other simulators (they might have to interact!))
 	virtual bool validatePipeLine()throw(SimulatorException) ;
 
+	const SPHFluidSettings& getSPHFluidSettings()const{return *mSPHFluidSettings;}
+
 private:
+
+	SPHFluidSettings* mSPHFluidSettings;
+
+
+
 
 
 

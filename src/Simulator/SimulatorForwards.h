@@ -20,14 +20,6 @@ namespace Flewnit
 class FPSCounter;
 class InputInterpreter;
 
-enum SimulationDomain
-{
-	MECHANICAL_SIM_DOMAIN 	= 0,
-	VISUAL_SIM_DOMAIN 		= 1,
-	ACUSTIC_SIM_DOMAIN		= 2,
-	__NUM_SIM_DOMAINS__		= 3,
-	__NO_SIM_DOMAIN__		= 4
-};
 
 //class SimulationDomainIdentifier
 //{
@@ -43,15 +35,7 @@ enum SimulationDomain
 //debug draw, time interval, etc;
 class SimStepSettings;
 
-enum SimulationKindFlags
-{
-	LIGHTING_SIMULATION 	= 1<<0,
-	FLUID_SIMULATION		= 1<<1,
-	RIGID_BODY_SIMULATION	= 1<<2,
-	SOFT_BODY_SIMULATION	= 1<<3,
-	CLOTH_SIMULATION		= 1<<4,
-	HAIR_SIMULATION			= 1<<5
-};
+
 
 class Profiler;
 class Log;
@@ -127,29 +111,87 @@ class Texture3D;
 ///\}
 
 
-///\brief Scene forwards;
+///\brief Scene/WorldObject forwards;
 ///\{
 class Scene;
 class SceneNode;
+//WorldObject is derived from SceneNode
 class WorldObject;
+///\{ following: concrete WorldObjects with different purpose:
 class Camera;
 
-class InstanceManager;
+//
+class Light;
+class 	PointLight;
+//SpotLight is a Specialization of PointLight;
+class	SpotLight;
+
+class PureVisualObject; //pure visual object without mechanical interference
+
+class ParticleFluid; //the most important WorldObject in this Thesis :);
+class VoxelFluid; //irrelevant in this thesis
+
+class RigidBody; //configurable or derivable to TriangleRB or ParticleizedRB ..t.b.d...
+class 	PrimitiveBasedRigidBody; //Convex hull, capsule etc.. won't be thought about during this thesis,
+								 //even though this may lead to more design flaws...
+class 	TriangleBasedRigidBody;	 //see above, no further thought about this
+class 	ParticleizedRigidBody;	 //will maybe implemented later...
+
+class StaticObject;	//triangles specially sorted and accessed in the mechanical domain for efficient
+					//collision detection via OpenCL
+class UniformGrid; //in "virtual reality" logic, not a WorldObject;
+					//but because of its buffers and debug draw stuff,
+					//it fits the structure of a WorldObject;
+///\}
+
+
+class InstanceManager; //maintainer for a subset for instanced geometry
+
 //abstract generic interface classes for all simulation domains to derive from them spcifically
 class SubObject;
+
 class Geometry;
+class 	InstancedGeometry; //derived from Geometry, pointing to owning InstnaceManager
+
+class 	VertexBasedGeometry;	//
+class 		PointCloudGeometry;
+class		TriangleMeshGeometry;
+
+//abstract base class for all voxel stuff:
+class 	VoxelGridGeometry;
+//As In OpenCL (in contrast to CUDA), it is not possible to "reinterpret cast" a Generic Buffer
+//to a Texture or Vice versa, we have to implement two seperate classes :(.
+//The 3D Texture Voxel representation is great for gas Simulation AND its rendering;
+class		Texture3DVoxelGeometry;
+/*
+The Generic Buffer is needed as a storage for a Uniform Grid acceleration structure
+storing
+	0.: The Amount of the containing particles
+	1.: index to the first of the containing Particles
+	2.: The Amount of the containing static triangles
+	3.: index to the first of the containing static Triangles
+
+It COULD be realized a a 3D Integer Texture, bu I don't like this concept (yet)
+*/
+class		GenericBufferVoxelGeometry;
+//the single purpose for this Geometry type is to realize debug drawing of the Uniform Grid
+//via instanced drawing of only two vertices;
+class		UniformGridImplicitVoxelGeometry;
+
 class Material;
+
+//following obsolete
+//class MechanicSubObject;
+//class VisualSubObject;
+//class AcusticSubObject;
+
+///\} //end Scene Forwards
 
 //the "Massively Parallel Program"; Abstraction for CUDA, OpenCL, OpenGL, DirectCompute etc pp;
 class MPP;
 class ShaderProgram;
 class OpenCLProgram;
 
-
-class MechanicSubObject;
-class VisualSubObject;
-class AcusticSubObject;
-///\}
 
 
 

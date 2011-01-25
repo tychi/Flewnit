@@ -3,6 +3,9 @@
  *
  *  Created on: Dec 21, 2010
  *      Author: tychi
+ *
+ *
+ * 	Base class for all Matrerial in the visual domain.
  */
 
 #pragma once

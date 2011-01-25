@@ -3,6 +3,8 @@
  *
  *  Created on: Dec 21, 2010
  *      Author: tychi
+ *
+ *  Base class for all Materials of every simulation domain
  */
 
 #pragma once
@@ -23,7 +25,7 @@ class Material
 
 public:
 	//TODO IN KIEL INTEGRATE INSTANCING STUFF ETC IN CONCEPT AND IMPLEMENT IT DIRECTLY
-	Material(SimulationDomain sd, String name);
+	Material(String name, SimulationDomain sd);
 	virtual ~Material();
 
 

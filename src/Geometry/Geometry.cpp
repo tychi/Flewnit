@@ -10,8 +10,11 @@
 namespace Flewnit
 {
 
-Geometry::Geometry(GeometryRepresentation geoRep, String name)
-:mGeometryRepresentation(geoRep), mName(name)
+Geometry::Geometry( String name, SimulationDomain sd, GeometryRepresentation geoRep, SubObject* owningSO)
+:
+		SimulationObject( name, sd),
+		mGeometryRepresentation(geoRep),
+		mOwningSubObject(owningSO)
 {
 	// TODO Auto-generated constructor stub
 
