@@ -128,31 +128,31 @@ enum LightingRenderingTechnique
 
 
 
-//features the pipeline stage provides itself;
-class SimulationPipelineFeatures
-: public BasicObject
-{
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-public:
-
-
-
-};
-
-//required features a pipeline stage needs fulfilled from the rest of the simulators/pipelines to work properly
-class SimulationPipelineRequirements
-: public BasicObject
-{
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-
-	List<String> mRequiredOtherStages;
-
-	//required render target
-
-	//required objects
-public:
-
-};
+////features the pipeline stage provides itself;
+//class SimulationPipelineFeatures
+//: public BasicObject
+//{
+//	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+//public:
+//
+//
+//
+//};
+//
+////required features a pipeline stage needs fulfilled from the rest of the simulators/pipelines to work properly
+//class SimulationPipelineRequirements
+//: public BasicObject
+//{
+//	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+//
+//	List<String> mRequiredOtherStages;
+//
+//	//required render target
+//
+//	//required objects
+//public:
+//
+//};
 
 }
 

@@ -50,7 +50,7 @@ String BufferHelper::BufferSemanticsToString(BufferSemantics bs)
 			"CUSTOM_SEMANTICS",
 
 			//we need tha value to have static-length arrays holding VBO maintainance information
-			"__NUM_VALID_VERTEX_ATTRIBUTE_SEMANTICS__",
+			"__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__",
 
 			//Semantic of the index buffer from a VBO used via glDrawElements()
 			"INDEX_SEMANTICS",
@@ -71,7 +71,13 @@ String BufferHelper::BufferSemanticsToString(BufferSemantics bs)
 			"DEPTH_BUFFER_SEMANTICS",
 			"STENCIL_BUFFER_SEMANTICS",
 			"INTERMEDIATE_RENDERING_SEMANTICS",
-			"FINAL_RENDERING_SEMANTICS"
+			"FINAL_RENDERING_SEMANTICS",
+
+			//actually real amount is one less than this valu, but that doesnt matter
+			"__NUM_TOTAL_SEMANTICS__" ,
+
+			//indicator for "empty" stuff, e.g. an empty Color Attachment slot in an FBO
+			"INVALID_SEMANTICS"
 	};
 
 	return BufferSemanticsStrings[bs];

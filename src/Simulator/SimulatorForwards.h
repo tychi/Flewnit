@@ -53,7 +53,7 @@ class InputManager;
 class GeometryConverter;
 class MeshVoxelizer;
 class VoxelParticelizer;
-class DistanceFiledRasterizer;
+class DistanceFieldRasterizer;
 class TriangleIndexBufferGenerator;
 ///\}
 
@@ -76,9 +76,9 @@ class SimulationPipelineStage;
 //class LightingPipelineStage;
 //class SPHFluidPipelineStage;
 //required features a pipeline stage needs fulfilled from the rest of the simulators/pipelines to work properly
-class SimulationPipelineRequirements;
+//class SimulationPipelineRequirements;
 //features the pipeline stage provides itself;
-class SimulationPipelineFeatures;
+//class SimulationPipelineFeatures;
 
 
 
@@ -95,8 +95,8 @@ class VertexIndexBuffer;
 //class OpenCLBuffer;
 
 class RenderTarget;
-class Screen;
-class FBO;
+//class Screen;
+//class FBO;
 
 class Texture;
 class Texture1D;
@@ -154,15 +154,15 @@ class Geometry;
 class 	InstancedGeometry; //derived from Geometry, pointing to owning InstnaceManager
 
 class 	VertexBasedGeometry;	//
-class 		PointCloudGeometry;
-class		TriangleMeshGeometry;
+//class 	PointCloudGeometry;
+//class		TriangleMeshGeometry;
 
 //abstract base class for all voxel stuff:
 class 	VoxelGridGeometry;
 //As In OpenCL (in contrast to CUDA), it is not possible to "reinterpret cast" a Generic Buffer
 //to a Texture or Vice versa, we have to implement two seperate classes :(.
 //The 3D Texture Voxel representation is great for gas Simulation AND its rendering;
-class		Texture3DVoxelGeometry;
+class		Texture3DVoxelGridGeometry;
 /*
 The Generic Buffer is needed as a storage for a Uniform Grid acceleration structure
 storing
@@ -173,12 +173,14 @@ storing
 
 It COULD be realized a a 3D Integer Texture, bu I don't like this concept (yet)
 */
-class		GenericBufferVoxelGeometry;
+class		GenericBufferVoxelGridGeometry;
 //the single purpose for this Geometry type is to realize debug drawing of the Uniform Grid
 //via instanced drawing of only two vertices;
-class		UniformGridImplicitVoxelGeometry;
+class		UniformGridImplicitVoxelGridGeometry;
 
 class Material;
+class	LightingMaterial;
+//to be continued;
 
 //following obsolete
 //class MechanicSubObject;

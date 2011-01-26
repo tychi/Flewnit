@@ -20,7 +20,7 @@ namespace Flewnit
 {
 
 SimulatorInterface::SimulatorInterface(SimulationDomain sd, ConfigStructNode* simConfigNode)
-: SimulationObject( sd, simConfigNode->getName()), mSimConfigNode(simConfigNode)
+: SimulationObject( simConfigNode->getName(),  sd), mSimConfigNode(simConfigNode)
 {
 	// TODO Auto-generated constructor stub
 

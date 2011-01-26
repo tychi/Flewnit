@@ -4,10 +4,9 @@
  *  Created on: Dec 21, 2010
  *      Author: tychi
  *
- *  Class mainaining a pointer to buffers containing geometric information (VBO or severel OpenCL Buffers);
- *  These buffers will be treated differently, depending on the curren sim stage;
+ *	Several different Geometry representations;
  *
- *  As a geom. object can be used by severel sim domains, it  has no specific domain and so is not derived from SimulationObject;
+ *  As a geom. object can be used by several sim domains, it  has no specific domain and so its Simulation domain is GENERIC_SIM_DOMAIN;
  */
 
 #pragma once
@@ -76,95 +75,70 @@ class Geometry
 
 	GeometryRepresentation mGeometryRepresentation;
 	//if the Geometry is shared by several sim. domains, is has several Subobjects to backtrack:
+	//geometry can be coupled that hard to a subobject, as if one wants to use a VBO for several
+	//draws per frame, one will use instancing :D.
 	SubObject* mOwningSubObjects[__NUM_SIM_DOMAINS__];
 
 	friend class SubObject;
 	void setOwningSubObject(SimulationDomain sd, SubObject* so){mOwningSubObjects[sd]= so;}
 
 public:
-	Geometry( String name, SimulationDomain sd, GeometryRepresentation geoRep);
+
+	Geometry( String name, GeometryRepresentation geoRep);
 	virtual ~Geometry();
 
 	GeometryRepresentation getGeometryRepresentation()const{return mGeometryRepresentation;}
 
-	virtual void render(SimulationPipelineStage* currentStage,
-			GeometryRepresentation geomRep = DEFAULT_GEOMETRY_REPRESENTATION) =0;
+	virtual void draw(SimulationPipelineStage* currentStage,
+			GeometryRepresentation desiredGeomRep = DEFAULT_GEOMETRY_REPRESENTATION) =0;
 
 
 };
 
 
-class InstancedGeometry : public Geometry
-{
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-
-	//TODO IN KIEL FUCKING INSTANCE MANAGER
-	//is NULL if subobject is not instanced
-	InstanceManager* mInstanceManager;
-	// is FLEWNIT_INVALID_ID if subobject is not instanced
-	ID mInstanceID;
-
-};
-
-
-/*
- * The most common geometry Representation; Owns and maintains an OpenGL Vertex Buffer Object;
- * Is shareable with OpenCL; Is used for point, line and triangle rendering;
+/**
+ *  *  Class maintaining pointers to buffers containing geometric information (VBO and/or several ((non)interop) OpenCL Buffers);
+ *  	These buffers will be treated differently, depending on the curren sim stage;
  */
-class VertexBasedGeometry : public Geometry
+class BufferBasedGeometry :
+	public Geometry
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
-	VertexBasedGeometry()
+public:
+	BufferBasedGeometry(String name, GeometryRepresentation geoRep);
+	virtual ~BufferBasedGeometry();
 
 	//the semantics of the buffer is readable from its bufferInfo
 	//@param useInGLRendering controls if the buffer will be bound as a generic attribute buffer
 	//to the VBO for usage in vertex/geometry shaders; if false, the buffer will only have
 	//any use in OpenCL contexts; (Example: We need z-index etc in openCL, but in OpenGL
 	//at most for debug drawing;)
-	void setAttributeBuffer(BufferInterface* buffi, bool useInGLRendering) throw(BufferException);
+	void setAttributeBuffer(BufferInterface* buffi, ContextTypeFlags usageFlags) throw(BufferException);
 
-	void setIndexBuffer(BufferInterface* buffi) throw(BufferException);
+
+	//can return NULL pointer if buffer is not registered for the given semantics
+	BufferInterface* getBuffer(BufferSemantics* bs);
+
+	virtual void draw(SimulationPipelineStage* currentStage,
+				GeometryRepresentation desiredGeomRep) = 0;
 
 	//TODO maybe some activation getter/setter to change GL rendering behaviour at runtime;
 
-private:
+protected:
 
-	/*
-	 * A "list" of pointers to relevant generic vertex Attribute OpenGL buffers;
-	 * They are requested to be created by the
-	 * SimulationResourceManager, all with GL-interop, so that the Lighting Simulator can
-	 * access all values it needs for the rendering of the fluid; This way, the sophistication
-	 * of the rendering can be decoupled from the mechanics simulation;
-	 *
- 	 Allowed Semantics are:
 
-		POSITION_SEMANTICS,
-		INDEX_SEMANTICS,
-
-		VELOCITY_SEMANTICS,
-		MASS_SEMANTICS,
-		DENSITY_SEMANTICS,
-		PRESSURE_SEMANTICS,
-		FORCE_SEMANTICS,
-
-		Z_INDEX_SEMANTICS,
-	*/
-
-	//handle to the OpenGL Vertex Buffer Object;
-	GLuint mGLVBO;
-	bool mIsSharedWithOpenCL;
-
-	BufferInterface* mAttributeBuffers[__NUM_VALID_VERTEX_ATTRIBUTE_SEMANTICS__];
+	//A "list" of pointers to relevant generic vertex Attribute OpenGL buffers;
+	BufferInterface* mAttributeBuffers[__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__];
 	//buffers can be set, but may be not used while openGL rendering
 	//(as e.g. their values are only needed in openCL)
-	bool mGLactiveGuards[__NUM_VALID_VERTEX_ATTRIBUTE_SEMANTICS__];
+	ContextTypeFlags mUsageFlags[__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__];
 
-	BufferInterface* mIndexBuffer;
 
 	//compare buffers for sizees, types, number of elements etc;
-	void validateBufferIntegrity()throw(BufferException);
+	virtual void validateBufferIntegrity()throw(BufferException)=0;
 };
+
 
 }
 

@@ -10,13 +10,12 @@
 namespace Flewnit
 {
 
-Geometry::Geometry( String name, SimulationDomain sd, GeometryRepresentation geoRep, SubObject* owningSO)
+Geometry::Geometry( String name, GeometryRepresentation geoRep)
 :
-		SimulationObject( name, sd),
-		mGeometryRepresentation(geoRep),
-		mOwningSubObject(owningSO)
+		SimulationObject( name, GENERIC_SIM_DOMAIN),
+		mGeometryRepresentation(geoRep)
 {
-	for(SimulationDomain runner = SimulationDomain(0); runner < __NUM_SIM_DOMAINS__; runner++)
+	for(int runner = 0; runner < __NUM_SIM_DOMAINS__; runner++)
 	{
 		mOwningSubObjects[runner]=0;
 	}

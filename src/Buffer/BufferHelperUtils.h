@@ -8,8 +8,10 @@
 #pragma once
 
 #include "Common/Math.h"
+#include "Buffer/BufferSharedDefinitions.h"
 
 #include <typeinfo>
+
 
 namespace Flewnit
 {
