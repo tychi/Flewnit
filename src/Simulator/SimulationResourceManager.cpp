@@ -10,6 +10,12 @@
 #include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
 #include "UserInterface/WindowManager/WindowManager.h"
 
+#include <boost/foreach.hpp>
+#include "WorldObject/InstanceManager.h"
+#include "Material/Material.h"
+#include "Geometry/Geometry.h"
+#include "Buffer/Texture.h"
+#include "MPP/MPP.h"
 
 
 namespace Flewnit
@@ -26,6 +32,10 @@ SimulationResourceManager::SimulationResourceManager()
 				 0)
  )
 {
+	mGlobalRenderTarget->bind();
+	mGlobalRenderTarget->requestCreateAndStoreTexture(FINAL_RENDERING_SEMANTICS);
+	mGlobalRenderTarget->attachStoredColorTexture(FINAL_RENDERING_SEMANTICS, 0);
+	mGlobalRenderTarget->renderToScreen();
 	// TODO Auto-generated constructor stub
 
 }
@@ -35,7 +45,37 @@ SimulationResourceManager::~SimulationResourceManager()
 	delete mScene;
 	delete mGlobalRenderTarget;
 
-	// TODO a lot of deletion
+	typedef Map<String, InstanceManager*> InstanceManagerMap;
+	BOOST_FOREACH( InstanceManagerMap::value_type & pair, mInstanceManagers)
+	{
+		delete pair.second;
+	}
+
+	typedef Map<String, Material*> MaterialMap;
+	BOOST_FOREACH( MaterialMap::value_type & pair, mMaterials)
+	{
+		delete pair.second;
+	}
+
+	typedef Map<String, Geometry*> GeometryMap;
+	BOOST_FOREACH( GeometryMap::value_type & pair, mGeometries)
+	{
+		delete pair.second;
+	}
+
+	typedef Map<ID, BufferInterface* > BufferMap;
+	BOOST_FOREACH( BufferMap::value_type & pair, mBuffers)
+	{
+		delete pair.second;
+	}
+
+	typedef Map<String, MPP*> MPPMap;
+	BOOST_FOREACH( MPPMap::value_type & pair, mMPPs)
+	{
+		delete pair.second;
+	}
+
+
 }
 
 

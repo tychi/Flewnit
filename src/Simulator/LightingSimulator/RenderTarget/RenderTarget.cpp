@@ -265,7 +265,7 @@ void RenderTarget::attachColorTexture(Texture* tex, int where)
 
 void RenderTarget::attachStoredColorTexture(BufferSemantics which, int where) throw(BufferException)
 {
-	if(mOwnedTexturePool[which] != 0)
+	if(mOwnedTexturePool[which] == 0)
 	{
 		throw(BufferException("attachStoredColorTexture: texture must exist!"));
 	}

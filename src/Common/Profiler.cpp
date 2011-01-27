@@ -68,15 +68,8 @@ void Profiler::printMemoryStatus()
 	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
 			<<  mTotalRegisteredObjects << " objects registered;\n"
 			<<  mTotalObjectMemoryFootprint << " bytes are consumed by those objects;\n"
-			<< mPrivateAllocatedBufferMemories[HOST_CONTEXT_TYPE]  << " bytes are consumed by "
-					<<mNumPrivateAllocatedBuffers[HOST_CONTEXT_TYPE]<<" CPU buffers;\n"
-			<< mPrivateAllocatedBufferMemories[OPEN_CL_CONTEXT_TYPE] << " bytes are consumed by "
-			<<mNumPrivateAllocatedBuffers[OPEN_CL_CONTEXT_TYPE] <<" privately used OpenCL buffers;\n"
-			<< mPrivateAllocatedBufferMemories[OPEN_GL_CONTEXT_TYPE]  << " bytes are consumed by "
-			<<mNumPrivateAllocatedBuffers[OPEN_GL_CONTEXT_TYPE] <<" privately used OpenGL buffers;\n"
-			<< mCLGLSharedAllocatedBufferMemory << " bytes are consumed by "
-					<<mNumCLGLSharedAllocatedBuffers<<" shared OpenCL/OpenGL buffers;\n"
 			;
+	printBufferOnlyMemoryStatus();
 }
 
 void Profiler::printRegisteredObjects()
@@ -86,6 +79,20 @@ void Profiler::printRegisteredObjects()
 		{
 			printObjectStatus(boPair.second);
 		}
+}
+
+void Profiler::printBufferOnlyMemoryStatus()
+{
+	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
+				<< mPrivateAllocatedBufferMemories[HOST_CONTEXT_TYPE]  << " bytes are consumed by "
+						<<mNumPrivateAllocatedBuffers[HOST_CONTEXT_TYPE]<<" CPU buffers;\n"
+				<< mPrivateAllocatedBufferMemories[OPEN_CL_CONTEXT_TYPE] << " bytes are consumed by "
+				<<mNumPrivateAllocatedBuffers[OPEN_CL_CONTEXT_TYPE] <<" privately used OpenCL buffers;\n"
+				<< mPrivateAllocatedBufferMemories[OPEN_GL_CONTEXT_TYPE]  << " bytes are consumed by "
+				<<mNumPrivateAllocatedBuffers[OPEN_GL_CONTEXT_TYPE] <<" privately used OpenGL buffers;\n"
+				<< mCLGLSharedAllocatedBufferMemory << " bytes are consumed by "
+						<<mNumCLGLSharedAllocatedBuffers<<" shared OpenCL/OpenGL buffers;\n"
+				;
 }
 
 
@@ -256,7 +263,7 @@ void Profiler::modBufferAllocation_internal(ContextTypeFlags contextTypeFlags, i
 
 	assert("flags valid" && validFlagsGuard);
 
-	printMemoryStatus();
+	printBufferOnlyMemoryStatus();
 	checkError();
 }
 

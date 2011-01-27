@@ -99,6 +99,7 @@ public:
 
 	void printMemoryStatus();
 	void printRegisteredObjects();
+	void printBufferOnlyMemoryStatus();
 
 	void checkError();
 private:

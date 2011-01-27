@@ -16,15 +16,16 @@ namespace Flewnit
 BufferInfo::BufferInfo(String name,
 			ContextTypeFlags usageContexts,
 			BufferSemantics bufferSemantics)
+: name(name),
+  usageContexts(usageContexts),
+  bufferSemantics(bufferSemantics),
+  elementType(TYPE_UNDEF),
+  numElements(0),
+  glBufferType(NO_GL_BUFFER_TYPE),
+  isPingPongBuffer(false),
+  mappedToCPUContext(NO_CONTEXT_TYPE),
+  bufferSizeInByte(0)
 {
-	BufferInfo(
-		name,
-		usageContexts,
-		bufferSemantics,
-		TYPE_UNDEF,
-		0,
-		NO_GL_BUFFER_TYPE,
-		NO_CONTEXT_TYPE);
 }
 
 
@@ -68,7 +69,8 @@ bool BufferInfo::operator==(const BufferInfo& rhs) const
 				numElements==rhs.numElements &&
 				glBufferType==rhs.glBufferType &&
 				isPingPongBuffer==rhs.isPingPongBuffer &&
-				mappedToCPUContext==rhs.mappedToCPUContext
+				mappedToCPUContext==rhs.mappedToCPUContext &&
+				bufferSizeInByte==rhs.bufferSizeInByte;
 				;
 }
 
@@ -82,7 +84,7 @@ const BufferInfo& BufferInfo::operator=(const BufferInfo& rhs)
 	glBufferType=rhs.glBufferType;
 	isPingPongBuffer=rhs.isPingPongBuffer;
 	mappedToCPUContext=rhs.mappedToCPUContext;
-
+	bufferSizeInByte=rhs.bufferSizeInByte;
 	return *this;
 }
 
@@ -269,7 +271,8 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 	texelInfo.validate();
 
 	glBufferType= NO_GL_BUFFER_TYPE;
-	numElements = dimensionExtends.x * dimensionExtends.y * dimensionExtends.z;
+	numElements = dimensionExtends.x * dimensionExtends.y * dimensionExtends.z
+			* numArrayLayers * numMultiSamples;
 
 	//first, set the most trivial stuff: the number of channels
 	switch(texelInfo.numChannels)
@@ -526,8 +529,7 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 				"and <= GL_MAX_COLOR_TEXTURE_SAMPLES"));
 	}
 
-	numElements = dimensionExtends.x * dimensionExtends.y * dimensionExtends.z
-			* numArrayLayers * numMultiSamples;
+
 	bufferSizeInByte = BufferHelper::elementSize(elementType) * numElements;
 	if(isCubeTex)
 	{

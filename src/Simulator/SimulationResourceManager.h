@@ -87,7 +87,7 @@ private:
 
 
 	//generic buffers are also shared, but rather on a local level; They are
-	//stored centrally to resolve "posession" ambiguities;
+	//stored centrally to resolve "posession" ambiguities between simulation domains;
 	Map<ID, BufferInterface* > mBuffers;
 
 	//Textures can be globally shared (as Rendertarget for multiple simulation stages, or by multiple materials),
