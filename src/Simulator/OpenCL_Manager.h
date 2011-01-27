@@ -19,8 +19,15 @@
 #	define GUARD(expression) \
 	expression; \
 	OpenCL_Manager::getInstancePtr()->checkCLGLErrors()
+
+//macro only to be used by the RenderTarget class internally
+#	define GUARD_FRAMEBUFFER(expression) \
+		expression; \
+		checkFrameBufferErrors(); \
+		OpenCL_Manager::getInstancePtr()->checkCLGLErrors()
 #else
 #	define GUARD(expression) expression
+#	define GUARD_FRAMEBUFFER(expression) expression
 #endif
 
 //shortcut macro for the OpenCL Manager, as it if often needed;

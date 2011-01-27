@@ -6,7 +6,7 @@
  *
  *  \brief Some Forward declarations, enums and defines used by many Simulation related files.
  *
- *  \note Some forwards may be overkill here, but regard this as a "class brainstorming at the moment ;).
+ *  \note Some forwards may be overkill here, but regard this as a "class brainstorming" at the moment ;).
  */
 
 #pragma once
@@ -88,9 +88,9 @@ class BufferInterface;
 class Buffer;
 class PingPongBuffer;
 
-class VBO;
-class VertexAttributeBuffer;
-class VertexIndexBuffer;
+//class VBO;
+//class VertexAttributeBuffer;
+//class VertexIndexBuffer;
 
 //class OpenCLBuffer;
 
@@ -101,11 +101,14 @@ class RenderTarget;
 class Texture;
 class Texture1D;
 
-class Texture2D;
-class Texture2DCube;
-class Texture2DArray;
 class Texture2DMultiSample;
 class Texture2DMultiSampleArray;
+
+class Texture2D;
+class Texture2DDepth;
+class Texture2DCube;
+class Texture2DArray;
+
 
 class Texture3D;
 ///\}

@@ -155,7 +155,49 @@ protected:
 
 };
 
+/**
+ * 	2D Multisample Texture;
+ *
+ *	Features:
+ *		- antialiasing possible with an MS Texture bound to an FBO
+ *		- stencil routed k-buffering possible for efficient depth peeling
+ *
+ * 	Drawbacks:
+ * 		-	no CL interop possible (afaik)
+ * 		-	no filtering, so no mipmapping
+ * 		-   no explicit data transfer from CPU memory known to me ;(
+ * 		- 	I don't know if a readback and/or copying between MS textures is possible;
+ * 			It won't be supported; The primaray Use of an
+ * 			MS Texture is as Render Target for Antialiasing and efficient depth peeling
+ */
+class Texture2DMultiSample
+: public Texture
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	explicit Texture2DMultiSample(String name, BufferSemantics bufferSemantics,
+			int width, int height, int numMultiSamples,  const TexelInfo& texeli);
 
+	virtual ~Texture2DMultiSample();
+public:
+	virtual bool operator==(const BufferInterface& rhs) const;
+
+protected:
+
+	virtual void allocGL()throw(BufferException);
+
+#	include "TextureNonCLInteropImplementations.h"
+
+	//must be overidden with an exception-throw-implementation for certain concrete Texture classes
+	//(namely multisample textures), which don't seem to be writable, copyable ar readable
+	virtual void writeGL(const void* data)throw(BufferException)
+	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
+	virtual void readGL(void* data)throw(BufferException)
+	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
+	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
+	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
+
+};
 
 
 /**
@@ -396,48 +438,7 @@ protected:
 
 
 
-/**
- * 	2D Multisample Texture;
- *
- *	Features:
- *		- antialiasing possible with an MS Texture bound to an FBO
- *		- stencil routed k-buffering possible for efficient depth peeling
- *
- * 	Drawbacks:
- * 		-	no CL interop possible (afaik)
- * 		-	no filtering, so no mipmapping
- * 		-   no explicit data transfer from CPU memory known to me ;(
- * 		- 	I don't know if a readback and/or copying between MS textures is possible;
- * 			It won't be supported; The primaray Use of an
- * 			MS Texture is as Render Target for Antialiasing and efficient depth peeling
- */
-class Texture2DMultisample: public Texture
-{
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-public:
-	explicit Texture2DMultisample(String name, BufferSemantics bufferSemantics,
-			int width, int height, int numMultiSamples,  const TexelInfo& texeli);
 
-	virtual ~Texture2DMultisample();
-public:
-	virtual bool operator==(const BufferInterface& rhs) const;
-
-protected:
-
-	virtual void allocGL()throw(BufferException);
-
-#	include "TextureNonCLInteropImplementations.h"
-
-	//must be overidden with an exception-throw-implementation for certain concrete Texture classes
-	//(namely multisample textures), which don't seem to be writable, copyable ar readable
-	virtual void writeGL(const void* data)throw(BufferException)
-	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
-	virtual void readGL(void* data)throw(BufferException)
-	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
-	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
-	{throw(BufferException("writeGL: Multisample Texture types  don't seem to be writable, readable or copyable directly;"));}
-
-};
 
 /**
  * 	2D Multisample Array Texture;

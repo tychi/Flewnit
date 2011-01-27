@@ -107,8 +107,8 @@ public:
 	Texture2D& toTexture2D() throw(BufferException);
 	bool isTexture3D() const;
 	Texture3D& toTexture3D() throw(BufferException);
-	bool isRenderBuffer() const;
-	RenderBuffer& toRenderBuffer() throw(BufferException);
+//	bool isRenderBuffer() const;
+//	RenderBuffer& toRenderBuffer() throw(BufferException);
 	///\}
 
 

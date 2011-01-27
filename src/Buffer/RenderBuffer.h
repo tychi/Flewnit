@@ -3,21 +3,21 @@
  *
  *  Created on: Jan 2, 2011
  *      Author: tychi
+ *
+ *  Dont't know if i will ever need a interop-wrapper for Render Buffers...
  */
 
-#ifndef RENDERBUFFER_H_
-#define RENDERBUFFER_H_
+#pragma once
 
 namespace Flewnit
 {
 
-class RenderBuffer
-{
-public:
-	RenderBuffer();
-	virtual ~RenderBuffer();
-};
+//class RenderBuffer
+//{
+//public:
+//	RenderBuffer();
+//	virtual ~RenderBuffer();
+//};
 
 }
 
-#endif /* RENDERBUFFER_H_ */

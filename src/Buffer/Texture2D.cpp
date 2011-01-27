@@ -426,7 +426,7 @@ bool Texture2DArray::operator==(const BufferInterface& rhs) const
 
 
 //------------------------------------------------------------------------------
-Texture2DMultisample::Texture2DMultisample(String name, BufferSemantics bufferSemantics,
+Texture2DMultiSample::Texture2DMultiSample(String name, BufferSemantics bufferSemantics,
 		int width, int height, int numMultiSamples,  const TexelInfo& texeli)
 : Texture
   (
@@ -452,20 +452,20 @@ Texture2DMultisample::Texture2DMultisample(String name, BufferSemantics bufferSe
 
 }
 
-Texture2DMultisample::~Texture2DMultisample()
+Texture2DMultiSample::~Texture2DMultiSample()
 {
 	//nothing
 }
 
-bool Texture2DMultisample::operator==(const BufferInterface& rhs) const
+bool Texture2DMultiSample::operator==(const BufferInterface& rhs) const
 {
-	const Texture2DMultisample* rhsTexPtr = dynamic_cast<const Texture2DMultisample*>(&rhs);
+	const Texture2DMultiSample* rhsTexPtr = dynamic_cast<const Texture2DMultiSample*>(&rhs);
 	if (rhsTexPtr)
 	{return   (*mTextureInfoCastPtr) == (rhsTexPtr->getTextureInfo()) ;}
 	else {return false;}
 }
 
-void Texture2DMultisample::allocGL()throw(BufferException)
+void Texture2DMultiSample::allocGL()throw(BufferException)
 {
 	glTexImage2DMultisample(
 			GL_TEXTURE_2D_MULTISAMPLE,

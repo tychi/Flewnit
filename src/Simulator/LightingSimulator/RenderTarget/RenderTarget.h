@@ -17,21 +17,41 @@
 
 
 #include "Common/BasicObject.h"
+#include "Common/Math.h"
+#include "Buffer/BufferSharedDefinitions.h"
 
 #define FLEWNIT_MAX_COLOR_ATTACHMENTS 8
+#define FLEWNIT_MAX_MULTISAMPLES 8
+
+
 
 namespace Flewnit
 {
+
+enum RenderBufferFlags
+{
+	NO_RENDER_BUFFER,
+	DEPTH_RENDER_BUFFER,
+	DEPTH_STENCIL_RENDER_BUFFER
+};
 
 class RenderTarget
 : public BasicObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	//multiSample flag needed for render buffer generation
-	RenderTarget(String name, const Vector2Di& resolution, bool useStencilBuffer = false, int numMultisamples = 0);
+	//multiSample flag needed already on creation for render buffer generation
+	RenderTarget(String name, const Vector2Di& resolution,
+			bool useRectangleTextures,
+			//List< Pair<BufferSemantics, int> > initiallyDesiredStoredTextures = { {FINAL_RENDERING_SEMANTICS,0} } ,
+			RenderBufferFlags rbf = DEPTH_RENDER_BUFFER,
+			int numMultisamples = 0);
 	virtual ~RenderTarget();
 
+	static bool depthTestGloballyEnabled();
+	static bool stencilTestGloballyEnabled();
+
+	inline String getName()const{return mName;}
 
 	void bind(bool forReading = false);
 	//calls bind() automatically
@@ -40,19 +60,30 @@ public:
 
 	void clear();
 
-	void detachAllTextures();
+	void detachAllColorTextures();
+	//no single detaching; everything or nothing ;(
+	//void detachColorTexture(BufferSemantics which);
+
 	void renderToScreen();
 
-	void setEnableDepthBuffering(bool value);
-	void setEnableStencilTest(bool value);
+	//useful for shadowmap generation: disable unnecessary color-overhead when only depth stuff is needed
+	void setEnableColorRendering(bool value);
+	void setEnableDepthTest(bool value);
+	//throw exception if a stencil buffer wasn't specified on RenderTarget creation;
+	void setEnableStencilTest(bool value) throw(BufferException);
 
-	void addTexture(Texture* tex);
+	//TODO implement IF needed
+	//void addTexture(Texture* tex);
+	//void removeTexture(Texture* tex);
+
 	//can return NULL
-	Texture* getTexture(BufferSemantics bs);
-	void removeTexture(Texture* tex);
+	Texture* getStoredTexture(BufferSemantics bs);
+
 
 	void attachColorTexture(Texture* tex, int where);
 	void attachStoredColorTexture(BufferSemantics which, int where) throw(BufferException);
+
+
 
 	/*
 	 * Getter for shaders which have to glBindFragDataLocation();
@@ -64,18 +95,20 @@ public:
 	 * A texture will be created with the specified semantics if it doesn't exist;
 	 * If it exists, it nothing will be done but printed a warning
 	 */
-	void requestCreateAndStoreTexture(BufferSemantics which);
+	void requestCreateAndStoreTexture(BufferSemantics which)throw(BufferException);
 
 
 	///\{ Stuff useful for shadowmap generation
 	void attachDepthTexture(Texture2DDepth* depthTex)throw(BufferException);
-	void renderDepthOnly();
-	void detachDepthTexture();
+	void detachDepthTexture(Texture2DDepth* depthTex);
 	///\}
+
+	//TODO if needed provide some explicit cubemap attachment stuff for dynamic cube maps and point light shadow maps :D ;)
+
 
 	void checkFrameBufferErrors()throw(BufferException);
 
-	inline String getName()const{return mName;}
+
 
 private:
 
@@ -90,12 +123,15 @@ private:
 
 	//tracker, what texture is attached where
 	//Initialized everywhere to INVALID_SEMANTICS
-	BufferSemantics	mCurrentlyAttachedTextures[FLEWNIT_MAX_COLOR_ATTACHMENTS];
+	Texture*	mCurrentlyAttachedTextures[FLEWNIT_MAX_COLOR_ATTACHMENTS];
 	GLenum	mCurrentDrawBuffers[FLEWNIT_MAX_COLOR_ATTACHMENTS];
 	GLsizei mNumCurrentDrawBuffers;
 
 	GLuint mFBO;
 	Vector2Di mFrameBufferResolution;
+	//for copying between textures, one can use glBlitFrameBuffers();
+	//this function need a read buffer, hence we have to keep track;
+	bool mIsReadFrameBuffer;
 
 	//i had no time to wrap the render buffer to my buffer concept; hope I won't need it
 	//somewhere else but here; Otherwise, wrapping will follow
@@ -103,11 +139,19 @@ private:
 	GLuint mGLRenderBufferHandle;
 	//usually GL_DEPTH_COMPONENT32F with attachment type GL_DEPTH_ATTACHMENT
 	//or GL_DEPTH32F_STENCIL8 with attachment type GL_DEPTH_STENCIL_ATTACHMENT ;
-	GLenum mGLRenderBufferType;
+	//GLenum mGLRenderBufferType;
 
-	bool mUseStencilBuffer;
+
+	bool mUseRectangleTextures;
+	RenderBufferFlags mRenderBufferFlags;
+	GLenum mRenderBufferAttachmentPoint;
+	GLenum mRenderBufferInternalFormat;
+
 	int  mNumMultisamples;
 
+
+
+	bool mColorRenderingEnabled; //for shadowMap generation
 	bool mDepthTestEnabled;
 	bool mStencilTestEnabled;
 

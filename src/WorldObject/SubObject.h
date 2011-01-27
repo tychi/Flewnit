@@ -40,7 +40,6 @@ public:
 	Geometry* getGeometry()const{return mGeometry;}
 	Material* getMaterial()const{return mMaterial;}
 
-	inline SimulationDomain getSimDomain()const {return mSimDomain;}
 	WorldObject* getOwningWorldObject(){return mOwningWorldObject;}
 };
 

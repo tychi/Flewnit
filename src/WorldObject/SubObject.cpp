@@ -28,13 +28,12 @@ SubObject::SubObject(String name, SimulationDomain simDomain, Geometry* geo, Mat
 : 		SimulationObject(name,simDomain),
 		mOwningWorldObject(0), mGeometry(geo), mMaterial(mat)
 {
-	mGeometry->setOwningSubObject(mSimDomain,this);
+	mGeometry->setOwningSubObject(getSimDomain(),this);
 }
 
 SubObject::~SubObject()
 {
-	delete mGeometry;
-	delete mMaterial;
+	//don't delete stuff as geo and mat are shared and maintained by the SimResourceManager;
 }
 
 }

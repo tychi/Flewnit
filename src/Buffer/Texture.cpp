@@ -7,6 +7,7 @@
 
 #include "Texture.h"
 #include "Simulator/OpenCL_Manager.h"
+#include "Simulator/SimulationResourceManager.h"
 
 namespace Flewnit
 {
@@ -16,7 +17,7 @@ Texture::Texture(const TextureInfo& texi)
 {
 	mBufferInfo = mTextureInfoCastPtr;
 
-
+	SimulationResourceManager::getInstance().registerTexture(this);
 }
 
 

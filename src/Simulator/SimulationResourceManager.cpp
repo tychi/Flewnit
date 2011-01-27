@@ -7,6 +7,8 @@
 
 #include "SimulationResourceManager.h"
 #include "Scene/Scene.h"
+#include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
+#include "UserInterface/WindowManager/WindowManager.h"
 
 
 
@@ -14,7 +16,15 @@ namespace Flewnit
 {
 
 SimulationResourceManager::SimulationResourceManager()
-:mScene(new Scene()), mGlobalRenderTarget(new RenderTarget())
+:mScene(new Scene()),
+ mGlobalRenderTarget(
+		 new  RenderTarget(String("globalRenderTarget"),
+				 WindowManager::getInstance().getWindowResolution(),
+		 	 	 //hardcode
+				 true,
+				 DEPTH_RENDER_BUFFER,
+				 0)
+ )
 {
 	// TODO Auto-generated constructor stub
 
@@ -22,7 +32,10 @@ SimulationResourceManager::SimulationResourceManager()
 
 SimulationResourceManager::~SimulationResourceManager()
 {
-	// TODO Auto-generated destructor stub
+	delete mScene;
+	delete mGlobalRenderTarget;
+
+	// TODO a lot of deletion
 }
 
 

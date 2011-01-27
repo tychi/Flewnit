@@ -10,15 +10,6 @@
 namespace Flewnit
 {
 
-RenderBuffer::RenderBuffer()
-{
-	// TODO Auto-generated constructor stub
 
-}
-
-RenderBuffer::~RenderBuffer()
-{
-	// TODO Auto-generated destructor stub
-}
 
 }

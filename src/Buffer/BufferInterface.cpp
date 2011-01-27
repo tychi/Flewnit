@@ -25,6 +25,7 @@
 #include "RenderBuffer.h"
 ///\}
 
+#include "Simulator/SimulationResourceManager.h"
 
 namespace Flewnit
 {
@@ -36,6 +37,8 @@ BufferInterface::BufferInterface()
 :mBufferInfo(0), mCPU_Handle(0), mGraphicsBufferHandle(0)
 {
 	//the compute-handle manages its initialization for itself due to the cl-c++-bindings :)
+
+	SimulationResourceManager::getInstance().registerBufferInterface(this);
 }
 
 BufferInterface::~BufferInterface()
@@ -468,19 +471,19 @@ Texture3D& BufferInterface::toTexture3D() throw(BufferException)
 		throw(BufferException("Bad cast to Texture3D"));
 }
 
-bool BufferInterface::isRenderBuffer() const
-{
-	return 	dynamic_cast<const RenderBuffer*>(this) ? true : false;
-}
-
-RenderBuffer& BufferInterface::toRenderBuffer() throw(BufferException)
-{
-	RenderBuffer* toCastPtr = dynamic_cast<RenderBuffer*> (this);
-	if (toCastPtr)
-		return *toCastPtr;
-	else
-		throw(BufferException("Bad cast to RenderBuffer"));
-}
+//bool BufferInterface::isRenderBuffer() const
+//{
+//	return 	dynamic_cast<const RenderBuffer*>(this) ? true : false;
+//}
+//
+//RenderBuffer& BufferInterface::toRenderBuffer() throw(BufferException)
+//{
+//	RenderBuffer* toCastPtr = dynamic_cast<RenderBuffer*> (this);
+//	if (toCastPtr)
+//		return *toCastPtr;
+//	else
+//		throw(BufferException("Bad cast to RenderBuffer"));
+//}
 
 const CPUBufferHandle BufferInterface::getCPUBufferHandle()const throw(BufferException)
 {

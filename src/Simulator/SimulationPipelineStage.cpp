@@ -10,8 +10,8 @@
 namespace Flewnit
 {
 
-SimulationPipelineStage::SimulationPipelineStage(SimulationDomain sd,String name)
-:SimulationObject(sd,name)
+SimulationPipelineStage::SimulationPipelineStage( String name, SimulationDomain sd)
+:SimulationObject(name,sd)
 {
 	// TODO Auto-generated constructor stub
 

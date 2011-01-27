@@ -26,7 +26,7 @@ class SimulationPipelineStage
 	Map<String,BufferInterface*> mRenderingResults;
 
 public:
-	SimulationPipelineStage(SimulationDomain sd,String name);
+	SimulationPipelineStage( String name, SimulationDomain sd);
 	virtual ~SimulationPipelineStage();
 
 	virtual void validateStage() throw(SimulatorException) = 0;
