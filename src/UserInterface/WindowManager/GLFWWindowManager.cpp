@@ -145,9 +145,6 @@ void GLFWWindowManager::init()
 			enforceCoreProfile ? GL_TRUE : GL_FALSE);
 
 
-	glfwOpenWindowHint(GLFW_OPENGL_FORWARD_COMPAT,
-			enforceCoreProfile ? GL_TRUE : GL_FALSE);
-
 	createWindow(fullscreen,winPos,winRes);
 
 	setMouseGrab(grabMouse);
@@ -215,7 +212,7 @@ double GLFWWindowManager::getFPS(bool averaged )
 
 void GLFWWindowManager::createWindow(bool fullScreen, const Vector2Di& position, const Vector2Di& resolution)
 {
-	glfwOpenWindow(resolution.x,resolution.y,8,8,8,8,32,32,
+	glfwOpenWindow(resolution.x,resolution.y,8,8,8,8,32,8,
 			fullScreen? GLFW_FULLSCREEN : GLFW_WINDOW );
 }
 
