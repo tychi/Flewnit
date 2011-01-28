@@ -28,7 +28,7 @@ public:
 
 	void setIndexBuffer(BufferInterface* buffi) throw(BufferException);
 
-	virtual void draw(SimulationPipelineStage* currentStage,
+	virtual void draw(SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
 				GeometryRepresentation desiredGeomRep);
 
 

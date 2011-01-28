@@ -15,10 +15,10 @@ Geometry::Geometry( String name, GeometryRepresentation geoRep)
 		SimulationObject( name, GENERIC_SIM_DOMAIN),
 		mGeometryRepresentation(geoRep)
 {
-	for(int runner = 0; runner < __NUM_SIM_DOMAINS__; runner++)
-	{
-		mOwningSubObjects[runner]=0;
-	}
+//	for(int runner = 0; runner < __NUM_SIM_DOMAINS__; runner++)
+//	{
+//		mOwningSubObjects[runner]=0;
+//	}
 
 }
 

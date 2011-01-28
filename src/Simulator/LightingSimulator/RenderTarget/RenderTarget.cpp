@@ -25,9 +25,10 @@ namespace Flewnit
 //multiSample flag needed for render buffer generation
 RenderTarget::RenderTarget(String name, const Vector2Di& resolution,
 		bool useRectangleTextures,RenderBufferFlags rbf, int numMultisamples)
-: mName(name), mFrameBufferResolution(resolution),
+: mName(name), mNumCurrentDrawBuffers(0),
+  mFrameBufferResolution(resolution),
   mUseRectangleTextures(useRectangleTextures), mRenderBufferFlags(rbf),
-  //dafault to zero
+  //following two components play no role if NO_RENDERBUFFER, hence the comparison to only DEPTH_RENDER_BUFFER is correct
   mRenderBufferAttachmentPoint(
 		  	(rbf == DEPTH_RENDER_BUFFER )
 			? GL_DEPTH_ATTACHMENT
@@ -40,10 +41,10 @@ RenderTarget::RenderTarget(String name, const Vector2Di& resolution,
 {
 	//default initialization
 	mColorRenderingEnabled = true;
-	mDepthTestEnabled = (mRenderBufferFlags != NO_RENDER_BUFFER);
-	setEnableDepthTest(mDepthTestEnabled);
-	mStencilTestEnabled = false ; //(mRenderBufferFlags == DEPTH_STENCIL_RENDER_BUFFER );
-	glDisable(GL_STENCIL_TEST);
+//	mDepthTestEnabled = (mRenderBufferFlags != NO_RENDER_BUFFER);
+//	setEnableDepthTest(mDepthTestEnabled);
+//	mStencilTestEnabled = false ; //(mRenderBufferFlags == DEPTH_STENCIL_RENDER_BUFFER );
+//	glDisable(GL_STENCIL_TEST);
 
 	mIsReadFrameBuffer = false;
 
@@ -53,7 +54,6 @@ RenderTarget::RenderTarget(String name, const Vector2Di& resolution,
 	}
 
 
-	mNumCurrentDrawBuffers = 0;
 	for(int i= 0 ; i < FLEWNIT_MAX_COLOR_ATTACHMENTS; i++)
 	{
 		mCurrentlyAttachedTextures[i] = 0;
@@ -65,7 +65,7 @@ RenderTarget::RenderTarget(String name, const Vector2Di& resolution,
 			&& BufferHelper::isPowerOfTwo(mNumMultisamples) && mNumMultisamples <= FLEWNIT_MAX_MULTISAMPLES);
 
 
-	GUARD_FRAMEBUFFER( glGenFramebuffers(1,&mFBO) );
+	GUARD( glGenFramebuffers(1,&mFBO) );
 
 	bind();
 
@@ -139,6 +139,14 @@ RenderTarget::~RenderTarget()
 }
 
 
+bool RenderTarget::isCurrentlyBound()
+{
+	GLint currentFrameBufferBinding;
+	GUARD_FRAMEBUFFER(glGetIntegerv(mIsReadFrameBuffer? GL_READ_FRAMEBUFFER_BINDING: GL_DRAW_FRAMEBUFFER_BINDING,
+					&currentFrameBufferBinding));
+	return ((GLuint)currentFrameBufferBinding == mFBO);
+}
+
 void RenderTarget::bind(bool forReading)
 {
 	mIsReadFrameBuffer = forReading;
@@ -148,31 +156,54 @@ void RenderTarget::bind(bool forReading)
 //calls bind() automatically
 void RenderTarget::renderToAttachedTextures()
 {
+	//assert( ! (mIsReadFrameBuffer || isCurrentlyBound()) && "must be bound as draw buffer!" );
+	if( mIsReadFrameBuffer || !isCurrentlyBound())
+	{
+		LOG<<WARNING_LOG_LEVEL<<"RenderTarget::renderToAttachedTextures: FBO was not bound as draw buffer! Doing the binding for you...";
+		bind();
+	}
+	assert(mNumCurrentDrawBuffers >0 && "attach at least one texture to the FBO!" );
 	glDrawBuffers(mNumCurrentDrawBuffers, mCurrentDrawBuffers);
 }
 
 void RenderTarget::clear()
 {
+	bindSave();
+
+	//throw exception if stencil test is enabled but a stencil buffer isn't currently available
+	if(stencilTestEnabled()  &&   ! hasStencilAttachment() )
+	{
+		throw(BufferException("This rendertarget has no stencil buffer attached! disable stencil test!"));
+	}
+	if(depthTestEnabled()  &&   ! hasDepthAttachment() )
+	{
+		throw(BufferException("This rendertarget has no depth buffer attached! disable depth test or attach a depth texture!"));
+	}
+
 	GUARD_FRAMEBUFFER (
 		glClear(
 			mColorRenderingEnabled ? GL_COLOR_BUFFER_BIT : 0
 					|
-			mDepthTestEnabled? GL_DEPTH_BUFFER_BIT : 0
+			depthTestEnabled()? GL_DEPTH_BUFFER_BIT : 0
 					|
-			mStencilTestEnabled? GL_STENCIL_BUFFER_BIT : 0
+			stencilTestEnabled()? GL_STENCIL_BUFFER_BIT : 0
 		)
 	);
+	unbindSave();
 }
 
 
 
 void RenderTarget::renderToScreen()
 {
-	GUARD_FRAMEBUFFER(glBindFramebuffer(mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_DRAW_FRAMEBUFFER, 0));
+	//GUARD_FRAMEBUFFER(glBindFramebuffer(mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_DRAW_FRAMEBUFFER, 0));
+	GUARD(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
 void RenderTarget::setEnableColorRendering(bool value)
 {
+	bindSave();
+
 	mColorRenderingEnabled = value;
 
 	if(value)
@@ -181,42 +212,50 @@ void RenderTarget::setEnableColorRendering(bool value)
 	}
 	else
 	{
+		if( mIsReadFrameBuffer || !isCurrentlyBound())
+		{
+			LOG<<WARNING_LOG_LEVEL<<"RenderTarget: Color rendering disabling: FBO is not bound as draw buffer! Doing the binding for you...";
+			bind();
+		}
 		GUARD_FRAMEBUFFER (glDrawBuffer(GL_NONE));
 		GUARD_FRAMEBUFFER (glReadBuffer(GL_NONE));
 	}
+
+	unbindSave();
 }
 
 void RenderTarget::setEnableDepthTest(bool value)
 {
-	mDepthTestEnabled = value;
+	//mDepthTestEnabled = value;
 
 	if(value)
 	{
-		GUARD_FRAMEBUFFER(glEnable(GL_DEPTH_TEST));
+		GUARD(glEnable(GL_DEPTH_TEST));
 	}
 	else
 	{
-		GUARD_FRAMEBUFFER(glDisable(GL_DEPTH_TEST));
+		GUARD(glDisable(GL_DEPTH_TEST));
 	}
 }
 
-void RenderTarget::setEnableStencilTest(bool value) throw(BufferException)
+void RenderTarget::setEnableStencilTest(bool value)
 {
-	if(value &&   (mRenderBufferFlags != DEPTH_RENDER_BUFFER ))
-	{
-		throw(BufferException("Stis rendertarget has no stencil buffer! Cannot activate stencil test!"));
-	}
-
-
-	mStencilTestEnabled = value;
+	//throw exception if a stencil buffer wasn't specified on RenderTarget creation;
+//	if(value &&   (mRenderBufferFlags != DEPTH_RENDER_BUFFER ))
+//	{
+//		throw(BufferException("Stis rendertarget has no stencil buffer! Cannot activate stencil test!"));
+//	}
+//
+//
+//	mStencilTestEnabled = value;
 
 	if(value)
 	{
-		GUARD_FRAMEBUFFER(glEnable(GL_STENCIL_TEST));
+		GUARD(glEnable(GL_STENCIL_TEST));
 	}
 	else
 	{
-		GUARD_FRAMEBUFFER(glDisable(GL_STENCIL_TEST));
+		GUARD(glDisable(GL_STENCIL_TEST));
 	}
 }
 
@@ -239,6 +278,8 @@ Texture* RenderTarget::getStoredTexture(BufferSemantics bs)
 
 void RenderTarget::attachColorTexture(Texture* tex, int where)
 {
+	bindSave();
+
 	assert(where < FLEWNIT_MAX_COLOR_ATTACHMENTS);
 
 	GUARD_FRAMEBUFFER(
@@ -261,6 +302,8 @@ void RenderTarget::attachColorTexture(Texture* tex, int where)
 
 	mCurrentlyAttachedTextures[where] = tex;
 
+
+	unbindSave();
 }
 
 void RenderTarget::attachStoredColorTexture(BufferSemantics which, int where) throw(BufferException)
@@ -278,6 +321,8 @@ void RenderTarget::attachStoredColorTexture(BufferSemantics which, int where) th
 
 void RenderTarget::detachAllColorTextures()
 {
+	bindSave();
+
 	for(int i= 0 ; i < FLEWNIT_MAX_COLOR_ATTACHMENTS; i++)
 	{
 		if( mCurrentlyAttachedTextures[i] != 0 )
@@ -298,6 +343,8 @@ void RenderTarget::detachAllColorTextures()
 		mCurrentDrawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
 	}
 	mNumCurrentDrawBuffers =0;
+
+	unbindSave();
 }
 
 /**
@@ -416,12 +463,16 @@ void RenderTarget::requestCreateAndStoreTexture(BufferSemantics which)throw(Buff
 
 void RenderTarget::attachDepthTexture(Texture2DDepth* depthTex)throw(BufferException)
 {
+	bindSave();
+
 	//TODO check if texture and renderbuffer conflict when both attached;
 	//maybe renderbuffer to detach before
-	if( stencilTestGloballyEnabled() )
+	if( stencilTestEnabled() )
 	{
-		LOG<<WARNING_LOG_LEVEL<<"Stencil test is enabled while attaching a depth texture without stencil channel; disabling it until detachment of this depth texture;\n";
-		GUARD_FRAMEBUFFER(setEnableStencilTest(false));
+		LOG<<WARNING_LOG_LEVEL<<"Stencil test is enabled while attaching a depth texture "
+				"without stencil channel; It is strongly recommended to disable stencil test "
+				"when rendering to this RenderTarget;\n";
+		//GUARD_FRAMEBUFFER(setEnableStencilTest(false));
 	}
 	if(mRenderBufferFlags != NO_RENDER_BUFFER)
 	{
@@ -445,9 +496,13 @@ void RenderTarget::attachDepthTexture(Texture2DDepth* depthTex)throw(BufferExcep
 					0
 			)
 	);
+
+	unbindSave();
 }
 void RenderTarget::detachDepthTexture(Texture2DDepth* depthTex)
 {
+	unbindSave();
+
 	GUARD_FRAMEBUFFER(
 			glFramebufferTexture2D(
 					mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
@@ -472,27 +527,95 @@ void RenderTarget::detachDepthTexture(Texture2DDepth* depthTex)
 		);
 	}
 	//can't track every stuff; user has to maintain his testing usage for himself
-//	if(mStencilTestEnabled)
-//	{
-//		GUARD_FRAMEBUFFER(glEnable(GL_STENCIL_TEST));
-//	}
+	//	if(mStencilTestEnabled)
+	//	{
+	//		GUARD_FRAMEBUFFER(glEnable(GL_STENCIL_TEST));
+	//	}
+
+	unbindSave();
 }
 
-bool RenderTarget::depthTestGloballyEnabled()
+void RenderTarget::bindSave()
+{
+	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING,
+					&mOldReadBufferBinding);
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING,
+					&mOldDrawBufferBinding);
+
+	if(
+		( mIsReadFrameBuffer && ( (GLuint)mOldReadBufferBinding != mFBO ) )
+		||
+		(!mIsReadFrameBuffer && ( (GLuint)mOldDrawBufferBinding != mFBO ) )
+	)
+	{
+		bind(mIsReadFrameBuffer);
+	}
+}
+void RenderTarget::unbindSave()
+{
+	if(
+		( mIsReadFrameBuffer && ( (GLuint)mOldReadBufferBinding != mFBO ) )
+	)
+	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER,
+				mOldReadBufferBinding);
+	}
+
+	if(
+		(!mIsReadFrameBuffer && ( (GLuint)mOldDrawBufferBinding != mFBO ) )
+	)
+	{
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER,
+				mOldDrawBufferBinding);
+	}
+}
+
+bool RenderTarget::depthTestEnabled()
 {
 	GLboolean depthtest;
 	glGetBooleanv(GL_DEPTH_TEST,&depthtest);
 	return (depthtest == GL_TRUE);
 }
-bool RenderTarget::stencilTestGloballyEnabled()
+bool RenderTarget::stencilTestEnabled()
 {
 	GLboolean stenciltest;
 	glGetBooleanv(GL_STENCIL_TEST,&stenciltest);
 	return (stenciltest == GL_TRUE);
 }
 
+bool RenderTarget::hasDepthAttachment()
+{
+	bindSave();
+	GLint val;
+	glGetFramebufferAttachmentParameteriv(
+		GL_FRAMEBUFFER,
+		GL_DEPTH_ATTACHMENT,
+		GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
+		&val
+	);
+	unbindSave();
+
+	return (val != GL_NONE);
+}
+bool RenderTarget::hasStencilAttachment()
+{
+	bindSave();
+	GLint val;
+	glGetFramebufferAttachmentParameteriv(
+		GL_FRAMEBUFFER,
+		GL_STENCIL_ATTACHMENT,
+		GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
+		&val
+	);
+	unbindSave();
+
+	return (val != GL_NONE);
+}
+
 void RenderTarget::checkFrameBufferErrors()throw(BufferException)
 {
+	bindSave();
+
 	//check all attached textures for "compatibility" (implementation dependent)
 //	bool dataTypesInconsistent = false;
 //	bool channelNumbersInconsistent = false;
@@ -546,6 +669,8 @@ void RenderTarget::checkFrameBufferErrors()throw(BufferException)
     {
     	LOG<<INFO_LOG_LEVEL<<statusString<<"\n";
     }
+
+    unbindSave();
 }
 
 }

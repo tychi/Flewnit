@@ -54,7 +54,7 @@ public:
 	Texture3DVoxelGridGeometry(String name, const Vector3D& centrePosition, float edgeLength, int voxelsPerDimension);
 	virtual ~Texture3DVoxelGridGeometry();
 
-	virtual void draw(SimulationPipelineStage* currentStage,
+	virtual void draw(SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
 				GeometryRepresentation desiredGeomRep);
 private:
 	//compare buffers for sizees, types, number of elements etc;

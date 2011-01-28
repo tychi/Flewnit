@@ -74,13 +74,14 @@ class Geometry
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
 	GeometryRepresentation mGeometryRepresentation;
+
+	//folowing became obsolte:
 	//if the Geometry is shared by several sim. domains, is has several Subobjects to backtrack:
 	//geometry can be coupled that hard to a subobject, as if one wants to use a VBO for several
 	//draws per frame, one will use instancing :D.
-	SubObject* mOwningSubObjects[__NUM_SIM_DOMAINS__];
-
-	friend class SubObject;
-	void setOwningSubObject(SimulationDomain sd, SubObject* so){mOwningSubObjects[sd]= so;}
+	//SubObject* mOwningSubObjects[__NUM_SIM_DOMAINS__];
+	//friend class SubObject;
+	//void setOwningSubObject(SimulationDomain sd, SubObject* so){mOwningSubObjects[sd]= so;}
 
 public:
 
@@ -89,7 +90,17 @@ public:
 
 	GeometryRepresentation getGeometryRepresentation()const{return mGeometryRepresentation;}
 
-	virtual void draw(SimulationPipelineStage* currentStage,
+	/*
+	 * Render the geometry in the classic way, i.e. usually in the visual domain with OpenGL.
+	 *
+	 * @param 	currentStage to determine for the geometry what to to; If the backtrack
+	 * 			to the sim. stage is really necessary for geometry, is not yet determined,
+	 * 			but in doubt the more information, the better, as the several and generic
+	 * 			simulation domains can become quite complex and one could at least use the backtrack
+	 * 			for error checking.
+	 * @param	currentUsingSuboject needed for getting associated MAterial an WorldObject (for transformation matrix)
+	 */
+	virtual void draw(SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
 			GeometryRepresentation desiredGeomRep = DEFAULT_GEOMETRY_REPRESENTATION) =0;
 
 
@@ -120,7 +131,7 @@ public:
 	//can return NULL pointer if buffer is not registered for the given semantics
 	BufferInterface* getBuffer(BufferSemantics* bs);
 
-	virtual void draw(SimulationPipelineStage* currentStage,
+	virtual void draw(SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
 				GeometryRepresentation desiredGeomRep) = 0;
 
 	//TODO maybe some activation getter/setter to change GL rendering behaviour at runtime;
