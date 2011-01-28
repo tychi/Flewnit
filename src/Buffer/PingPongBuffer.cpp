@@ -15,14 +15,17 @@ namespace Flewnit
 {
 
 PingPongBuffer::PingPongBuffer(String name,BufferInterface* ping, BufferInterface* pong ) throw(BufferException)
-: BufferInterface(),
+:
+//tak BufferInfo from one of the Managed Buffers
+BufferInterface(ping->getBufferInfo()),
 mRecentlyUpdatedBufferIndex(0),
 mCurrentActiveBufferIndex(1)
 {
 	//alloc new one, as we need its info for tracking purposes till the end,
-	//when the managed buffers are alread deleted;
-	mBufferInfo = new BufferInfo(ping->getBufferInfo());
+	//when the managed buffers are already deleted;
+	//mBufferInfo = new BufferInfo(ping->getBufferInfo());
 
+	//override pingpong flag
 	mBufferInfo->isPingPongBuffer = true;
 
 	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Creating PingPongBuffer named "<<mBufferInfo->name<<" ;\n";

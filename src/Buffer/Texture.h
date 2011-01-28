@@ -309,7 +309,7 @@ public:
 	explicit Texture3D(String name, BufferSemantics bufferSemantics,
 			int width, int height, int depth, const TexelInfo& texeli,
 			 bool allocHostMemory, bool clInterOp, const void* data =0,  bool genMipmaps = false);
-	explicit Texture3D(Path fileName, bool clInterOp, bool genMipmaps = false);
+	//explicit Texture3D(Path fileName, bool clInterOp, bool genMipmaps = false);
 	virtual ~Texture3D();
 public:
 	virtual bool operator==(const BufferInterface& rhs) const;

@@ -22,10 +22,10 @@ Buffer::Buffer(
 		//if data!= NULL, the buffers of the desired contexts are allocated and copied to;
 		//the caller is responsible of the deletion of the data pointer;
 		const void* data)
-: BufferInterface(),
+: BufferInterface(buffi),
   mContentsAreModifiedFrequently(contentsAreModifiedFrequently)
 {
-	 mBufferInfo=new BufferInfo(buffi);
+	 //mBufferInfo=new BufferInfo(buffi);
 
 	switch(mBufferInfo->glBufferType)
 	{

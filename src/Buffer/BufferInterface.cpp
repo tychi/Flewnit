@@ -27,15 +27,24 @@
 
 #include "Simulator/SimulationResourceManager.h"
 
+
 namespace Flewnit
 {
 
 
 
 
-BufferInterface::BufferInterface()
+BufferInterface::BufferInterface(const BufferInfo& buffi)
 :mBufferInfo(0), mCPU_Handle(0), mGraphicsBufferHandle(0)
 {
+	if(dynamic_cast<const TextureInfo*>(&buffi) )
+	{
+		mBufferInfo= new TextureInfo( dynamic_cast<const TextureInfo&>(buffi) );
+	}
+	else
+	{
+		mBufferInfo = new BufferInfo(buffi);
+	}
 	//the compute-handle manages its initialization for itself due to the cl-c++-bindings :)
 
 	SimulationResourceManager::getInstance().registerBufferInterface(this);

@@ -135,7 +135,7 @@ RenderTarget::~RenderTarget()
 	{
 		GUARD_FRAMEBUFFER( glDeleteRenderbuffers(1, &mGLRenderBufferHandle));
 	}
-	GUARD_FRAMEBUFFER( glDeleteFramebuffers(1, &mFBO));
+	GUARD( glDeleteFramebuffers(1, &mFBO));
 }
 
 
@@ -430,10 +430,14 @@ void RenderTarget::requestCreateAndStoreTexture(BufferSemantics which)throw(Buff
 		return;
 	};
 
+	//construct unique texture name
+	String textureName = mName;
+	textureName.append(BufferHelper::BufferSemanticsToString(which));
+
 	if(mNumMultisamples == 0)
 	{
 		mOwnedTexturePool[which] = new Texture2D(
-				mName.append(BufferHelper::BufferSemanticsToString(which)),
+				textureName,
 				which, mFrameBufferResolution.x,mFrameBufferResolution.y,
 				texeli,
 				//no host memory needed
@@ -451,7 +455,7 @@ void RenderTarget::requestCreateAndStoreTexture(BufferSemantics which)throw(Buff
 	{
 		//multisample stuff desired:
 		mOwnedTexturePool[which] = new Texture2DMultiSample(
-				mName.append(BufferHelper::BufferSemanticsToString(which)),
+				textureName,
 				which, mFrameBufferResolution.x,mFrameBufferResolution.y,
 				mNumMultisamples,
 				texeli

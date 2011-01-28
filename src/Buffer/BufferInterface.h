@@ -40,7 +40,7 @@ class BufferInterface
 public:
 
 	//planned usage must be determined in the beginning
-	explicit BufferInterface();
+	explicit BufferInterface(const BufferInfo& buffi);
 	virtual ~BufferInterface();
 
 

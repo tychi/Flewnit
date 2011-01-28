@@ -13,9 +13,11 @@ namespace Flewnit
 {
 
 Texture::Texture(const TextureInfo& texi)
-:BufferInterface(), mTextureInfoCastPtr(new TextureInfo(texi))
+:BufferInterface(texi) //, mTextureInfoCastPtr(new TextureInfo(texi))
 {
-	mBufferInfo = mTextureInfoCastPtr;
+	//mBufferInfo = mTextureInfoCastPtr;
+	mTextureInfoCastPtr = dynamic_cast<TextureInfo*>(mBufferInfo);
+	assert(mTextureInfoCastPtr && "mBufferinfo must be TextureInfo");
 
 	SimulationResourceManager::getInstance().registerTexture(this);
 }

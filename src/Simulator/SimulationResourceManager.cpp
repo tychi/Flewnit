@@ -32,10 +32,34 @@ SimulationResourceManager::SimulationResourceManager()
 				 0)
  )
 {
+	///\{ TEST STUFF DEBUG
 	mGlobalRenderTarget->bind();
 	mGlobalRenderTarget->requestCreateAndStoreTexture(FINAL_RENDERING_SEMANTICS);
 	mGlobalRenderTarget->attachStoredColorTexture(FINAL_RENDERING_SEMANTICS, 0);
 	mGlobalRenderTarget->renderToScreen();
+
+	int bufferSize =WindowManager::getInstance().getWindowResolution().x *
+ 			 WindowManager::getInstance().getWindowResolution().y;
+	Vector4D* myTestData = new Vector4D[bufferSize];
+	for (int i=0;i<bufferSize;i++)
+	{
+		myTestData[i]= Vector4D(1,2,3,i);
+	}
+
+	Texture2D* testTex = new Texture2D("FUtestTex",
+			CUSTOM_SEMANTICS,
+			 WindowManager::getInstance().getWindowResolution().x,
+			 WindowManager::getInstance().getWindowResolution().y,
+			 TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false),
+			 true,
+			 //clinterop
+			 true,
+			 false,
+			 myTestData,false);
+
+	delete[] myTestData;
+	///\} END TEST STUFF DEBUG
+
 	// TODO Auto-generated constructor stub
 
 }

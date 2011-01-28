@@ -223,7 +223,11 @@ void Profiler::modBufferAllocation_internal(ContextTypeFlags contextTypeFlags, i
 	//host stuff
 	if( (contextTypeFlags & HOST_CONTEXT_TYPE_FLAG ) )
 	{
-		assert("no other context flags allowed" && contextTypeFlags == HOST_CONTEXT_TYPE_FLAG);
+		//bullshit assertion: thought of it because of "host only" mem; kind of "mirrored/mapped"
+		//GPU buffer to host space is not tracked by this profiler; it's not THAT interesting, though,
+		//as the memory is not shared, i.e resides tweice in even different memories
+		//(main RAM and GPU RAM)of the whole computing system;
+		//assert("no other context flags allowed" && contextTypeFlags == HOST_CONTEXT_TYPE_FLAG);
 
 		mNumPrivateAllocatedBuffers[HOST_CONTEXT_TYPE] += buffIncrement ;
 		mPrivateAllocatedBufferMemories[HOST_CONTEXT_TYPE] += sizeIncrement;
