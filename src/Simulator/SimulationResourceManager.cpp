@@ -16,21 +16,25 @@
 #include "Geometry/Geometry.h"
 #include "Buffer/Texture.h"
 #include "MPP/MPP.h"
-
+#include "Simulator/LightingSimulator/Camera/Camera.h"
+#include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 
 namespace Flewnit
 {
 
-SimulationResourceManager::SimulationResourceManager()
-:mScene(new Scene()),
- mGlobalRenderTarget(
-		 new  RenderTarget(String("globalRenderTarget"),
-				 WindowManager::getInstance().getWindowResolution(),
-		 	 	 //hardcode
-				 true,
-				 DEPTH_RENDER_BUFFER,
-				 0)
- )
+SimulationResourceManager::SimulationResourceManager() :
+	mScene(new Scene()),
+	mGlobalRenderTarget(
+			new RenderTarget(
+					String("globalRenderTarget"),
+					WindowManager::getInstance().getWindowResolution(),
+					//hardcode use rectangle
+					true,
+					DEPTH_RENDER_BUFFER,
+					0)
+	),
+	mCamera(0), //TODO
+	mLighSourceManager(0)//TODO
 {
 	///\{ TEST STUFF DEBUG
 	mGlobalRenderTarget->bind();
@@ -38,24 +42,20 @@ SimulationResourceManager::SimulationResourceManager()
 	mGlobalRenderTarget->attachStoredColorTexture(FINAL_RENDERING_SEMANTICS, 0);
 	mGlobalRenderTarget->renderToScreen();
 
-	int bufferSize =WindowManager::getInstance().getWindowResolution().x *
- 			 WindowManager::getInstance().getWindowResolution().y;
+	int bufferSize = WindowManager::getInstance().getWindowResolution().x
+			* WindowManager::getInstance().getWindowResolution().y;
 	Vector4D* myTestData = new Vector4D[bufferSize];
-	for (int i=0;i<bufferSize;i++)
+	for (int i = 0; i < bufferSize; i++)
 	{
-		myTestData[i]= Vector4D(1,2,3,i);
+		myTestData[i] = Vector4D(1, 2, 3, i);
 	}
 
-	Texture2D* testTex = new Texture2D("FUtestTex",
-			CUSTOM_SEMANTICS,
-			 WindowManager::getInstance().getWindowResolution().x,
-			 WindowManager::getInstance().getWindowResolution().y,
-			 TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false),
-			 true,
-			 //clinterop
-			 true,
-			 false,
-			 myTestData,false);
+	Texture2D* testTex = new Texture2D("FUtestTex", CUSTOM_SEMANTICS,
+			WindowManager::getInstance().getWindowResolution().x,
+			WindowManager::getInstance().getWindowResolution().y, TexelInfo(4,
+					GPU_DATA_TYPE_FLOAT, 32, false), true,
+			//clinterop
+			true, false, myTestData, false);
 
 	delete[] myTestData;
 	///\} END TEST STUFF DEBUG
@@ -68,6 +68,9 @@ SimulationResourceManager::~SimulationResourceManager()
 {
 	delete mScene;
 	delete mGlobalRenderTarget;
+	delete mCamera;
+	delete mLighSourceManager;
+
 
 	typedef Map<String, InstanceManager*> InstanceManagerMap;
 	BOOST_FOREACH( InstanceManagerMap::value_type & pair, mInstanceManagers)
@@ -87,7 +90,7 @@ SimulationResourceManager::~SimulationResourceManager()
 		delete pair.second;
 	}
 
-	typedef Map<ID, BufferInterface* > BufferMap;
+	typedef Map<String, BufferInterface* > BufferMap;
 	BOOST_FOREACH( BufferMap::value_type & pair, mBuffers)
 	{
 		delete pair.second;
@@ -99,9 +102,7 @@ SimulationResourceManager::~SimulationResourceManager()
 		delete pair.second;
 	}
 
-
 }
-
 
 RenderTarget* SimulationResourceManager::getGlobalRenderTarget()const
 {
@@ -113,15 +114,7 @@ Scene* SimulationResourceManager::getScene()const
 	return mScene;
 }
 
-void SimulationResourceManager::registerInstanceManager(InstanceManager* im)
-{
-	//TODO
-}
 
-InstanceManager* SimulationResourceManager::getInstanceManager(String name)
-{
-	//TODO
-}
 
 //when a Simulation pass nears its end, it should let do the instance managers the
 //"compiled rendering", as render()-calls to instanced geometry only registers drawing needs
@@ -131,6 +124,15 @@ void SimulationResourceManager::executeInstancedRendering()
 {
 	//TODO
 }
+
+
+void SimulationResourceManager::registerInstanceManager(InstanceManager* im)
+{
+//	assert("Object with specified name may not already exist!"
+//			&& mInstanceManagers.find(im->ge));
+//	TOCONTINUE
+}
+
 
 //automatically called by BufferInterface constructor
 void SimulationResourceManager::registerBufferInterface(BufferInterface* bi)
@@ -166,5 +168,44 @@ void SimulationResourceManager::registerGeometry(Geometry* geo)
 	//TODO
 }
 //void SimulationResourceManager::deleteGeometry(Geometry* geo);
+
+
+//---------------------------------------------------------------
+#define FLEWNIT_INTERNAL_FIND_MACRO(mapMemberName) \
+		if(mapMemberName.find(name) == mapMemberName.end()) \
+		{\
+			return 0;\
+		}\
+		else\
+		{\
+			return mapMemberName[name];\
+		}
+
+InstanceManager* SimulationResourceManager::getInstanceManager(String name)
+{
+	FLEWNIT_INTERNAL_FIND_MACRO(mInstanceManagers)
+}
+
+Texture* SimulationResourceManager::getTexture(String name)
+{
+	FLEWNIT_INTERNAL_FIND_MACRO(mTextures)
+}
+
+MPP* SimulationResourceManager::getMPP(String name)
+{
+	FLEWNIT_INTERNAL_FIND_MACRO(mMPPs)
+}
+
+Material* SimulationResourceManager::getMaterial(String name)
+{
+	FLEWNIT_INTERNAL_FIND_MACRO(mMaterials)
+}
+
+Geometry* SimulationResourceManager::getGeometry(String name)
+{
+	FLEWNIT_INTERNAL_FIND_MACRO(mGeometries)
+}
+
+#undef FLEWNIT_INTERNAL_FIND_MACRO
 
 }

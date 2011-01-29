@@ -125,6 +125,7 @@ class Camera;
 
 //
 class Light;
+class LightSourceManager;
 class 	PointLight;
 //SpotLight is a Specialization of PointLight;
 class	SpotLight;

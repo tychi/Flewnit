@@ -26,7 +26,9 @@ public:
 	InstancedGeometry(String name, GeometryRepresentation geoRep,InstanceManager* instanceManager, ID instanceID);
 	virtual ~InstancedGeometry();
 
-	virtual void draw(SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+	virtual void draw(
+				//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+				unsigned int numInstances,
 				GeometryRepresentation desiredGeomRep);
 
 };

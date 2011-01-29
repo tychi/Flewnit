@@ -25,7 +25,7 @@ class 	VoxelGridGeometry
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
-	Vector3D mCentrePosition;
+	//Vector3D mCentrePosition;
 	float mEdgeLenght;
 	//must be power of two
 	int mVoxelsPerDimension;
@@ -33,12 +33,17 @@ class 	VoxelGridGeometry
 	//Map<String, Buffer*> mVoxelBuffers;
 
 public:
-	VoxelGridGeometry(String name, const Vector3D& centrePosition, float edgeLength, int voxelsPerDimension);
+	//voxelsPerDimension must be power of 2
+	VoxelGridGeometry(String name, float edgeLength, int voxelsPerDimension);
 	virtual ~VoxelGridGeometry();
 
 
-	virtual void draw(SimulationPipelineStage* currentStage,
-				GeometryRepresentation desiredGeomRep) = 0;
+	virtual void draw(
+				//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+				unsigned int numInstances,
+				GeometryRepresentation desiredGeomRep)= 0;
+
+	void debugDrawVoxelGrid();
 
 };
 
@@ -54,7 +59,9 @@ public:
 	Texture3DVoxelGridGeometry(String name, const Vector3D& centrePosition, float edgeLength, int voxelsPerDimension);
 	virtual ~Texture3DVoxelGridGeometry();
 
-	virtual void draw(SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+	virtual void draw(
+				//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+				unsigned int numInstances,
 				GeometryRepresentation desiredGeomRep);
 private:
 	//compare buffers for sizees, types, number of elements etc;
@@ -81,17 +88,21 @@ public:
 	GenericBufferVoxelGridGeometry(String name, const Vector3D& centrePosition, float edgeLength, int voxelsPerDimension);
 	virtual ~GenericBufferVoxelGridGeometry();
 
-	//only debugdraw of certain values; vonfigurable via shader; (e.g. point rendering of certain buffer
+	//only debugdraw of certain values; configurable via shader; (e.g. point rendering of certain buffer
 	//values bound to a VBO, positions are implicitly derived form glPrimitiveID and so on ;)) )
-	virtual void draw(SimulationPipelineStage* currentStage,
+	virtual void draw(
+				//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+				unsigned int numInstances,
 				GeometryRepresentation desiredGeomRep);
 private:
 	//compare buffers for sizees, types, number of elements etc;
 	virtual void validateBufferIntegrity()throw(BufferException);
 };
+
 //the single purpose for this Geometry type is to realize debug drawing of the Uniform Grid
 //via instanced drawing of only two vertices;
-class		UniformGridImplicitVoxelGridGeometry;
+//maybe realizable via debugdraw function
+//class		UniformGridImplicitVoxelGridGeometry;
 
 
 

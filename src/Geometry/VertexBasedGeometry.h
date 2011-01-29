@@ -26,9 +26,14 @@ public:
 	VertexBasedGeometry(String name, GeometryRepresentation geoRep);
 	virtual ~VertexBasedGeometry();
 
-	void setIndexBuffer(BufferInterface* buffi) throw(BufferException);
+	//none-pure virtual, as VertexGeom must override to handle VBO-attachment
+	virtual void setIndexBuffer(BufferInterface* buffi) throw(BufferException);
+	//returns NULL if index buffer doesn't exist;
+	BufferInterface* getIndexBuffer();
 
-	virtual void draw(SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+	virtual void draw(
+				//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+				unsigned int numInstances,
 				GeometryRepresentation desiredGeomRep);
 
 

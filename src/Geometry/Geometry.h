@@ -99,8 +99,12 @@ public:
 	 * 			simulation domains can become quite complex and one could at least use the backtrack
 	 * 			for error checking.
 	 * @param	currentUsingSuboject needed for getting associated MAterial an WorldObject (for transformation matrix)
+	 * @param	numInstances if <=1, default non-instanced rendering with subobject query for matrix etc.;
+	 * 			if >1, then rely on the fact that the method is called by an InstanceManager and don't care about matrices etc;
 	 */
-	virtual void draw(SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+	virtual void draw(
+			//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+			unsigned int numInstances=1,
 			GeometryRepresentation desiredGeomRep = DEFAULT_GEOMETRY_REPRESENTATION) =0;
 
 
@@ -125,13 +129,19 @@ public:
 	//to the VBO for usage in vertex/geometry shaders; if false, the buffer will only have
 	//any use in OpenCL contexts; (Example: We need z-index etc in openCL, but in OpenGL
 	//at most for debug drawing;)
+	//The usageFlags param is not necessarily identical to buffi->getBufferInfo().usageFlags,
+	//as a certain shading may not use all features of a buffer and buffers may be shared by different
+	//geometry/WorldObjects and hence Materials;
 	void setAttributeBuffer(BufferInterface* buffi, ContextTypeFlags usageFlags) throw(BufferException);
 
 
 	//can return NULL pointer if buffer is not registered for the given semantics
-	BufferInterface* getBuffer(BufferSemantics* bs);
+	BufferInterface* getAttributeBuffer(BufferSemantics bs);
 
-	virtual void draw(SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+
+	virtual void draw(
+				//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
+				unsigned int numInstances,
 				GeometryRepresentation desiredGeomRep) = 0;
 
 	//TODO maybe some activation getter/setter to change GL rendering behaviour at runtime;
@@ -143,11 +153,15 @@ protected:
 	BufferInterface* mAttributeBuffers[__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__];
 	//buffers can be set, but may be not used while openGL rendering
 	//(as e.g. their values are only needed in openCL)
+	//this array serves as indicator, which buffers should be part of the VBO-canon
 	ContextTypeFlags mUsageFlags[__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__];
 
 
 	//compare buffers for sizees, types, number of elements etc;
 	virtual void validateBufferIntegrity()throw(BufferException)=0;
+
+	void bindSafe();
+	void unBindSave();
 };
 
 
