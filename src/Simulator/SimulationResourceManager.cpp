@@ -114,6 +114,14 @@ Scene* SimulationResourceManager::getScene()const
 	return mScene;
 }
 
+LightSourceManager*  SimulationResourceManager::getLighSourceManager()const
+{
+	return mLighSourceManager;
+}
+Camera*  SimulationResourceManager::getCamera()const
+{
+	return mCamera;
+}
 
 
 //when a Simulation pass nears its end, it should let do the instance managers the
@@ -125,12 +133,18 @@ void SimulationResourceManager::executeInstancedRendering()
 	//TODO
 }
 
+//---------------------------------------------------------------
 
 void SimulationResourceManager::registerInstanceManager(InstanceManager* im)
 {
 //	assert("Object with specified name may not already exist!"
 //			&& mInstanceManagers.find(im->ge));
 //	TOCONTINUE
+
+	if(getInstanceManager(im->getName()))
+	{
+		assert(0 && "Oject with specified name already exists!");
+	}
 }
 
 

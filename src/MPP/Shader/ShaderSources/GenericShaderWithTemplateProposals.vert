@@ -30,6 +30,9 @@ precision highp float;
 #define PRESSURE_SEMANTICS	7
 #define FORCE_SEMANTICS		8
 #define Z_INDEX_SEMANTICS	9
+#define DECAL_COLOR_SEMANTICS	10
+#define CUSTOM_SEMANTICS	11
+
 
 //position and normal are always used;
 //the rest must be explicitely enabled
@@ -114,7 +117,7 @@ uniform mat4 worldToShadowMapMatrix; //bias*perspLight*viewLight
 
 //----------------------------------------------------------------------------------------------------
 //section 7: shader specific input:
-//{%vertShaderInput}
+//{%shaderSpecificInput}
 //{
 layout(location = POSITION_SEMANTICS ) 	in vec4 inVPosition;
 layout(location = NORMAL_SEMANTICS ) 	in vec4 inVNormal;
@@ -134,6 +137,8 @@ layout(location = DENSITY_SEMANTICS ) 	in vec4 inVDensity;
 layout(location = PRESSURE_SEMANTICS ) 	in vec4 invPressure;
 layout(location = FORCE_SEMANTICS ) 	in vec4 inVForce;
 layout(location = Z_INDEX_SEMANTICS ) 	in vec4 inVZIndex;
+layout(location = DECAL_COLOR_SEMANTICS) in vec4 inVDecalColor;
+layout(location = CUSTOM_SEMANTICS ) 	in vec4 inVCustomAttribute;
 #endif
 
 //}
@@ -141,7 +146,7 @@ layout(location = Z_INDEX_SEMANTICS ) 	in vec4 inVZIndex;
 
 //----------------------------------------------------------------------------------------------------
 //section 8:  shader specific output:
-//{%vertShaderOutput}
+//{%shaderSpecificOutput}
 //{
 out vec4 positionInWorldCoords;
 

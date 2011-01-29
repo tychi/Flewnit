@@ -8,28 +8,36 @@
 
 #pragma once
 
-#include "Common/BasicObject.h"
 
-#include "Geometry/InstancedGeometry.h"
+#include "Simulator/SimulationObject.h"
+
+#include "Simulator/SimulatorForwards.h"
+
+#include "Common/CL_GL_Common.h"
 
 namespace Flewnit
 {
 
 class InstanceManager
-: public BasicObject
+: public SimulationObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	InstanceManager(String name);
+	InstanceManager(String name, GLuint numMaxInstances,
+			Material* associatedMaterial, Geometry* nonInstancedGeometryToDraw );
+
 	virtual ~InstanceManager();
 
-	void init();
 
 	void drawRegisteredInstances();
 
-	void registerInstanceForNextDrawing(InstancedGeometry* instGeo);
+	//SubObject must own an InstacedGeometry;
+	void registerInstanceForNextDrawing(SubObject* so);
+
 private:
 	String mName;
+
+	Material* mAssociatedMaterial;
 
 	//Uniform buffer containing the world transforms of the currently registered geometry instances
 	Buffer* mModelMatricesUniformBuffer;

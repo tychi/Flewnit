@@ -114,17 +114,68 @@ enum LightingFeatures
 	LIQUID_RENDERING		= 1<<10,
 };
 
-enum RenderTargetType
-{
-	SCREEN_RTT,
-	FBO_RTT
-};
+//enum RenderTargetType
+//{
+//	SCREEN_RTT,
+//	FBO_RTT
+//};
+//
+//enum LightingRenderingTechnique
+//{
+//	DIRECT,
+//	DEFERRED
+//};
 
-enum LightingRenderingTechnique
-{
-	DIRECT,
-	DEFERRED
-};
+//enum ShaderTextureAccesPattern
+//{
+//	DEFAULT_TEXTURE,
+//	DEFAULT_TEXTURE_RECT,
+//	CUBE_TEXTURE,
+//	ARRAY_TEXTURE
+//};
+
+
+
+//class MaterialFeatures
+//{
+//public:
+//	enum RenderingTechnique
+//	{
+//		DIRECT_RENDERING,
+//		DEFERRED_RENDERING
+//	}renderingTechnique;
+//
+//	enum GenerationFeatures
+//	{
+//		G_BUFFER_FILL_GENERATION,
+//		SHADOW_MAP_GENERATION,
+//		RENDERED_IMAGE_GENERATION,
+//	}generationFeatures;
+//
+//	enum ShadowingFeatures
+//	{
+//		NO_SHADOWING,
+//		BASIC_SHADOWING,
+//		SOFT_SHADOWING,
+//		ONE_LIGHTSOURCE_SHADOWING,
+//		CUBIC_SHADOWING,
+//		LAYERED_SHADOWING
+//	}shadowingFeatures;
+//
+//	enum LightSourceFeatures
+//	{
+//		NO_LIGHT_SOURCE,
+//		ONE_LIGHTSOURCE,
+//		MULTIPLE_LIGHTSOURCES,
+//
+//	}lightSourceFeatures;
+//
+//	enum LightingFeatures
+//	{
+//
+//	}lightingFeatures;
+//
+//};
 
 
 
