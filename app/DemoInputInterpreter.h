@@ -16,7 +16,7 @@ class DemoInputInterpreter: public Flewnit::InputInterpreter
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	DemoInputInterpreter();
+	DemoInputInterpreter(float cameraLookMouseSensivity =1.0f);
 	virtual ~DemoInputInterpreter();
 
 
@@ -24,6 +24,10 @@ public:
 	virtual void interpretInput(Keyboard* keyboard);
 	virtual void interpretInput(Mouse* mouse);
 	virtual void interpretInput(WiiMote* wiiMote);
+
+private:
+
+	float mCameraLookMouseSensivity;
 };
 
 }

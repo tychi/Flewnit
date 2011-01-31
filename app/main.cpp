@@ -26,11 +26,6 @@ int main(int argc, char *argv[])
 	//now instantiate the Engine singleton
 	new Flewnit::URE();
 
-//#define MYOWN_TYPE oat
-//#define BULLSHITCONCAT(expr) fl##expr
-//
-//#define FLOAT_TYPE BULLSHITCONCAT(MYOWN_TYPE)
-//	FLOAT_TYPE myAss;
 
 	//initialize it
 	URE_INSTANCE->init();

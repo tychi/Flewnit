@@ -27,9 +27,10 @@
 namespace Flewnit
 {
 
-DemoInputInterpreter::DemoInputInterpreter()
+DemoInputInterpreter::DemoInputInterpreter(float cameraLookMouseSensivity)
+: mCameraLookMouseSensivity(cameraLookMouseSensivity)
 {
-	// TODO Auto-generated constructor stub
+	// TODO make cameraLookMouseSensivity  config file- configurable;
 
 }
 
@@ -80,6 +81,7 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 
 void DemoInputInterpreter::interpretInput(Mouse* mouse)
 {
+
 	static bool hideMouse= false;
 
 	if(mouse->getRecentEvent() == Mouse::MOUSE_EVENT_BUTTON_CHANGED)

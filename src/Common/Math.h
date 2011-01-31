@@ -47,6 +47,13 @@
 #	include <glm/gtc/matrix_projection.hpp>
 #	include <glm/gtc/quaternion.hpp>
 
+//for perspective()
+#	include <glm/gtc/matrix_projection.hpp>
+//for lookAt()
+#	include <glm/gtx/transform2.hpp>
+
+
+
 namespace Flewnit
 {
 	typedef glm::vec2 Vector2D;

@@ -46,14 +46,26 @@ private:
 
 protected:
 
+
+	//make virtual to be overridden by Camera, so that it can adapt its view matrix
+	virtual void setParent(SceneNode* newParent);
+	//update own global transform and propagate change to own children; then collect children's gloabal AABB
+	//make virtual to be overridden by Camera, so that it can adapt its view matrix
+	virtual void parentTransformChanged();
+
 	//to be called by children to inform their parents about transform change, which means that the parents global AABB might have become invalid;
 	void invalidateAABB();
-	void setParent(SceneNode* newParent);
-	//it is assumed that the parent's gloabal tranform is up to date!
+	//it is assumed that the parent's global tranform is up to date!
 	void updateGlobalAABB();
 
 
 public:
+	SceneNode(String name, SceneNodeTypeFlags typeflags,
+			const Vector3D& localPosition = Vector3D(0.0f,0.0f,0.0f),
+			//(0,0,-1) is assumed as initial orientation, extress any deviation in euler angles(radians)
+			const Vector3D& localOrientationEulerAngles = Vector3D(0.0f,0.0f,0.0f),
+			float localScale = 1.0f);
+
 	//parent is set by addScneno-function automatically
 	SceneNode(String name, SceneNodeTypeFlags typeflags, Matrix4x4 localtransform = Matrix4x4() );
 	virtual ~SceneNode();
@@ -71,8 +83,6 @@ public:
 	//access for easier iteration
 	Map<String, SceneNode* >& getChildren(){return mChildren;}
 
-	//update own global transform and propagate change to own children; then collect children's gloabal AABB
-	void parentTransformChanged();
 
 
 
