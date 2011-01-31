@@ -1,0 +1,62 @@
+//GLSL Shader Template: persistent defines:
+
+//applicable to following stages: all
+//includeable by application code:yes
+
+//{%persistentdefines}
+//{
+
+	#define	POSITION_SEMANTICS 	0
+	#define	NORMAL_SEMANTICS	1
+	#define	TANGENT_SEMANTICS	2
+	#define	TEXCOORD_SEMANTICS	3
+	//for debug draw and water rendering semantics
+	#define VELOCITY_SEMANTICS	4
+	#define MASS_SEMANTICS		5
+	#define DENSITY_SEMANTICS	6
+	#define PRESSURE_SEMANTICS	7
+	#define FORCE_SEMANTICS		8
+	#define Z_INDEX_SEMANTICS	9
+
+	//the texture-only semantics don't play a role here, as certain textures are bound and identified by a name, not via an array
+
+	//maybe obsolete, but we'll see
+	#define TEXTURE_TYPE_2D_DEFAULT 		0
+	#define TEXTURE_TYPE_2D_RECT			1
+	#define TEXTURE_TYPE_2D_CUBE			2
+	#define TEXTURE_TYPE_2D_ARRAY			3
+	#define	TEXTURE_TYPE_2D_MULTISAMPLE		4
+	#define	TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE 	5
+	#define	TEXTURE_TYPE_3D				6
+
+
+
+	#define RENDERING_TECHNIQUE_DIRECT			0
+	#define	RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL	1
+	#define	RENDERING_TECHNIQUE_DEFERRED_LIGHTING		2
+
+	#define LIGHT_SOURCES_SHADOW_FEATURE_NONE		0
+	#define LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT	1
+	#define LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT	2
+	#define LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS	3
+
+	#define SHADOW_TECHNIQUE_NONE		0
+	#define SHADOW_TECHNIQUE_DEFAULT	1
+	#define SHADOW_TECHNIQUE_PCFSS		2
+
+	#define LIGHT_SOURCES_LIGHTING_FEATURE_NONE				0
+	#define LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT			1
+	#define LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT			2
+	#define LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS			3
+	#define LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS			4
+	#define LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS		5
+
+	#define SHADER_LIGHTING_FEATURE_NONE			0
+	#define SHADER_LIGHTING_FEATURE_DIRECT_LIGHTING		1<<0
+	//global lighting via layered depth images or stuff... just a brainstroming, won't be implemented	
+	#define SHADER_LIGHTING_FEATURE_GLOBAL_LIGHTING		1<<0
+	#define SHADER_LIGHTING_FEATURE_DECAL_TEXTURING		1<<1
+	#define SHADER_LIGHTING_FEATURE_NORMAL_MAPPING		1<<2
+	#define SHADER_LIGHTING_FEATURE_CUBE_MAPPING		1<<3
+	#define SHADER_LIGHTING_FEATURE_AMBIENT_OCCLUSION	1<<4
+//}
