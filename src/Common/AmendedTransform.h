@@ -85,10 +85,6 @@ protected:
 
 	void setup();
 
-	//convenience functions:
-	Matrix4x4 getScaleMatrix()const;
-	Matrix4x4 getInverseScaleMatrix()const;
-	bool matricesAreEqual(const Matrix4x4& lhs, const Matrix4x4& rhs);
 
 	//AmendedTransform constructor only for the scene loader;
 	//"per hand" scene nodes shall be restricted to pos/dir/scale transforms,
@@ -97,6 +93,12 @@ protected:
 	friend class Loader;
 	//parent is set by addScenenode-function automatically
 	AmendedTransform(const Matrix4x4& transform);
+
+public:
+	//convenience functions:
+	Matrix4x4 getScaleMatrix()const;
+	Matrix4x4 getInverseScaleMatrix()const;
+	static bool matricesAreEqual(const Matrix4x4& lhs, const Matrix4x4& rhs);
 
 };
 

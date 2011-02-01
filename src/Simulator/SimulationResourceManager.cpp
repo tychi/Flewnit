@@ -18,6 +18,7 @@
 #include "MPP/MPP.h"
 #include "Simulator/LightingSimulator/Camera/Camera.h"
 #include "Simulator/LightingSimulator/Light/LightSourceManager.h"
+#include "Util/Log/Log.h"
 
 namespace Flewnit
 {
@@ -36,32 +37,7 @@ SimulationResourceManager::SimulationResourceManager() :
 	mMainCamera(0), //TODO
 	mLighSourceManager(0)//TODO
 {
-	///\{ TEST STUFF DEBUG
-	mGlobalRenderTarget->bind();
-	mGlobalRenderTarget->requestCreateAndStoreTexture(FINAL_RENDERING_SEMANTICS);
-	mGlobalRenderTarget->attachStoredColorTexture(FINAL_RENDERING_SEMANTICS, 0);
-	mGlobalRenderTarget->renderToScreen();
-
-	int bufferSize = WindowManager::getInstance().getWindowResolution().x
-			* WindowManager::getInstance().getWindowResolution().y;
-	Vector4D* myTestData = new Vector4D[bufferSize];
-	for (int i = 0; i < bufferSize; i++)
-	{
-		myTestData[i] = Vector4D(1, 2, 3, i);
-	}
-
-	Texture2D* testTex = new Texture2D("FUtestTex", CUSTOM_SEMANTICS,
-			WindowManager::getInstance().getWindowResolution().x,
-			WindowManager::getInstance().getWindowResolution().y, TexelInfo(4,
-					GPU_DATA_TYPE_FLOAT, 32, false), true,
-			//clinterop
-			true, false, myTestData, false);
-
-	delete[] myTestData;
-	///\} END TEST STUFF DEBUG
-
-	// TODO Auto-generated constructor stub
-
+	testStuff();
 }
 
 SimulationResourceManager::~SimulationResourceManager()
@@ -245,4 +221,70 @@ Geometry* SimulationResourceManager::getGeometry(String name)
 
 #undef FLEWNIT_INTERNAL_FIND_MACRO
 
+
+void SimulationResourceManager::testStuff()
+{
+	///\{ TEST STUFF DEBUG
+	mGlobalRenderTarget->bind();
+	mGlobalRenderTarget->requestCreateAndStoreTexture(FINAL_RENDERING_SEMANTICS);
+	mGlobalRenderTarget->attachStoredColorTexture(FINAL_RENDERING_SEMANTICS, 0);
+	mGlobalRenderTarget->renderToScreen();
+
+	int bufferSize = WindowManager::getInstance().getWindowResolution().x
+			* WindowManager::getInstance().getWindowResolution().y;
+	Vector4D* myTestData = new Vector4D[bufferSize];
+	for (int i = 0; i < bufferSize; i++)
+	{
+		myTestData[i] = Vector4D(1, 2, 3, i);
+	}
+
+	Texture2D* testTex = new Texture2D("FUtestTex", CUSTOM_SEMANTICS,
+			WindowManager::getInstance().getWindowResolution().x,
+			WindowManager::getInstance().getWindowResolution().y, TexelInfo(4,
+					GPU_DATA_TYPE_FLOAT, 32, false), true,
+			//clinterop
+			true, false, myTestData, false);
+
+	delete[] myTestData;
+
+	//test AmendedTransform:------------------------------------
+	//Vector3D pos(1.0f,4.0f,6.0f);
+	Vector3D pos(3.0f,1.0f,1.0f);
+	Vector3D dir(1.0f,0.0f,-1.0f);//-45° around y axis from the negative z axis
+	Vector3D up(0.0f,1.0f,0.0f);
+	float scale = 4.5f;
+
+	Matrix4x4 testTranslateMat= Matrix4x4();
+	testTranslateMat = glm::translate(testTranslateMat, pos);
+
+	Matrix4x4 testRotateMat= Matrix4x4();
+	testRotateMat = glm::rotate(testRotateMat,-45.0f,Vector3D(0.0f,1.0f,0.0f));
+
+	Matrix4x4 testScaleMat= Matrix4x4(Matrix3x3(scale));
+
+	Matrix4x4 testAccumMat = testTranslateMat * testRotateMat * testScaleMat;
+
+	AmendedTransform testAmendedTrans= AmendedTransform(pos,dir,up,scale);
+
+	LOG<<DEBUG_LOG_LEVEL<<"self constructed mat : "<<testAccumMat<<";\n";
+	LOG<<DEBUG_LOG_LEVEL<<"AmendedTrans mat		: "<<testAmendedTrans.getTotalTransform()<<";\n";
+
+	testAccumMat = glm::inverse(testAccumMat);
+	testAmendedTrans = testAmendedTrans.getInverse();
+	LOG<<DEBUG_LOG_LEVEL<<"self constructed mat inverse: "<<testAccumMat<<";\n";
+	LOG<<DEBUG_LOG_LEVEL<<"AmendedTrans mat		inverse: "<<testAmendedTrans.getTotalTransform()<<";\n";
+	assert( AmendedTransform::matricesAreEqual(testAmendedTrans.getTotalTransform(), testAccumMat));
+
+	testAccumMat = testAccumMat * testAccumMat;
+	testAmendedTrans = testAmendedTrans * testAmendedTrans;
+	LOG<<DEBUG_LOG_LEVEL<<"self constructed mat SQUARED: "<<testAccumMat<<";\n";
+	LOG<<DEBUG_LOG_LEVEL<<"AmendedTrans mat		SQUARED: "<<testAmendedTrans.getTotalTransform()<<";\n";
+	assert( AmendedTransform::matricesAreEqual(testAmendedTrans.getTotalTransform(), testAccumMat));
+
+
+	//assert(0 && "just stop for further debugging");
+	///\} END TEST STUFF DEBUG
 }
+
+}
+

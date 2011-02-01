@@ -8,6 +8,7 @@
 #include "AmendedTransform.h"
 
 #include "Scene/SceneNode.h"
+#include "Util/Log/Log.h"
 
 namespace Flewnit {
 
@@ -34,13 +35,19 @@ void AmendedTransform::setup()
 	assert(glm::length(mUpVector) > 0.01f);
 	assert(mScale > 0.0f);
 
-	glm::normalize(mDirection);
-	glm::normalize(mUpVector);
+	mDirection = glm::normalize(mDirection);
+	mUpVector = glm::normalize(mUpVector);
 
 	//Haxx: construct rotate/translate matrix, via the inverse ViewMatrix:
 	Matrix4x4 lookAtMatrix = glm::gtx::transform2::lookAt(
 			mPosition,mPosition+mDirection,mUpVector);
-	Matrix4x4 translationRotationMatrix = lookAtMatrix._inverse();
+	LOG<<DEBUG_LOG_LEVEL<<"lookAtMatrix: "<<lookAtMatrix<<";\n";
+
+
+	//Matrix4x4 translationRotationMatrix = lookAtMatrix._inverse();
+	//LOG<<DEBUG_LOG_LEVEL<<"lookAtMatrix._inverse(): "<<translationRotationMatrix<<";\n";
+	Matrix4x4 translationRotationMatrix = glm::inverse(lookAtMatrix);
+	LOG<<DEBUG_LOG_LEVEL<<"glm::inverse(lookAtMatrix); "<<translationRotationMatrix<<";\n";
 
 	mAccumTranslationRotationScaleMatrix =
 			translationRotationMatrix *
@@ -103,7 +110,8 @@ Matrix3x3 AmendedTransform::getRotationMatrix()const
 //inverse of translationMat*RotationMat;
 Matrix4x4 AmendedTransform::getLookAtMatrix()const
 {
-	return mAccumTranslationRotationScaleMatrix._inverse() * getInverseScaleMatrix();
+	//return mAccumTranslationRotationScaleMatrix._inverse() * getInverseScaleMatrix();
+	return glm::inverse(mAccumTranslationRotationScaleMatrix) * getInverseScaleMatrix();
 }
 //normal matrix: rotation matrix, scaled by 1/scale
 Matrix3x3 AmendedTransform::getNormalMatrix()const
@@ -121,10 +129,13 @@ AmendedTransform AmendedTransform::getInverse()const
 	return AmendedTransform(
 			//(TRS)^-1 == S^-1 * R^-1 * T^-1;
 			//this gives a matrix where the fourth column is (inverse rotated negative original value scaled by 1/originalScale)
-			getRotationMatrix()._inverse()*	(mPosition * (-1.0f/ mScale )),
-		//invers rotate dir and up
-		getRotationMatrix()._inverse() * mDirection,
-		getRotationMatrix()._inverse() * mUpVector,
+		glm::inverse(getRotationMatrix())*	(mPosition * (-1.0f/ mScale )),
+		//inverse rotate dir and up: do the rotation twice, as we don't wanna return the
+		//direction/up to neg.z/pos.y, but rotate it in the other direction!
+		glm::inverse(getRotationMatrix()) * glm::inverse(getRotationMatrix()) * mDirection,
+		glm::inverse(getRotationMatrix()) * glm::inverse(getRotationMatrix()) * mUpVector,
+//		glm::inverse(getRotationMatrix()) * mDirection,
+//		glm::inverse(getRotationMatrix()) * mUpVector,
 		1.0f / mScale
 	);
 }

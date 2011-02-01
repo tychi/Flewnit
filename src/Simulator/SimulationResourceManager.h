@@ -117,6 +117,8 @@ private:
 
 	//OpenGL kernels and OpenGL Shaders stored centrally for multiple usage
 	Map<String, MPP*>		mMPPs;
+
+	void testStuff();
 };
 
 }

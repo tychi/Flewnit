@@ -14,6 +14,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include "Common/Math.h"
 
 
 #define LOG Flewnit::Log::getInstance()
@@ -68,6 +69,23 @@ public:
 	inline Log& operator<<(Scalar logEntry){return handleGenericValues<Scalar>(logEntry);}
 	inline Log& operator<<(double logEntry){return handleGenericValues<double>(logEntry);}
 	inline Log& operator<<(size_t logEntry){return handleGenericValues<size_t>(logEntry);}
+
+	inline Log& operator<<(const Vector4D& logEntry){
+		return (*this)<<"Vector4D("
+				<<logEntry.x<<","
+				<<logEntry.y<<","
+				<<logEntry.z<<","
+				<<logEntry.w<<")";
+	}
+	inline Log& operator<<(const Matrix4x4& logEntry){
+		return (*this)<<"Matrix4x4("
+				<<logEntry[0]<<";"
+				<<logEntry[1]<<";"
+				<<logEntry[2]<<";"
+				<<logEntry[3]<<")";
+	}
+
+	//inline Log& operator<<(size_t logEntry){return handleGenericValues<size_t>(logEntry);}
 
 	inline void enableLogLevel(LogLevel which)
 	{
