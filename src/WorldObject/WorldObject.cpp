@@ -8,15 +8,17 @@
 #include "WorldObject.h"
 
 #include "SubObject.h"
+#include "Common/AmendedTransform.h"
 
 #include <boost/foreach.hpp>
+
 
 namespace Flewnit
 {
 
 WorldObject::WorldObject(String name,
 		SceneNodeTypeFlags typeflags,
-		Matrix4x4 localtransform)
+		const AmendedTransform& localtransform)
 : SceneNode(name, typeflags, localtransform)
 {
 

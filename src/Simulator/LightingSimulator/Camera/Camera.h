@@ -25,11 +25,7 @@ public:
 
 	virtual ~Camera();
 
-	const Matrix4x4& lookAt(const Vector3D& pos, const Vector3D& dir,
-			const Vector3D& up = Vector3D(0.0f,1.0f,0.0f));
-	//glm::gtx::transform2::lookAt()
 
-	Matrix4x4 getViewMatrix()const;
 
 	const Matrix4x4& perspective(	float fieldOfView_Angles,
 									float aspectRatioXtoY,
@@ -58,14 +54,14 @@ public:
 	//make virtual to be overridden by Camera, so that it can adapt its view matrix
 	virtual void parentTransformChanged();
 
-private:
-	Matrix4x4 mViewMatrix;
-	Matrix4x4 mProjectionMatrix;
-
 protected:
 
 	//make virtual to be overridden by Camera, so that it can adapt its view matrix
 	virtual void setParent(SceneNode* newParent);
+
+private:
+
+	Matrix4x4 mProjectionMatrix;
 };
 
 }

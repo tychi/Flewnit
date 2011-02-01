@@ -33,7 +33,7 @@ SimulationResourceManager::SimulationResourceManager() :
 					DEPTH_RENDER_BUFFER,
 					0)
 	),
-	mCamera(0), //TODO
+	mMainCamera(0), //TODO
 	mLighSourceManager(0)//TODO
 {
 	///\{ TEST STUFF DEBUG
@@ -68,7 +68,7 @@ SimulationResourceManager::~SimulationResourceManager()
 {
 	delete mScene;
 	delete mGlobalRenderTarget;
-	delete mCamera;
+	delete mMainCamera;
 	delete mLighSourceManager;
 
 
@@ -118,9 +118,9 @@ LightSourceManager*  SimulationResourceManager::getLighSourceManager()const
 {
 	return mLighSourceManager;
 }
-Camera*  SimulationResourceManager::getCamera()const
+Camera*  SimulationResourceManager::getMainCamera()const
 {
-	return mCamera;
+	return mMainCamera;
 }
 
 

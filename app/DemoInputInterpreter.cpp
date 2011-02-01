@@ -16,7 +16,7 @@
 #include "UserInterface/Input/WiiMote.h"
 
 #include "UserInterface/WindowManager/WindowManager.h"
-
+#include "Simulator/SimulationResourceManager.h"
 
 #ifdef FLEWNIT_USE_GLFW
 #	include <GL/glfw.h>
@@ -127,6 +127,19 @@ void DemoInputInterpreter::interpretInput(Mouse* mouse)
 					<<mouse->getRecentPosition().y
 					<<");\n"
 					;
+
+			Camera* mainCamera = SimulationResourceManager::getInstance().getMainCamera();
+
+			//Matrix4x4 lookAtMatrix = mainCamera->getViewMatrix();
+			float differenceHorizontal =  static_cast<float>(mouse->getRecentPosition().x - mouse->getLastPosition().x);
+			float differenceVertical   =  static_cast<float>(mouse->getRecentPosition().y - mouse->getLastPosition().y);
+
+			//self made initial sensivity rule of thumb: moving the mouse about half the screen
+			//shall rotate the view about 90 degrees (pi/2); we assume a screen size of 1600*1600
+			//pixels for this rule of thumb: a compromize between full hd and notebook displays ("HD ready ;( )
+			//4* half thumbrule screensize= 4* 1600 / 2:
+			const float pixelsCausingFullRotation = 3200.0f;
+			M_PI; //toContinue
 		}
 		else
 		{

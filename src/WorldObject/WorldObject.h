@@ -31,7 +31,7 @@ public:
 	WorldObject(
 			String name,
 			SceneNodeTypeFlags typeflags,
-			Matrix4x4 localtransform = Matrix4x4() );
+			const AmendedTransform& localtransform = AmendedTransform());
 
 	virtual ~WorldObject();
 

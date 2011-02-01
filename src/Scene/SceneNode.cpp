@@ -12,8 +12,9 @@
 namespace Flewnit
 {
 
-SceneNode::SceneNode(String name, SceneNodeTypeFlags typeflags, Matrix4x4 localtransform  )
-: mTypeFlags(typeflags), mLocalTransform(localtransform), mGlobalAABBisValidFlag(true), mParent(0)
+SceneNode::SceneNode(String name, SceneNodeTypeFlags typeflags,
+		const AmendedTransform& localTransform)
+: mTypeFlags(typeflags), mLocalTransform(localTransform), mGlobalAABBisValidFlag(true), mParent(0)
 {}
 
 SceneNode::~SceneNode()
@@ -51,21 +52,21 @@ void SceneNode::updateGlobalAABB()
 		Vector4D currentLocalAABBVertex;
 
 		currentLocalAABBVertex = Vector4D(mLocalAABB.getMin().x, mLocalAABB.getMin().y, mLocalAABB.getMin().z, 1.0f);
-		mGlobalAABB.include(mGlobalTransform * currentLocalAABBVertex);
+		mGlobalAABB.include(mGlobalTransform.getTotalTransform() * currentLocalAABBVertex);
 		currentLocalAABBVertex = Vector4D(mLocalAABB.getMin().x, mLocalAABB.getMin().y, mLocalAABB.getMax().z, 1.0f);
-		mGlobalAABB.include(mGlobalTransform * currentLocalAABBVertex);
+		mGlobalAABB.include(mGlobalTransform.getTotalTransform() * currentLocalAABBVertex);
 		currentLocalAABBVertex = Vector4D(mLocalAABB.getMin().x, mLocalAABB.getMax().y, mLocalAABB.getMin().z, 1.0f);
-		mGlobalAABB.include(mGlobalTransform * currentLocalAABBVertex);
+		mGlobalAABB.include(mGlobalTransform.getTotalTransform() * currentLocalAABBVertex);
 		currentLocalAABBVertex = Vector4D(mLocalAABB.getMin().x, mLocalAABB.getMax().y, mLocalAABB.getMax().z, 1.0f);
-		mGlobalAABB.include(mGlobalTransform * currentLocalAABBVertex);
+		mGlobalAABB.include(mGlobalTransform.getTotalTransform() * currentLocalAABBVertex);
 		currentLocalAABBVertex = Vector4D(mLocalAABB.getMax().x, mLocalAABB.getMin().y, mLocalAABB.getMin().z, 1.0f);
-		mGlobalAABB.include(mGlobalTransform * currentLocalAABBVertex);
+		mGlobalAABB.include(mGlobalTransform.getTotalTransform() * currentLocalAABBVertex);
 		currentLocalAABBVertex = Vector4D(mLocalAABB.getMax().x, mLocalAABB.getMin().y, mLocalAABB.getMax().z, 1.0f);
-		mGlobalAABB.include(mGlobalTransform * currentLocalAABBVertex);
+		mGlobalAABB.include(mGlobalTransform.getTotalTransform() * currentLocalAABBVertex);
 		currentLocalAABBVertex = Vector4D(mLocalAABB.getMax().x, mLocalAABB.getMax().y, mLocalAABB.getMin().z, 1.0f);
-		mGlobalAABB.include(mGlobalTransform * currentLocalAABBVertex);
+		mGlobalAABB.include(mGlobalTransform.getTotalTransform() * currentLocalAABBVertex);
 		currentLocalAABBVertex = Vector4D(mLocalAABB.getMax().x, mLocalAABB.getMax().y, mLocalAABB.getMax().z, 1.0f);
-		mGlobalAABB.include(mGlobalTransform * currentLocalAABBVertex);
+		mGlobalAABB.include(mGlobalTransform.getTotalTransform() * currentLocalAABBVertex);
 
 		mGlobalAABBisValidFlag = true;
 	}
@@ -89,12 +90,12 @@ void SceneNode::parentTransformChanged()
 
 
 
-const Matrix4x4& SceneNode::getLocalTransform()
+const AmendedTransform& SceneNode::getLocalTransform()const
 {
 	return mLocalTransform;
 }
 
-void SceneNode::setLocalTransform(const Matrix4x4& newTransform)
+void SceneNode::setLocalTransform(const AmendedTransform& newTransform)
 {
 	mGlobalAABBisValidFlag = false;
 
@@ -117,18 +118,19 @@ void SceneNode::setLocalTransform(const Matrix4x4& newTransform)
 	if(mParent) mParent->invalidateAABB();
 }
 
-const Matrix4x4& SceneNode::getGlobalTransform()
+const AmendedTransform& SceneNode::getGlobalTransform()const
 {
 	return mGlobalTransform;
 }
 
 //overwrite + handle childen's global transform, AABB n stuffM
-void SceneNode::setGlobalTransform(const Matrix4x4& newTransform)
+void SceneNode::setGlobalTransform(const AmendedTransform& newTransform)
 {
 	mGlobalTransform = newTransform;
 	if(mParent)
 	{
-		mLocalTransform = glm :: inverse( mParent->getGlobalTransform() ) * newTransform;
+		//mLocalTransform = glm :: inverse( mParent->getGlobalTransform() ) * newTransform;
+		mLocalTransform =  mParent->getGlobalTransform().getInverse() * newTransform;
 	}
 	else
 	{
