@@ -14,8 +14,10 @@ namespace Flewnit
 
 SceneNode::SceneNode(String name, SceneNodeTypeFlags typeflags,
 		const AmendedTransform& localTransform)
-: mTypeFlags(typeflags), mLocalTransform(localTransform), mGlobalAABBisValidFlag(true), mParent(0)
-{}
+: mIsCurrentlyUpdating(false), mTypeFlags(typeflags), mLocalTransform(localTransform), mGlobalAABBisValidFlag(true), mParent(0)
+{
+	mLocalTransform.setOwningSceneNode(this);
+}
 
 SceneNode::~SceneNode()
 {
@@ -88,7 +90,22 @@ void SceneNode::parentTransformChanged()
 	}
 }
 
+void SceneNode::transformChanged()
+{
+	if(mIsCurrentlyUpdating) return;
 
+	mIsCurrentlyUpdating = true;
+
+	BOOST_FOREACH(Nodemap::value_type nodepair, mChildren)
+	{
+		//let the child update itself first:
+		nodepair.second->parentTransformChanged();
+	}
+
+	if(mParent) mParent->invalidateAABB();
+
+	mIsCurrentlyUpdating=false;
+}
 
 const AmendedTransform& SceneNode::getLocalTransform()const
 {
@@ -109,13 +126,7 @@ void SceneNode::setLocalTransform(const AmendedTransform& newTransform)
 		mGlobalTransform = newTransform;
 	}
 
-	BOOST_FOREACH(Nodemap::value_type nodepair, mChildren)
-	{
-		//let the child update itself first:
-		nodepair.second->parentTransformChanged();
-	}
-
-	if(mParent) mParent->invalidateAABB();
+	transformChanged();
 }
 
 const AmendedTransform& SceneNode::getGlobalTransform()const
@@ -137,13 +148,7 @@ void SceneNode::setGlobalTransform(const AmendedTransform& newTransform)
 		mLocalTransform = newTransform;
 	}
 
-	BOOST_FOREACH(Nodemap::value_type nodepair, mChildren)
-	{
-		//let the child update itself first:
-		nodepair.second->parentTransformChanged();
-	}
-
-	if(mParent) mParent->invalidateAABB();
+	transformChanged();
 }
 
 

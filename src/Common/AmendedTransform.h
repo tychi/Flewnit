@@ -13,9 +13,14 @@
 
 #pragma once
 
+
 #include "Common/Math.h"
 
+
+
 namespace Flewnit {
+
+class SceneNode;
 
 class AmendedTransform
 {
@@ -30,14 +35,13 @@ public:
 
 	AmendedTransform(const AmendedTransform& rhs);
 
-
 	virtual ~AmendedTransform();
 
 
-	void setPosition(const Vector3D& pos);
-	void setDirection(const Vector3D& dir);
-	void setUpVector(const Vector3D& up);
-	void setScale(float amount);
+	AmendedTransform operator*(const AmendedTransform& rhs)const;
+	const AmendedTransform& operator*=(const AmendedTransform& rhs);
+	const AmendedTransform& operator=(const AmendedTransform& rhs);
+
 
 
 	//unscaled, i.e. orthonormal rotation matrix:
@@ -51,16 +55,27 @@ public:
 
 	AmendedTransform getInverse()const;
 
-	AmendedTransform operator*(const AmendedTransform& rhs)const;
-	const AmendedTransform& operator*=(const AmendedTransform& rhs);
-	const AmendedTransform& operator=(const AmendedTransform& rhs);
+	void setPosition(const Vector3D& pos);
+	void setDirection(const Vector3D& dir);
+	void setUpVector(const Vector3D& up);
+	void setScale(float amount);
+
 
 	inline const Vector3D& getPosition()const{return mPosition;}
 	inline const Vector3D& getDirection()const{return mDirection;}
 	inline const Vector3D& getUpVector()const{return mUpVector;}
 	inline float getScale()const{return mScale;}
 
+	void move(float forwardBackward, float rightLeft, float upDown);
+	void rotate(const Vector3D& axis, float angleRadians);
+
 protected:
+	friend class SceneNode;
+	void setOwningSceneNode(SceneNode*node){mOwningSceneNode = node;}
+	//backtracepointer to tell the node to update itself after its transform has been modified directly;
+	//mOwningScenNode->transformChanged() will be called by any setter function;
+	SceneNode* mOwningSceneNode;
+
 	Matrix4x4 mAccumTranslationRotationScaleMatrix;
 
 	Vector3D mPosition;
@@ -73,6 +88,7 @@ protected:
 	//convenience functions:
 	Matrix4x4 getScaleMatrix()const;
 	Matrix4x4 getInverseScaleMatrix()const;
+	bool matricesAreEqual(const Matrix4x4& lhs, const Matrix4x4& rhs);
 
 	//AmendedTransform constructor only for the scene loader;
 	//"per hand" scene nodes shall be restricted to pos/dir/scale transforms,

@@ -70,26 +70,24 @@ public:
 	SceneNode* removeChild(String name);
 
 	//----------------------------------------------------
-
-	void setPosition(const Vector3D& pos);
-	void setDirection(const Vector3D& dir);
-	void setUpVector(const Vector3D& up);
-	void setScale(float amount);
-
-
-	Vector3D getPosition()const;
-	Vector3D getDirection()const;
-	Vector3D getUpVector()const;
-	float getScale()const;
-
-	void move(float forwardBackward, float rightLeft, float upDown);
-	void rotate(const Vector3D& axis, float angleRadians);
-
-	const AmendedTransform& lookAt(const Vector3D& pos, const Vector3D& dir,
-			const Vector3D& up = Vector3D(0.0f,1.0f,0.0f));
-	//glm::gtx::transform2::lookAt()
-
-	AmendedTransform getViewMatrix()const;
+//
+//	void setPosition(const Vector3D& pos);
+//	void setDirection(const Vector3D& dir);
+//	void setUpVector(const Vector3D& up);
+//	void setScale(float amount);
+//
+//
+//	Vector3D getPosition()const;
+//	Vector3D getDirection()const;
+//	Vector3D getUpVector()const;
+//	float getScale()const;
+//
+//
+//	const AmendedTransform& lookAt(const Vector3D& pos, const Vector3D& dir,
+//			const Vector3D& up = Vector3D(0.0f,1.0f,0.0f));
+//	//glm::gtx::transform2::lookAt()
+//
+//	AmendedTransform getViewMatrix()const;
 
 protected:
 
@@ -108,6 +106,12 @@ protected:
 
 
 private:
+
+	friend class AmendedTransform;
+	//callback if AmendedTransform is manipulated directly so that the owning node can update itself;
+	void transformChanged();
+	//guard to omit endless recursions of transformChanged();
+	bool mIsCurrentlyUpdating;
 
 	//needed by SimPipelinestages to check if a node is interesting
 	SceneNodeTypeFlags mTypeFlags;
