@@ -21,7 +21,7 @@ public:
 	//at 45° FOV, 1/1 aspect ratio perspective;
 	//grabs the viewport from the WindowManager Singleton window size;
 	//setup the relevtant matrices per hand if you want different params;
-	Camera(String name);
+	Camera(String name, const AmendedTransform& localTransform = AmendedTransform());
 
 	virtual ~Camera();
 
@@ -45,19 +45,10 @@ public:
 							);
 	//glm::gtc::matrix_projection::ortho()
 
-	Matrix4x4 getProjectionMatrix()const;
+	const Matrix4x4& getProjectionMatrix()const;
 
 	void setGLViewPort(const Vector2Di& lowerLeftPos, const Vector2Di& extends );
 
-
-	//update own global transform and propagate change to own children; then collect children's gloabal AABB
-	//make virtual to be overridden by Camera, so that it can adapt its view matrix
-	virtual void parentTransformChanged();
-
-protected:
-
-	//make virtual to be overridden by Camera, so that it can adapt its view matrix
-	virtual void setParent(SceneNode* newParent);
 
 private:
 

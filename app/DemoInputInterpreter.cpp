@@ -17,9 +17,11 @@
 
 #include "UserInterface/WindowManager/WindowManager.h"
 #include "Simulator/SimulationResourceManager.h"
+#include "Simulator/LightingSimulator/Camera/Camera.h"
 
 #ifdef FLEWNIT_USE_GLFW
 #	include <GL/glfw.h>
+
 #else
 
 #endif
@@ -137,9 +139,15 @@ void DemoInputInterpreter::interpretInput(Mouse* mouse)
 			//self made initial sensivity rule of thumb: moving the mouse about half the screen
 			//shall rotate the view about 90 degrees (pi/2); we assume a screen size of 1600*1600
 			//pixels for this rule of thumb: a compromize between full hd and notebook displays ("HD ready ;( )
-			//4* half thumbrule screensize= 4* 1600 / 2:
+			//4* half thumbrule screen size= 4* 1600 / 2:
 			const float pixelsCausingFullRotation = 3200.0f;
-			M_PI; //toContinue
+			float degreesToYaw = (360.0f / pixelsCausingFullRotation) * differenceHorizontal * mCameraLookMouseSensivity;
+			//negative as mouse coord go from top to bottom
+			float degreesToPitch = (-360.0f / pixelsCausingFullRotation) * differenceVertical * mCameraLookMouseSensivity;
+
+
+			mainCamera->getGlobalTransform().yawRelativeToUpVector(degreesToYaw);
+			mainCamera->getGlobalTransform().pitchRelativeToDirection(degreesToPitch);
 		}
 		else
 		{

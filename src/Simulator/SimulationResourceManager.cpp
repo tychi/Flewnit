@@ -34,7 +34,7 @@ SimulationResourceManager::SimulationResourceManager() :
 					DEPTH_RENDER_BUFFER,
 					0)
 	),
-	mMainCamera(0), //TODO
+	mMainCamera(new Camera("mainCamera")), //TODO
 	mLighSourceManager(0)//TODO
 {
 	testStuff();
@@ -257,13 +257,10 @@ void SimulationResourceManager::testStuff()
 
 	Matrix4x4 testTranslateMat= Matrix4x4();
 	testTranslateMat = glm::translate(testTranslateMat, pos);
-
 	Matrix4x4 testRotateMat= Matrix4x4();
 	//testRotateMat = glm::rotate(testRotateMat,-45.0f,Vector3D(0.0f,1.0f,0.0f));
 	testRotateMat = glm::rotate(testRotateMat,25.0f,Vector3D(0.0f,1.0f,0.0f));
-
 	Matrix4x4 testScaleMat= Matrix4x4(Matrix3x3(scale));
-
 	Matrix4x4 testAccumMat = testTranslateMat * testRotateMat * testScaleMat;
 
 	AmendedTransform testAmendedTrans= AmendedTransform(pos,dir,up,scale);
@@ -272,18 +269,59 @@ void SimulationResourceManager::testStuff()
 	LOG<<DEBUG_LOG_LEVEL<<"AmendedTrans mat		: "<<testAmendedTrans.getTotalTransform()<<";\n";
 	assert( AmendedTransform::matricesAreEqual(testAmendedTrans.getTotalTransform(), testAccumMat));
 
+	//checks itself in constructor
+	AmendedTransform amendFromMatrix(testAccumMat);
+
 	testAccumMat = glm::inverse(testAccumMat);
 	testAmendedTrans = testAmendedTrans.getInverse();
 	LOG<<DEBUG_LOG_LEVEL<<"self constructed mat inverse: "<<testAccumMat<<";\n";
 	LOG<<DEBUG_LOG_LEVEL<<"AmendedTrans mat		inverse: "<<testAmendedTrans.getTotalTransform()<<";\n";
 	assert( AmendedTransform::matricesAreEqual(testAmendedTrans.getTotalTransform(), testAccumMat));
 
+	//checks itself in constructor
+	AmendedTransform amendFromInverseMatrix(testAccumMat);
+
 	testAccumMat = testAccumMat * testAccumMat;
 	testAmendedTrans = testAmendedTrans * testAmendedTrans;
 	LOG<<DEBUG_LOG_LEVEL<<"self constructed mat SQUARED: "<<testAccumMat<<";\n";
 	LOG<<DEBUG_LOG_LEVEL<<"AmendedTrans mat		SQUARED: "<<testAmendedTrans.getTotalTransform()<<";\n";
 	assert( AmendedTransform::matricesAreEqual(testAmendedTrans.getTotalTransform(), testAccumMat));
+	//checks itself in constructor
+	AmendedTransform amendFromInverseSquaredMatrix(testAccumMat);
 
+	//--------------
+
+	Vector3D pos2(121.0f,40.6f,36.98f);
+	Vector3D dir2(1.0f,0.0f,-1.0f);//-45° around y axis from the negative z axis
+	Vector3D up2(0.0f,1.0f,0.0f);
+	float scale2 = 49.457f;
+
+	Matrix4x4 testTranslateMat2= Matrix4x4();
+	testTranslateMat2 = glm::translate(testTranslateMat2, pos2);
+	Matrix4x4 testRotateMat2 = glm::rotate(-45.0f,up2);
+	Matrix4x4 testScaleMat2= Matrix4x4(Matrix3x3(scale2));
+
+	Matrix4x4 testAccumMat2 = testTranslateMat2 * testRotateMat2 * testScaleMat2;
+	AmendedTransform testAmendedTrans2= AmendedTransform(pos2,dir2,up2,scale2);
+
+	LOG<<DEBUG_LOG_LEVEL<<"self constructed mat 2 : "<<testAccumMat2<<";\n";
+	LOG<<DEBUG_LOG_LEVEL<<"AmendedTrans mat	2	: "<<testAmendedTrans2.getTotalTransform()<<";\n";
+	assert( AmendedTransform::matricesAreEqual(testAmendedTrans2.getTotalTransform(), testAccumMat2));
+
+	assert(
+		AmendedTransform::matricesAreEqual(
+			(testAmendedTrans2 * testAmendedTrans).getTotalTransform(),
+			testAccumMat2 * testAccumMat
+		)
+	);
+
+	assert(
+		AmendedTransform::matricesAreEqual(
+			( 		(testAmendedTrans2 * testAmendedTrans) *
+					(testAmendedTrans2 * testAmendedTrans).getInverse()  ).getTotalTransform(),
+			Matrix4x4()
+		)
+	);
 
 	//assert(0 && "just stop for further debugging");
 	///\} END TEST STUFF DEBUG

@@ -30,6 +30,7 @@ public:
 	//global transform is set to the local one initially;
 	SceneNode(String name, SceneNodeTypeFlags typeflags,
 			const AmendedTransform& localTransform = AmendedTransform());
+
 //			const Vector3D& localPosition = Vector3D(0.0f,0.0f,0.0f),
 //			//(0,0,-1) is assumed as initial orientation, extress any deviation in euler angles(radians)
 //			const Vector3D& localOrientationEulerAngles = Vector3D(0.0f,0.0f,0.0f),
@@ -53,10 +54,10 @@ public:
 
 
 
-	const AmendedTransform& getGlobalTransform()const;
+	AmendedTransform& getGlobalTransform();
 	//overwrite + handle childen's global transform, AABB n stuffM
 	void setGlobalTransform(const AmendedTransform& newTransform);
-	const AmendedTransform& getLocalTransform()const;
+	AmendedTransform& getLocalTransform();
 	void setLocalTransform(const AmendedTransform& newTransform);
 
 	const AABB& getLocalAABB();
@@ -109,7 +110,7 @@ private:
 
 	friend class AmendedTransform;
 	//callback if AmendedTransform is manipulated directly so that the owning node can update itself;
-	void transformChanged();
+	void transformChanged(bool global);
 	//guard to omit endless recursions of transformChanged();
 	bool mIsCurrentlyUpdating;
 

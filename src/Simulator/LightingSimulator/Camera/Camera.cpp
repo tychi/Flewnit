@@ -7,15 +7,64 @@
 
 #include "Camera.h"
 
+#include "UserInterface/WindowManager/WindowManager.h"
+
+#include "Common/CL_GL_Common.h"
+
+
 namespace Flewnit {
 
-//Camera::Camera() {
-//	// TODO Auto-generated constructor stub
-//
-//}
-//
-//Camera::~Camera() {
-//	// TODO Auto-generated destructor stub
-//}
+Camera::Camera(String name, const AmendedTransform& localTransform)
+: SceneNode(name, CAMERA_NODE, localTransform)
+{
+	perspective(
+			45.0f,
+			static_cast<float>(WindowManager::getInstance().getWindowResolution().x) /
+			static_cast<float>(WindowManager::getInstance().getWindowResolution().y)
+	);
 
 }
+
+Camera::~Camera()
+{
+	// TODO Auto-generated destructor stub
+}
+
+
+const Matrix4x4& Camera::perspective(	float fieldOfView_Angles,
+								float aspectRatioXtoY,
+								float nearClipPlane,
+								float farClipPlane	)
+{
+	mProjectionMatrix =  glm::gtc::matrix_projection::perspective(
+			fieldOfView_Angles, aspectRatioXtoY, nearClipPlane, farClipPlane );
+}
+
+//needed for stuff like static mesh voxelization per rasterization;
+//then, the params should be (0,voxelsPerDimension,0,voxelsPerDimension,0,voxelsPerDimension)
+//so that every integral pixel coord corresponds to one voxel;
+const Matrix4x4& Camera::ortho	(float left,
+						float right,
+						float bottom,
+						float top,
+						float nearClipPlane,
+						float farClipPlane
+						)
+{
+	//glm::gtc::matrix_projection::ortho()
+}
+
+
+const Matrix4x4& Camera::getProjectionMatrix()const
+{
+	return mProjectionMatrix;
+}
+
+void Camera::setGLViewPort(const Vector2Di& lowerLeftPos, const Vector2Di& extends )
+{
+	glViewport(lowerLeftPos.x,lowerLeftPos.y,extends.x,extends.y);
+}
+
+
+}
+

@@ -75,10 +75,11 @@ public:
 
 protected:
 	friend class SceneNode;
-	void setOwningSceneNode(SceneNode*node){mOwningSceneNode = node;}
+	void setOwningSceneNode(SceneNode*node, bool isGlobalTransform){mOwningSceneNode = node; mIsGlobalTransform=isGlobalTransform;}
 	//backtracepointer to tell the node to update itself after its transform has been modified directly;
 	//mOwningScenNode->transformChanged() will be called by any setter function;
 	SceneNode* mOwningSceneNode;
+	bool mIsGlobalTransform;
 
 	Matrix4x4 mAccumTranslationRotationScaleMatrix;
 
@@ -95,6 +96,8 @@ protected:
 	//so that the user cant f*** up the transformation matrix TOO much ;);
 	//this constructor will vaklidate the passed transformation matrix nevertheless;
 	friend class Loader;
+//FOR DEBUG ONLY public: TODO remove when tested;
+public:
 	//parent is set by addScenenode-function automatically
 	AmendedTransform(const Matrix4x4& transform);
 

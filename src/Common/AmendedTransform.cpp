@@ -18,7 +18,8 @@ AmendedTransform::	AmendedTransform(
 		const Vector3D& direction,
 		const Vector3D& upVector,
 		float scale)
-:	mOwningSceneNode(0), mPosition(position), mDirection(direction), mUpVector(upVector), mScale(scale)
+:	mOwningSceneNode(0), mIsGlobalTransform(true),
+ 	mPosition(position), mDirection(direction), mUpVector(upVector), mScale(scale)
 {
 	setup();
 }
@@ -38,26 +39,28 @@ void AmendedTransform::setup()
 	mDirection = glm::normalize(mDirection);
 	mUpVector = glm::normalize(mUpVector);
 
+	LOG<<DEBUG_LOG_LEVEL<<"mDirection: "<<Vector4D(mDirection,0.0f)<<";\n";
+
 	assert("direction and upVector not parallel"
 		&& ( std::fabs(glm::dot(mDirection, mUpVector)) < 0.99 ));
 
 	//Haxx: construct rotate/translate matrix, via the inverse ViewMatrix:
 	Matrix4x4 lookAtMatrix = glm::gtx::transform2::lookAt(
 			mPosition,mPosition+mDirection,mUpVector);
-	LOG<<DEBUG_LOG_LEVEL<<"lookAtMatrix: "<<lookAtMatrix<<";\n";
+	//LOG<<DEBUG_LOG_LEVEL<<"lookAtMatrix: "<<lookAtMatrix<<";\n";
 
 
 	//Matrix4x4 translationRotationMatrix = lookAtMatrix._inverse();
 	//LOG<<DEBUG_LOG_LEVEL<<"lookAtMatrix._inverse(): "<<translationRotationMatrix<<";\n";
 	Matrix4x4 translationRotationMatrix = glm::inverse(lookAtMatrix);
-	LOG<<DEBUG_LOG_LEVEL<<"glm::inverse(lookAtMatrix); "<<translationRotationMatrix<<";\n";
+	//LOG<<DEBUG_LOG_LEVEL<<"glm::inverse(lookAtMatrix); "<<translationRotationMatrix<<";\n";
 
 	mAccumTranslationRotationScaleMatrix =
 			translationRotationMatrix *
 			//just the rotational component shall be scaled, not the translational
 			getScaleMatrix();
 
-	if(mOwningSceneNode) mOwningSceneNode->transformChanged();
+	if(mOwningSceneNode) mOwningSceneNode->transformChanged(mIsGlobalTransform);
 }
 
 
@@ -71,14 +74,16 @@ AmendedTransform::AmendedTransform(const Matrix4x4& transform)
 			&& (std::fabs(transform[0][3]) <0.001f )
 			&& (std::fabs(transform[1][3]) <0.001f )
 			&& (std::fabs(transform[2][3]) <0.001f ));
+
 	Vector3D rotMatLengths= Vector3D(
 			glm::length(Vector3D(transform[0])),
 			glm::length(Vector3D(transform[1])),
 			glm::length(Vector3D(transform[2]))
 	);
 	assert("all lengths of the rotMatrix vectors are equal, i.e. scale is homogeneous"
-			&&  (rotMatLengths.x == rotMatLengths.y )
-			&& 	(rotMatLengths.x ==	rotMatLengths.z));
+			&&  ( std::fabs(rotMatLengths.x - rotMatLengths.y) 		< 0.001f )
+			&& 	( std::fabs(rotMatLengths.x - rotMatLengths.z) 		< 0.001f )
+	);
 	mScale = rotMatLengths.x;
 
 	assert("3x3 component is orthogonal rotation matrix"
@@ -91,7 +96,7 @@ AmendedTransform::AmendedTransform(const Matrix4x4& transform)
 	mDirection = glm::normalize( Vector3D(transform[2]) * (-1.0f) );
 
 	//pick second row for upVector (y-axis of rotation matrix)
-	mDirection = glm::normalize( Vector3D(transform[1]) );
+	mUpVector = glm::normalize( Vector3D(transform[1]) );
 
 	setup();
 
@@ -213,7 +218,7 @@ const AmendedTransform& AmendedTransform::operator*=(const AmendedTransform& rhs
 			mScale * rhs.mScale
 	);
 
-	if(mOwningSceneNode) mOwningSceneNode->transformChanged();
+	if(mOwningSceneNode) mOwningSceneNode->transformChanged(mIsGlobalTransform);
 
 	return *this;
 }
@@ -248,16 +253,22 @@ void AmendedTransform::moveRelativeToDirection(float forwardBackward, float righ
 //change direction by rotating it angleDegrees degrees around cross(direction,upVector)
 void AmendedTransform::pitchRelativeToDirection(float angleDegrees)
 {
-	mDirection = 	Vector3D (
+
+		Vector3D newDir  = 	Vector3D (
 			glm::rotate(
 				angleDegrees,
 				glm::normalize(glm::cross(mDirection, mUpVector))
 			)
 			* Vector4D(mDirection,0.0f)
-	);
+		);
 
-	setup();
-	//TODO check if works
+	//omit overturning and singularities at the peaks
+	if( std::fabs(glm::dot(newDir, mUpVector)) < 0.99 )
+	{
+		mDirection = newDir;
+		setup();
+		//TODO check if works
+	}
 }
 
 //change direction by rotating it angleDegrees degrees around the upVector;

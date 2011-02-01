@@ -14,9 +14,13 @@ namespace Flewnit
 
 SceneNode::SceneNode(String name, SceneNodeTypeFlags typeflags,
 		const AmendedTransform& localTransform)
-: mIsCurrentlyUpdating(false), mTypeFlags(typeflags), mLocalTransform(localTransform), mGlobalAABBisValidFlag(true), mParent(0)
+: mIsCurrentlyUpdating(false), mTypeFlags(typeflags),
+  	  	  	  	  	  	  	  	  //set global equal to local as long there is no parent
+  mLocalTransform(localTransform), mGlobalTransform(localTransform),
+  mGlobalAABBisValidFlag(true), mParent(0)
 {
-	mLocalTransform.setOwningSceneNode(this);
+	mLocalTransform.setOwningSceneNode(this,false);
+	mGlobalTransform.setOwningSceneNode(this,true);
 }
 
 SceneNode::~SceneNode()
@@ -90,11 +94,37 @@ void SceneNode::parentTransformChanged()
 	}
 }
 
-void SceneNode::transformChanged()
+void SceneNode::transformChanged(bool global)
 {
 	if(mIsCurrentlyUpdating) return;
 
 	mIsCurrentlyUpdating = true;
+
+	mGlobalAABBisValidFlag = false;
+
+	if(global)
+	{
+		if(mParent)
+		{
+			//mLocalTransform = glm :: inverse( mParent->getGlobalTransform() ) * newTransform;
+			mLocalTransform =  mParent->getGlobalTransform().getInverse() * mGlobalTransform;
+		}
+		else
+		{
+			mLocalTransform = mGlobalTransform;
+		}
+	}
+	else
+	{
+		if(mParent)
+		{
+			mGlobalTransform = mParent->getGlobalTransform() * mLocalTransform;
+		}
+		else
+		{
+			mGlobalTransform = mLocalTransform;
+		}
+	}
 
 	BOOST_FOREACH(Nodemap::value_type nodepair, mChildren)
 	{
@@ -107,29 +137,18 @@ void SceneNode::transformChanged()
 	mIsCurrentlyUpdating=false;
 }
 
-const AmendedTransform& SceneNode::getLocalTransform()const
+AmendedTransform& SceneNode::getLocalTransform()
 {
 	return mLocalTransform;
 }
 
 void SceneNode::setLocalTransform(const AmendedTransform& newTransform)
 {
-	mGlobalAABBisValidFlag = false;
-
 	mLocalTransform = newTransform;
-	if(mParent)
-	{
-		mGlobalTransform = mParent->getGlobalTransform() * newTransform;
-	}
-	else
-	{
-		mGlobalTransform = newTransform;
-	}
-
-	transformChanged();
+	transformChanged(false);
 }
 
-const AmendedTransform& SceneNode::getGlobalTransform()const
+AmendedTransform& SceneNode::getGlobalTransform()
 {
 	return mGlobalTransform;
 }
@@ -138,17 +157,7 @@ const AmendedTransform& SceneNode::getGlobalTransform()const
 void SceneNode::setGlobalTransform(const AmendedTransform& newTransform)
 {
 	mGlobalTransform = newTransform;
-	if(mParent)
-	{
-		//mLocalTransform = glm :: inverse( mParent->getGlobalTransform() ) * newTransform;
-		mLocalTransform =  mParent->getGlobalTransform().getInverse() * newTransform;
-	}
-	else
-	{
-		mLocalTransform = newTransform;
-	}
-
-	transformChanged();
+	transformChanged(true);
 }
 
 
