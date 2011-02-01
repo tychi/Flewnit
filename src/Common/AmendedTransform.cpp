@@ -38,6 +38,9 @@ void AmendedTransform::setup()
 	mDirection = glm::normalize(mDirection);
 	mUpVector = glm::normalize(mUpVector);
 
+	assert("direction and upVector not parallel"
+		&& ( std::fabs(glm::dot(mDirection, mUpVector)) < 0.99 ));
+
 	//Haxx: construct rotate/translate matrix, via the inverse ViewMatrix:
 	Matrix4x4 lookAtMatrix = glm::gtx::transform2::lookAt(
 			mPosition,mPosition+mDirection,mUpVector);
@@ -231,21 +234,46 @@ const AmendedTransform& AmendedTransform::operator=(const AmendedTransform& rhs)
 	return *this;
 }
 
-void AmendedTransform::move(float forwardBackward, float rightLeft, float upDown)
+void AmendedTransform::moveRelativeToDirection(float forwardBackward, float rightLeft, float upDown)
 {
-	//TODO continue
-	assert("still to implement" &&0);
-
-	if(mOwningSceneNode) mOwningSceneNode->transformChanged();
-}
-void AmendedTransform::rotate(const Vector3D& axis, float angleRadians)
-{
-	//TODO continue
-	assert("still to implement" &&0);
-
-	if(mOwningSceneNode) mOwningSceneNode->transformChanged();
+	mPosition +=
+		(forwardBackward * 		glm::normalize( mDirection 					  	) ) +
+		(rightLeft * 			glm::normalize( glm::cross(mDirection, mUpVector) ) +
+		(upDown* 				glm::normalize( mUpVector					    ) )
+	 );
+	setup();
+	//TODO check if works
 }
 
+//change direction by rotating it angleDegrees degrees around cross(direction,upVector)
+void AmendedTransform::pitchRelativeToDirection(float angleDegrees)
+{
+	mDirection = 	Vector3D (
+			glm::rotate(
+				angleDegrees,
+				glm::normalize(glm::cross(mDirection, mUpVector))
+			)
+			* Vector4D(mDirection,0.0f)
+	);
+
+	setup();
+	//TODO check if works
+}
+
+//change direction by rotating it angleDegrees degrees around the upVector;
+void AmendedTransform::yawRelativeToUpVector(float angleDegrees)
+{
+	mDirection = 	Vector3D (
+			glm::rotate(
+				angleDegrees,
+				glm::normalize(mUpVector)
+			)
+			* Vector4D(mDirection,0.0f)
+	);
+
+	setup();
+	//TODO check if works
+}
 
 
 }

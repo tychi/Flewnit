@@ -249,16 +249,18 @@ void SimulationResourceManager::testStuff()
 
 	//test AmendedTransform:------------------------------------
 	//Vector3D pos(1.0f,4.0f,6.0f);
-	Vector3D pos(3.0f,1.0f,1.0f);
-	Vector3D dir(1.0f,0.0f,-1.0f);//-45° around y axis from the negative z axis
+	Vector3D pos(3.0f,-41.034f,1.0f);
+	//Vector3D dir(1.0f,0.0f,-1.0f);//-45° around y axis from the negative z axis
+	Vector3D dir(-glm::sin(glm::radians(25.0f)),0.0f,-glm::cos(glm::radians(25.0f)));
 	Vector3D up(0.0f,1.0f,0.0f);
-	float scale = 4.5f;
+	float scale = 453.5f;
 
 	Matrix4x4 testTranslateMat= Matrix4x4();
 	testTranslateMat = glm::translate(testTranslateMat, pos);
 
 	Matrix4x4 testRotateMat= Matrix4x4();
-	testRotateMat = glm::rotate(testRotateMat,-45.0f,Vector3D(0.0f,1.0f,0.0f));
+	//testRotateMat = glm::rotate(testRotateMat,-45.0f,Vector3D(0.0f,1.0f,0.0f));
+	testRotateMat = glm::rotate(testRotateMat,25.0f,Vector3D(0.0f,1.0f,0.0f));
 
 	Matrix4x4 testScaleMat= Matrix4x4(Matrix3x3(scale));
 
@@ -268,6 +270,7 @@ void SimulationResourceManager::testStuff()
 
 	LOG<<DEBUG_LOG_LEVEL<<"self constructed mat : "<<testAccumMat<<";\n";
 	LOG<<DEBUG_LOG_LEVEL<<"AmendedTrans mat		: "<<testAmendedTrans.getTotalTransform()<<";\n";
+	assert( AmendedTransform::matricesAreEqual(testAmendedTrans.getTotalTransform(), testAccumMat));
 
 	testAccumMat = glm::inverse(testAccumMat);
 	testAmendedTrans = testAmendedTrans.getInverse();

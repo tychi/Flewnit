@@ -66,8 +66,12 @@ public:
 	inline const Vector3D& getUpVector()const{return mUpVector;}
 	inline float getScale()const{return mScale;}
 
-	void move(float forwardBackward, float rightLeft, float upDown);
-	void rotate(const Vector3D& axis, float angleRadians);
+	void moveRelativeToDirection(float forwardBackward, float rightLeft, float upDown);
+	//change direction by rotating it angleDegrees degrees around cross(direction,upVector)
+	void pitchRelativeToDirection(float angleDegrees);
+	//change direction by rotating it angleDegrees degrees around the upVector;
+	void yawRelativeToUpVector(float angleDegrees);
+	//void rotate(const Vector3D& axis, float angleRadians);
 
 protected:
 	friend class SceneNode;
