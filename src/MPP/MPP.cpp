@@ -10,7 +10,8 @@
 namespace Flewnit
 {
 
-MPP::MPP()
+MPP::MPP(String name, SimulationDomain sd)
+: SimulationObject(name,sd)
 {
 	// TODO Auto-generated constructor stub
 

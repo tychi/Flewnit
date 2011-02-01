@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "Common/BasicObject.h"
+#include "Simulator/SimulationObject.h"
 
 
 namespace Flewnit
@@ -18,12 +18,12 @@ namespace Flewnit
 
 
 class MPP
-: public BasicObject
+: public SimulationObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
 public:
-	MPP();
+	MPP(String name, SimulationDomain sd);
 	virtual ~MPP();
 };
 

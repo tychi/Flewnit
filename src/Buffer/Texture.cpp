@@ -26,8 +26,10 @@ Texture::Texture(const TextureInfo& texi)
 
 Texture::~Texture()
 {
-	//delete texturem so that derived classes don't have to do it;
+	//delete texture so that derived classes don't have to do it;
 	GUARD(freeGL());
+	//set handle to zero to demonstrate to the bufferInterface class that the memoray was really freed;
+	mGraphicsBufferHandle = 0;
 }
 
 
@@ -148,6 +150,7 @@ void Texture::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(Buff
 void Texture::freeGL()throw(BufferException)
 {
 	glDeleteTextures(1, & mGraphicsBufferHandle);
+
 }
 
 

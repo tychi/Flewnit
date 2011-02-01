@@ -135,23 +135,38 @@ void SimulationResourceManager::executeInstancedRendering()
 
 //---------------------------------------------------------------
 
+#define FLEWNIT_INTERNAL_REGISTER_MACRO(instanceName,getterFunction,containerMember) \
+		if(getterFunction(instanceName->getName())) \
+		{ \
+			assert(0 && "Object with specified name already exists!"); \
+		} \
+		else \
+		{ \
+			containerMember[instanceName->getName()]=instanceName; \
+		} \
+
 void SimulationResourceManager::registerInstanceManager(InstanceManager* im)
 {
 //	assert("Object with specified name may not already exist!"
-//			&& mInstanceManagers.find(im->ge));
-//	TOCONTINUE
+//			&& (mInstanceManagers.find(im->getName()) == mInstanceManagers.end()) );
 
-	if(getInstanceManager(im->getName()))
-	{
-		assert(0 && "Oject with specified name already exists!");
-	}
+	FLEWNIT_INTERNAL_REGISTER_MACRO(im, getInstanceManager, mInstanceManagers)
+
+//	if(getInstanceManager(im->getName()))
+//	{
+//		assert(0 && "Object with specified name already exists!");
+//	}
+//	else
+//	{
+//		mInstanceManagers[im->getName()]=im;
+//	}
 }
 
 
 //automatically called by BufferInterface constructor
 void SimulationResourceManager::registerBufferInterface(BufferInterface* bi)
 {
-	//TODO
+	FLEWNIT_INTERNAL_REGISTER_MACRO(bi, getBufferInterface, mBuffers)
 }
 //be very careful with this function, as ther may be serveral references
 //and I don't work with smart pointers; so do a manual deletion only if you are absolutely sure
@@ -160,28 +175,31 @@ void SimulationResourceManager::registerBufferInterface(BufferInterface* bi)
 
 void SimulationResourceManager::registerTexture(Texture* tex)
 {
-	//TODO
+	FLEWNIT_INTERNAL_REGISTER_MACRO(tex, getTexture, mTextures)
 }
 //void SimulationResourceManager::deleteTexture(Texture* tex);
 
 void SimulationResourceManager::registerMPP(MPP* mpp)
 {
-	//TODO
+	FLEWNIT_INTERNAL_REGISTER_MACRO(mpp, getMPP, mMPPs)
 }
 
 //void SimulationResourceManager::SimulationResourceManager::deleteMPP(MPP* mpp);
 
 void SimulationResourceManager::registerMaterial(Material* mat)
 {
-	//TODO
+	FLEWNIT_INTERNAL_REGISTER_MACRO(mat, getMaterial, mMaterials)
 }
 //void SimulationResourceManager::deleteMaterial(Material* mat);
 
 void SimulationResourceManager::registerGeometry(Geometry* geo)
 {
-	//TODO
+	FLEWNIT_INTERNAL_REGISTER_MACRO(geo, getGeometry, mGeometries)
 }
 //void SimulationResourceManager::deleteGeometry(Geometry* geo);
+
+
+#undef FLEWNIT_INTERNAL_REGISTER_MACRO
 
 
 //---------------------------------------------------------------
@@ -198,6 +216,11 @@ void SimulationResourceManager::registerGeometry(Geometry* geo)
 InstanceManager* SimulationResourceManager::getInstanceManager(String name)
 {
 	FLEWNIT_INTERNAL_FIND_MACRO(mInstanceManagers)
+}
+
+BufferInterface* SimulationResourceManager::getBufferInterface(String name)
+{
+	FLEWNIT_INTERNAL_FIND_MACRO(mBuffers)
 }
 
 Texture* SimulationResourceManager::getTexture(String name)
