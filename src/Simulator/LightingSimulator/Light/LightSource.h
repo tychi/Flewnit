@@ -12,6 +12,10 @@
 namespace Flewnit
 {
 
+#define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+#include "MPP/Shader/ShaderSources/GenericUberShader/04_Fragment_dataTypes.glsl"
+#undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+
 class LightSource
 :public WorldObject
 {
@@ -20,6 +24,9 @@ public:
 
 	LightSource();
 	virtual ~LightSource();
+
+private:
+	LightSourceShaderStruct mLightSourceShaderStruct;
 };
 
 }

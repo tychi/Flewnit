@@ -34,7 +34,7 @@ public:
 
 	Scene* getScene()const;
 
-	LightSourceManager* getLighSourceManager()const;
+	LightSourceManager* getLightSourceManager()const;
 	Camera* getMainCamera()const;
 
 
@@ -81,7 +81,7 @@ private:
 	Scene* mScene;
 	RenderTarget* mGlobalRenderTarget;
 	Camera* mMainCamera;
-	LightSourceManager* mLighSourceManager;
+	LightSourceManager* mLightSourceManager;
 
 
 

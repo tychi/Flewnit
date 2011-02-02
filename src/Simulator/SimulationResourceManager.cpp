@@ -35,7 +35,7 @@ SimulationResourceManager::SimulationResourceManager() :
 					0)
 	),
 	mMainCamera(new Camera("mainCamera")), //TODO
-	mLighSourceManager(0)//TODO
+	mLightSourceManager(0)//TODO
 {
 	testStuff();
 }
@@ -45,7 +45,7 @@ SimulationResourceManager::~SimulationResourceManager()
 	delete mScene;
 	delete mGlobalRenderTarget;
 	delete mMainCamera;
-	delete mLighSourceManager;
+	delete mLightSourceManager;
 
 
 	typedef Map<String, InstanceManager*> InstanceManagerMap;
@@ -90,9 +90,9 @@ Scene* SimulationResourceManager::getScene()const
 	return mScene;
 }
 
-LightSourceManager*  SimulationResourceManager::getLighSourceManager()const
+LightSourceManager*  SimulationResourceManager::getLightSourceManager()const
 {
-	return mLighSourceManager;
+	return mLightSourceManager;
 }
 Camera*  SimulationResourceManager::getMainCamera()const
 {

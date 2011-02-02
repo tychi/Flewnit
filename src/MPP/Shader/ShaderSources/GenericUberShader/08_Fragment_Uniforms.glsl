@@ -1,6 +1,7 @@
 // uniforms and uniform buffers:
 //{%uniforms}
 //{
+	uniform int numCurrentlyActiveLightSources = 1;
 
 	#if (SHADER_LIGHTING_FEATURE != SHADER_LIGHTING_FEATURE_NONE)
 	uniform vec4 eyeVecInWorldCoords;

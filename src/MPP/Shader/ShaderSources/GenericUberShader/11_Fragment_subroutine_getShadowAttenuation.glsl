@@ -4,7 +4,7 @@
 
 //{%subroutine_getShadowAttenuation}
 //{
-	float getShadowAttenuation(int lightSourceIndex, vec3 modelWorldPos)
+	float getShadowAttenuation(float shadowMapLayer, vec3 modelWorldPos)
 	{
 	#if 	(SHADOW_TECHNIQUE == SHADOW_TECHNIQUE_NONE) || (LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_NONE)
 		return 1.0;
@@ -21,7 +21,7 @@
 		  ||	(LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS)
 
 			#if(LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT)
-				if(lightSourceIndex > 0 )
+				if(shadowMapLayer > 0.001 )
 				{
 					return 1.0;
 				}			
@@ -32,14 +32,14 @@
 			#endif
 
 			#if(LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS)
-				vec4 shadowCoord =positionInWorldCoords * worldToShadowMapMatrices[lightSourceIndex];
+				vec4 shadowCoord =positionInWorldCoords * worldToShadowMapMatrices[(int)(floor(shadowMapLayer+0.5))];
 				//divide by homogene coord:
 				shadowCoord /= shadowCoord.w;
 				//rearrange for array shadowmap lookup:		
 				shadowCoord = 	vec4(	shadowCoord.x,shadowCoord.y, 
 							//hope that I understood the spec correctly, that there is no [0..1] scaling like in texture2D:
 							//max 0,min d −1, floorlayer0.5
-							(float)(lightSourceIndex),
+							shadowMapLayer,
 							shadowCoord.z 	) ;
 			#endif
 	
@@ -61,7 +61,7 @@
 		#if  (LIGHT_SOURCES_SHADOW_FEATURE   == LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT) \
 		  && (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT)
 		
-			if(lightSourceIndex > 0 )
+			if(shadowMapLayer > 0.001 )
 			{
 				return 1.0;
 			}			

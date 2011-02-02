@@ -2,20 +2,32 @@
 
 //applicable to following stages: fragment
 
+//make some modes so that the c++-code can use this definition, too
+#ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+#	define NAMESPACE_PREFIX glm::
+#else
+#	define NAMESPACE_PREFIX	
+#endif
+
 
 //{%typeDefinitions}
 //{
+
+#ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+struct LightSourceShaderStruct
+#else
 struct LightSource
+#endif
 {
-	vec3 position;
-	vec3 diffuseColor;
+	NAMESPACE_PREFIX vec3 position;
+	NAMESPACE_PREFIX vec3 diffuseColor;
 	//a dedicated specular color to produce unrealistic but nice effects;	
-	vec3 specularColor;
+	NAMESPACE_PREFIX vec3 specularColor;
 
 	//----------------------------------------------------------------------
 	//following spotlight stuff, but set it anyway for alignment reasons, even if it won't be used in the shader!
 	//to indicate a point light, those valus are all zero
-	vec3 direction;
+	NAMESPACE_PREFIX vec3 direction;
 	//value beyond with will be no lighting, to produce a nice light circle and to 
 	//hide the rectangular shape of the shadowmap ;)
 	float innerSpotCutOff_Radians;	//serves also as indicator if the source shall be treated as spot or not (zero= pointlight ;) )
@@ -23,12 +35,8 @@ struct LightSource
 	float spotExponent;
 	//alignment is everything :P
 	
-	//became obsolte
-	//int shadowMapLayer;
+	float shadowMapLayer;
 
-	float pad;
-	
-	//float lightSourceAmbientFactor;
 
 	//aligned to 64 bytes;
 };

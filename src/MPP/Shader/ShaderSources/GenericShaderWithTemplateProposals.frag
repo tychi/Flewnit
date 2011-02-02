@@ -121,6 +121,9 @@ void main()
 		 	   || (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS ) \
 		 	   || (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )	
 		for(int lightIndex = 0; lightIndex < NUM_LIGHTSOURCES ;lightIndex++);
+		//there was once a bug in the driver preventing variable lenght-loops;
+		// TODO check out if it works now after the rest has been veryfied;
+		//for(int lightIndex = 0; lightIndex < numCurrentlyActiveLightSources ;lightIndex++)
 		{
 			//lets hope that there will be a component wise copy and NOT some C++-f***up about non-existing operator=() ;)
 			LightSource lightSource = lightSources[lightIndex];
@@ -154,7 +157,7 @@ void main()
 				incidentLight + =
 					getDistanceAttenuation(lightToFragW) 
 					* 
-					getShadowAttenuation(lightIndex, positionInWorldCoords) 
+					getShadowAttenuation(lightSource.shadowMapLayer, positionInWorldCoords) 
 					* 
 					#if (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT ) \
 					  ||  (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS )

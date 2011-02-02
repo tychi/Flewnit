@@ -84,8 +84,8 @@ public:
     inline SimulatorInterface* getSimulator(unsigned int index)const{ assert(index < mSimulators.size()); return mSimulators[index];}
 
     //intitialization per config won't be realized via annoying pointer passing to the constructors of all classes;
-    //instead, the classes grab the Config from the URE Singleton if the need it^^.
-    //cons: bad encapsulation;
+    //instead, the classes grab the Config from the URE Singleton if they need it.
+    //cons: bad encapsulation, path to the desired information within the config-tree must be known by all classes;
     //pros: have lesser parameters to pass to many constructors;
     inline Config& getConfig()const{return *mConfig;}
 
