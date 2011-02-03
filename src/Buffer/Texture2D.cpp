@@ -79,9 +79,14 @@ Texture2D:: Texture2D(String name,
 		)
 	)
 {
-	mTextureInfoCastPtr->glImageFormat.desiredInternalFormat = GL_DEPTH_COMPONENT32;
-	mTextureInfoCastPtr->glImageFormat.channelOrder= GL_DEPTH_COMPONENT;
-	//the rest of the values stay the same;
+	//mTextureInfoCastPtr->glImageFormat.desiredInternalFormat = GL_DEPTH_COMPONENT32;
+	//mTextureInfoCastPtr->glImageFormat.channelOrder= GL_DEPTH_COMPONENT;
+
+	assert(
+		(mTextureInfoCastPtr->glImageFormat.desiredInternalFormat == GL_DEPTH_COMPONENT32)
+		&&
+		(mTextureInfoCastPtr->glImageFormat.channelOrder == GL_DEPTH_COMPONENT)
+	);
 
 	allocMem();
 
@@ -204,6 +209,48 @@ Texture2DCube::Texture2DCube(String name,
 		setData(data,mBufferInfo->usageContexts);
 	}
 }
+
+//protected constructor to be called by Texture2DDepth:
+Texture2DCube::Texture2DCube(String name,	int quadraticSize, bool allocHostMemory)
+	:
+	Texture	(
+		TextureInfo(
+			BufferInfo(
+				name,
+				ContextTypeFlags(
+						(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
+						| OPEN_GL_CONTEXT_TYPE_FLAG
+				),
+				SHADOW_MAP_SEMANTICS
+			),
+			2,
+			Vector3Dui(quadraticSize,quadraticSize,1),
+			TexelInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
+			GL_TEXTURE_CUBE_MAP,
+			true, //yes, is depth tex
+			false, //no mipmap for depth textures
+			false,
+			false,
+			1,
+			1
+		)
+	)
+{
+	//mTextureInfoCastPtr->glImageFormat.desiredInternalFormat = GL_DEPTH_COMPONENT32;
+	//mTextureInfoCastPtr->glImageFormat.channelOrder= GL_DEPTH_COMPONENT;
+
+	assert(
+		(mTextureInfoCastPtr->glImageFormat.desiredInternalFormat == GL_DEPTH_COMPONENT32)
+		&&
+		(mTextureInfoCastPtr->glImageFormat.channelOrder == GL_DEPTH_COMPONENT)
+	);
+
+	allocMem();
+
+	//don't set data to the depth texture;
+}
+
+
 Texture2DCube::~Texture2DCube()
 {
 	//do nothing
@@ -290,6 +337,36 @@ void Texture2DCube::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)thr
 			" Plus useful framebuffer binding of a cube map for blitting is still a TODO"));
 }
 
+//---------------------------------------------------------------------------------
+
+Texture2DCubeDepth::Texture2DCubeDepth(String name,
+			int quadraticSize,
+			bool allocHostMemory)
+: Texture2DCube(name, quadraticSize, allocHostMemory)
+{
+	LOG<<INFO_LOG_LEVEL << "Creating 2D CUBE DEPTH texture named "<< name <<";\n";
+}
+
+Texture2DCubeDepth::~Texture2DCubeDepth()
+{
+	//do nothing, base classes do the rest ;(
+}
+
+bool Texture2DCubeDepth::operator==(const BufferInterface& rhs) const
+{
+	const Texture2DCubeDepth* rhsTexPtr = dynamic_cast<const Texture2DCubeDepth*>(&rhs);
+	if (rhsTexPtr)
+	{return   (*mTextureInfoCastPtr) == (rhsTexPtr->getTextureInfo()) ;}
+	else {return false;}
+}
+
+//override to set compare func etc; Probably it's possible to be  bypassed via sampler objects, but for now..
+void Texture2DCubeDepth::allocGL()throw(BufferException)
+{
+	Texture2DCube::allocGL();
+	setupDepthTextureParameters();
+}
+//-----------------------------------------------------------------------
 
 
 //-----------------------------------------------------------------------
