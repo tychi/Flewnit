@@ -31,6 +31,7 @@ Texture	(
 		Vector3Dui(width,height,depth),
 		texeli,
 		GL_TEXTURE_3D,
+		false, //no depth tex
 		genMipmaps,
 		false,
 		false,

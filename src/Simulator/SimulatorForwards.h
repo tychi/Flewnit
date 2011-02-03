@@ -11,7 +11,9 @@
 
 #pragma once
 
-#include "Util/Time/Timer.h"
+#include "Common/FlewnitSharedDefinitions.h"
+
+//#include "Util/Time/Timer.h"
 
 
 namespace Flewnit
@@ -84,9 +86,41 @@ class SimulationPipelineStage;
 
 ///\brief buffer forwards;
 ///\{
+
+
+class BufferInfo;
+class TextureInfo;
+
+//abstract base class for all Buffers;
 class BufferInterface;
-class Buffer;
+//kind of wrapper for two buffers to be toggled for read/write access;
 class PingPongBuffer;
+//class for all buffers but textures and render buffers;
+class Buffer;
+
+//abstract base class for the several concrete-dimensioned textures;
+class Texture;
+
+class Texture1D;
+class Texture1DArray;
+
+class Texture2D;
+class Texture2DDepth;
+
+class Texture2DCube;
+
+
+class Texture2DArray;
+
+class Texture2DMultiSample;
+class Texture2DMultiSampleArray;
+
+
+class Texture3D;
+//the special class for offscreen rendering: kinda texture without filtering stuff for depth and stencil operations;
+class RenderBuffer;
+
+
 
 //class VBO;
 //class VertexAttributeBuffer;
@@ -97,20 +131,6 @@ class PingPongBuffer;
 class RenderTarget;
 //class Screen;
 //class FBO;
-
-class Texture;
-class Texture1D;
-
-class Texture2DMultiSample;
-class Texture2DMultiSampleArray;
-
-class Texture2D;
-class Texture2DDepth;
-class Texture2DCube;
-class Texture2DArray;
-
-
-class Texture3D;
 ///\}
 
 
@@ -195,8 +215,8 @@ class	LightingMaterial;
 
 //the "Massively Parallel Program"; Abstraction for CUDA, OpenCL, OpenGL, DirectCompute etc pp;
 class MPP;
-class ShaderProgram;
-class OpenCLProgram;
+class Shader;
+class OpenCLKernel;
 
 
 

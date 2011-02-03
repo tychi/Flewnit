@@ -20,14 +20,26 @@
 
 	//the texture-only semantics don't play a role here, as certain textures are bound and identified by a name, not via an array
 
-	//indicators for a geometry shader to delegate layered rendering
-	#define TEXTURE_TYPE_2D_DEFAULT 			0
-	#define TEXTURE_TYPE_2D_RECT				1
-	#define TEXTURE_TYPE_2D_CUBE				2
-	#define TEXTURE_TYPE_2D_ARRAY				3
-	#define	TEXTURE_TYPE_2D_MULTISAMPLE			4
-	#define	TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE 	5
-	#define	TEXTURE_TYPE_3D						6
+	//indicators for e.g. a geometry shader to delegate layered rendering 
+	//or a fragment shader to know if to wirt to color or to gl_FragDepth;
+	
+	#define TEXTURE_TYPE_1D						0
+	#define TEXTURE_TYPE_1D_ARRAY				1
+	#define TEXTURE_TYPE_2D						2
+	#define TEXTURE_TYPE_2D_RECT				3
+	#define TEXTURE_TYPE_2D_CUBE				4
+	#define TEXTURE_TYPE_2D_ARRAY				5
+	#define TEXTURE_TYPE_2D_MULTISAMPLE			6
+	#define TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE 	7
+	
+	#define TEXTURE_TYPE_2D_DEPTH				8
+	#define TEXTURE_TYPE_2D_RECT_DEPTH			9 
+	#define TEXTURE_TYPE_2D_CUBE_DEPTH			10
+	#define TEXTURE_TYPE_2D_ARRAY_DEPTH			11
+	//#define TEXTURE_TYPE_2D_MULTISAMPLE_DEPTH 		12 //not supported yet
+	//#define TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE_DEPTH 	13 //not supported yet
+	
+	#define TEXTURE_TYPE_3D						14
 
 
 	//-----rendering technique stuff---------------------------
@@ -62,7 +74,7 @@
 	//from view frustum and frag coord when needed.
 	#define RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION		2
 	#define RENDERING_TECHNIQUE_DEFAULT_LIGHTING			3
-	#define RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING		4
+	#define RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING	4
 	#define RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL		5
 	#define RENDERING_TECHNIQUE_DEFERRED_LIGHTING			6
 	//value to indicate a special shader

@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "Common/BasicObject.h"
 
 #include "Simulator/SimulatorForwards.h"
+#include "Buffer/BufferSharedDefinitions.h"
 
 #include <typeinfo>
 
@@ -186,16 +186,6 @@ enum ShadingFeature
 
 };
 
-enum TextureType
-{
-	TEXTURE_TYPE_2D_DEFAULT 			=0,
-	TEXTURE_TYPE_2D_RECT				=1,
-	TEXTURE_TYPE_2D_CUBE				=2,
-	TEXTURE_TYPE_2D_ARRAY				=3,
-	TEXTURE_TYPE_2D_MULTISAMPLE			=4,
-	TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE 	=5,
-	TEXTURE_TYPE_3D						=6
-};
 
 
 struct ShaderFeatures

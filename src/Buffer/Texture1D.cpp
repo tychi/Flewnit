@@ -25,6 +25,7 @@ Texture	(
 		Vector3Dui(width,1,1),
 		texeli,
 		GL_TEXTURE_1D,
+		false, //no depth tex
 		genMipmaps,
 		false,
 		false,
@@ -114,6 +115,54 @@ void Texture1D::writeGL(const void* data)throw(BufferException)
 	{
 		glGenerateMipmap( mTextureInfoCastPtr->textureTarget );
 	}
+}
+
+
+
+//------------------------------------------------------------------------------------
+
+Texture1DArray::Texture1DArray(String name, BufferSemantics bufferSemantics,
+		int width, int numLayers,  const TexelInfo& texeli,
+		 bool allocHostMemory, const void* data,  bool genMipmaps)
+:
+	Texture2D	(
+		TextureInfo(
+			BufferInfo(
+				name,
+				ContextTypeFlags(
+						(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
+						| OPEN_GL_CONTEXT_TYPE_FLAG
+				),
+				bufferSemantics
+			),
+			1,
+			Vector3Dui(width,1,1),
+			texeli,
+			GL_TEXTURE_1D_ARRAY,
+			false,
+			genMipmaps,
+			false,
+			false,
+			1,
+			numLayers
+		),
+		data
+	)
+{
+
+}
+
+Texture1DArray::~Texture1DArray()
+{
+	//do nothing
+}
+
+bool Texture1DArray::operator==(const BufferInterface& rhs) const
+{
+	const Texture1DArray* rhsTexPtr = dynamic_cast<const Texture1DArray*>(&rhs);
+	if (rhsTexPtr)
+	{return   (*mTextureInfoCastPtr) == (rhsTexPtr->getTextureInfo()) ;}
+	else {return false;}
 }
 
 

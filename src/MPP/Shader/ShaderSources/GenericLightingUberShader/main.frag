@@ -17,7 +17,7 @@ Even debug stuff (index visualization etc.) shall be done by this shader
 //{%persistentdefines}
 
 //customizable defines have definetely to be set by the shaders (via string concatenation):
-//for examples and explanation refer to file "02_Generic_appCodeIncludable_persistentDefines.glsl";
+//for examples and explanation refer to file "02_Generic_persistentDefines.glsl";
 //{%customizabledefines}
 
 

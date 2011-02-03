@@ -11,11 +11,12 @@
 
 #pragma once
 
-#include "Common/CL_GL_Common.h"
-
 #include "Simulator/SimulatorForwards.h"
 
 #include "Common/Math.h"
+#include "Common/CL_GL_Common.h"
+
+
 
 
 namespace Flewnit
@@ -24,28 +25,6 @@ namespace Flewnit
 typedef void* CPUBufferHandle;
 typedef GLuint GraphicsBufferHandle;
 typedef cl::Memory ComputeBufferHandle;
-
-class BufferInfo;
-class TextureInfo;
-
-//abstract base class for all Buffers;
-class BufferInterface;
-
-//kind of wrapper for two buffers to be toggled for read/write access;
-class PingPongBuffer;
-
-//class for all buffers but textures and render buffers;
-class Buffer;
-
-//abstract base class for the several concrete-dimensioned textures;
-class Texture;
-//concrete stuff;
-class Texture1D;
-class Texture2D;
-class Texture3D;
-
-//the special class for offscreen rendering: kinda texture without filtering stuff for depth and stencil operations;
-class RenderBuffer;
 
 
 
@@ -139,6 +118,29 @@ enum BufferSemantics
 	INVALID_SEMANTICS
 };
 
+//is mirrored as defines in the shaders; don't let them get out of sync
+//TODO in far future: wirte script to generate shaderdefs and C++-enums consitstently
+enum TextureType
+{
+	TEXTURE_TYPE_1D						=0,
+	TEXTURE_TYPE_1D_ARRAY				=1,
+
+	TEXTURE_TYPE_2D						=2,
+	TEXTURE_TYPE_2D_RECT				=3,
+	TEXTURE_TYPE_2D_CUBE				=4,
+	TEXTURE_TYPE_2D_ARRAY				=5,
+	TEXTURE_TYPE_2D_MULTISAMPLE			=6,
+	TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE 	=7,
+
+	TEXTURE_TYPE_2D_DEPTH				=8,
+	TEXTURE_TYPE_2D_RECT_DEPTH			=9,
+	TEXTURE_TYPE_2D_CUBE_DEPTH			=10,
+	TEXTURE_TYPE_2D_ARRAY_DEPTH			=11,
+	//TEXTURE_TYPE_2D_MULTISAMPLE_DEPTH 		=12, //not supported yet
+	//TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE_DEPTH 	=13, //not supported yet
+
+	TEXTURE_TYPE_3D						=14
+};
 
 
 //-----------------------------------------------
@@ -364,19 +366,23 @@ public:
 	//"clean" user privided info about the texels in the texture;
 	TexelInfo texelInfo;
 
-	//texture target, autoumatically determined by the constructors of the concrete Texture classes;
+	//texture target, automatically determined by the constructors of the concrete Texture classes;
+
 	GLenum textureTarget; //e.g. GL_TEXTURE_2D, GL_TEXTURE_2D_ARRAY, GL_TEXTURE_2D_MULTISAMPLE_ARRAY etc.
 
 
 
 	//Flags/values indicating special features, depending on the concrete texture types
 	///\{
+	bool isDepthTexture;	//default false,
 	bool isMipMapped;		//default false;
 	bool isRectangleTex;	//default false;
 	bool isCubeTex;			//default false;
 
 	GLint numMultiSamples; 	 //default 1 to indicate no multisampling
 	GLint numArrayLayers;	 //default 1 to indicate no array stuff
+
+	TextureType textureType;
 	///\}
 
 	//automatically determined values; only needed for internal GL/CL calls:
@@ -401,13 +407,16 @@ public:
 			Vector3Dui dimensionExtends,
 			const TexelInfo& texelInfo,
 			GLenum textureTarget,
+			bool isDepthTexture = false,
 			bool isMipMapped = false,
 			bool isRectangleTex = false,
 			bool isCubeTex = false,
 			GLint numMultiSamples = 1,
 			GLint numArrayLayers = 1
 			)throw(BufferException);
+
 	explicit TextureInfo(const TextureInfo& rhs)throw(BufferException);
+
 	virtual ~TextureInfo(){}
 	bool operator==(const TextureInfo& rhs) const;
 	const TextureInfo& operator=(const TextureInfo& rhs);

@@ -6,7 +6,9 @@
  */
 
 #include "MPP/MPP.h"
+
 #include "Common/FlewnitSharedDefinitions.h"
+#include "Simulator/SimulatorForwards.h"
 
 #pragma once
 

@@ -27,7 +27,7 @@ MUST be defined to values standing in file "02_Generic_C_includable_persistentDe
 if the (RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_LIGHTING), then we
 maybe want to access the G-buffer in several ways, depending on personal preferences and sophistication of the rendering technique
 //if you render for a certain reason not to rectangle textures:
-//#define GBUFFER_TYPE 	TEXTURE_TYPE_2D_DEFAULT
+//#define GBUFFER_TYPE 	TEXTURE_TYPE_2D
 //should be default for the G-buffer
 //#define GBUFFER_TYPE 	TEXTURE_TYPE_2D_RECT
 //for global illumination effects via stencil routed k-buffering to produce kinda "layered depth images" ;) won't be implemented too soon ;(

@@ -33,6 +33,7 @@ Texture	(
 		Vector3Dui(width,height,1),
 		texeli,
 		makeRectangleTex ? GL_TEXTURE_RECTANGLE : GL_TEXTURE_2D,
+		false,
 		makeRectangleTex ? false : genMipmaps,
 		makeRectangleTex,
 		false,
@@ -69,6 +70,7 @@ Texture2D:: Texture2D(String name,
 			Vector3Dui(width,height,1),
 			TexelInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
 			GL_TEXTURE_2D,
+			true, //yes, is depth tex
 			false,
 			false,
 			false,
@@ -186,6 +188,7 @@ Texture2DCube::Texture2DCube(String name,
 			Vector3Dui(quadraticSize,quadraticSize,1),
 			texeli,
 			GL_TEXTURE_CUBE_MAP,
+			false, //no depth tex
 			genMipmaps,
 			false,
 			true,
@@ -314,69 +317,11 @@ bool Texture2DDepth::operator==(const BufferInterface& rhs) const
 void Texture2DDepth::allocGL()throw(BufferException)
 {
 	Texture2D::allocGL();
-
-	//TODO handle this more professionally via sampler objects within material/shader...
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    float fourZeros[] = {0.0f,0.0f,0.0f,0.0f};
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, fourZeros);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	setupDepthTextureParameters();
 }
 //------------------------------------------------------------------------
 
 
-
-
-//------------------------------------------------------------------------------------
-Texture1DArray::Texture1DArray(String name, BufferSemantics bufferSemantics,
-		int width, int numLayers,  const TexelInfo& texeli,
-		 bool allocHostMemory, const void* data,  bool genMipmaps)
-:
-	Texture2D	(
-		TextureInfo(
-			BufferInfo(
-				name,
-				ContextTypeFlags(
-						(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
-						| OPEN_GL_CONTEXT_TYPE_FLAG
-				),
-				bufferSemantics
-			),
-			1,
-			Vector3Dui(width,1,1),
-			texeli,
-			GL_TEXTURE_1D_ARRAY,
-			genMipmaps,
-			false,
-			false,
-			1,
-			numLayers
-		),
-		data
-	)
-{
-
-}
-
-Texture1DArray::~Texture1DArray()
-{
-	//do nothing
-}
-
-bool Texture1DArray::operator==(const BufferInterface& rhs) const
-{
-	const Texture1DArray* rhsTexPtr = dynamic_cast<const Texture1DArray*>(&rhs);
-	if (rhsTexPtr)
-	{return   (*mTextureInfoCastPtr) == (rhsTexPtr->getTextureInfo()) ;}
-	else {return false;}
-}
 
 //--------------------------------------------------------------------------
 
@@ -398,6 +343,7 @@ Texture3D	(
 		Vector3Dui(width,height,1),
 		texeli,
 		GL_TEXTURE_2D_ARRAY,
+		false, //not depth tex
 		genMipmaps,
 		false,
 		false,
@@ -440,6 +386,7 @@ Texture2DMultiSample::Texture2DMultiSample(String name, BufferSemantics bufferSe
 		Vector3Dui(width,height,1),
 		texeli,
 		GL_TEXTURE_2D_MULTISAMPLE,
+		false, //no depth tex
 		false,
 		false,
 		false,
@@ -493,6 +440,7 @@ Texture2DArrayMultiSample::Texture2DArrayMultiSample(String name, BufferSemantic
 		Vector3Dui(width,height,1),
 		texeli,
 		GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
+		false, //no depth tex
 		false,
 		false,
 		false,

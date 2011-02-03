@@ -229,6 +229,7 @@ TextureInfo::TextureInfo(
 		Vector3Dui dimensionExtends,
 		const TexelInfo& texelInfo,
 		GLenum textureTarget,
+		bool isDepthTexture,
 		bool isMipMapped,
 		bool isRectangleTex,
 		bool isCubeTex,
@@ -240,6 +241,7 @@ TextureInfo::TextureInfo(
 		dimensionExtends(dimensionExtends),
 		texelInfo(texelInfo),
 		textureTarget(textureTarget),
+		isDepthTexture(isDepthTexture),
 		isMipMapped(isMipMapped),
 		isRectangleTex(isRectangleTex),
 		isCubeTex(isCubeTex),
@@ -274,249 +276,349 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 	numElements = dimensionExtends.x * dimensionExtends.y * dimensionExtends.z
 			* numArrayLayers * numMultiSamples;
 
-	//first, set the most trivial stuff: the number of channels
-	switch(texelInfo.numChannels)
+	if(isDepthTexture)
 	{
-	case 1:
-		glImageFormat.channelOrder  = GL_RED;
-		clImageFormat.image_channel_order = CL_R ;
-		break;
-	case 2:
-		glImageFormat.channelOrder  = GL_RG;
-		clImageFormat.image_channel_order = CL_RG ;
-		break;
-	case 4:
-		glImageFormat.channelOrder  = GL_RGBA;
-		clImageFormat.image_channel_order = CL_RGBA ;
-		break;
-	default:
-		assert(0&&"should never end here");
+		if( (texelInfo.numChannels != 1 )
+				||
+			(texelInfo.normalizeIntegralValuesFlag)
+				||
+			(texelInfo.bitsPerChannel != 32 )
+				||
+			(texelInfo.internalGPU_DataType != GPU_DATA_TYPE_FLOAT )
+		)
+		{
+			throw(BufferException("TexelInfo is does not indicate a supported depth renderable format!"
+					"Currently, only 32bit float is accepted"));
+		}
+		else
+		{
+			if( 	( dimensionality ==1 )
+					//check for 1d array texture
+					|| ((dimensionality == 2)&&(numArrayLayers > 1))
+					|| isMipMapped
+					|| (numMultiSamples > 1)
+			)
+			{
+				throw(BufferException("For depth textures, 1D textures, mip mapping"
+				 " and/or multisampling is not supported (by this framework (yet) ;( )"));
+			}
+			else
+			{
+				if(isRectangleTex)
+				{
+					LOG<<WARNING_LOG_LEVEL<<"sorry at the moment there is no official support for rectangle depth textures;"
+							<<" Use on your own risk;\n";
+				}
+
+				glImageFormat.desiredInternalFormat = GL_DEPTH_COMPONENT32;
+				glImageFormat.channelOrder= GL_DEPTH_COMPONENT;
+
+				glImageFormat.channelDataType = GL_FLOAT;
+
+				clImageFormat.image_channel_data_type = CL_FLOAT;
+				clImageFormat.image_channel_order = CL_R; //will it work?#
+
+				switch(textureTarget)
+				{
+				case GL_TEXTURE_2D:
+					textureType = TEXTURE_TYPE_2D_DEPTH;
+					break;
+				case GL_TEXTURE_RECTANGLE:
+					textureType = TEXTURE_TYPE_2D_RECT_DEPTH;
+					break;
+				case GL_TEXTURE_CUBE_MAP:
+					textureType = TEXTURE_TYPE_2D_CUBE_DEPTH;
+					break;
+				case GL_TEXTURE_2D_ARRAY:
+					textureType = TEXTURE_TYPE_2D_ARRAY_DEPTH;
+					break;
+				}
+			}
+		}
 	}
-	//------------------------------------------------------
-
-	bool normalize =  texelInfo.normalizeIntegralValuesFlag;
-
-	switch(texelInfo.internalGPU_DataType)
+	else //depthtexture
 	{
-	case GPU_DATA_TYPE_UINT :
-		switch(texelInfo.bitsPerChannel)
-		{
-		case 8:
-			glImageFormat.channelDataType = GL_UNSIGNED_BYTE;
-
-			if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT8;
-			else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT8;
-
+		//first, set the most trivial stuff: the number of channels
 			switch(texelInfo.numChannels)
 			{
 			case 1:
-				elementType = TYPE_UINT8;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R8;
-				else			glImageFormat.desiredInternalFormat  = GL_R8UI;
+				glImageFormat.channelOrder  = GL_RED;
+				clImageFormat.image_channel_order = CL_R ;
 				break;
 			case 2:
-				elementType = TYPE_VEC2UI8;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG8;
-				else			glImageFormat.desiredInternalFormat  = GL_RG8UI;
+				glImageFormat.channelOrder  = GL_RG;
+				clImageFormat.image_channel_order = CL_RG ;
 				break;
 			case 4:
-				elementType = TYPE_VEC4UI8;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA8;
-				else			glImageFormat.desiredInternalFormat  = GL_RGBA8UI;
+				glImageFormat.channelOrder  = GL_RGBA;
+				clImageFormat.image_channel_order = CL_RGBA ;
 				break;
 			default:
 				assert(0&&"should never end here");
 			}
-			break;
-		case 16:
-			glImageFormat.channelDataType = GL_UNSIGNED_SHORT;
 
-			if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT16;
-			else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT16;
-
-			switch(texelInfo.numChannels)
+			switch(textureTarget)
 			{
-			case 1:
-				elementType = TYPE_UINT16;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R16;
-				else			glImageFormat.desiredInternalFormat  = GL_R16UI;
+			case GL_TEXTURE_1D:
+				textureType = TEXTURE_TYPE_1D;
 				break;
-			case 2:
-				elementType = TYPE_VEC2UI16;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG16;
-				else			glImageFormat.desiredInternalFormat  = GL_RG16UI;
+			case GL_TEXTURE_1D_ARRAY:
+				textureType = TEXTURE_TYPE_1D_ARRAY;
 				break;
-			case 4:
-				elementType = TYPE_VEC4UI16;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA16;
-				else			glImageFormat.desiredInternalFormat  = GL_RGBA16UI;
+
+
+			case GL_TEXTURE_2D:
+				textureType = TEXTURE_TYPE_2D;
+				break;
+			case GL_TEXTURE_RECTANGLE:
+				textureType = TEXTURE_TYPE_2D_RECT;
+				break;
+			case GL_TEXTURE_CUBE_MAP:
+				textureType = TEXTURE_TYPE_2D_CUBE;
+				break;
+			case GL_TEXTURE_2D_ARRAY:
+				textureType = TEXTURE_TYPE_2D_ARRAY;
+				break;
+			case GL_TEXTURE_2D_MULTISAMPLE:
+				textureType = TEXTURE_TYPE_2D_MULTISAMPLE;
+				break;
+			case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
+				textureType = TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE;
+				break;
+
+
+			case GL_TEXTURE_3D:
+				textureType = TEXTURE_TYPE_3D;
+				break;
+
+			}
+
+			//------------------------------------------------------
+
+			bool normalize =  texelInfo.normalizeIntegralValuesFlag;
+
+			switch(texelInfo.internalGPU_DataType)
+			{
+			case GPU_DATA_TYPE_UINT :
+				switch(texelInfo.bitsPerChannel)
+				{
+				case 8:
+					glImageFormat.channelDataType = GL_UNSIGNED_BYTE;
+
+					if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT8;
+					else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT8;
+
+					switch(texelInfo.numChannels)
+					{
+					case 1:
+						elementType = TYPE_UINT8;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_R8;
+						else			glImageFormat.desiredInternalFormat  = GL_R8UI;
+						break;
+					case 2:
+						elementType = TYPE_VEC2UI8;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG8;
+						else			glImageFormat.desiredInternalFormat  = GL_RG8UI;
+						break;
+					case 4:
+						elementType = TYPE_VEC4UI8;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA8;
+						else			glImageFormat.desiredInternalFormat  = GL_RGBA8UI;
+						break;
+					default:
+						assert(0&&"should never end here");
+					}
+					break;
+				case 16:
+					glImageFormat.channelDataType = GL_UNSIGNED_SHORT;
+
+					if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT16;
+					else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT16;
+
+					switch(texelInfo.numChannels)
+					{
+					case 1:
+						elementType = TYPE_UINT16;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_R16;
+						else			glImageFormat.desiredInternalFormat  = GL_R16UI;
+						break;
+					case 2:
+						elementType = TYPE_VEC2UI16;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG16;
+						else			glImageFormat.desiredInternalFormat  = GL_RG16UI;
+						break;
+					case 4:
+						elementType = TYPE_VEC4UI16;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA16;
+						else			glImageFormat.desiredInternalFormat  = GL_RGBA16UI;
+						break;
+					default:
+						assert(0&&"should never end here");
+					}
+					break;
+				case 32:
+					//no normalization valid here!
+					glImageFormat.channelDataType = GL_UNSIGNED_INT;
+
+					clImageFormat.image_channel_data_type = CL_UNSIGNED_INT32;
+
+					switch(texelInfo.numChannels)
+					{
+					case 1:
+						elementType = TYPE_UINT32;
+						glImageFormat.desiredInternalFormat  = GL_R32UI;
+						break;
+					case 2:
+						elementType = TYPE_VEC2UI32;
+						glImageFormat.desiredInternalFormat  = GL_RG32UI;
+						break;
+					case 4:
+						elementType = TYPE_VEC4UI32;
+						glImageFormat.desiredInternalFormat  = GL_RGBA32UI;
+						break;
+					default:
+						assert(0&&"should never end here");
+					}
+					break;
+				default:
+					assert(0&&"should never end here");
+					break;
+				}
+				break;
+			//-----------------------------------------------------------------------------------
+			case GPU_DATA_TYPE_INT:
+				switch(texelInfo.bitsPerChannel)
+				{
+				case 8:
+					glImageFormat.channelDataType = GL_BYTE;
+					if(normalize)	clImageFormat.image_channel_data_type = CL_SNORM_INT8;
+					else			clImageFormat.image_channel_data_type = CL_SIGNED_INT8;
+
+					switch(texelInfo.numChannels)
+					{
+					case 1:
+						elementType = TYPE_INT8;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_R8_SNORM;
+						else			glImageFormat.desiredInternalFormat  = GL_R8I;
+						break;
+					case 2:
+						elementType = TYPE_VEC2I8;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG8_SNORM;
+						else			glImageFormat.desiredInternalFormat  = GL_RG8I;
+						break;
+					case 4:
+						elementType = TYPE_VEC4I8;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA8_SNORM;
+						else			glImageFormat.desiredInternalFormat  = GL_RGBA8I;
+						break;
+					default:
+						assert(0&&"should never end here");
+					}
+					break;
+				case 16:
+					glImageFormat.channelDataType = GL_SHORT;
+					if(normalize)	clImageFormat.image_channel_data_type = CL_SNORM_INT16;
+					else			clImageFormat.image_channel_data_type = CL_SIGNED_INT16;
+
+					switch(texelInfo.numChannels)
+					{
+					case 1:
+						elementType = TYPE_INT16;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_R16_SNORM;
+						else			glImageFormat.desiredInternalFormat  = GL_R16I;
+						break;
+					case 2:
+						elementType = TYPE_VEC2I16;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG16_SNORM;
+						else			glImageFormat.desiredInternalFormat  = GL_RG16I;
+						break;
+					case 4:
+						elementType = TYPE_VEC4I16;
+						if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA16_SNORM;
+						else			glImageFormat.desiredInternalFormat  = GL_RGBA16I;
+						break;
+					default:
+						assert(0&&"should never end here");
+					}
+					break;
+				case 32:
+					//no normalization valid here!
+					glImageFormat.channelDataType = GL_INT;
+					clImageFormat.image_channel_data_type = CL_SIGNED_INT32;
+
+					switch(texelInfo.numChannels)
+					{
+					case 1:
+						elementType = TYPE_INT32;
+						glImageFormat.desiredInternalFormat  = GL_R32I;		break;
+					case 2:
+						elementType = TYPE_VEC2I32;
+						glImageFormat.desiredInternalFormat  = GL_RG32I;	break;
+					case 4:
+						elementType = TYPE_VEC4I32;
+						glImageFormat.desiredInternalFormat  = GL_RGBA32I;	break;
+					default:
+						assert(0&&"should never end here");
+					}
+					break;
+				default:
+					assert(0&&"should never end here");
+					break;
+				}
+				break;
+			//----------------------------------------------------------------------------------
+			case GPU_DATA_TYPE_FLOAT:
+				switch(texelInfo.bitsPerChannel)
+				{
+				case 16:
+					//no normalization valid here!
+					glImageFormat.channelDataType = GL_HALF_FLOAT;
+					clImageFormat.image_channel_data_type = CL_HALF_FLOAT;
+
+					switch(texelInfo.numChannels)
+					{
+					case 1:
+						elementType = TYPE_HALF_FLOAT;
+						glImageFormat.desiredInternalFormat  = GL_R16F;		break;
+					case 2:
+						elementType = TYPE_VEC2F16;
+						glImageFormat.desiredInternalFormat  = GL_RG16F;	break;
+					case 4:
+						elementType = TYPE_VEC4F16;
+						glImageFormat.desiredInternalFormat  = GL_RGBA16F;	break;
+					default:
+						assert(0&&"should never end here");
+					}
+					break;
+				case 32:
+					//no normalization valid here!
+					glImageFormat.channelDataType = GL_FLOAT;
+					clImageFormat.image_channel_data_type = CL_FLOAT;
+
+					switch(texelInfo.numChannels)
+					{
+					case 1:
+						elementType = TYPE_FLOAT;
+						glImageFormat.desiredInternalFormat  = GL_R32F;		break;
+					case 2:
+						elementType = TYPE_VEC2F;
+						glImageFormat.desiredInternalFormat  = GL_RG32F;	break;
+					case 4:
+						elementType = TYPE_VEC4F;
+						glImageFormat.desiredInternalFormat  = GL_RGBA32F;	break;
+					default:
+						assert(0&&"should never end here");
+					}
+					break;
+				default:
+					assert(0&&"should never end here");
+					break;
+				}
 				break;
 			default:
-				assert(0&&"should never end here");
+				assert(0&&"should never and here");
+				break;
 			}
-			break;
-		case 32:
-			//no normalization valid here!
-			glImageFormat.channelDataType = GL_UNSIGNED_INT;
-
-			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT32;
-
-			switch(texelInfo.numChannels)
-			{
-			case 1:
-				elementType = TYPE_UINT32;
-				glImageFormat.desiredInternalFormat  = GL_R32UI;
-				break;
-			case 2:
-				elementType = TYPE_VEC2UI32;
-				glImageFormat.desiredInternalFormat  = GL_RG32UI;
-				break;
-			case 4:
-				elementType = TYPE_VEC4UI32;
-				glImageFormat.desiredInternalFormat  = GL_RGBA32UI;
-				break;
-			default:
-				assert(0&&"should never end here");
-			}
-			break;
-		default:
-			assert(0&&"should never end here");
-			break;
-		}
-		break;
-	//-----------------------------------------------------------------------------------
-	case GPU_DATA_TYPE_INT:
-		switch(texelInfo.bitsPerChannel)
-		{
-		case 8:
-			glImageFormat.channelDataType = GL_BYTE;
-			if(normalize)	clImageFormat.image_channel_data_type = CL_SNORM_INT8;
-			else			clImageFormat.image_channel_data_type = CL_SIGNED_INT8;
-
-			switch(texelInfo.numChannels)
-			{
-			case 1:
-				elementType = TYPE_INT8;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R8_SNORM;
-				else			glImageFormat.desiredInternalFormat  = GL_R8I;
-				break;
-			case 2:
-				elementType = TYPE_VEC2I8;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG8_SNORM;
-				else			glImageFormat.desiredInternalFormat  = GL_RG8I;
-				break;
-			case 4:
-				elementType = TYPE_VEC4I8;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA8_SNORM;
-				else			glImageFormat.desiredInternalFormat  = GL_RGBA8I;
-				break;
-			default:
-				assert(0&&"should never end here");
-			}
-			break;
-		case 16:
-			glImageFormat.channelDataType = GL_SHORT;
-			if(normalize)	clImageFormat.image_channel_data_type = CL_SNORM_INT16;
-			else			clImageFormat.image_channel_data_type = CL_SIGNED_INT16;
-
-			switch(texelInfo.numChannels)
-			{
-			case 1:
-				elementType = TYPE_INT16;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_R16_SNORM;
-				else			glImageFormat.desiredInternalFormat  = GL_R16I;
-				break;
-			case 2:
-				elementType = TYPE_VEC2I16;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG16_SNORM;
-				else			glImageFormat.desiredInternalFormat  = GL_RG16I;
-				break;
-			case 4:
-				elementType = TYPE_VEC4I16;
-				if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA16_SNORM;
-				else			glImageFormat.desiredInternalFormat  = GL_RGBA16I;
-				break;
-			default:
-				assert(0&&"should never end here");
-			}
-			break;
-		case 32:
-			//no normalization valid here!
-			glImageFormat.channelDataType = GL_INT;
-			clImageFormat.image_channel_data_type = CL_SIGNED_INT32;
-
-			switch(texelInfo.numChannels)
-			{
-			case 1:
-				elementType = TYPE_INT32;
-				glImageFormat.desiredInternalFormat  = GL_R32I;		break;
-			case 2:
-				elementType = TYPE_VEC2I32;
-				glImageFormat.desiredInternalFormat  = GL_RG32I;	break;
-			case 4:
-				elementType = TYPE_VEC4I32;
-				glImageFormat.desiredInternalFormat  = GL_RGBA32I;	break;
-			default:
-				assert(0&&"should never end here");
-			}
-			break;
-		default:
-			assert(0&&"should never end here");
-			break;
-		}
-		break;
-	//----------------------------------------------------------------------------------
-	case GPU_DATA_TYPE_FLOAT:
-		switch(texelInfo.bitsPerChannel)
-		{
-		case 16:
-			//no normalization valid here!
-			glImageFormat.channelDataType = GL_HALF_FLOAT;
-			clImageFormat.image_channel_data_type = CL_HALF_FLOAT;
-
-			switch(texelInfo.numChannels)
-			{
-			case 1:
-				elementType = TYPE_HALF_FLOAT;
-				glImageFormat.desiredInternalFormat  = GL_R16F;		break;
-			case 2:
-				elementType = TYPE_VEC2F16;
-				glImageFormat.desiredInternalFormat  = GL_RG16F;	break;
-			case 4:
-				elementType = TYPE_VEC4F16;
-				glImageFormat.desiredInternalFormat  = GL_RGBA16F;	break;
-			default:
-				assert(0&&"should never end here");
-			}
-			break;
-		case 32:
-			//no normalization valid here!
-			glImageFormat.channelDataType = GL_FLOAT;
-			clImageFormat.image_channel_data_type = CL_FLOAT;
-
-			switch(texelInfo.numChannels)
-			{
-			case 1:
-				elementType = TYPE_FLOAT;
-				glImageFormat.desiredInternalFormat  = GL_R32F;		break;
-			case 2:
-				elementType = TYPE_VEC2F;
-				glImageFormat.desiredInternalFormat  = GL_RG32F;	break;
-			case 4:
-				elementType = TYPE_VEC4F;
-				glImageFormat.desiredInternalFormat  = GL_RGBA32F;	break;
-			default:
-				assert(0&&"should never end here");
-			}
-			break;
-		default:
-			assert(0&&"should never end here");
-			break;
-		}
-		break;
-	default:
-		assert(0&&"should never and here");
-		break;
 	}
 
 	GLint maxNumMultiSamples;
@@ -560,6 +662,7 @@ bool TextureInfo::operator==(const TextureInfo& rhs) const
 			texelInfo == rhs.texelInfo &&
 			textureTarget == rhs.textureTarget &&
 
+			isDepthTexture == rhs.isDepthTexture &&
 			isMipMapped == rhs.isMipMapped &&
 			isRectangleTex == rhs.isRectangleTex &&
 			isCubeTex == rhs.isCubeTex &&
@@ -583,6 +686,7 @@ const TextureInfo& TextureInfo::operator=(const TextureInfo& rhs)
 	texelInfo = rhs.texelInfo;
 	textureTarget = rhs.textureTarget;
 
+	isDepthTexture=rhs.isDepthTexture;
 	isMipMapped = rhs.isMipMapped;
 	isRectangleTex = rhs.isRectangleTex;
 	isCubeTex = rhs.isCubeTex;

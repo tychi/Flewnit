@@ -13,7 +13,7 @@ namespace Flewnit
 {
 
 #define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
-#include "MPP/Shader/ShaderSources/GenericUberShader/04_Fragment_dataTypes.glsl"
+#include "MPP/Shader/ShaderSources/GenericLightingUberShader/04_Fragment_appCodeIncludable_dataTypes.glsl"
 #undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 
 class LightSource
