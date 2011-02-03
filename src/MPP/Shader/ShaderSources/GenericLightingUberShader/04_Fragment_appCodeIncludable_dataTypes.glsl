@@ -2,7 +2,7 @@
 
 //applicable to following stages: fragment
 
-//make some modes so that the c++-code can use this definition, too
+//make some mods so that the c++-code can use this definition, too
 #ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 #	define NAMESPACE_PREFIX glm::
 #else

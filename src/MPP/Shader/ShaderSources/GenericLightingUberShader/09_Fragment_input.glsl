@@ -9,7 +9,7 @@
 	in vec4 positionInWorldCoords;
 	in vec4 normalInWorldCoords;
 	in vec4 texCoords;
-	#if (SHADER_LIGHTING_FEATURE & SHADER_LIGHTING_FEATURE_NORMAL_MAPPING)
+	#if (SHADING_FEATURE & SHADING_FEATURE_NORMAL_MAPPING)
 	//create TBN-matrix in fragment shader due to the several lightsources;
 	//we transform from tangent space to view space via putting the vectors column-wise into a 3x3-matrix: mat3(t,b,n);
 	in vec4 tangentInWorldCoords;

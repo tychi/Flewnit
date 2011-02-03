@@ -7,7 +7,7 @@
 	#if (RENDERING_TECHNIQUE != RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL)
 		out vec4 finalLuminance;
 	//bullshit, for depth/position-only rendering, we use a separat lean shader!
-	//#	if (SHADER_LIGHTING_FEATURE & SHADER_LIGHTING_FEATURE_AMBIENT_OCCLUSION)
+	//#	if (SHADING_FEATURE & SHADING_FEATURE_AMBIENT_OCCLUSION)
 	//		out vec4 gBufferPosition;
 	//#	endif
 	#else

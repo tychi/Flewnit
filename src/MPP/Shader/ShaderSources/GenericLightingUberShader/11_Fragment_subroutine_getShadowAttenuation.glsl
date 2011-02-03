@@ -66,10 +66,18 @@
 				return 1.0;
 			}			
 
-			vec3 lightToModelW = modelWorldPos - lightSource.position;
-			float cubeShadowMapDepthValue = texture(lightToModelW, shadowMap);
-			if(length(lightToModelW) < cubeShadowMapDepthValue)
-				{return 1.0;}else{return minimalshadowAttenuation;}
+			vec3 lightToModelW = modelWorldPos - lightSource.position;		
+			float comparisonReferenceValue = 
+				( 	length(lightToModelW) 
+					//scale to compensate for the depthbuffer [0..1] clamping	
+					* inverse_lightSourcesFarClipPlane	 )
+				+ shadowMapComparisonOffset;
+			return texture(shadowMap, vec4(lightToModelW.xyz,comparisonReferenceValue ));
+			
+			
+			//float cubeShadowMapDepthValue = texture(shadowMap,lightToModelW );
+			//if(length(lightToModelW) < cubeShadowMapDepthValue)
+			//	{return 1.0;}else{return minimalshadowAttenuation;}
 		#endif //pointLightCalc
 
 	#	endif //(SHADOW_TECHNIQUE == SHADOW_TECHNIQUE_DEFAULT)

@@ -6,7 +6,7 @@
 //{
 	vec3 getNormal()
 	{
-	#if (SHADER_LIGHTING_FEATURE & SHADER_LIGHTING_FEATURE_NORMAL_MAPPING) \
+	#if (SHADING_FEATURE & SHADING_FEATURE_NORMAL_MAPPING) \
 	    && \
 	    (RENDERING_TECHNIQUE != RENDERING_TECHNIQUE_DEFERRED_LIGHTING)
 		vec3 nonPerturbedNormal = texture(normalMap,texCoords.xy).xyz;
