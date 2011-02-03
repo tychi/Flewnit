@@ -39,5 +39,36 @@ struct LightSource
 
 
 	//aligned to 64 bytes;
+	
+	#ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+	
+	LightSourceShaderStruct(Vector3D position, Vector3D diffuseColor, Vector3D specularColor, Vector3D direction,
+			float innerSpotCutOff_Radians, float outerSpotCutOff_Radians , float spotExponent, float shadowMapLayer)
+	:
+	position(position),diffuseColor(diffuseColor),specularColor(specularColor), direction(specularColor),
+	innerSpotCutOff_Radians(innerSpotCutOff_Radians), outerSpotCutOff_Radians(outerSpotCutOff_Radians),
+	spotExponent(spotExponent), shadowMapLayer(shadowMapLayer)
+	{}
+	
+	/*
+	bool operator==(const LightSourceShaderStruct& rhs)
+	{
+		return
+				(position == rhs.position ) &&
+				(diffuseColor == rhs.diffuseColor ) &&
+				( specularColor== rhs.specularColor ) &&
+				(direction == rhs. direction) &&
+				( innerSpotCutOff_Radians== rhs.innerSpotCutOff_Radians ) &&
+				(outerSpotCutOff_Radians == rhs.outerSpotCutOff_Radians ) &&
+				(spotExponent == rhs.spotExponent ) &&
+				( shadowMapLayer== rhs.shadowMapLayer );
+	}
+	*/
+	
+	bool isSpotLight()
+	{
+		return innerSpotCutOff_Radians==0.0f;
+	}
+#endif
 };
 //}

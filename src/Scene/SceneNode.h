@@ -41,6 +41,8 @@ public:
 	//implement according to underlying geometry (if it exists)
 	virtual void updateLocalAABB(){}
 
+	virtual void animate(){}
+
 
 
 	inline String getName() const {return mName;}
