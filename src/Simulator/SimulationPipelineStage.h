@@ -10,7 +10,7 @@
 
 #include "SimulationObject.h"
 
-#include  "SimulatorMetaInfos.h"
+#include  "SimulatorMetaInfo.h"
 
 namespace Flewnit
 {

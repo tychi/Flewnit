@@ -9,7 +9,7 @@
 
 #include "Scene/SceneNode.h"
 
-#include "Simulator/SimulatorMetaInfos.h"
+#include "Simulator/SimulatorMetaInfo.h"
 
 namespace Flewnit
 {

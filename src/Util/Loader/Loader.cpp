@@ -16,6 +16,7 @@
 
 
 #include <boost/lexical_cast.hpp>
+#include "Buffer/BufferHelperUtils.h"
 
 
 
@@ -90,21 +91,173 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 ) throw(BufferException)
 {
 	 fipImage * image = new fipImage();
-	 Texture* returnTex = 0;
-
-	 texelPreferredLayout.validate();
-
 	 image->load(fileName.string().c_str());
-
-	  LOG<<INFO_LOG_LEVEL<< "Loading image with path "
+	 LOG<<INFO_LOG_LEVEL<< "Loading image with path "
 	          << fileName.string()
 	          << "; Bits Per Pixel: "
 	          << image->getBitsPerPixel()
 	          << "; width: " << image->getWidth()
 	          << "; height" << image->getHeight()<<";\n";
 
-	  Vector4D* tempRGBA32FImage = 0;
-	  assert(sizeof(Vector4D) == 16 && "Vector types must be tightly packed");
+
+
+	 assert(sizeof(Vector4D) == 4* sizeof(float) && "Vector types must be tightly packed");
+	 //alloc buffer of maximum size; maybe only a fourth will be needed, but that does'nt matter,
+	 //as it's only a temorary buffer
+	 void* buffer = malloc( sizeof(Vector4D) * image->getWidth()*image->getHeight());
+
+
+	 //fill buffer according to a rater sophisticated conversion:
+	 transformPixelData(bufferSemantics,buffer,texelPreferredLayout,image);
+
+	  int dimensionality = (image->getHeight() >1) ? 2 : 1;
+
+	  Texture* returnTex = 0;
+
+	  if(dimensionality == 1)
+	  {
+		  returnTex = new Texture1D(
+				  name,
+				  bufferSemantics,
+				  image->getWidth(),
+				  texelPreferredLayout,
+				  allocHostMemory,
+				  buffer,
+				  	// buffer
+				  	//  ?	reinterpret_cast<void*>(buffer)
+					//  : reinterpret_cast<void*>(image->accessPixels()),
+				  genMipmaps);
+
+	  }
+	  else
+	  {
+		  returnTex = new Texture2D(
+				  name,
+				  bufferSemantics,
+				  image->getWidth(),
+				  image->getHeight(),
+				  texelPreferredLayout,
+				  allocHostMemory,
+				  shareWithOpenCL,
+				  //dont't make rectangle; Rectangle is good for deferred rendering, not for decal textureing
+				  false,
+				  buffer,
+				  	// buffer
+				  	//  ?	reinterpret_cast<void*>(buffer)
+					//  : reinterpret_cast<void*>(image->accessPixels())
+				  genMipmaps);
+	  }
+
+
+		//	  if(buffer)
+		//	  {
+		//		  delete buffer;
+		//	  }
+	  free(buffer);
+	  delete image;
+
+	  return returnTex;
+}
+
+
+Texture2DCube* Loader::loadCubeTexture(
+		String name,  BufferSemantics bufferSemantics, Path fileName, String fileEndingWithoutDot,
+					TexelInfo texelPreferredLayout,
+					bool allocHostMemory,  bool genMipmaps
+)throw(BufferException)//may be changed by the loading routine!
+{
+	const String suffixes[] = {"_RT", "_LF", "_DN", "_UP", "_FR", "_BK"};
+
+
+	fipImage * image = new fipImage();
+
+
+	assert(sizeof(Vector4D) == 4* sizeof(float) && "Vector types must be tightly packed");
+	//alloc buffer of maximum size; maybe only a fourth will be needed, but that does'nt matter,
+	//as it's only a temorary buffer
+	void* buffer = 0;
+
+
+	unsigned int oldDimensions;
+	for(int runner=0;runner<6;runner++)
+	{
+		String currentFileName = fileName.string();
+		currentFileName.append(suffixes[runner]);
+		currentFileName.append(".");
+		currentFileName.append(fileEndingWithoutDot);
+
+		image->load(currentFileName.c_str());
+		 LOG<<INFO_LOG_LEVEL<< "Loading image with path "
+		          << currentFileName
+		          << "; Bits Per Pixel: "
+		          << image->getBitsPerPixel()
+		          << "; width: " << image->getWidth()
+		          << "; height" << image->getHeight()<<";\n";
+
+		int bufferOffset;
+
+		if(runner==0)
+		{
+			buffer = malloc( 6*  sizeof(Vector4D) * image->getWidth()*image->getHeight());
+			bufferOffset =0;
+			oldDimensions = image->getHeight();
+		}
+		else
+		{
+			//texelPreferredLayoutis only valid unti transformPixelData() has been called once;
+			//luckily, its values aren't needed before
+			bufferOffset =
+					runner *
+					texelPreferredLayout.bitsPerChannel / sizeof(BYTE) *
+					texelPreferredLayout.numChannels *
+					image->getWidth()*image->getHeight();
+		}
+
+
+		//fill buffer according to a rater sophisticated conversion:
+		transformPixelData(bufferSemantics,
+				//get adress of buffer at the current offset
+				&(reinterpret_cast<BYTE*>(buffer)[bufferOffset]),
+				texelPreferredLayout,image);
+
+		if(runner==0)
+		{oldDimensions = image->getHeight();}
+
+
+		if(
+			(image->getHeight() != image->getWidth())
+			||
+			! BufferHelper::isPowerOfTwo(image->getHeight())
+			|| (image->getHeight() != oldDimensions)
+		)
+		{
+			throw(BufferException("cubetex should be power of two,squared and all images should have the same size!"));
+		}
+		image->clear();
+	}
+
+	Texture2DCube* returnTex =
+			new Texture2DCube(
+					name, image->getHeight(), texelPreferredLayout,allocHostMemory,
+					buffer,genMipmaps
+			);
+
+	delete image;
+	free(buffer);
+
+	return returnTex;
+}
+
+
+
+void Loader::transformPixelData(BufferSemantics bufferSemantics,
+		//inout buffers
+		void* buffer, TexelInfo& texelLayout, fipImage* image)
+{
+	texelLayout.validate();
+
+	  //Vector4D* buffer = 0;
+	  //assert(sizeof(Vector4D) == 4* sizeof(float) && "Vector types must be tightly packed");
 
 	  switch(image->getImageType())
 	  {
@@ -126,93 +279,58 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 						 << "This is experimental; in case of bugs, check  Loader::loadTexture()";
 				  //normalmapping adoption :)
 				  shiftUnsignedByteToSignedByteForNormalMapping(image->accessPixels(), image->getImageSize());
-				  texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_INT,8,true);
+				  texelLayout = TexelInfo(4,GPU_DATA_TYPE_INT,8,true);
 			  }
 			  else
 			  {
 				  //override to default as i don't have time for sophisticated adoption atm
-				  texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_UINT,8,true);
+				  texelLayout = TexelInfo(4,GPU_DATA_TYPE_UINT,8,true);
 			  }
+
+			  //copy altered image contents to the designated buffer
+			  memcpy( buffer,
+					  reinterpret_cast<void*>(image->accessPixels()),
+					  texelLayout.numChannels * sizeof(BYTE) * image->getWidth()* image->getHeight()
+			  );
 		  }
 		  break;
 	  case FIT_RGBAF:
-		  	  texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
+		  texelLayout = TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
+
+		  //copy altered image contents to the designated buffer
+		  memcpy( buffer,
+					  reinterpret_cast<void*>(image->accessPixels()),
+					  texelLayout.numChannels * sizeof(float) * image->getWidth()* image->getHeight()
+		  );
 		  break;
 	  case FIT_RGBF:
 		  	  //add alpha channel for alignment purposes; freeimange doesn't support this conversion,
 		  	  //so let's hack it for ourselves:
-		  	  tempRGBA32FImage	= new Vector4D[image->getWidth()*image->getHeight()];
+		  	  //buffer	= new Vector4D[image->getWidth()*image->getHeight()];
 
 		  	  assert((image->getBitsPerPixel()==96) && "it is really 32bit three component image" );
 
-		  	  addAlphaChannelToVec3FImage(reinterpret_cast<Vector3D*>(image->accessPixels()),
-		  			  tempRGBA32FImage, image->getWidth()*image->getHeight());
+		  	  addAlphaChannelToVec3FImage(
+		  			reinterpret_cast<Vector3D*>(image->accessPixels()),
+		  			reinterpret_cast<Vector4D*> (buffer),
+		  			image->getWidth()*image->getHeight());
 
-		  	  texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
+		  	  texelLayout = TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
+
+			  //copy altered image contents to the designated buffer
+			  memcpy( buffer,
+						  reinterpret_cast<void*>(image->accessPixels()),
+						  texelLayout.numChannels * sizeof(float) * image->getWidth()* image->getHeight()
+			  );
 		  break;
 	  default:
 		  throw(BufferException("sorry, there is no other image type but "
 				  "floating point or Bitmap(i.e. 8 bit unsigned normalized int) RGB(A) supported yet "));
 	  }
-
-
-
-	  int dimensionality = (image->getHeight() !=1) ? 2 : 1;
-
-	  if(dimensionality == 1)
-	  {
-		  returnTex = new Texture1D(
-				  name,
-				  bufferSemantics,
-				  image->getWidth(),
-				  texelPreferredLayout,
-				  allocHostMemory,
-				  tempRGBA32FImage
-				  	  ?	reinterpret_cast<void*>(tempRGBA32FImage)
-					  : reinterpret_cast<void*>(image->accessPixels()),
-				  genMipmaps);
-
-	  }
-	  else
-	  {
-		  returnTex = new Texture2D(
-				  name,
-				  bufferSemantics,
-				  image->getWidth(),
-				  image->getHeight(),
-				  texelPreferredLayout,
-				  allocHostMemory,
-				  shareWithOpenCL,
-				  //dont't make rectangle; Rectangle is good for deferred rendering, not for decal textureing
-				  false,
-				  tempRGBA32FImage
-				  	  ?	reinterpret_cast<void*>(tempRGBA32FImage)
-					  : reinterpret_cast<void*>(image->accessPixels()),
-				  genMipmaps);
-	  }
-
-
-	  if(tempRGBA32FImage)
-	  {
-		  delete tempRGBA32FImage;
-	  }
-
-	  delete image;
-
-	  return returnTex;
 }
 
 
-Texture2DCube* Loader::loadCubeTexture(
-		String name,  BufferSemantics bufferSemantics, Path fileName,
-					TexelInfo texelPreferredLayout,
-					bool allocHostMemory,  bool genMipmaps
-)throw(BufferException)//may be changed by the loading routine!
-{
-	const String suffixes[] = {"_RT", "_LF", "_DN", "_UP", "_FR", "_BK"};
-	//TODO
-}
-
+//--------------------------------------------------------------------------------
 
 
 

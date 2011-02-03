@@ -1,22 +1,22 @@
 /*
- * SimulatorMetaInfos.cpp
+ * SimulatorMetaInfo.cpp
  *
  *  Created on: Dec 21, 2010
  *      Author: tychi
  */
 
-#include "SimulatorMetaInfos.h"
+#include "SimulatorMetaInfo.h"
 
 namespace Flewnit
 {
 
-//SimulatorMetaInfos::SimulatorMetaInfos()
+//SimulatorMetaInfo::SimulatorMetaInfo()
 //{
 //	// TODO Auto-generated constructor stub
 //
 //}
 //
-//SimulatorMetaInfos::~SimulatorMetaInfos()
+//SimulatorMetaInfo::~SimulatorMetaInfo()
 //{
 //	// TODO Auto-generated destructor stub
 //}

@@ -14,7 +14,7 @@
 #include "Buffer/BufferSharedDefinitions.h"
 
 class TiXmlElement;
-
+struct fipImage;
 
 
 namespace Flewnit
@@ -48,7 +48,7 @@ public:
 	) throw(BufferException);
 
 	Texture2DCube* loadCubeTexture(
-			String name,  BufferSemantics bufferSemantics, Path fileName,
+			String name,  BufferSemantics bufferSemantics, Path fileName, String fileEndingWithoutDot,
 						//loading routine doesn't guaranty that the preferred layout will be done!
 						//default layout for non-HDR color images unsigned byte to be normalize to float in [0..1]
 						TexelInfo texelPreferredLayout = TexelInfo(4,GPU_DATA_TYPE_UINT,8,true),
@@ -65,6 +65,11 @@ private:
 
 	//DEBUG stuff:
 	void createHardCodedSceneStuff();
+
+
+	void transformPixelData(BufferSemantics bufferSemantics,
+			//inout buffers
+			void* buffer, TexelInfo& texelLayout, fipImage* image);
 
 
 };

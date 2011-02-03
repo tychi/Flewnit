@@ -12,7 +12,7 @@
 
 #include "Common/BasicObject.h"
 
-#include "Simulator/SimulatorMetaInfos.h"
+#include "Simulator/SimulatorMetaInfo.h"
 #include "Simulator/SimulationObject.h"
 
 namespace Flewnit

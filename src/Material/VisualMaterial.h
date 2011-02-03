@@ -12,7 +12,7 @@
 
 #include "Material.h"
 
-#include "Simulator/SimulatorMetaInfos.h"
+#include "Simulator/SimulatorMetaInfo.h"
 
 namespace Flewnit
 {

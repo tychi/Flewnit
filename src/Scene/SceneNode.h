@@ -11,7 +11,7 @@
 #include "Common/BasicObject.h"
 #include "Common/Math.h"
 
-#include "Simulator/SimulatorMetaInfos.h"
+#include "Simulator/SimulatorMetaInfo.h"
 #include "Common/AmendedTransform.h"
 
 

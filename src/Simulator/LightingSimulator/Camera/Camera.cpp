@@ -38,6 +38,8 @@ const Matrix4x4& Camera::perspective(	float fieldOfView_Angles,
 {
 	mProjectionMatrix =  glm::gtc::matrix_projection::perspective(
 			fieldOfView_Angles, aspectRatioXtoY, nearClipPlane, farClipPlane );
+
+	return mProjectionMatrix;
 }
 
 //needed for stuff like static mesh voxelization per rasterization;
@@ -51,7 +53,8 @@ const Matrix4x4& Camera::ortho	(float left,
 						float farClipPlane
 						)
 {
-	//glm::gtc::matrix_projection::ortho()
+	mProjectionMatrix = glm::gtc::matrix_projection::ortho(left,right,bottom,top,nearClipPlane,farClipPlane);
+	return mProjectionMatrix;
 }
 
 

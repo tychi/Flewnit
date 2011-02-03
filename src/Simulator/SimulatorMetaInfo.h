@@ -1,5 +1,5 @@
 /*
- * SimulatorMetaInfos.h
+ * SimulatorMetaInfo.h
  *
  *  Created on: Dec 21, 2010
  *      Author: tychi
@@ -34,18 +34,6 @@ class SimulatorException : public std::exception
 	    return mDescription.c_str();
 	}
 };
-
-
-//class SimulatorMetaInfos
-//: public BasicObject
-//{
-//	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-//public:
-//	SimulatorMetaInfos();
-//	virtual ~SimulatorMetaInfos();
-//};
-
-
 
 
 
