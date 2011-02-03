@@ -339,7 +339,7 @@ void Texture2DCube::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)thr
 
 //---------------------------------------------------------------------------------
 
-Texture2DCubeDepth::Texture2DCubeDepth(String name,
+Texture2DDepthCube::Texture2DDepthCube(String name,
 			int quadraticSize,
 			bool allocHostMemory)
 : Texture2DCube(name, quadraticSize, allocHostMemory)
@@ -347,21 +347,21 @@ Texture2DCubeDepth::Texture2DCubeDepth(String name,
 	LOG<<INFO_LOG_LEVEL << "Creating 2D CUBE DEPTH texture named "<< name <<";\n";
 }
 
-Texture2DCubeDepth::~Texture2DCubeDepth()
+Texture2DDepthCube::~Texture2DDepthCube()
 {
 	//do nothing, base classes do the rest ;(
 }
 
-bool Texture2DCubeDepth::operator==(const BufferInterface& rhs) const
+bool Texture2DDepthCube::operator==(const BufferInterface& rhs) const
 {
-	const Texture2DCubeDepth* rhsTexPtr = dynamic_cast<const Texture2DCubeDepth*>(&rhs);
+	const Texture2DDepthCube* rhsTexPtr = dynamic_cast<const Texture2DDepthCube*>(&rhs);
 	if (rhsTexPtr)
 	{return   (*mTextureInfoCastPtr) == (rhsTexPtr->getTextureInfo()) ;}
 	else {return false;}
 }
 
 //override to set compare func etc; Probably it's possible to be  bypassed via sampler objects, but for now..
-void Texture2DCubeDepth::allocGL()throw(BufferException)
+void Texture2DDepthCube::allocGL()throw(BufferException)
 {
 	Texture2DCube::allocGL();
 	setupDepthTextureParameters();
@@ -433,6 +433,44 @@ Texture3D	(
 
 }
 
+
+//protected constructor to be called by Texture2DDepthArray:
+Texture2DArray::Texture2DArray(String name,
+			int width, int height, int numLayers,
+			bool allocHostMemory)
+:
+	Texture3D	(
+		TextureInfo(
+			BufferInfo(
+				name,
+				ContextTypeFlags(
+						(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
+						| OPEN_GL_CONTEXT_TYPE_FLAG
+				),
+				SHADOW_MAP_SEMANTICS
+			),
+			3,
+			Vector3Dui(width,height,1),
+			TexelInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
+			GL_TEXTURE_2D_ARRAY,
+			true, //is depth tex
+			false,
+			false,
+			false,
+			1,
+			numLayers
+		),
+		0
+	)
+{
+	assert(
+			(mTextureInfoCastPtr->glImageFormat.desiredInternalFormat == GL_DEPTH_COMPONENT32)
+			&&
+			(mTextureInfoCastPtr->glImageFormat.channelOrder == GL_DEPTH_COMPONENT)
+	);
+}
+
+
 Texture2DArray::~Texture2DArray()
 {
 	//do nothing
@@ -444,6 +482,42 @@ bool Texture2DArray::operator==(const BufferInterface& rhs) const
 	if (rhsTexPtr)
 	{return   (*mTextureInfoCastPtr) == (rhsTexPtr->getTextureInfo()) ;}
 	else {return false;}
+}
+
+
+//---------------------------------------------------------------------
+
+Texture2DDepthArray::Texture2DDepthArray(String name,
+			int width, int height, int numLayers,
+			bool allocHostMemory)
+: Texture2DArray(name,
+		 width,  height,  numLayers,
+		 allocHostMemory)
+{
+	LOG<<INFO_LOG_LEVEL << "Creating 2D DEPTH ARRAY texture named "<< name <<";\n";
+}
+
+Texture2DDepthArray::~Texture2DDepthArray()
+{
+	//do nothing, base classes do the rest
+}
+
+bool Texture2DDepthArray::operator==(const BufferInterface& rhs) const
+{
+	const Texture2DDepthArray* rhsTexPtr =
+			dynamic_cast<const Texture2DDepthArray*> (&rhs);
+	if (rhsTexPtr) {
+		return (*mTextureInfoCastPtr) == (rhsTexPtr->getTextureInfo());
+	} else {
+		return false;
+	}
+}
+
+//override to set compare func etc; Probably it's possible to be  bypassed via sampler objects, but for now..
+void Texture2DDepthArray::allocGL()throw(BufferException)
+{
+	Texture3D::allocGL();
+	setupDepthTextureParameters();
 }
 
 

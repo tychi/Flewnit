@@ -345,14 +345,14 @@ protected:
  * 	2D Cube Depth Texture; Usable as point-light shadow map or other depth-buffer related algorithms
  *
  */
-class Texture2DCubeDepth: public  Texture2DCube
+class Texture2DDepthCube: public  Texture2DCube
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	explicit Texture2DCubeDepth(String name,
+	explicit Texture2DDepthCube(String name,
 				int quadraticSize,
 				bool allocHostMemory);
-	virtual ~Texture2DCubeDepth();
+	virtual ~Texture2DDepthCube();
 
 	virtual bool operator==(const BufferInterface& rhs) const;
 
@@ -411,10 +411,35 @@ public:
 	virtual bool operator==(const BufferInterface& rhs) const;
 protected:
 
+	//protected constructor to be called by Texture2DDepthArray:
+	explicit Texture2DArray(String name,
+				int width, int height, int numLayers,
+				bool allocHostMemory);
+
 #include "TextureNonCLInteropImplementations.h"
 
 };
 
+
+/**
+ * 	2D Depth Array Texture; Usable as bunch of shadow maps or other
+ * 	depth-buffer related algorithms to be filled by layered rendering;
+ *
+ */
+class Texture2DDepthArray: public  Texture2DArray
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	explicit Texture2DDepthArray(String name,
+				int width, int height, int numLayers,
+				bool allocHostMemory);
+	virtual ~Texture2DDepthArray();
+
+	virtual bool operator==(const BufferInterface& rhs) const;
+
+	//override to set compare func etc; Probably it's possible to be  bypassed via sampler objects, but for now..
+	virtual void allocGL()throw(BufferException);
+};
 
 
 /**
