@@ -117,7 +117,10 @@ void InputManager::mouseWheelCallback(int wheelValue)
 	InputManager::getInstance().mMouse->mouseWheelChanged(wheelValue);
 }
 
-
+void InputManager::setMouseHidden(bool value)
+{
+	mMouse->setHidden(value);
+}
 
 
 }

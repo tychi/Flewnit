@@ -45,6 +45,7 @@ public:
 	void setInputInterpreter(InputInterpreter* inputInterpreter);
 	InputInterpreter* getInputInterpreter()const {return mInputInterpreter;}
 
+	void setMouseHidden(bool value);
 
 protected:
 	//List <InputDevice*> mInputDevices;

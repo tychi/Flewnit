@@ -18,10 +18,10 @@
 #include "UserInterface/WindowManager/WindowManager.h"
 #include "Simulator/SimulationResourceManager.h"
 #include "Simulator/LightingSimulator/Camera/Camera.h"
+#include "UserInterface/Input/InputManager.h"
 
 #ifdef FLEWNIT_USE_GLFW
 #	include <GL/glfw.h>
-
 #else
 
 #endif
@@ -76,6 +76,7 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 	if(keyboard->getRecentKey() == GLFW_KEY_ESC)
 	{
 		LOG<<DEBUG_LOG_LEVEL<<"escape pressed, shutting down;(;\n";
+		InputManager::getInstance().setMouseHidden(false);
 		URE_INSTANCE->requestMainLoopQuit();
 	}
 
