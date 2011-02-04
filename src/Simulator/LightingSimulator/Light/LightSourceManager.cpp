@@ -7,6 +7,8 @@
 
 #include "LightSourceManager.h"
 
+#include <boost/foreach.hpp>
+
 namespace Flewnit
 {
 
@@ -21,7 +23,15 @@ LightSourceManager::LightSourceManager(
 
 LightSourceManager::~LightSourceManager()
 {
-
+	for(unsigned int i=0; i< mLightSources.size();i++)
+	{
+		//important to omit f***up: when the LS manager is destroying ls'es ITSELF, it
+		//has to remove the list-entry before actually call the destructor on the LS;
+		//as calls to erase() make problems during itteration, we just set the entry to zero
+		LightSource* tmp = mLightSources[i];
+		mLightSources[i] = 0;
+		delete tmp;
+	}
 }
 
 
@@ -81,7 +91,17 @@ void LightSourceManager::setupBuffersForShading(float maxDistanceToMainCam)
 //has to remove the list-entry before actually call the destructor on the LS;
 void LightSourceManager::unregisterLightSource(LightSource* ls)
 {
-
+	//BOOST_FOREACH(LightSource* currentLs, mLightSources)
+	for(unsigned int i=0; i< mLightSources.size();i++)
+	{
+		if(ls == mLightSources[i])
+		{
+			//this is an indicator that the manager has NOT deleted the lightsource itself;
+			//otherwise, the entry where the ls was stored before would now be 0;
+			mLightSources.erase( mLightSources.begin() + i);
+			break;
+		}
+	}
 }
 
 

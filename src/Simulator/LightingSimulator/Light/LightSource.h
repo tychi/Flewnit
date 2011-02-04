@@ -34,7 +34,7 @@ protected:
 	//quasi-abstract class: protected constructor so that only derived classes can instantiate;
 	//like this, compatibility to shader, shadowmap buffers etc. is much easier to
 	//enforce;
-	LightSource(String name, LightSourceType type, bool castsShadows,
+	LightSource(String name, LightSourceType type, bool castsShadows, bool isEnabled,
 			const LightSourceShaderStruct& data);
 public:
 	virtual ~LightSource();
@@ -71,7 +71,7 @@ class PointLight
 	//private constructor so that only the LS manager can create sources :);
 	//like this, compatibility to shader, shadowmap buffers etc. is much easier to
 	//enforce;
-	PointLight(String name, bool castsShadows,
+	PointLight(String name, bool castsShadows, bool isEnabled,
 			const LightSourceShaderStruct& data);
 
 public:
@@ -101,7 +101,7 @@ class SpotLight
 	//private constructor so that only the LS manager can create sources :);
 	//like this, compatibility to shader, shadowmap buffers etc. is much easier to
 	//enforce;
-	SpotLight(String name, bool castsShadows,
+	SpotLight(String name, bool castsShadows,  bool isEnabled,
 			const LightSourceShaderStruct& data);
 
 public:

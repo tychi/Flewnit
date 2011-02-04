@@ -27,7 +27,12 @@ SceneNode::~SceneNode()
 {
 	BOOST_FOREACH(Nodemap::value_type nodepair, mChildren)
 	{
+		//break backtracking
+		nodepair.second->setParent(0);
 		delete nodepair.second;
+		nodepair.second=0;
+
+		//dont erase() the map entry, as it would invalidate the iterator
 	}
 }
 
@@ -200,7 +205,6 @@ SceneNode* SceneNode::addChild(SceneNode* child)
 	if(mParent) mParent->invalidateAABB();
 
 	return child;
-
 }
 
 SceneNode* SceneNode::removeChild(String name)
