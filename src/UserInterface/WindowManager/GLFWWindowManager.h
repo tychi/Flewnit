@@ -39,7 +39,7 @@ public:
 	virtual double getFPS(bool averaged );
 
 
-	virtual Vector2Di getWindowResolution();
+	virtual Vector2Dui getWindowResolution();
 	virtual bool windowIsOpened();
 
 	virtual void setWindowPosition(Vector2Di newPos);

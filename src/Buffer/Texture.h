@@ -220,6 +220,7 @@ protected:
 	//protected constructor to be called by Texture2DDepth:
 	explicit Texture2D(String name,
 				int width, int height,
+				bool rectangle,
 				bool allocHostMemory, bool clInterOp);
 
 	//protected constructor to be called by Texture1dArray()
@@ -238,6 +239,7 @@ class Texture2DDepth: public  Texture2D
 public:
 	explicit Texture2DDepth(String name,
 				int width, int height,
+				bool rectangle,
 				bool allocHostMemory, bool clInterOp);
 	virtual ~Texture2DDepth();
 

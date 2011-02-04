@@ -49,7 +49,7 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 		{
 
 			LOG<<DEBUG_LOG_LEVEL<<"enter pressed;\n";
-			Vector2Di currentRes = WindowManager::getInstance().getWindowResolution();
+			Vector2Dui currentRes = WindowManager::getInstance().getWindowResolution();
 			LOG<<INFO_LOG_LEVEL<<"Resolution is now ("<<currentRes.x<<","<<currentRes.y<<");\n";
 		}
 		else

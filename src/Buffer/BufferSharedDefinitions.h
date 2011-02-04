@@ -374,6 +374,8 @@ public:
 
 	//Flags/values indicating special features, depending on the concrete texture types
 	///\{
+	TextureType textureType;
+
 	bool isDepthTexture;	//default false,
 	bool isMipMapped;		//default false;
 	bool isRectangleTex;	//default false;
@@ -381,8 +383,6 @@ public:
 
 	GLint numMultiSamples; 	 //default 1 to indicate no multisampling
 	GLint numArrayLayers;	 //default 1 to indicate no array stuff
-
-	TextureType textureType;
 	///\}
 
 	//automatically determined values; only needed for internal GL/CL calls:
@@ -421,17 +421,18 @@ public:
 	bool operator==(const TextureInfo& rhs) const;
 	const TextureInfo& operator=(const TextureInfo& rhs);
 
+	bool isRenderTargetCompatibleTo(const TextureInfo& rhs)const;
 
 	bool calculateCLGLImageFormatValues()throw (BufferException);
  };
 
 
 
-enum GLRenderBufferType
-{
-	RENDER_DEPTH_BUFFER_TYPE =0,
-	RENDER_STENCIL_BUFFER_TYPE =1
-};
+//enum GLRenderBufferType
+//{
+//	RENDER_DEPTH_BUFFER_TYPE =0,
+//	RENDER_STENCIL_BUFFER_TYPE =1
+//};
 //--------------------------
 
 

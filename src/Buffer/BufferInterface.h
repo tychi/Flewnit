@@ -99,6 +99,7 @@ public:
 	///\}
 
 	//convenience caster methods:
+	//incomplete and maybe obsolete
 	///\{
 	bool isPingPongBuffer() const;
 	PingPongBuffer& toPingPongBuffer() throw(BufferException);

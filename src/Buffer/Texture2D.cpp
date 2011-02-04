@@ -53,6 +53,7 @@ Texture	(
 //protected constructor to be called by Texture2DDepth:
 Texture2D:: Texture2D(String name,
 			int width, int height,
+			bool rectangle,
 			bool allocHostMemory, bool clInterOp)
 	:
 	Texture	(
@@ -69,10 +70,10 @@ Texture2D:: Texture2D(String name,
 			2,
 			Vector3Dui(width,height,1),
 			TexelInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
-			GL_TEXTURE_2D,
+			rectangle ? GL_TEXTURE_RECTANGLE :GL_TEXTURE_2D,
 			true, //yes, is depth tex
 			false,
-			false,
+			rectangle,
 			false,
 			1,
 			1
@@ -372,8 +373,9 @@ void Texture2DDepthCube::allocGL()throw(BufferException)
 //-----------------------------------------------------------------------
 Texture2DDepth::Texture2DDepth(String name,
 			int width, int height,
+			bool rectangle,
 			bool allocHostMemory, bool clInterOp)
-: Texture2D(name,width,height,allocHostMemory,clInterOp)
+: Texture2D(name,width,height,rectangle, allocHostMemory,clInterOp)
 {
 	LOG<<INFO_LOG_LEVEL << "Creating 2D depth texture named "<< name <<";\n";
 }
@@ -449,7 +451,7 @@ Texture2DArray::Texture2DArray(String name,
 				),
 				SHADOW_MAP_SEMANTICS
 			),
-			3,
+			2,
 			Vector3Dui(width,height,1),
 			TexelInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
 			GL_TEXTURE_2D_ARRAY,

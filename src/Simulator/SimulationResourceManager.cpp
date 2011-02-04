@@ -29,10 +29,9 @@ SimulationResourceManager::SimulationResourceManager() :
 			new RenderTarget(
 					String("globalRenderTarget"),
 					WindowManager::getInstance().getWindowResolution(),
-					//hardcode use rectangle
-					true,
-					DEPTH_RENDER_BUFFER,
-					0)
+					TEXTURE_TYPE_2D_RECT,
+					DEPTH_RENDER_BUFFER
+					)
 	),
 	mMainCamera(new Camera("mainCamera")), //TODO
 	mLightSourceManager(0)//TODO
@@ -226,7 +225,7 @@ void SimulationResourceManager::testStuff()
 {
 	///\{ TEST STUFF DEBUG
 	mGlobalRenderTarget->bind();
-	mGlobalRenderTarget->requestCreateAndStoreTexture(FINAL_RENDERING_SEMANTICS);
+	mGlobalRenderTarget->requestCreateAndStoreColorTexture(FINAL_RENDERING_SEMANTICS);
 	mGlobalRenderTarget->attachStoredColorTexture(FINAL_RENDERING_SEMANTICS, 0);
 	mGlobalRenderTarget->renderToScreen();
 

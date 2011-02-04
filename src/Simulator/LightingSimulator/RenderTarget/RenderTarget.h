@@ -39,9 +39,10 @@
 namespace Flewnit
 {
 
-enum RenderBufferFlags
+enum DepthBufferFlags
 {
-	NO_RENDER_BUFFER,
+	NO_DEPTH_BUFFER,
+	DEPTH_TEXTURE,
 	DEPTH_RENDER_BUFFER,
 	DEPTH_STENCIL_RENDER_BUFFER
 };
@@ -52,11 +53,17 @@ class RenderTarget
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	//multiSample flag needed already on creation for render buffer generation
-	RenderTarget(String name, const Vector2Di& resolution,
-			bool useRectangleTextures,
-			//List< Pair<BufferSemantics, int> > initiallyDesiredStoredTextures = { {FINAL_RENDERING_SEMANTICS,0} } ,
-			RenderBufferFlags rbf = DEPTH_RENDER_BUFFER,
-			int numMultisamples = 0);
+	RenderTarget(
+			String name,
+			const Vector2Dui& resolution,
+			//the texture type of which will be the requested created/stored color/depth textures
+			TextureType textureType,
+			DepthBufferFlags dbf = DEPTH_RENDER_BUFFER,
+			const TexelInfo& defaultTexelLayout = TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false),
+			int numMultisamples = 1,
+			int numArrayLayers = 1
+	);
+
 	virtual ~RenderTarget();
 
 	static bool depthTestEnabled();
@@ -68,37 +75,36 @@ public:
 	bool hasStencilAttachment();
 
 	inline String getName()const{return mName;}
-
 	bool isCurrentlyBound();
+
 	void bind(bool forReading = false);
-	//calls bind() automatically
-
 	void renderToAttachedTextures();
-
 	void clear();
-
-	void detachAllColorTextures();
-	//no single detaching; everything or nothing ;(
-	//void detachColorTexture(BufferSemantics which);
 
 
 	//useful for shadowmap generation: disable unnecessary color-overhead when only depth stuff is needed
 	void setEnableColorRendering(bool value);
 	static void setEnableDepthTest(bool value);
-
 	static void setEnableStencilTest(bool value);
 
-	//TODO implement IF needed
-	//void addTexture(Texture* tex);
-	//void removeTexture(Texture* tex);
 
-	//can return NULL
-	Texture* getStoredTexture(BufferSemantics bs);
-
-
-	void attachColorTexture(Texture* tex, int where);
+	//throws exception if texturee type of texture is incompatible
+	void attachColorTexture(Texture* tex, int where)throw(BufferException);
 	void attachStoredColorTexture(BufferSemantics which, int where) throw(BufferException);
+	//can return NULL
+	Texture* getStoredColorTexture(BufferSemantics bs);
+	//no single detaching; everything or nothing ;(
+	void detachAllColorTextures();
 
+	///\{ Stuff useful for shadowmap generation
+	//depthtex must have a depth texture type (2D, cube or array)
+	void attachDepthTexture(Texture* depthTex)throw(BufferException);
+	//throw exception if no stored depth buffer (texture or renderbuffer) exists;
+	void attachStoredDepthBuffer()throw(BufferException);
+	//can return NULL
+	Texture* getStoredDepthTexture();
+	void detachDepthBuffer();
+	///\}
 
 
 	/*
@@ -111,22 +117,18 @@ public:
 	 * A texture will be created with the specified semantics if it doesn't exist;
 	 * If it exists, it nothing will be done but printed a warning
 	 */
-	void requestCreateAndStoreTexture(BufferSemantics which)throw(BufferException);
-
-
-	///\{ Stuff useful for shadowmap generation
-	void attachDepthTexture(Texture2DDepth* depthTex)throw(BufferException);
-	void detachDepthTexture(Texture2DDepth* depthTex);
-	///\}
-
-	//TODO if needed provide some explicit cubemap attachment stuff for dynamic cube maps and point light shadow maps :D ;)
-
+	void requestCreateAndStoreColorTexture(BufferSemantics which)throw(BufferException);
+protected:
+	void createAndStoreDepthRenderBuffer();
+	void createAndStoreDepthTexture();
+public:
 
 	void checkFrameBufferErrors()throw(BufferException);
 
-
-
 private:
+
+	void validateMembers()throw(BufferException);
+	void validateTexture(Texture* tex, bool isDepthTex = false)throw(BufferException);
 
 	void bindSave();
 	void unbindSave();
@@ -141,42 +143,44 @@ private:
 	//of them even if they are not attached;
 
 	Texture* mOwnedTexturePool[__NUM_TOTAL_SEMANTICS__];
+	//can be NULL if one is using a render buffer instead
+	//must be of compatible texturetype with the color textures, if used
+
+
+	///\{
+	/*
+	 * the following Texture/Renderbuffer variables are mutual exclusive:
+	 * One of them must be NULL, according to mDepthBufferFlags
+	 */
+	DepthBufferFlags mDepthBufferFlags;
+		GLenum mDepthAndOrStencilAttachmentPoint;
+		GLenum mDepthBufferOrTextureInternalFormat;
+
+	Texture* mOwnedDepthTexture;
+	//i had no time to wrap the render buffer to my buffer concept; hope I won't need it
+	//somewhere else but here; Otherwise, wrapping will follow
+	GLuint mOwnedGLRenderBufferHandle;
+	///\}
 
 	//tracker, what texture is attached where
-	//Initialized everywhere to INVALID_SEMANTICS
-	Texture*	mCurrentlyAttachedTextures[FLEWNIT_MAX_COLOR_ATTACHMENTS];
+	Texture*	mCurrentlyAttachedColorTextures[FLEWNIT_MAX_COLOR_ATTACHMENTS];
+	//is NULL if non attached or mOwnedDepthTexture if its own is attached
+	Texture* 	mCurrentlyAttachedDepthTexture;
 	GLenum	mCurrentDrawBuffers[FLEWNIT_MAX_COLOR_ATTACHMENTS];
 	GLsizei mNumCurrentDrawBuffers;
 
+
 	GLuint mFBO;
-	Vector2Di mFrameBufferResolution;
+	TextureType mTextureType;
+	Vector2Dui mFrameBufferResolution;
+	TexelInfo mDefaultTexelLayout;
+	int mNumArrayLayers;
+	int mNumMultisamples;
 	//for copying between textures, one can use glBlitFrameBuffers();
 	//this function need a read buffer, hence we have to keep track;
+
 	bool mIsReadFrameBuffer;
-
-	//i had no time to wrap the render buffer to my buffer concept; hope I won't need it
-	//somewhere else but here; Otherwise, wrapping will follow
-
-	GLuint mGLRenderBufferHandle;
-	//usually GL_DEPTH_COMPONENT32F with attachment type GL_DEPTH_ATTACHMENT
-	//or GL_DEPTH32F_STENCIL8 with attachment type GL_DEPTH_STENCIL_ATTACHMENT ;
-	//GLenum mGLRenderBufferType;
-
-
-	bool mUseRectangleTextures;
-	RenderBufferFlags mRenderBufferFlags;
-	GLenum mRenderBufferAttachmentPoint;
-	GLenum mRenderBufferInternalFormat;
-
-	int  mNumMultisamples;
-
-
-
 	bool mColorRenderingEnabled; //for shadowMap generation
-	//bool mDepthTestEnabled;
-	//bool mStencilTestEnabled;
-
-
 
 	//won't work supposedly with current hardware/drivers
 //	GLuint mGLRenderBufferStencilHandle;

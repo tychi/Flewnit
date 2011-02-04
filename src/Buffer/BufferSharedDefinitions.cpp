@@ -294,7 +294,7 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 		{
 			if( 	( dimensionality ==1 )
 					//check for 1d array texture
-					|| ((dimensionality == 2)&&(numArrayLayers > 1))
+					|| ((dimensionality == 1) && (numArrayLayers > 1))
 					|| isMipMapped
 					|| (numMultiSamples > 1)
 			)
@@ -307,7 +307,7 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 				if(isRectangleTex)
 				{
 					LOG<<WARNING_LOG_LEVEL<<"sorry at the moment there is no official support for rectangle depth textures;"
-							<<" Use on your own risk;\n";
+							<<"It should work, but use on your own risk, especially for shadowmapping (other sampler (samplerRectShadow) and bias matrix!);\n";
 				}
 
 				glImageFormat.desiredInternalFormat = GL_DEPTH_COMPONENT32;
@@ -655,12 +655,13 @@ bool TextureInfo::operator==(const TextureInfo& rhs) const
 {
 	return
 			//TODO check if works
-			BufferInfo::operator ==(rhs) &&
+			BufferInfo::operator==(rhs) &&
 
 			dimensionality == rhs.dimensionality &&
 			glm::all(glm::equal(dimensionExtends, rhs.dimensionExtends)) &&
 			texelInfo == rhs.texelInfo &&
 			textureTarget == rhs.textureTarget &&
+			textureType == rhs.textureType &&
 
 			isDepthTexture == rhs.isDepthTexture &&
 			isMipMapped == rhs.isMipMapped &&
@@ -676,6 +677,20 @@ bool TextureInfo::operator==(const TextureInfo& rhs) const
 
 }
 
+bool TextureInfo::isRenderTargetCompatibleTo(const TextureInfo& rhs)const
+{
+	//partially redundant, omitting texel layout, ( latter must be tested if works)
+	return
+		dimensionality == rhs.dimensionality &&
+		glm::all(glm::equal(dimensionExtends, rhs.dimensionExtends)) &&
+		textureTarget == rhs.textureTarget &&
+		isMipMapped == rhs.isMipMapped &&
+		numMultiSamples == rhs.numMultiSamples &&
+		numArrayLayers == rhs.numArrayLayers
+		;
+}
+
+
 const TextureInfo& TextureInfo::operator=(const TextureInfo& rhs)
 {
 	//TODO check if works
@@ -685,6 +700,7 @@ const TextureInfo& TextureInfo::operator=(const TextureInfo& rhs)
 	dimensionExtends = rhs.dimensionExtends;
 	texelInfo = rhs.texelInfo;
 	textureTarget = rhs.textureTarget;
+	textureType = rhs.textureType;
 
 	isDepthTexture=rhs.isDepthTexture;
 	isMipMapped = rhs.isMipMapped;

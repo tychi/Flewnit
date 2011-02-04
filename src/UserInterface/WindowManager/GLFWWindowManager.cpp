@@ -227,11 +227,11 @@ void GLFWWindowManager::windowChangeCallback(int newResX, int newResY)
 	LOG<<INFO_LOG_LEVEL<<"Resolution is now ("<<newResX<<","<<newResY<<");\n";
 }
 
-Vector2Di GLFWWindowManager::getWindowResolution()
+Vector2Dui GLFWWindowManager::getWindowResolution()
 {
 	int actualResX, actualResY;
 	glfwGetWindowSize(&actualResX,&actualResY);
-	return Vector2Di(actualResX,actualResY);
+	return Vector2Dui(actualResX,actualResY);
 }
 
 

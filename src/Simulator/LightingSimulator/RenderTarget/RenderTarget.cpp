@@ -23,117 +23,277 @@ namespace Flewnit
 {
 
 //multiSample flag needed for render buffer generation
-RenderTarget::RenderTarget(String name, const Vector2Di& resolution,
-		bool useRectangleTextures,RenderBufferFlags rbf, int numMultisamples)
-: mName(name), mNumCurrentDrawBuffers(0),
-  mFrameBufferResolution(resolution),
-  mUseRectangleTextures(useRectangleTextures), mRenderBufferFlags(rbf),
-  //following two components play no role if NO_RENDERBUFFER, hence the comparison to only DEPTH_RENDER_BUFFER is correct
-  mRenderBufferAttachmentPoint(
-		  	(rbf == DEPTH_RENDER_BUFFER )
+RenderTarget::RenderTarget(
+		String name,
+		const Vector2Dui& resolution,
+		//the texture type of which will be the requested created/stored color/depth textures
+		TextureType textureType,
+		DepthBufferFlags dbf,
+		const TexelInfo& defaultTexelLayout,
+		int numMultisamples,
+		int numArrayLayers
+)
+: mName(name),
+  mDepthBufferFlags(dbf),
+  //the following two components play no role if NO_RENDERBUFFER, hence the comparison to only DEPTH_RENDER_BUFFER is correct
+  mDepthAndOrStencilAttachmentPoint(
+		  	( (dbf == DEPTH_RENDER_BUFFER) || (dbf == DEPTH_TEXTURE) )
 			? GL_DEPTH_ATTACHMENT
 			: GL_DEPTH_STENCIL_ATTACHMENT),
-  mRenderBufferInternalFormat(
-		    (mRenderBufferFlags == DEPTH_RENDER_BUFFER )
+  mDepthBufferOrTextureInternalFormat(
+			( (dbf == DEPTH_RENDER_BUFFER) || (dbf == DEPTH_TEXTURE) )
 			? GL_DEPTH_COMPONENT32F
 			: GL_DEPTH32F_STENCIL8),
-  mNumMultisamples(numMultisamples)
+
+  mOwnedDepthTexture(0),
+  mOwnedGLRenderBufferHandle(0),
+  mCurrentlyAttachedDepthTexture(0),
+
+  mNumCurrentDrawBuffers(0),
+
+  mFBO(0),
+  mTextureType(textureType),
+  mFrameBufferResolution(resolution),
+  mDefaultTexelLayout(defaultTexelLayout),
+  mNumArrayLayers(numArrayLayers),
+  mNumMultisamples(numMultisamples),
+
+  mIsReadFrameBuffer(false),
+  mColorRenderingEnabled(true)
+
 {
-	//default initialization
-	mColorRenderingEnabled = true;
-//	mDepthTestEnabled = (mRenderBufferFlags != NO_RENDER_BUFFER);
-//	setEnableDepthTest(mDepthTestEnabled);
-//	mStencilTestEnabled = false ; //(mRenderBufferFlags == DEPTH_STENCIL_RENDER_BUFFER );
-//	glDisable(GL_STENCIL_TEST);
-
-	mIsReadFrameBuffer = false;
-
 	for(int i= 0 ; i < __NUM_TOTAL_SEMANTICS__; i++)
 	{
 		mOwnedTexturePool[i] = 0;
 	}
-
-
 	for(int i= 0 ; i < FLEWNIT_MAX_COLOR_ATTACHMENTS; i++)
 	{
-		mCurrentlyAttachedTextures[i] = 0;
+		mCurrentlyAttachedColorTextures[i] = 0;
 		//default stuff
 		mCurrentDrawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
 	}
 
-	assert(mFrameBufferResolution.x > 0 &&  mFrameBufferResolution.y >0
-			&& BufferHelper::isPowerOfTwo(mNumMultisamples) && mNumMultisamples <= FLEWNIT_MAX_MULTISAMPLES);
+
+	validateMembers();
 
 
 	GUARD( glGenFramebuffers(1,&mFBO) );
 
-	bind();
+	//bind();
+	bindSave();
 
-	if( mRenderBufferFlags != NO_RENDER_BUFFER )
+	if( 	(mDepthBufferFlags == 	DEPTH_RENDER_BUFFER)
+		||	(mDepthBufferFlags == 	DEPTH_STENCIL_RENDER_BUFFER) )
 	{
-		//create the renderbuffer
-
-//		GLenum renderBufferAttachmentPoint =
-//				(mRenderBufferFlags == DEPTH_RENDER_BUFFER )
-//				? GL_DEPTH_ATTACHMENT
-//				: GL_DEPTH_STENCIL_ATTACHMENT
-//		;
-//
-//		GLenum renderBufferInternalFormat =
-//				(mRenderBufferFlags == DEPTH_RENDER_BUFFER )
-//				? GL_DEPTH_COMPONENT32F
-//				: GL_DEPTH32F_STENCIL8
-//		;
-
-
-		GUARD_FRAMEBUFFER( glGenRenderbuffers(1, &mGLRenderBufferHandle));
-		GUARD_FRAMEBUFFER( glBindRenderbuffer(GL_RENDERBUFFER, mGLRenderBufferHandle));
-
-
-		//according to the spec the following must work in any case:
-		//GUARD_FRAMEBUFFER( glRenderbufferStorageMultisample(GL_RENDERBUFFER, mNumMultisamples, renderBufferInternalFormat,
-		//		mFrameBufferResolution.x, mFrameBufferResolution.y) );
-
-		//but I don't trust the implementors, so lets do it the newbi way:
-		if(mNumMultisamples == 0)
-		{
-			GUARD_FRAMEBUFFER( glRenderbufferStorage(GL_RENDERBUFFER, mRenderBufferInternalFormat,
-				mFrameBufferResolution.x, mFrameBufferResolution.y) );
-		}
-		else
-		{
-			GUARD_FRAMEBUFFER( glRenderbufferStorageMultisample(GL_RENDERBUFFER, mNumMultisamples,
-				mRenderBufferInternalFormat,
-				mFrameBufferResolution.x, mFrameBufferResolution.y) );
-		}
-
-		//attach renderbuffer to depth/stencil attachment point of the FBO
-		GUARD_FRAMEBUFFER(
-				glFramebufferRenderbuffer(
-						GL_FRAMEBUFFER,
-						mRenderBufferAttachmentPoint,
-						GL_RENDERBUFFER,
-						mGLRenderBufferHandle
-						);
-		);
-
-		GUARD_FRAMEBUFFER( glBindRenderbuffer(GL_RENDERBUFFER, 0) );
+		createAndStoreDepthRenderBuffer();
 	}
 	else
 	{
-		mGLRenderBufferHandle =0;
+		if( (mDepthBufferFlags == DEPTH_TEXTURE) )
+		{
+			createAndStoreDepthTexture();
+		}
 	}
 
 
-	renderToScreen();
+	unbindSave();
+	//renderToScreen();
+}
 
+void RenderTarget::createAndStoreDepthRenderBuffer()
+{
+	//create the renderbuffer
+
+	GUARD_FRAMEBUFFER( glGenRenderbuffers(1, &mOwnedGLRenderBufferHandle));
+	GUARD_FRAMEBUFFER( glBindRenderbuffer(GL_RENDERBUFFER, mOwnedGLRenderBufferHandle));
+
+
+	//according to the spec the following must work in any case:
+	//GUARD_FRAMEBUFFER( glRenderbufferStorageMultisample(GL_RENDERBUFFER, mNumMultisamples, renderBufferInternalFormat,
+	//		mFrameBufferResolution.x, mFrameBufferResolution.y) );
+
+	//but I don't trust the implementors, so lets do it the newbie way:
+	//that no array or cube map texture is requested has already been asserted;
+	if(mNumMultisamples <= 1)
+	{
+		GUARD_FRAMEBUFFER( glRenderbufferStorage(GL_RENDERBUFFER, mDepthBufferOrTextureInternalFormat,
+			mFrameBufferResolution.x, mFrameBufferResolution.y) );
+	}
+	else
+	{
+		GUARD_FRAMEBUFFER( glRenderbufferStorageMultisample(GL_RENDERBUFFER, mNumMultisamples,
+			mDepthBufferOrTextureInternalFormat,
+			mFrameBufferResolution.x, mFrameBufferResolution.y) );
+	}
+
+//	//attach renderbuffer to depth/stencil attachment point of the FBO
+//	GUARD_FRAMEBUFFER(
+//			glFramebufferRenderbuffer(
+//					GL_FRAMEBUFFER,
+//					mDepthAndOrStencilAttachmentPoint,
+//					GL_RENDERBUFFER,
+//					mOwnedGLRenderBufferHandle
+//					);
+//	);
+	attachStoredDepthBuffer();
+
+	GUARD_FRAMEBUFFER( glBindRenderbuffer(GL_RENDERBUFFER, 0) );
+}
+
+void RenderTarget::createAndStoreDepthTexture()
+{
+	//construct unique texture name
+	String textureName = mName;
+	textureName.append("OwnedDepthTexture");
+
+
+	switch(mTextureType)
+	{
+	case TEXTURE_TYPE_2D:
+		mOwnedDepthTexture = new Texture2DDepth(textureName,
+				mFrameBufferResolution.x, mFrameBufferResolution.y,
+				false, false,false);
+		break;
+	case TEXTURE_TYPE_2D_RECT:
+		mOwnedDepthTexture = new Texture2DDepth(textureName,
+				mFrameBufferResolution.x, mFrameBufferResolution.y,
+				true, false,false);
+		break;
+	case TEXTURE_TYPE_2D_CUBE:
+		mOwnedDepthTexture = new Texture2DDepthCube(textureName,
+				mFrameBufferResolution.x, false);
+		break;
+	case TEXTURE_TYPE_2D_ARRAY:
+		mOwnedDepthTexture = new Texture2DDepthArray(textureName,
+				mFrameBufferResolution.x, mFrameBufferResolution.y, mNumArrayLayers,
+				false);
+		break;
+
+	case TEXTURE_TYPE_2D_MULTISAMPLE:
+	case TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE:
+		assert(0 &&
+				"Sorry, multisample depth textures aren't currently supported;" &&
+				"When rendering to multisample textures, request a multisample depth render buffer"
+				"instead;");
+		break;
+	default:
+		assert(0 && "no other depth texture type supported" );
+		break;
+	}
+
+	validateTexture(mOwnedDepthTexture);
+	attachStoredDepthBuffer();
+}
+
+
+void RenderTarget::validateMembers()throw(BufferException)
+{
+	assert(mFrameBufferResolution.x > 0 &&  mFrameBufferResolution.y >0 );
+
+	assert("no depth texture types allowed as default render types, because this could lead to brainf***"
+			&&  (mTextureType != TEXTURE_TYPE_2D_DEPTH)
+			&&  (mTextureType != TEXTURE_TYPE_2D_CUBE_DEPTH)
+			&&  (mTextureType != TEXTURE_TYPE_2D_ARRAY_DEPTH)
+	);
+
+
+	if(mTextureType == TEXTURE_TYPE_2D_CUBE)
+	{
+		assert(	(mNumArrayLayers == 1) );
+		assert(	(mNumMultisamples == 1) );
+		assert( "for cubemap rendering, no depthbuffer seems available; specify a cubic depth texture instead!"
+			&&	(mDepthBufferFlags != 	DEPTH_RENDER_BUFFER)
+			&&	(mDepthBufferFlags != 	DEPTH_STENCIL_RENDER_BUFFER)
+		);
+		assert(mFrameBufferResolution.x == mFrameBufferResolution.y);
+		assert(BufferHelper::isPowerOfTwo(mFrameBufferResolution.x));
+	}
+
+	if( (mTextureType == TEXTURE_TYPE_2D_MULTISAMPLE)
+			||
+		(mTextureType == TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE)
+	)
+	{
+		assert(
+					(mNumMultisamples > 1)
+				&& 	(mNumMultisamples <= FLEWNIT_MAX_MULTISAMPLES)
+				&&  BufferHelper::isPowerOfTwo(mNumMultisamples)
+		);
+	}
+	else
+	{
+		assert(	(mNumMultisamples == 1) );
+	}
+
+
+	if( (mTextureType == TEXTURE_TYPE_2D_ARRAY)
+			||
+		(mTextureType == TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE)
+	)
+	{
+		assert(	(mNumArrayLayers > 1) );
+		assert( "for layered rendering, no depth render buffer seems available; specify a depth texture array instead!"
+			&&	(mDepthBufferFlags != 	DEPTH_RENDER_BUFFER)
+			&&	(mDepthBufferFlags != 	DEPTH_STENCIL_RENDER_BUFFER)
+		);
+	}
+	else
+	{
+		assert(	(mNumArrayLayers == 1) );
+	}
 
 }
+
+void RenderTarget::validateTexture(Texture* tex, bool isDepthTex)throw(BufferException)
+{
+	const TextureInfo& texi = tex->getTextureInfo();
+
+	for(int i =0; i < FLEWNIT_MAX_COLOR_ATTACHMENTS; i++)
+	{
+		if(mCurrentlyAttachedColorTextures[i])
+		{
+			const TextureInfo& texicurrent = mCurrentlyAttachedColorTextures[i]->getTextureInfo();
+			assert(texicurrent.isRenderTargetCompatibleTo(texi));
+		}
+	}
+
+	//ok, all tests against the other attached color textures have passed;
+	//now, we have to validate against the depth buffer, if one exists, and if
+	//the new texture is NOT itself a depth texture (then it would replac the old depth
+	//tex and hence its state doesn't matter anymore)
+	if(!isDepthTex)
+	{
+		if(mCurrentlyAttachedDepthTexture)
+		{
+			const TextureInfo& texicurrent = mCurrentlyAttachedDepthTexture->getTextureInfo();
+			assert(texicurrent.isRenderTargetCompatibleTo(texi));
+		}
+		else
+		{
+			if(hasDepthAttachment())
+			{
+				//compare with the render buffer, i.e. the specs of the textures ownde by the RT;
+				assert(
+						mTextureType == texi.textureType &&
+						mNumMultisamples == texi.numMultiSamples &&
+						mNumArrayLayers == texi.numArrayLayers &&
+						mFrameBufferResolution.x == texi.dimensionExtends.x &&
+						mFrameBufferResolution.y == texi.dimensionExtends.y
+				);
+			}
+		}
+	}
+	else
+	{
+		assert(texi.isDepthTexture);
+	}
+}
+
 RenderTarget::~RenderTarget()
 {
-	if(mGLRenderBufferHandle != 0)
+	if(mOwnedGLRenderBufferHandle != 0)
 	{
-		GUARD_FRAMEBUFFER( glDeleteRenderbuffers(1, &mGLRenderBufferHandle));
+		GUARD_FRAMEBUFFER( glDeleteRenderbuffers(1, &mOwnedGLRenderBufferHandle));
 	}
 	GUARD( glDeleteFramebuffers(1, &mFBO));
 }
@@ -241,7 +401,7 @@ void RenderTarget::setEnableDepthTest(bool value)
 void RenderTarget::setEnableStencilTest(bool value)
 {
 	//throw exception if a stencil buffer wasn't specified on RenderTarget creation;
-//	if(value &&   (mRenderBufferFlags != DEPTH_RENDER_BUFFER ))
+//	if(value &&   (mDepthBufferFlags != DEPTH_RENDER_BUFFER ))
 //	{
 //		throw(BufferException("Stis rendertarget has no stencil buffer! Cannot activate stencil test!"));
 //	}
@@ -259,48 +419,88 @@ void RenderTarget::setEnableStencilTest(bool value)
 	}
 }
 
-//void RenderTarget::addTexture(Texture* tex)
-//{
-//	//TODO implement IF needed
-//}
-//
-//void RenderTarget::removeTexture(Texture* tex)
-//{
-//	//TODO implement IF needed
-//}
 
 //can return NULL
-Texture* RenderTarget::getStoredTexture(BufferSemantics bs)
+Texture* RenderTarget::getStoredColorTexture(BufferSemantics bs)
 {
 	return mOwnedTexturePool[bs];
 }
 
+/*
+ * Getter for shaders which have to glBindFragDataLocation();
+ * Throws exception when no texture with specified semantics is currently attached;
+ */
+int RenderTarget::getAttachmentPoint(BufferSemantics which)const throw(BufferException)
+{
+	for(int where = 0; where < FLEWNIT_MAX_COLOR_ATTACHMENTS; where++)
+	{
+		if(mCurrentlyAttachedColorTextures[where]->getTextureInfo().bufferSemantics == which)
+		{
+			return where;
+		}
+	}
+	throw(BufferException("RenderTarget::getAttachmentPoint: Texture with specified semantics is not attached!"));
+	return -1;
+}
 
-void RenderTarget::attachColorTexture(Texture* tex, int where)
+
+void RenderTarget::attachColorTexture(Texture* tex, int where)throw(BufferException)
 {
 	bindSave();
 
 	assert(where < FLEWNIT_MAX_COLOR_ATTACHMENTS);
 
-	GUARD_FRAMEBUFFER(
-			glFramebufferTexture2D(
-					mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
-					GL_COLOR_ATTACHMENT0 + where,
-					tex -> getTextureInfo().textureTarget,
-					tex -> getGraphicsBufferHandle(),
-					0
-			)
-	);
+	validateTexture(tex,false);
+
+	switch(mTextureType)
+	{
+	case TEXTURE_TYPE_2D:
+	case TEXTURE_TYPE_2D_RECT:
+		GUARD_FRAMEBUFFER(
+				glFramebufferTexture2D(
+						mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
+						GL_COLOR_ATTACHMENT0 + where,
+						tex -> getTextureInfo().textureTarget,
+						tex -> getGraphicsBufferHandle(),
+						0
+				)
+		);
+		break;
+	case TEXTURE_TYPE_2D_CUBE:
+	case TEXTURE_TYPE_2D_ARRAY:
+		//take the layered rendering-attachment function
+		GUARD_FRAMEBUFFER(
+				glFramebufferTexture(
+						mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
+						GL_COLOR_ATTACHMENT0 + where,
+						tex -> getGraphicsBufferHandle(),
+						0
+				)
+		);
+		break;
+	case TEXTURE_TYPE_2D_MULTISAMPLE:
+	case TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE:
+			assert(0 &&
+					"Sorry, multisample depth textures aren't currently supported;" &&
+					"When rendering to multisample textures, request a multisample depth render buffer"
+					"instead;");
+			break;
+	default:
+		assert(0 && "no other depth texture type supported" );
+		break;
+	}
 
 
-	if(mCurrentlyAttachedTextures[where] == 0)
+
+
+	if(mCurrentlyAttachedColorTextures[where] == 0)
 	{
 		//attach to an empty attachment point, total number of draw buffers increases;
 		//otherwise, the draw buffer array doesn't change, just the texture attachment
 		mCurrentDrawBuffers[mNumCurrentDrawBuffers++]= GL_COLOR_ATTACHMENT0 + where;
 	}
 
-	mCurrentlyAttachedTextures[where] = tex;
+	mCurrentlyAttachedColorTextures[where] = tex;
 
 
 	unbindSave();
@@ -325,19 +525,49 @@ void RenderTarget::detachAllColorTextures()
 
 	for(int i= 0 ; i < FLEWNIT_MAX_COLOR_ATTACHMENTS; i++)
 	{
-		if( mCurrentlyAttachedTextures[i] != 0 )
+		if( mCurrentlyAttachedColorTextures[i] != 0 )
 		{
-			//attch zero to attachment point to provoke a detach
-			GUARD_FRAMEBUFFER(
-					glFramebufferTexture2D(
-							mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
-							GL_COLOR_ATTACHMENT0 + i,
-							mCurrentlyAttachedTextures[i] -> getTextureInfo().textureTarget,
-							0,
-							0
-					)
-			);
-			mCurrentlyAttachedTextures[i] = 0;
+			switch(mTextureType)
+			{
+			case TEXTURE_TYPE_2D:
+			case TEXTURE_TYPE_2D_RECT:
+				GUARD_FRAMEBUFFER(
+						glFramebufferTexture2D(
+								mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
+								GL_COLOR_ATTACHMENT0 + i,
+								mCurrentlyAttachedColorTextures[i] -> getTextureInfo().textureTarget,
+								//zero to indicate detach
+								0,
+								0
+						)
+				);
+				break;
+			case TEXTURE_TYPE_2D_CUBE:
+			case TEXTURE_TYPE_2D_ARRAY:
+				//take the layered rendering-attachment function
+				GUARD_FRAMEBUFFER(
+						glFramebufferTexture(
+								mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
+								GL_COLOR_ATTACHMENT0 + i,
+								//zero to indicate detach
+								0,
+								0
+						)
+				);
+				break;
+			case TEXTURE_TYPE_2D_MULTISAMPLE:
+			case TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE:
+					assert(0 &&
+							"Sorry, multisample depth textures aren't currently supported;" &&
+							"When rendering to multisample textures, request a multisample depth render buffer"
+							"instead;");
+					break;
+			default:
+				assert(0 && "no other depth texture type supported" );
+				break;
+			}
+
+			mCurrentlyAttachedColorTextures[i] = 0;
 		}
 		//reset to default stuff
 		mCurrentDrawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
@@ -351,7 +581,7 @@ void RenderTarget::detachAllColorTextures()
  * A texture will be created with the specified semantics if it doesn't exist;
  * If it exists, it nothing will be done but printed a warning
  */
-void RenderTarget::requestCreateAndStoreTexture(BufferSemantics which)throw(BufferException)
+void RenderTarget::requestCreateAndStoreColorTexture(BufferSemantics which)throw(BufferException)
 {
 	if(mOwnedTexturePool[which])
 	{
@@ -360,7 +590,7 @@ void RenderTarget::requestCreateAndStoreTexture(BufferSemantics which)throw(Buff
 		return;
 	}
 
-	TexelInfo texeli(4,GPU_DATA_TYPE_FLOAT,32,false);
+	TexelInfo texeli(mDefaultTexelLayout);
 
 	switch(which)
 	{
@@ -432,42 +662,92 @@ void RenderTarget::requestCreateAndStoreTexture(BufferSemantics which)throw(Buff
 		return;
 	};
 
+	if( ! (mDefaultTexelLayout == texeli))
+	{
+		LOG<<WARNING_LOG_LEVEL<<"requestCreateAndStoreColorTexture: "
+				"Texel layout of requested texture differs from mDefaultTexelLayout;"
+				"Maybe Rendering will be corrupted if you will render to attachments"
+				"with different texel layouts; Test carefully the rendering to integer "
+				"and/or less-than-four-component textures";
+	}
+
 	//construct unique texture name
 	String textureName = mName;
+	textureName.append("Owned");
 	textureName.append(BufferHelper::BufferSemanticsToString(which));
 
-	if(mNumMultisamples == 0)
-	{
-		mOwnedTexturePool[which] = new Texture2D(
-				textureName,
-				which, mFrameBufferResolution.x,mFrameBufferResolution.y,
-				texeli,
-				//no host memory needed
-				false,
-				//no CL interop needed (I suppose ;) )
-				false,
-				mUseRectangleTextures,
-				//don't set data
-				0,
-				//no mipmaps needed
-				false
-		);
-	}
-	else
-	{
-		//multisample stuff desired:
-		mOwnedTexturePool[which] = new Texture2DMultiSample(
-				textureName,
-				which, mFrameBufferResolution.x,mFrameBufferResolution.y,
-				mNumMultisamples,
-				texeli
-		);
-	}
+
+	switch(mTextureType)
+				{
+				case TEXTURE_TYPE_2D:
+				case TEXTURE_TYPE_2D_RECT:
+					mOwnedTexturePool[which] = new Texture2D(
+							textureName,
+							which,
+							mFrameBufferResolution.x,mFrameBufferResolution.y,
+							texeli,
+							//no host memory needed
+							false,
+							//no CL interop needed (I suppose ;) )
+							false,
+							(mTextureType==TEXTURE_TYPE_2D_RECT)?true:false,
+							//don't set data
+							0,
+							//no mipmaps needed
+							false
+					);
+					break;
+				case TEXTURE_TYPE_2D_CUBE:
+					mOwnedTexturePool[which] = new Texture2DCube(
+							textureName,
+							mFrameBufferResolution.x,
+							texeli,
+							false,
+							0,
+							0
+					);
+				case TEXTURE_TYPE_2D_ARRAY:
+					//take the layered rendering-attachment function
+					mOwnedTexturePool[which] = new Texture2DArray(
+							textureName,
+							which,
+							mFrameBufferResolution.x,mFrameBufferResolution.y,
+							mNumArrayLayers,
+							texeli,
+							false,
+							0,
+							false
+					);
+					break;
+				case TEXTURE_TYPE_2D_MULTISAMPLE:
+					//multisample stuff desired:
+					mOwnedTexturePool[which] = new Texture2DMultiSample(
+							textureName,
+							which, mFrameBufferResolution.x,mFrameBufferResolution.y,
+							mNumMultisamples,
+							texeli
+					);
+					break;
+				case TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE:
+						assert(0 &&
+								"Sorry, multisample array textures aren't currently supported; "
+								"(because the corresponding depth texture is not implemented and "
+								"because there is currently no scenario where I could efficiently need this)"
+								"When rendering to multisample textures, request a multisample depth render buffer"
+								"instead;");
+						break;
+				default:
+					assert(0 && "no other color texture attachment type supported" );
+					break;
+				}
 
 }
 
 
-void RenderTarget::attachDepthTexture(Texture2DDepth* depthTex)throw(BufferException)
+
+
+//depthtex must have a depth texture type (2D, cube or array)
+void RenderTarget::attachDepthTexture(Texture* depthTex)throw(BufferException)
 {
 	bindSave();
 
@@ -480,63 +760,169 @@ void RenderTarget::attachDepthTexture(Texture2DDepth* depthTex)throw(BufferExcep
 				"when rendering to this RenderTarget;\n";
 		//GUARD_FRAMEBUFFER(setEnableStencilTest(false));
 	}
-	if(mRenderBufferFlags != NO_RENDER_BUFFER)
+
+
+
+	validateTexture(depthTex, true);
+
+
+	if(hasDepthAttachment())
 	{
+		//detach current depth attachment; this shouldn't be necessary,
+		//but maybe this omits some bugs.. ;(
+		detachDepthBuffer();
+	}
+
+
+	switch(mTextureType)
+	{
+	case TEXTURE_TYPE_2D:
+	case TEXTURE_TYPE_2D_RECT:
+		GUARD_FRAMEBUFFER(
+				glFramebufferTexture2D(
+						mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
+						GL_DEPTH_ATTACHMENT,
+						depthTex -> getTextureInfo().textureTarget,
+						depthTex -> getGraphicsBufferHandle(),
+						0
+				)
+		);
+		break;
+	case TEXTURE_TYPE_2D_CUBE:
+	case TEXTURE_TYPE_2D_ARRAY:
+		//take the layered rendering-attachment function
+		GUARD_FRAMEBUFFER(
+				glFramebufferTexture(
+						mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
+						GL_DEPTH_ATTACHMENT,
+						depthTex -> getGraphicsBufferHandle(),
+						0
+				)
+		);
+		break;
+
+	case TEXTURE_TYPE_2D_MULTISAMPLE:
+	case TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE:
+			assert(0 &&
+					"Sorry, multisample depth textures aren't currently supported;" &&
+					"When rendering to multisample textures, request a multisample depth render buffer"
+					"instead;");
+			break;
+	default:
+		assert(0 && "no other depth texture type supported" );
+		break;
+	}
+
+	mCurrentlyAttachedDepthTexture = depthTex;
+
+	unbindSave();
+}
+
+void RenderTarget::attachStoredDepthBuffer()throw(BufferException)
+{
+	bindSave();
+
+	if(mDepthBufferFlags == NO_DEPTH_BUFFER)
+	{
+		throw(BufferException(" RenderTarget::attachStoredDepthBuffer: no depth buffer stored!"));
+		return;
+	}
+
+	if(mDepthBufferFlags == DEPTH_TEXTURE)
+	{
+		attachDepthTexture(mOwnedDepthTexture);
+	}
+	else
+	{
+		assert(mOwnedGLRenderBufferHandle);
+		//attach renderbuffer to depth/stencil attachment point of the FBO
 		GUARD_FRAMEBUFFER(
 				glFramebufferRenderbuffer(
 						GL_FRAMEBUFFER,
-						mRenderBufferAttachmentPoint,
+						mDepthAndOrStencilAttachmentPoint,
 						GL_RENDERBUFFER,
-						0
+						mOwnedGLRenderBufferHandle
 						);
 		);
 	}
 
-
-	GUARD_FRAMEBUFFER(
-			glFramebufferTexture2D(
-					mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
-					GL_DEPTH_ATTACHMENT,
-					depthTex -> getTextureInfo().textureTarget,
-					depthTex -> getGraphicsBufferHandle(),
-					0
-			)
-	);
-
 	unbindSave();
 }
-void RenderTarget::detachDepthTexture(Texture2DDepth* depthTex)
+
+//can return NULL
+Texture* RenderTarget::getStoredDepthTexture()
 {
-	unbindSave();
+	return mOwnedDepthTexture;
+}
 
-	GUARD_FRAMEBUFFER(
-			glFramebufferTexture2D(
-					mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
-					GL_DEPTH_ATTACHMENT,
-					depthTex -> getTextureInfo().textureTarget,
-					0,
-					0
-			)
-	);
 
-	//TODO check if texture and renderbuffer conflict when both attached;
-	//maybe renderbuffer to re-attach hereafter
-	if(mRenderBufferFlags != NO_RENDER_BUFFER)
+void RenderTarget::detachDepthBuffer()
+{
+	bindSave();
+
+	if( mCurrentlyAttachedDepthTexture != 0 )
 	{
-		GUARD_FRAMEBUFFER(
-			glFramebufferRenderbuffer(
-					GL_FRAMEBUFFER,
-					mRenderBufferAttachmentPoint,
-					GL_RENDERBUFFER,
-					mGLRenderBufferHandle
-					);
-		);
+		switch(mTextureType)
+		{
+		case TEXTURE_TYPE_2D:
+		case TEXTURE_TYPE_2D_RECT:
+			GUARD_FRAMEBUFFER(
+					glFramebufferTexture2D(
+							mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
+							GL_DEPTH_ATTACHMENT,
+							mCurrentlyAttachedDepthTexture->getTextureInfo().textureTarget,
+							//zero to indicate detachment
+							0,
+							0
+					)
+			);
+			break;
+		case TEXTURE_TYPE_2D_CUBE:
+		case TEXTURE_TYPE_2D_ARRAY:
+			//take the layered rendering-attachment function
+			GUARD_FRAMEBUFFER(
+					glFramebufferTexture(
+							mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER,
+							GL_DEPTH_ATTACHMENT,
+							//zero to indicate detachment
+							0,
+							0
+					)
+			);
+			break;
+		case TEXTURE_TYPE_2D_MULTISAMPLE:
+		case TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE:
+		case TEXTURE_TYPE_3D:
+			assert(0 &&
+					"Sorry, multisample depth textures aren't currently supported;" &&
+					"When rendering to multisample textures, request a multisample depth render buffer"
+					"instead;");
+			break;
+		}
+
+		mCurrentlyAttachedDepthTexture = 0;
 	}
-	//can't track every stuff; user has to maintain his testing usage for himself
-	//	if(mStencilTestEnabled)
-	//	{
-	//		GUARD_FRAMEBUFFER(glEnable(GL_STENCIL_TEST));
-	//	}
+	else
+	{
+		if(mDepthBufferFlags == NO_DEPTH_BUFFER){return;}
+
+		if( 	(mDepthBufferFlags == DEPTH_RENDER_BUFFER)
+			|| 	(mDepthBufferFlags == DEPTH_STENCIL_RENDER_BUFFER)	)
+		{
+			assert(mOwnedGLRenderBufferHandle);
+			//attach renderbuffer to depth/stencil attachment point of the FBO
+			GUARD_FRAMEBUFFER(
+					glFramebufferRenderbuffer(
+							GL_FRAMEBUFFER,
+							mDepthAndOrStencilAttachmentPoint,
+							GL_RENDERBUFFER,
+							//zero to indicate unbinding
+							0
+					);
+			);
+		}
+
+	}
 
 	unbindSave();
 }
