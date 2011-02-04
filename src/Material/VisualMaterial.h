@@ -34,6 +34,9 @@ public:
 			//some stuff shall not cast shadows, like the skybox or
 			//lightsource/camera visualization geometry
 			bool castsShadows = true,
+			//mask out th to-be-cube mapped geometry itself (like a car chassis),
+			//as otherwise it would occlude everything
+			bool isDynamicCubeMapRenderable = true,
 			//value to mask some dummy geometry, e.g.
 			//-a low-detail model only used for shadowmap generation,
 			//-the skybox cube which shall not be lit
@@ -54,8 +57,9 @@ public:
 	//Otherwise, a new shader is generated;
 	virtual void generateOrGrabShader()=0;
 
-	bool castsShadows()const{return mCastsShadows;}
-	bool isShadable()const{return mIsShadable;}
+	inline bool castsShadows()const{return mCastsShadows;}
+	inline bool isShadable()const{return mIsShadable;}
+	inline bool isDynamicCubeMapRenderable()const{return mIsDynamicCubeMapRenderable;}
 
 	inline VisualMaterialType getType()const{return mType;}
 	inline const ShaderFeatures& getShaderFeatures()const{return mShaderFeatures;}
@@ -66,6 +70,7 @@ public:
 private:
 	bool mCastsShadows;
 	bool mIsShadable;
+	bool mIsDynamicCubeMapRenderable;
 
 	VisualMaterialType mType;
 	ShaderFeatures mShaderFeatures;

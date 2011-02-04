@@ -33,12 +33,13 @@ struct LightSource
 	float innerSpotCutOff_Radians;	//serves also as indicator if the source shall be treated as spot or not (zero= pointlight ;) )
 	float outerSpotCutOff_Radians;
 	float spotExponent;
-	//alignment is everything :P
 	
+	//if is negative, it's an indicator that this source doesn't cast shadows
 	float shadowMapLayer;
 
 
 	//aligned to 64 bytes;
+	//alignment is everything :P
 	
 	#ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 	

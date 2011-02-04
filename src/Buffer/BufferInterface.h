@@ -59,6 +59,12 @@ public:
 	//the context flags are provided to omit unnecessary copies, e.g. when fresh data is only needed by one "context"
 	void setData(const void* data, ContextTypeFlags where)throw(BufferException);
 
+	//if both CL and GL are enabled, then the buffer is shared and the implementation
+	//will decide, which api will be used for the write;
+	void copyFromHostToGPU()throw(BufferException);
+
+	//if both CL and GL are enabled, then the buffer is shared and the implementation
+	//will decide, which api will be used for the readback;
 	void readBack()throw(BufferException);
 
 	void* mapBuffer()throw(BufferException)
@@ -114,11 +120,15 @@ public:
 
 	//getters n setters for the buffer handles (might need to be exposed due to passing as kernel arguments etc)
 	///\{
-	const CPUBufferHandle getCPUBufferHandle()const throw(BufferException);
+	//non-const variant for CPU-buffer writing
+	CPUBufferHandle getCPUBufferHandle()const throw(BufferException);
 	GraphicsBufferHandle getGraphicsBufferHandle()const throw(BufferException);
 	ComputeBufferHandle getComputeBufferHandle()const throw(BufferException);
 	///\}
 protected:
+
+	//helper for readback and copyFromHostToGPU()
+	void transferData(bool fromSystemToDevice)throw(BufferException);
 
 	//to be called by the constructor;
 	bool allocMem()throw(BufferException);

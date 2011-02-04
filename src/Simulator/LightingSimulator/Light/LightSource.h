@@ -17,40 +17,6 @@ namespace Flewnit
 #undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 
 
-//#define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
-//
-////make some mods so that the c++-code can use this definition, too
-//#ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
-//#	define NAMESPACE_PREFIX glm::
-//#else
-//#	define NAMESPACE_PREFIX
-//#endif
-//
-//struct LightSourceShaderStruct
-//{
-//	NAMESPACE_PREFIX vec3 position;
-//	NAMESPACE_PREFIX vec3 diffuseColor;
-//	//a dedicated specular color to produce unrealistic but nice effects;
-//	NAMESPACE_PREFIX vec3 specularColor;
-//
-//	//----------------------------------------------------------------------
-//	//following spotlight stuff, but set it anyway for alignment reasons, even if it won't be used in the shader!
-//	//to indicate a point light, those valus are all zero
-//	NAMESPACE_PREFIX vec3 direction;
-//	//value beyond with will be no lighting, to produce a nice light circle and to
-//	//hide the rectangular shape of the shadowmap ;)
-//	float innerSpotCutOff_Radians;	//serves also as indicator if the source shall be treated as spot or not (zero= pointlight ;) )
-//	float outerSpotCutOff_Radians;
-//	float spotExponent;
-//	//alignment is everything :P
-//
-//	float shadowMapLayer;
-//
-//	//aligned to 64 bytes;
-//
-//
-//};
-
 enum LightSourceType
 {
 	LIGHT_SOURCE_TYPE_POINT_LIGHT,
@@ -71,20 +37,26 @@ protected:
 	LightSource(String name, LightSourceType type, bool castsShadows,
 			const LightSourceShaderStruct& data);
 public:
-
-
 	virtual ~LightSource();
+
+	void setEnable(bool val){mIsEnabled = val;}
 
 	inline LightSourceType getType()const{return mType;}
 	inline bool castsShadows()const{return mCastsShadows;}
+	inline bool isEnabled()const{return mIsEnabled;}
 	inline const LightSourceShaderStruct& getdata()const{return mLightSourceShaderStruct;}
+
+
+	//void destroyedCallBack();
 
 private:
 
 	//check for valid ranges etc..; called by constructor
 	void validateData() throw(SimulatorException);
+	//indicate the LS manager that the lightsource has been destroyed
 
 	LightSourceType mType;
+	bool mIsEnabled;
 	bool mCastsShadows;
 	LightSourceShaderStruct mLightSourceShaderStruct;
 
@@ -103,6 +75,8 @@ class PointLight
 			const LightSourceShaderStruct& data);
 
 public:
+	virtual ~PointLight();
+
 	//mPointLightShadowMapNonTranslationalViewMatrices[whichFace] * translate(globalPosition);
 	Matrix4x4 getViewMatrix(int whichFace)const;
 	Matrix4x4 getViewProjectionMatrix(int whichFace, float nearClipPlane, float farClipPlane)const;
@@ -131,6 +105,7 @@ class SpotLight
 			const LightSourceShaderStruct& data);
 
 public:
+	virtual ~SpotLight();
 
 	//following functions cannot be tagged "const" as the getter for the amendedtransform is
 	//not const (for direct manipulation); but the functions won't change anything; in the lightsource state;

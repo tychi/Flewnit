@@ -23,6 +23,9 @@
 #include "Common/BasicObject.h"
 
 #include "Simulator/SimulatorMetaInfo.h"
+#include "Common/Math.h"
+
+#include "LightSource.h"
 
 
 namespace Flewnit
@@ -34,6 +37,8 @@ class LightSourceManager
 	public BasicObject
 {
 public:
+	//will configure itself according to config file in future; at the moment, there
+	//are hard codes in the constructor
 	LightSourceManager(
 			LightSourcesLightingFeature lightSourcesLightingFeature,
 			LightSourcesShadowFeature lightSourcesShadowFeature,
@@ -41,36 +46,88 @@ public:
 
 	virtual ~LightSourceManager();
 
+	//throws exception if mNumMaxLightSources lightsources already exists or if the
+	//lighting feature contradicts pointlights;
+	//if castsShadows contradicts the shadowing feature, a warning is issues,
+	//and the compatible value is set, i.e. there is o guarantee that the user's
+	//wish is fulfilled
+	PointLight* createPointLight(
+			const Vector3D& position,
+			bool castsShadows,
+			const Vector3D& diffuseColor = Vector3D(1.0f, 1.0f, 1.0f),
+			const Vector3D& specularColor = Vector3D(1.0f, 1.0f, 1.0f)
+	) throw(SimulatorException);
 
+	//throws exception if mNumMaxLightSources lightsources already exists or if the
+	//lighting feature contradicts pointlights;
+	//if castsShadows contradicts the shadowing feature, a warning is issues,
+	//and the compatible value is set, i.e. there is o guarantee that the user's
+	//wish is fulfilled
+	SpotLight* createSpotLight(
+			const Vector3D& position,
+			const Vector3D& direction,
+			bool castsShadows,
+			float innerSpotCutOff_Degrees = 30.0f,
+			float outerSpotCutOff_Degrees= 45.0f,
+			float spotExponent = 10.0f,
+			const Vector3D& diffuseColor = Vector3D(1.0f, 1.0f, 1.0f),
+			const Vector3D& specularColor = Vector3D(1.0f, 1.0f, 1.0f)
+	) throw(SimulatorException);
+
+	inline int getMaxLightSources()const{return mNumMaxLightSources;}
+	inline int getNumCurrentlyActiveLightingLightSources()const{return mNumCurrentActiveLightingLightSources;}
+	inline int getNumCurrentlyActiveShadowingLightSources()const{return mNumCurrentActiveShadowingLightSources;}
+	inline int getNumCurrentlyExistingLightSources()const{return mLightSources.size();}
+	inline LightSource* getLightSource(unsigned int index)const{assert(index<mLightSources.size()); return mLightSources[index];}
+	inline Buffer* getShadowMapMatricesUniformBuffer()const{return mShadowMapMatricesUniformBuffer;}
+	inline Buffer* getLightSourceUniformBuffer()const{return mLightSourceUniformBuffer;}
+	inline Texture* getShadowMapDepthTexture()const{return mShadowMapDepthTexture;}
+
+
+	//FrustumCulling wont't be implemented too soon ;(
+	void renderShadowMaps(float maxDistanceToMainCam = 1000.0f, bool doFrustumCulling= false);
+	//fill buffers with recent values
+	void setupBuffersForShading(float maxDistanceToMainCam = 1000.0f);
 
 
 private:
-	//friend class LightSource;
-
-
-	///\{
-	int mNumMaxLightingLightSources;
-	Buffer* mLightSourceUniformBuffer;
-	///\}
+	friend LightSource::~LightSource();
+	//important to omit f***up: when the LS manager is destroying ls'es ITSELF, it
+	//has to remove the list-entry before actually call the destructor on the LS;
+	//this has to be done to resolve the posession-concurrence between scengraph and LS manager
+	//(as we cannot rely on the fact that every lightsource is IN the scenegraph,
+	//AND we might also want to remove lightsources dynamically)
+	void unregisterLightSource(LightSource* ls);
 
 	///\{
 	LightSourcesLightingFeature mLightSourcesLightingFeature;
 	LightSourcesShadowFeature mLightSourcesShadowFeature;
-	int mMaxLightSources;
+	int mNumMaxLightSources;
+
+	int mNumCurrentActiveLightingLightSources;
+	int mNumCurrentActiveShadowingLightSources;
+	List<LightSource*> mLightSources;
 
 	/*
 	 * Only used if mLightSourcesShadowFeature == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS;
 	 * In shadowmap generation passes, it contains the viewProjectionMatrices of the
-	 * "lightsource cameras" for the geometry shader, in lightin passes, it constains
-	 *  the biased viewProjectionMatrices;
+	 * "lightsource cameras" for the geometry shader; in lighting passes, it contains
+	 *  the biased viewProjectionMatrices for the fragment shader;
 	 */
 	Buffer* mShadowMapMatricesUniformBuffer;
 
+	/*
+	 * Only used if mLightSourcesLightingFeature corresponds to multiple lightsource shading;
+	 * otherwise, the shaders are expected to set the single lightsource via "classic" uniforms,
+	 *  as uniform buffers are expected to slower and hence only amortize when a big amount
+	 *  of data is needed ;).
+	 */
+	Buffer* mLightSourceUniformBuffer;
+
+	RenderTarget* mShadowMapRenderTarget;
 	//Texture2DDepth, Texture2DDepthArray or Texture2DDepthCube,
 	//depending on the shadow feature
 	Texture* mShadowMapDepthTexture;
-
-	RenderTarget* mShadowMapRenderTarget;
 	Shader* mShadowMapGenerationShader;
 	///\}
 

@@ -239,6 +239,8 @@ bool BufferInterface::allocMem()throw(BufferException)
 }
 
 
+
+
 void BufferInterface::setData(const void* data, ContextTypeFlags where)throw(BufferException)
 {
 	//CPU
@@ -296,6 +298,8 @@ void BufferInterface::setData(const void* data, ContextTypeFlags where)throw(Buf
 	}
 }
 
+
+
 //---------------------------------------------------------------------------------------------------------
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 
@@ -312,8 +316,64 @@ void BufferInterface::unregisterBufferAllocation(ContextTypeFlags contextTypeFla
 #endif
 //---------------------------------------------------------------------------------------------------------
 
+
+//if both CL and GL are enabled, then the buffer is shared and the implementation
+//will decide, which api will be used for the write;
+void BufferInterface::copyFromHostToGPU()throw(BufferException)
+{
+	assert( "CPU buffer must exist for copy from host to GPU " && mCPU_Handle);
+
+	transferData(true);
+}
+
+
 void BufferInterface::readBack()throw(BufferException)
 {
+	assert( "CPU buffer must exist for readback" && mCPU_Handle);
+
+	transferData(false);
+
+//	if(
+//		( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && CLMANAGER->graphicsAreInControl() )
+//		||
+//		! (hasBufferInContext(OPEN_CL_CONTEXT_TYPE))
+//	)
+//	{
+//		//commented out the guard in case of driver bugs fu**ing up when doing too mush time-shared CL-GL-stuff
+//		//TODO uncomment when stable work is assured
+//		//if(isCLGLShared())
+//		{
+//			CLMANAGER->acquireSharedBuffersForGraphics();
+//		}
+//
+//		GUARD(readGL(mCPU_Handle));
+//		return;
+//	}
+//
+//	if(
+//		( hasBufferInContext(OPEN_CL_CONTEXT_TYPE) && CLMANAGER->computeIsInControl() )
+//		||
+//		! (hasBufferInContext(OPEN_GL_CONTEXT_TYPE))
+//	)
+//	{
+//		//commented out the guard in case of driver bugs fu**ing up when doing too mush time-shared CL-GL-stuff
+//		//TODO uncomment when stable work is assured
+//		//if(isCLGLShared())
+//		{
+//			CLMANAGER->acquireSharedBuffersForCompute();
+//		}
+//
+//		GUARD(readCL(mCPU_Handle));
+//		return;
+//	}
+//
+//	throw(BufferException("BufferInterface::readBack(): need at least one GL or GL usage context in Buffer"));
+}
+
+void BufferInterface::transferData(bool fromSystemToDevice)throw(BufferException)
+{
+	assert( "CPU buffer must exist for transfer between host and device" && mCPU_Handle);
+
 	if(
 		( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && CLMANAGER->graphicsAreInControl() )
 		||
@@ -327,7 +387,14 @@ void BufferInterface::readBack()throw(BufferException)
 			CLMANAGER->acquireSharedBuffersForGraphics();
 		}
 
-		GUARD(readGL(mCPU_Handle));
+		if(fromSystemToDevice)
+		{
+			GUARD(writeGL(mCPU_Handle));
+		}
+		else
+		{
+			GUARD(readGL(mCPU_Handle));
+		}
 		return;
 	}
 
@@ -344,14 +411,19 @@ void BufferInterface::readBack()throw(BufferException)
 			CLMANAGER->acquireSharedBuffersForCompute();
 		}
 
-		GUARD(readCL(mCPU_Handle));
+		if(fromSystemToDevice)
+		{
+			GUARD(writeCL(mCPU_Handle));
+		}
+		else
+		{
+			GUARD(readCL(mCPU_Handle));
+		}
 		return;
 	}
 
 	throw(BufferException("BufferInterface::readBack(): need at least one GL or GL usage context in Buffer"));
 }
-
-
 
 
 
@@ -494,7 +566,7 @@ Texture3D& BufferInterface::toTexture3D() throw(BufferException)
 //		throw(BufferException("Bad cast to RenderBuffer"));
 //}
 
-const CPUBufferHandle BufferInterface::getCPUBufferHandle()const throw(BufferException)
+CPUBufferHandle BufferInterface::getCPUBufferHandle()const throw(BufferException)
 {
 	if((mBufferInfo->usageContexts & HOST_CONTEXT_TYPE_FLAG) == 0)
 		throw(BufferException("BufferInterface::getCPUBufferHandle: buffer has no CPU attachment"));
