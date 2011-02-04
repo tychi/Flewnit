@@ -388,10 +388,12 @@ void RenderTarget::requestCreateAndStoreTexture(BufferSemantics which)throw(Buff
 		break;
 
 	//floating point one-component textures:
+	case SHADOW_MAP_SEMANTICS:
+		LOG<<WARNING_LOG_LEVEL<<"Requesting a COLOR texture with SHADOW_MAP_SEMANTICS;"
+				"<< Think about requesting a DEPTH texture instead;\n";
 	case MASS_SEMANTICS:
 	case DENSITY_SEMANTICS:
 	case PRESSURE_SEMANTICS:
-	case SHADOW_MAP_SEMANTICS:
 	case AMBIENT_OCCLUSION_SEMANTICS:
 	case NOISE_SEMANTICS:
 	case DEPTH_BUFFER_SEMANTICS:

@@ -103,10 +103,10 @@ enum BufferSemantics
 	MATERIAL_ID_SEMANTICS,
 	PRIMITIVE_ID_SEMANTICS,
 	SHADOW_MAP_SEMANTICS,
-	AMBIENT_OCCLUSION_SEMANTICS, //attenuation value as result ogf AO calculations on a depth/position buffer
+	AMBIENT_OCCLUSION_SEMANTICS, //attenuation value as result of AO calculations on a depth/position buffer
 	DETAIL_TEXTURE_SEMANTICS, //for stuff like terrain to hide low res decal texture
 	NOISE_SEMANTICS,
-	DEPTH_BUFFER_SEMANTICS,
+	DEPTH_BUFFER_SEMANTICS, //e.g. for memory optimized ambient occlusion calculation
 	STENCIL_BUFFER_SEMANTICS,
 	INTERMEDIATE_RENDERING_SEMANTICS,
 	FINAL_RENDERING_SEMANTICS,

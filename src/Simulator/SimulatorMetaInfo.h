@@ -181,18 +181,37 @@ struct ShaderFeatures
 	RenderingTechnique renderingTechnique;
 	//renderTargetType delegates creation and/or configuration of a geometry shader,
 	//defining layers for cubemap rendering or general layered rendering
-	TextureType renderTargetType;
+	TextureType renderTargetTextureType;
 	ShadingFeature shadingFeature;
 	LightSourcesLightingFeature lightSourcesLightingFeature;
 	LightSourcesShadowFeature lightSourcesShadowFeature;
 	ShadowTechnique shadowTechnique;
 
 	//features not needed by every kind of shader:
-	TextureType GBufferType;
-	bool renderIndices;
-	int numMaxInstancesRenderable;
 	int numMaxLightSources;
 	int numMultiSamples;
+	int numMaxInstancesRenderable;
+	TextureType GBufferType;
+	bool renderIndices;
+
+	explicit ShaderFeatures(
+			RenderingTechnique renderingTechnique = RENDERING_TECHNIQUE_DEFAULT_LIGHTING,
+			TextureType renderTargetTextureType = TEXTURE_TYPE_2D,
+			ShadingFeature shadingFeature = SHADING_FEATURE_DIRECT_LIGHTING,
+			LightSourcesLightingFeature lightSourcesLightingFeature = LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT,
+			LightSourcesShadowFeature lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_NONE,
+			ShadowTechnique shadowTechnique = SHADOW_TECHNIQUE_NONE,
+			int numMaxLightSources = 1,
+			int numMultiSamples	= 1,
+			int numMaxInstancesRenderable = 1,
+			TextureType GBufferType = TEXTURE_TYPE_2D_RECT,
+			bool renderIndices = false
+	);
+
+	explicit ShaderFeatures(const ShaderFeatures& rhs);
+	//return false if some stuff on one side has "custom"...
+	bool operator==(const ShaderFeatures& rhs);
+	const ShaderFeatures& operator=(const ShaderFeatures& rhs);
 };
 
 
