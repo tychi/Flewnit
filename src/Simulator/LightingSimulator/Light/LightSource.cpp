@@ -21,10 +21,11 @@ LightSource::LightSource(String name, LightSourceType type, bool castsShadows,  
 	LIGHT_NODE,
 	AmendedTransform(
 			data.position,
+			//set the direction:
 			(type == LIGHT_SOURCE_TYPE_SPOT_LIGHT)
 				? glm::normalize(data.direction)
 				: Vector3D(0.0f,0.0f,-1.0f),
-			//set the direction:
+			//set the up vector:
 			(type == LIGHT_SOURCE_TYPE_SPOT_LIGHT)
 				//is direction and y-axis collinear (dot product of normalized vecs ==1)?
 				? ( (	std::fabs(
@@ -113,18 +114,18 @@ Matrix4x4 PointLight::getViewMatrix(int whichFace)
 
 	return mPointLightShadowMapNonTranslationalViewMatrices[whichFace]
 	       *
-	       glm::translate(Matrix4x4(), getGlobalTransform().getPosition());
+	       glm::translate(getGlobalTransform().getPosition());
 }
 
 
 
-Matrix4x4 PointLight::getViewProjectionMatrix(int whichFace, float nearClipPlane, float farClipPlane)
+Matrix4x4 PointLight::getViewProjectionMatrix(int whichFace)
 {
 	assert(whichFace<6);
 
 	return
 		glm::gtc::matrix_projection::perspective(
-				glm::degrees( getdata().outerSpotCutOff_Radians ),
+				45.0f,
 				1.0f,
 				LightSourceManager::getInstance().getLightSourceProjectionMatrixNearClipPlane(),
 				LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane()
@@ -141,17 +142,17 @@ Matrix4x4 PointLight::getViewProjectionMatrix(int whichFace, float nearClipPlane
 //private constructor so that only the LS manager can create sources :);
 //like this, compatibility to shader, shadowmap buffers etc. is much easier to
 //enforce;
-//SpotLight::SpotLight(String name, bool castsShadows,  bool isEnabled,
-//			const LightSourceShaderStruct& data)
-//{
-//	//TODO
-//}
+SpotLight::SpotLight(String name, bool castsShadows,  bool isEnabled,
+		const LightSourceShaderStruct& data)
+: LightSource(name, LIGHT_SOURCE_TYPE_SPOT_LIGHT,castsShadows,isEnabled,data)
+{
+}
 
 
 
 SpotLight::~SpotLight()
 {
-
+	//nothing to do
 }
 
 
@@ -159,7 +160,7 @@ SpotLight::~SpotLight()
 	//shortcut to SceneNode::mGlobalAmendedTransform::getViewMatrix();
 Matrix4x4 SpotLight::getViewMatrix()
 {
-
+	return getGlobalTransform().getLookAtMatrix();
 }
 
 
@@ -168,15 +169,27 @@ Matrix4x4 SpotLight::getViewMatrix()
 // 	opening angle from outerSpotCutOff_Radians,
 //	aspect ratio = 1/1
 //a squared septh texture is recommended;
-Matrix4x4 SpotLight::getViewProjectionMatrix(float nearClipPlane, float farClipPlane)
+Matrix4x4 SpotLight::getViewProjectionMatrix()
 {
-
+	return
+		glm::gtc::matrix_projection::perspective(
+				glm::degrees( getdata().outerSpotCutOff_Radians ),
+				1.0f,
+				LightSourceManager::getInstance().getLightSourceProjectionMatrixNearClipPlane(),
+				LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane()
+		)
+		*
+		getViewMatrix();
 }
 
 	//matrix for shadowmap lookup; scale is configuarable in case one wants to use rectangle texture for whatever reason...
-Matrix4x4 SpotLight::getBiasedViewProjectionMatrix(float nearClipPlane, float farClipPlane,
-			float scaleBias, float translationBias)
+Matrix4x4 SpotLight::getBiasedViewProjectionMatrix(float scale, float translation)
 {
+	return
+			glm::scaleBias(scale,translation)
+			*
+			getViewProjectionMatrix();
+
 
 }
 

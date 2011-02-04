@@ -268,6 +268,13 @@ void SimulationResourceManager::testStuff()
 	LOG<<DEBUG_LOG_LEVEL<<"AmendedTrans mat		: "<<testAmendedTrans.getTotalTransform()<<";\n";
 	assert( AmendedTransform::matricesAreEqual(testAmendedTrans.getTotalTransform(), testAccumMat));
 
+	assert("lookAt-matrices are equal" &&
+			AmendedTransform::matricesAreEqual(
+					testAmendedTrans.getLookAtMatrix(),
+					glm::lookAt(pos, pos+dir, up )
+			)
+	);
+
 	//checks itself in constructor
 	AmendedTransform amendFromMatrix(testAccumMat);
 
@@ -276,6 +283,22 @@ void SimulationResourceManager::testStuff()
 	LOG<<DEBUG_LOG_LEVEL<<"self constructed mat inverse: "<<testAccumMat<<";\n";
 	LOG<<DEBUG_LOG_LEVEL<<"AmendedTrans mat		inverse: "<<testAmendedTrans.getTotalTransform()<<";\n";
 	assert( AmendedTransform::matricesAreEqual(testAmendedTrans.getTotalTransform(), testAccumMat));
+
+
+	//LOG<<DEBUG_LOG_LEVEL<<"lookat of                  inverse: "<<testAccumMat<<";\n";
+	//LOG<<DEBUG_LOG_LEVEL<<"lookat of AmendedTrans mat inverse: "<<testAmendedTrans.getTotalTransform()<<";\n";
+	assert("lookAt-matrices of inverse are equal" &&
+			AmendedTransform::matricesAreEqual(
+					testAmendedTrans.getLookAtMatrix(),
+					glm::lookAt(
+						testAmendedTrans.getPosition(),
+						testAmendedTrans.getPosition()+testAmendedTrans.getDirection(),
+						testAmendedTrans.getUpVector()
+					)
+
+			)
+	);
+
 
 	//checks itself in constructor
 	AmendedTransform amendFromInverseMatrix(testAccumMat);
