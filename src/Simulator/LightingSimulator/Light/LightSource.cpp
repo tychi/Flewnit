@@ -42,6 +42,7 @@ LightSource::LightSource(String name, LightSourceType type, bool castsShadows,  
   mCastsShadows(castsShadows),
   mLightSourceShaderStruct(data)
 {
+	validateData();
 }
 
 
@@ -51,11 +52,40 @@ LightSource::~LightSource()
 	LightSourceManager::getInstance().unregisterLightSource(this);
 }
 
+void LightSource::setEnable(bool val)
+{
+	mIsEnabled = val;
+}
+
 
 
 void LightSource::validateData() throw(SimulatorException)
 {
+	assert("color vals are positive" && glm::all(glm::greaterThan(mLightSourceShaderStruct.diffuseColor, Vector3D(0.0f,0.0f,0.0f))));
+	assert("color vals are non-negative" && glm::all(glm::greaterThanEqual(mLightSourceShaderStruct.specularColor, Vector3D(0.0f,0.0f,0.0f))));
 
+
+	switch(mType)
+	{
+	case LIGHT_SOURCE_TYPE_SPOT_LIGHT:
+		assert( "direction is normalized" && std::fabs( glm::length(mLightSourceShaderStruct.direction)) -1.0f < 0.01 );
+		assert("opening angle not too big" && mLightSourceShaderStruct.outerSpotCutOff_Radians <= glm::radians(75.0f));
+		assert("inner angle not bigger than outer" && mLightSourceShaderStruct.innerSpotCutOff_Radians <= mLightSourceShaderStruct.outerSpotCutOff_Radians);
+		assert("opening angles positive" && (mLightSourceShaderStruct.innerSpotCutOff_Radians >0.0f) && (mLightSourceShaderStruct.outerSpotCutOff_Radians >0.0f));
+		assert("array layer negative for non-shadowcaster and non-negative for shadow caster" &&
+				((mCastsShadows)==(mLightSourceShaderStruct.shadowMapLayer>=0.0f)) );
+		break;
+	case LIGHT_SOURCE_TYPE_POINT_LIGHT:
+		assert(
+				"all spotlightvalues zero but the direction and shadowmap layer" &&
+				(mLightSourceShaderStruct.innerSpotCutOff_Radians == 0.0f) &&
+				(mLightSourceShaderStruct.outerSpotCutOff_Radians == 0.0f)
+		);
+		break;
+	default:
+		throw(SimulatorException("unknown lightsource type"));
+		break;
+	};
 }
 
 
@@ -63,30 +93,44 @@ void LightSource::validateData() throw(SimulatorException)
 //private constructor so that only the LS manager can create sources :);
 //like this, compatibility to shader, shadowmap buffers etc. is much easier to
 //enforce;
-//PointLight::PointLight(String name, bool castsShadows, bool isEnabled,
-//			const LightSourceShaderStruct& data)
-//{
-//	//TODO
-//}
+PointLight::PointLight(String name, bool castsShadows, bool isEnabled,
+			const LightSourceShaderStruct& data)
+: LightSource(name, LIGHT_SOURCE_TYPE_POINT_LIGHT,castsShadows,isEnabled,data)
+{
+}
 
 
 PointLight::~PointLight()
 {
-
+	//nothing to do
 }
 
 
 //mPointLightShadowMapNonTranslationalViewMatrices[whichFace] * translate(globalPosition);
-Matrix4x4 PointLight::getViewMatrix(int whichFace)const
+Matrix4x4 PointLight::getViewMatrix(int whichFace)
 {
+	assert(whichFace<6);
 
+	return mPointLightShadowMapNonTranslationalViewMatrices[whichFace]
+	       *
+	       glm::translate(Matrix4x4(), getGlobalTransform().getPosition());
 }
 
 
 
-Matrix4x4 PointLight::getViewProjectionMatrix(int whichFace, float nearClipPlane, float farClipPlane)const
+Matrix4x4 PointLight::getViewProjectionMatrix(int whichFace, float nearClipPlane, float farClipPlane)
 {
+	assert(whichFace<6);
 
+	return
+		glm::gtc::matrix_projection::perspective(
+				glm::degrees( getdata().outerSpotCutOff_Radians ),
+				1.0f,
+				LightSourceManager::getInstance().getLightSourceProjectionMatrixNearClipPlane(),
+				LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane()
+		)
+		*
+		getViewMatrix(whichFace);
 }
 
 

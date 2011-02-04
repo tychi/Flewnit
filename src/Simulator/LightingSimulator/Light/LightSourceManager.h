@@ -38,11 +38,8 @@ class LightSourceManager
 {
 public:
 	//will configure itself according to config file in future; at the moment, there
-	//are hard codes in the constructor
-	LightSourceManager(
-			LightSourcesLightingFeature lightSourcesLightingFeature,
-			LightSourcesShadowFeature lightSourcesShadowFeature,
-			int maxLightSources);
+	//are hard codes in the constructor ;(
+	LightSourceManager();
 
 	virtual ~LightSourceManager();
 
@@ -82,6 +79,10 @@ public:
 	inline Buffer* getShadowMapMatricesUniformBuffer()const{return mShadowMapMatricesUniformBuffer;}
 	inline Buffer* getLightSourceUniformBuffer()const{return mLightSourceUniformBuffer;}
 	inline Texture* getShadowMapDepthTexture()const{return mShadowMapDepthTexture;}
+	//dictates the clip planes for all lightsource projection matrices;
+	inline float getLightSourceProjectionMatrixNearClipPlane()const{return mLightSourceProjectionMatrixNearClipPlane;}
+	inline float getLightSourceProjectionMatrixFarClipPlane()const{return mLightSourceProjectionMatrixFarClipPlane;}
+
 
 
 	//FrustumCulling wont't be implemented too soon ;(
@@ -103,6 +104,9 @@ private:
 	LightSourcesLightingFeature mLightSourcesLightingFeature;
 	LightSourcesShadowFeature mLightSourcesShadowFeature;
 	int mNumMaxLightSources;
+
+	float mLightSourceProjectionMatrixNearClipPlane;
+	float mLightSourceProjectionMatrixFarClipPlane;
 
 	int mNumCurrentActiveLightingLightSources;
 	int mNumCurrentActiveShadowingLightSources;
@@ -130,6 +134,7 @@ private:
 	Texture* mShadowMapDepthTexture;
 	Shader* mShadowMapGenerationShader;
 	///\}
+
 
 };
 

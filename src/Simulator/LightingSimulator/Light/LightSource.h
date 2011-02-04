@@ -39,7 +39,7 @@ protected:
 public:
 	virtual ~LightSource();
 
-	void setEnable(bool val){mIsEnabled = val;}
+	void setEnable(bool val);
 
 	inline LightSourceType getType()const{return mType;}
 	inline bool castsShadows()const{return mCastsShadows;}
@@ -78,18 +78,61 @@ public:
 	virtual ~PointLight();
 
 	//mPointLightShadowMapNonTranslationalViewMatrices[whichFace] * translate(globalPosition);
-	Matrix4x4 getViewMatrix(int whichFace)const;
-	Matrix4x4 getViewProjectionMatrix(int whichFace, float nearClipPlane, float farClipPlane)const;
+	Matrix4x4 getViewMatrix(int whichFace);
+	Matrix4x4 getViewProjectionMatrix(int whichFace, float nearClipPlane, float farClipPlane);
 
 private:
 
-	//projection matrices
+	//rotational part of the view matrices
 	//refer to the omni-directional Shadows- paper, slide 14:
-	Matrix4x4 mPointLightShadowMapNonTranslationalViewMatrices[6];
+	static Matrix4x4 mPointLightShadowMapNonTranslationalViewMatrices[6];
+
 	//45°, 1/1 ratio
-	Matrix4x4 mPointLightShadowMapProjectionMatrix;
+	//Matrix4x4 mPointLightShadowMapProjectionMatrix;
 
  };
+
+Matrix4x4 PointLight::mPointLightShadowMapNonTranslationalViewMatrices[6] =
+	{
+			//rotational part of the view matrices
+			//refer to the omni-directional Shadows- paper, slide 14:
+			//+x
+			Matrix4x4(
+			0.0f,	0.0f,	-1.0f,	0.0f,
+			0.0f,	-1.0f,	0.0f,	0.0f,
+			-1.0f,	0.0f,	0.0f,	0.0f,
+			0.0f,	0.0f,	0.0f,	1.0f),
+			//-x
+			Matrix4x4(
+			0.0f,	0.0f,	1.0f,	0.0f,
+			0.0f,	-1.0f,	0.0f,	0.0f,
+			1.0f,	0.0f,	0.0f,	0.0f,
+			0.0f,	0.0f,	0.0f,	1.0f),
+			//+y
+			Matrix4x4(
+			1.0f,	0.0f,	0.0f,	0.0f,
+			0.0f,	0.0f,	-1.0f,	0.0f,
+			0.0f,	1.0f,	0.0f,	0.0f,
+			0.0f,	0.0f,	0.0f,	1.0f),
+			//-y
+			Matrix4x4(
+			1.0f,	0.0f,	0.0f,	0.0f,
+			0.0f,	0.0f,	1.0f,	0.0f,
+			0.0f,	-1.0f,	0.0f,	0.0f,
+			0.0f,	0.0f,	0.0f,	1.0f),
+			//+z
+			Matrix4x4(
+			1.0f,	0.0f,	0.0f,	0.0f,
+			0.0f,	-1.0f,	0.0f,	0.0f,
+			0.0f,	0.0f,	-1.0f,	0.0f,
+			0.0f,	0.0f,	0.0f,	1.0f),
+			//-z
+			Matrix4x4(
+			-1.0f,	0.0f,	0.0f,	0.0f,
+			0.0f,	-1.0f,	0.0f,	0.0f,
+			0.0f,	0.0f,	1.0f,	0.0f,
+			0.0f,	0.0f,	0.0f,	1.0f),
+	};
 
 
 class SpotLight

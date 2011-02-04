@@ -12,12 +12,9 @@
 namespace Flewnit
 {
 
-LightSourceManager::LightSourceManager(
-		LightSourcesLightingFeature lightSourcesLightingFeature,
-		LightSourcesShadowFeature lightSourcesShadowFeature,
-		int maxLightSources)
+LightSourceManager::LightSourceManager()
 {
-
+	//hardCode init: TODO make config loadable
 }
 
 
