@@ -94,6 +94,7 @@ enum BufferSemantics
 
 	//for a uniform buffer for matrices of instanced rendering
 	TRANSFORMATION_MATRICES_SEMANTICS,
+	LIGHT_SOURCE_BUFFER_SEMANTICS,
 	///\}
 
 	//following texture-only semantics; Texture can also have the above Semantics
@@ -185,12 +186,7 @@ public:
 	//value automatically calulated by  numElements * BufferHelper::elementSize(elementType);
 	cl_GLuint bufferSizeInByte;
 
-	//add lean contructor for the cases where the concrete values must be computed later, but things
-	//like the name etc must already be known;
-	explicit BufferInfo(String name,
-				ContextTypeFlags usageContexts,
-				BufferSemantics bufferSemantics);
-
+	//default constructor for non-image buffers
 	explicit BufferInfo(String name,
 			ContextTypeFlags usageContexts,
 			BufferSemantics bufferSemantics,
@@ -198,7 +194,15 @@ public:
 			cl_GLuint numElements,
 			GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
 			ContextType mappedToCPUContext = NO_CONTEXT_TYPE);
+
+	//add lean contructor for the cases where the concrete values must be computed later, but things
+	//like the name etc must already be known;
+	explicit BufferInfo(String name,
+				ContextTypeFlags usageContexts,
+				BufferSemantics bufferSemantics);
+
 	BufferInfo(const BufferInfo& rhs);
+
 	virtual ~BufferInfo();
 	bool operator==(const BufferInfo& rhs) const;
 	const BufferInfo& operator=(const BufferInfo& rhs);

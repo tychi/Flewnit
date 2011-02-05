@@ -98,6 +98,10 @@ PointLight::PointLight(String name, bool castsShadows, bool isEnabled,
 			const LightSourceShaderStruct& data)
 : LightSource(name, LIGHT_SOURCE_TYPE_POINT_LIGHT,castsShadows,isEnabled,data)
 {
+	assert(	"rotationMatrix tightly packed" &&
+			(sizeof(mPointLightShadowMapNonTranslationalViewMatrices) == 6* sizeof(Matrix4x4))
+	 &&		(sizeof(Matrix4x4) == 16* sizeof(float) )
+	);
 }
 
 

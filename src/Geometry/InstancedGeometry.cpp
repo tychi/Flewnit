@@ -6,6 +6,7 @@
  */
 
 #include "InstancedGeometry.h"
+#include "WorldObject/InstanceManager.h"
 
 namespace Flewnit
 {

@@ -78,7 +78,7 @@ public:
 	inline LightSource* getLightSource(unsigned int index)const{assert(index<mLightSources.size()); return mLightSources[index];}
 	inline Buffer* getShadowMapMatricesUniformBuffer()const{return mShadowMapMatricesUniformBuffer;}
 	inline Buffer* getLightSourceUniformBuffer()const{return mLightSourceUniformBuffer;}
-	inline Texture* getShadowMapDepthTexture()const{return mShadowMapDepthTexture;}
+	//inline Texture* getShadowMapDepthTexture()const{return mShadowMapDepthTexture;}
 	//dictates the clip planes for all lightsource projection matrices;
 	inline float getLightSourceProjectionMatrixNearClipPlane()const{return mLightSourceProjectionMatrixNearClipPlane;}
 	inline float getLightSourceProjectionMatrixFarClipPlane()const{return mLightSourceProjectionMatrixFarClipPlane;}
@@ -104,6 +104,8 @@ private:
 	LightSourcesLightingFeature mLightSourcesLightingFeature;
 	LightSourcesShadowFeature mLightSourcesShadowFeature;
 	int mNumMaxLightSources;
+	int mNumMaxShadowCasters;
+	int mShadowMapResolution; //shadowmap is alwayas of squared size:
 
 	float mLightSourceProjectionMatrixNearClipPlane;
 	float mLightSourceProjectionMatrixFarClipPlane;
@@ -113,14 +115,6 @@ private:
 	List<LightSource*> mLightSources;
 
 	/*
-	 * Only used if mLightSourcesShadowFeature == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS;
-	 * In shadowmap generation passes, it contains the viewProjectionMatrices of the
-	 * "lightsource cameras" for the geometry shader; in lighting passes, it contains
-	 *  the biased viewProjectionMatrices for the fragment shader;
-	 */
-	Buffer* mShadowMapMatricesUniformBuffer;
-
-	/*
 	 * Only used if mLightSourcesLightingFeature corresponds to multiple lightsource shading;
 	 * otherwise, the shaders are expected to set the single lightsource via "classic" uniforms,
 	 *  as uniform buffers are expected to slower and hence only amortize when a big amount
@@ -128,10 +122,20 @@ private:
 	 */
 	Buffer* mLightSourceUniformBuffer;
 
+
+	/*
+	 * Only used if mLightSourcesShadowFeature == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS;
+	 * In shadowmap generation passes, it contains the viewProjectionMatrices of the
+	 * "lightsource cameras" for the geometry shader; in lighting passes, it contains
+	 *  the biased viewProjectionMatrices for the fragment shader;
+	 */
+	Buffer* mShadowMapMatricesUniformBuffer;
+
+
 	RenderTarget* mShadowMapRenderTarget;
 	//Texture2DDepth, Texture2DDepthArray or Texture2DDepthCube,
 	//depending on the shadow feature
-	Texture* mShadowMapDepthTexture;
+	//Texture* mShadowMapDepthTexture; //<-- wil lbe integrated as member of the rendertarget;
 	Shader* mShadowMapGenerationShader;
 	///\}
 

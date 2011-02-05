@@ -57,6 +57,7 @@ String BufferHelper::BufferSemanticsToString(BufferSemantics bs)
 
 			//for a uniform buffer for matrices of instanced rendering
 			"TRANSFORMATION_MATRICES_SEMANTICS",
+			"LIGHT_SOURCE_BUFFER_SEMANTICS",
 			///\}
 
 			//following texture-only semantics; Texture can also have the above Semantics

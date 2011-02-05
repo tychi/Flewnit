@@ -33,7 +33,7 @@ SimulationResourceManager::SimulationResourceManager() :
 					DEPTH_RENDER_BUFFER
 					)
 	),
-	mMainCamera(new Camera("mainCamera")), //TODO
+	mMainCamera(new Camera("mainCamera", AmendedTransform(Vector3D(0.0f,0.0f,5.0f)))), //TODO
 	mLightSourceManager(0)//TODO
 {
 	testStuff();

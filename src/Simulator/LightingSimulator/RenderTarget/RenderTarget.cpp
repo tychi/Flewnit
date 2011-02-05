@@ -651,6 +651,7 @@ void RenderTarget::requestCreateAndStoreColorTexture(BufferSemantics which)throw
 		//completely stupid enums like:
 		/*
 			TRANSFORMATION_MATRICES_SEMANTICS,
+			LIGHT_SOURCE_BUFFER_SEMANTICS,
 			__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__,
 			CUSTOM_SEMANTICS,
 			__NUM_TOTAL_SEMANTICS__,
