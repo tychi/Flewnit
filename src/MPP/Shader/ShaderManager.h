@@ -14,9 +14,12 @@
 
 #include "Simulator/SimulatorMetaInfo.h"
 
+#include "Material/VisualMaterial.h"
+
+#include "Simulator/LightingSimulator/LightingSimStageBase.h"
 
 #include <boost/unordered_map.hpp>
-#include "Material/VisualMaterial.h"
+
 
 namespace Flewnit
 {
@@ -30,7 +33,9 @@ class ShaderManager
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	ShaderManager(Path codeDirectory = FLEWNIT_DEFAULT_SHADER_SOURCES_PATH);
+
+	ShaderManager(const ShaderFeaturesGlobal& globalShaderFeatures,
+			Path codeDirectory = FLEWNIT_DEFAULT_SHADER_SOURCES_PATH);
 	virtual ~ShaderManager();
 
 	//TODO rewrite this documentation ;)
@@ -69,23 +74,24 @@ public:
 
 
 	//iterates all visual materials and assigns them shaders fitting the current scenario;
-	//the shaders might need to be generated first;
+	//the shaders might need to be generated first (done automatically);
 	//the attachment status of the rendertaget is validated to fit the material's needs and the shader's
 	//binding status.
-	void setRenderingScenario(RenderingTechnique rendTech,TextureType renderTargetTextureType, RenderTarget* rt)throw(SimulatorException);
+	//throws exception if there is something incompatible;
+	//void setRenderingScenario(RenderingTechnique rendTech,TextureType renderTargetTextureType, RenderTarget* rt)throw(SimulatorException);
+	void setRenderingScenario(LightingSimStageBase* lightingStage)throw(SimulatorException);
 
 	//
 	//Shader* getShaderForCurrentRenderingScenario(ShadingFeatures shadingFeatures,bool forInstancedRendering);
 
 
 private:
-	friend VisualMaterial::VisualMaterial(String,VisualMaterialType,ShadingFeatures,const Map<BufferSemantics, Texture*>&,
-			bool,bool,bool,bool,bool,bool); //registerToShaderManager();
-	friend VisualMaterial::~VisualMaterial();//unregisterFromShaderManager();
-	void registerVisualMaterial(VisualMaterial* mat);
-	void unregisterVisualMaterial(VisualMaterial* mat);
 
 	List<VisualMaterial*> mRegisteredVisualMaterials;
+
+	ShaderFeaturesGlobal mGlobalShaderFeatures;
+	ShaderFeaturesLocal mCurrenLocalShaderFeatures;
+	bool mIsInitializedGuard;
 
 	boost::unordered_map<ShaderFeaturesLocal, Shader*> mShaderMap;
 
@@ -104,6 +110,12 @@ private:
 //			>
 //		>
 //	> mGeneratedShaders;
+
+	friend VisualMaterial::VisualMaterial(String,VisualMaterialType,ShadingFeatures,const Map<BufferSemantics, Texture*>&,
+			bool,bool,bool,bool,bool,bool); //registerToShaderManager();
+	friend VisualMaterial::~VisualMaterial();//unregisterFromShaderManager();
+	void registerVisualMaterial(VisualMaterial* mat);
+	void unregisterVisualMaterial(VisualMaterial* mat);
 };
 
 }

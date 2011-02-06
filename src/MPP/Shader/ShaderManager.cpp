@@ -10,7 +10,8 @@
 
 namespace Flewnit {
 
-ShaderManager::ShaderManager(Path codeDirectory )
+ShaderManager::ShaderManager(const ShaderFeaturesGlobal& globalShaderFeatures,
+		Path codeDirectory )
 {
 	// TODO Auto-generated constructor stub
 //	ShaderFeaturesLocal s;

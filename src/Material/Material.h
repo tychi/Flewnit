@@ -31,8 +31,16 @@ public:
 	//(shader feature set and textures) already exists in the ResourceManager;
 	virtual bool operator==(const Material& rhs) const = 0;
 
-	virtual bool activate(SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject)=0;
-	virtual bool deactivate()=0;
+	//The material needs the currentStage for validation and to get the current rendering technique,
+	//to delegate its behaviour; (example: do nothing if stage = shadowmap generation stage, cause associated
+	//shader to bind the associated textures and use itself otherwise ;) )
+	//maybe it can be used for other stuff like render target acquisition and several parameters;
+	//The VisualMaterial needs the SubObject to backtrack to the associated geometry and the world object to get the transform;
+	virtual void activate(
+			SimulationPipelineStage* currentStage,
+			SubObject* currentUsingSuboject) throw(SimulatorException)=0;
+	//undoing stuff, like re-enable depth test etc.
+	virtual void deactivate()=0;
 };
 
 

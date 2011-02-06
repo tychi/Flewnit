@@ -14,11 +14,11 @@
 
 namespace Flewnit {
 
-Camera::Camera(String name, const AmendedTransform& localTransform)
+Camera::Camera(String name, const AmendedTransform& localTransform, float fieldOfView_Angles)
 : SceneNode(name, CAMERA_NODE, localTransform)
 {
 	perspective(
-			45.0f,
+			fieldOfView_Angles,
 			static_cast<float>(WindowManager::getInstance().getWindowResolution().x) /
 			static_cast<float>(WindowManager::getInstance().getWindowResolution().y)
 	);

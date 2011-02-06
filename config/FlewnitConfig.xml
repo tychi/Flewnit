@@ -33,6 +33,7 @@
 			<resolution type="VEC2I" x="400" y="200" GUIVisibility="read" tweakConfigString="TODO"/>
 			<position type="VEC2I" x="500" y="450" GUIVisibility="read" tweakConfigString="TODO"/>
 			
+			<numMultiSamples type="INT" value ="1" />
 			
 		</windowSettings>
 		
@@ -133,12 +134,21 @@
 
 			<generalSettings>
 				<Camera>
-					<position type="VEC3" x="0.0" y="0.0" z="0.0" />
+					<position type="VEC3" x="0.0" y="0.0" z="10.0" />
 					<direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
 					<up type="VEC3" x="0.0" y="1.0" z="0.0" />				
-					<openingAnglesDegrees type="VEC2" x="60.0" y="45.0"/>
+					<openingAngleVerticalDegrees type="FLOAT" value="45.0"/>
 					<movementSpeed type="FLOAT" value="0.5"/>		
 				</Camera>
+				
+				<GlobalShadingFeatures>
+					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT"/>
+					<lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_NONE"/>
+					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_NONE"/>
+					<numMaxLightSources type="INT" value="1"/>
+					<numMaxInstancesRenderable type="INT" value="16"/>
+					<GBufferType type="STRING" value="TEXTURE_TYPE_2D_RECT"/>			
+				</GlobalShadingFeatures>
 
 			</generalSettings>
 

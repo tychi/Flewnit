@@ -19,6 +19,7 @@
 #include "Common/Math.h"
 
 #include "Util/Time/FPSCounter.h"
+#include "Util/HelperFunctions.h"
 
 namespace Flewnit
 {
@@ -56,6 +57,8 @@ void GLFWWindowManager::init()
 	bool grabMouse = false;
 	bool fullscreen = false;
 	String windowTitle = "myASS";
+
+	int numMultiSamples = 1;
 
 
 	try
@@ -119,7 +122,13 @@ void GLFWWindowManager::init()
 				get("windowTitle",0)
 		);
 
-
+		numMultiSamples =
+				ConfigCaster::cast<int> (
+					URE_INSTANCE->getConfig().root().
+					get("UI_Settings",0).
+					get("windowSettings",0).
+					get("numMultiSamples",0)
+			);
 
 	}
 	catch(ConfigCastException e)
@@ -145,7 +154,8 @@ void GLFWWindowManager::init()
 			enforceCoreProfile ? GL_TRUE : GL_FALSE);
 
 	//antialiasing stuff; test if it works after first triangle rendering
-	//glfwOpenWindowHint(GLFW_FSAA_SAMPLES,8);
+	assert(HelperFunctions::isPowerOfTwo(numMultiSamples));
+	//glfwOpenWindowHint(GLFW_FSAA_SAMPLES,numMultiSamples <= 1 ? 0 : numMultiSamples);
 
 	createWindow(fullscreen,winPos,winRes);
 

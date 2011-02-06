@@ -15,10 +15,12 @@ namespace Flewnit
 ShaderFeaturesLocal::ShaderFeaturesLocal(
 		RenderingTechnique renderingTechnique,
 		TextureType renderTargetTextureType,
+		VisualMaterialType visualMaterialType,
 		ShadingFeatures shadingFeatures,
 		bool instancedRendering
 )
 :renderingTechnique(renderingTechnique),renderTargetTextureType(renderTargetTextureType),
+ visualMaterialType(visualMaterialType),
  shadingFeatures(shadingFeatures),instancedRendering(instancedRendering)
 {
 }
@@ -28,10 +30,10 @@ ShaderFeaturesLocal::ShaderFeaturesLocal(const ShaderFeaturesLocal& rhs)
 	(*this) = rhs;
 }
 
-bool ShaderFeaturesLocal::isSharable()const
-{
-	return (renderingTechnique == RENDERING_TECHNIQUE_CUSTOM);
-}
+//bool ShaderFeaturesLocal::isSharable()const
+//{
+//	return (renderingTechnique == RENDERING_TECHNIQUE_CUSTOM);
+//}
 
 bool operator==(ShaderFeaturesLocal const& lhs, ShaderFeaturesLocal const& rhs)
 //bool ShaderFeaturesLocal::operator==(const ShaderFeaturesLocal& rhs)
@@ -39,6 +41,7 @@ bool operator==(ShaderFeaturesLocal const& lhs, ShaderFeaturesLocal const& rhs)
 	return
 			lhs.renderingTechnique == rhs.renderingTechnique &&
 			lhs.renderTargetTextureType == rhs.renderTargetTextureType &&
+			lhs.visualMaterialType == rhs.visualMaterialType &&
 			lhs.shadingFeatures == rhs.shadingFeatures &&
 			lhs.instancedRendering == rhs.instancedRendering;
 }
@@ -47,6 +50,7 @@ const ShaderFeaturesLocal& ShaderFeaturesLocal::operator=(const ShaderFeaturesLo
 {
 	renderingTechnique = rhs.renderingTechnique;
 	renderTargetTextureType = rhs.renderTargetTextureType;
+	visualMaterialType = rhs.visualMaterialType;
 	shadingFeatures = rhs.shadingFeatures;
 	instancedRendering = rhs.instancedRendering;
 
@@ -58,11 +62,24 @@ std::size_t hash_value(ShaderFeaturesLocal const& sfl)
        boost::hash<int> hasher;
 
        //generating unique integer for every possible permutaion of values;
+//       int integerizedSFLvalue =
+//    		   //bit 31..24 (8bits) for number in [0..7]=3 bits --> fits
+//    		   ( static_cast<int>(sfl.renderingTechnique) <<24 ) |
+//    		   //bit 23..16 (8bits) for number in [0..14]=4 bits --> fits
+//    		   ( static_cast<int>(sfl.renderTargetTextureType) <<16 ) |
+//    		   //bit 15..1 (15 bits) for 7-bit bitfield --> fits
+//    		   ( static_cast<int>(sfl.shadingFeatures) << 1 ) |
+//    		   //bit 0 for integer value (1 bit) --> fits
+//    		   (sfl.instancedRendering? 1: 0)
+//    		   ;
+
        int integerizedSFLvalue =
-    		   //bit 31..24 (8bits) for number in [0..7]=3 bits --> fits
-    		   ( static_cast<int>(sfl.renderingTechnique) <<24 ) |
-    		   //bit 23..16 (8bits) for number in [0..14]=4 bits --> fits
-    		   ( static_cast<int>(sfl.renderTargetTextureType) <<16 ) |
+    		   //bit 31..28 (4bits) for number in [0..7]=3 bits --> fits
+    		   ( static_cast<int>(sfl.renderingTechnique) <<28 ) |
+    		   //bit 27..20 (8bits) for number in [0..14]=4 bits --> fits
+    		   ( static_cast<int>(sfl.renderTargetTextureType) <<20 ) |
+    		   //bit 19..16 (4bits) for number in [0..4]=3 bits --> fits
+    		   ( static_cast<int>(sfl.visualMaterialType) <<16 ) |
     		   //bit 15..1 (15 bits) for 7-bit bitfield --> fits
     		   ( static_cast<int>(sfl.shadingFeatures) << 1 ) |
     		   //bit 0 for integer value (1 bit) --> fits
@@ -100,10 +117,15 @@ ShaderFeaturesGlobal::ShaderFeaturesGlobal(
 
 }
 
+
+
 ShaderFeaturesGlobal::ShaderFeaturesGlobal(const ShaderFeaturesGlobal& rhs)
 {
 	(*this) = rhs;
 }
+
+
+
 
 const ShaderFeaturesGlobal& ShaderFeaturesGlobal::operator=(const ShaderFeaturesGlobal& rhs)
 {

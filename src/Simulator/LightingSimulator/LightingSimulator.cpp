@@ -18,8 +18,10 @@
 
 #include "Util/Log/Log.h"
 
-#include <typeinfo>
+#include "Util/Loader/LoaderHelper.h"
+#include "URE.h"
 
+#include <typeinfo>
 
 
 namespace Flewnit
@@ -35,12 +37,106 @@ LightingSimulator::LightingSimulator(ConfigStructNode* simConfigNode)
 					DEPTH_RENDER_BUFFER
 					)
 	),
-	mMainCamera(new Camera("mainCamera", AmendedTransform(Vector3D(0.0f,0.0f,5.0f)))),
-	mLightSourceManager(0),//TODO
-	mShaderManager(new ShaderManager())
+	mMainCamera(
+		new Camera(
+			"mainCamera",
+			AmendedTransform(
+				//Vector3D(0.0f,0.0f,5.0f)
+				ConfigCaster::cast<Vector3D>(
+					 simConfigNode->get("generalSettings",0).get("Camera",0).get("position",0)
+				),
+				ConfigCaster::cast<Vector3D>(
+					 simConfigNode->get("generalSettings",0).get("Camera",0).get("direction",0)
+				),
+				ConfigCaster::cast<Vector3D>(
+					 simConfigNode->get("generalSettings",0).get("Camera",0).get("up",0)
+				)
+			),
+			ConfigCaster::cast<float>(
+				 simConfigNode->get("generalSettings",0).get("Camera",0).get("openingAngleVerticalDegrees",0)
+			)
+		)
+	),
+	//mShaderManager(new ShaderManager()),
+	mShaderManager(
+		new ShaderManager( parseGlobalShaderFeatureFormConfig(),
+			Path(
+
+			)
+		)
+	),
+	mLightSourceManager(0)//TODO
 {
 	// TODO Auto-generated constructor stub
 	testStuff();
+}
+
+ShaderFeaturesGlobal LightingSimulator::parseGlobalShaderFeatureFormConfig()
+{
+	ShaderFeaturesGlobal sfg;
+
+	ConfigStructNode& node = mSimConfigNode->get("generalSettings",0).
+			get("GlobalShadingFeatures",0);
+
+	String lightSourcesLightingFeatureString =
+		ConfigCaster::cast<String>(	node.get("lightSourcesLightingFeature",0));
+
+	if(lightSourcesLightingFeatureString == "LIGHT_SOURCES_LIGHTING_FEATURE_NONE")
+		sfg.lightSourcesLightingFeature = LIGHT_SOURCES_LIGHTING_FEATURE_NONE;
+	if(lightSourcesLightingFeatureString == "LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT")
+		sfg.lightSourcesLightingFeature = LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT;
+	if(lightSourcesLightingFeatureString == "LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT")
+		sfg.lightSourcesLightingFeature = LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT;
+	if(lightSourcesLightingFeatureString == "LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS")
+		sfg.lightSourcesLightingFeature = LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS;
+	if(lightSourcesLightingFeatureString == "LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS")
+		sfg.lightSourcesLightingFeature = LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS;
+	if(lightSourcesLightingFeatureString == "LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS")
+		sfg.lightSourcesLightingFeature = LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS;
+
+
+	String lightSourcesShadowFeatureString = ConfigCaster::cast<String>(	node.get("lightSourcesShadowFeature",0));
+	if(lightSourcesShadowFeatureString == "LIGHT_SOURCES_SHADOW_FEATURE_NONE")
+			sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_NONE;
+	if(lightSourcesShadowFeatureString == "LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT")
+			sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT;
+	if(lightSourcesShadowFeatureString == "LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT")
+			sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT;
+	if(lightSourcesShadowFeatureString == "LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS")
+			sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS;
+
+	String shadowTechniqueString =	ConfigCaster::cast<String>(	node.get("shadowTechnique",0));
+	if(shadowTechniqueString == "SHADOW_TECHNIQUE_NONE")
+			sfg.shadowTechnique = SHADOW_TECHNIQUE_NONE;
+	if(shadowTechniqueString == "SHADOW_TECHNIQUE_DEFAULT")
+			sfg.shadowTechnique = SHADOW_TECHNIQUE_DEFAULT;
+	if(shadowTechniqueString == "SHADOW_TECHNIQUE_PCFSS")
+			sfg.shadowTechnique = SHADOW_TECHNIQUE_PCFSS;
+
+	sfg.numMaxLightSources =	ConfigCaster::cast<int>(node.get("numMaxLightSources",0));
+	sfg.numMaxInstancesRenderable =	ConfigCaster::cast<int>(node.get("numMaxInstancesRenderable",0));
+
+	String GBufferTypeString =
+		ConfigCaster::cast<String>(	node.get("shadowTechnique",0));
+
+	if(GBufferTypeString == "TEXTURE_TYPE_2D")
+			sfg.GBufferType = TEXTURE_TYPE_2D;
+	if(GBufferTypeString == "TEXTURE_TYPE_2D_RECT")
+			sfg.GBufferType = TEXTURE_TYPE_2D_RECT;
+	if(GBufferTypeString == "TEXTURE_TYPE_2D_ARRAY")
+			sfg.GBufferType = TEXTURE_TYPE_2D_ARRAY;
+	if(GBufferTypeString == "TEXTURE_TYPE_2D_MULTISAMPLE")
+			sfg.GBufferType = TEXTURE_TYPE_2D_MULTISAMPLE;
+	if(GBufferTypeString == "TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE")
+			sfg.GBufferType = TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE;
+
+	sfg.numMultiSamples = ConfigCaster::cast<int> (
+							URE_INSTANCE->getConfig().root().
+							get("UI_Settings",0).
+							get("windowSettings",0).
+							get("numMultiSamples",0));
+
+	return sfg;
 }
 
 LightingSimulator::~LightingSimulator()
@@ -93,6 +189,8 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 	// TODO Auto-generated destructor stub
 	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  initPipeLine() \n";
 	return true;
+
+
 }
 
 

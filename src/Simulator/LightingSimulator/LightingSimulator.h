@@ -38,10 +38,13 @@ private:
 	//debug
 	void testStuff();
 
+	ShaderFeaturesGlobal parseGlobalShaderFeatureFormConfig();
+
 	RenderTarget* mGlobalRenderTarget;
 	Camera* mMainCamera;
-	LightSourceManager* mLightSourceManager;
 	ShaderManager* mShaderManager;
+	LightSourceManager* mLightSourceManager;
+
 
 
 

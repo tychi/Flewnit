@@ -21,7 +21,7 @@ public:
 	//at 45° FOV, 1/1 aspect ratio perspective;
 	//grabs the viewport from the WindowManager Singleton window size;
 	//setup the relevtant matrices per hand if you want different params;
-	Camera(String name, const AmendedTransform& localTransform = AmendedTransform());
+	Camera(String name, const AmendedTransform& localTransform = AmendedTransform(), float fieldOfView_Angles = 45.0f);
 
 	virtual ~Camera();
 

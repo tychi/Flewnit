@@ -133,7 +133,12 @@ enum RenderingTechnique
 	RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING	=4,
 	RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL		=5,
 	RENDERING_TECHNIQUE_DEFERRED_LIGHTING			=6,
-	//value to indicate a special shader; test for equality will fail;
+	//value to indicate a special lighting stage, involving only
+	//a few objects (like fluid objects), with special shader not
+	//fitting the automatically-generated structure; materials with a custom-tag
+	//will be ignored by the management logic of the ShaderManager;
+	//The special stage and the special material with the special shader
+	//will interact in their own way;
 	RENDERING_TECHNIQUE_CUSTOM						=7
 };
 
@@ -177,6 +182,22 @@ enum ShadingFeatures
 };
 
 
+//rough categorization of materials:
+//these are distinct visual rendering techniques which
+//use different shader generation templates;
+enum VisualMaterialType
+{
+	VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING  		=0,
+	VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING		=1,
+	VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY		=2,	//just set a color value or something
+
+	VISUAL_MATERIAL_TYPE_GAS_RENDERING			=3,
+	VISUAL_MATERIAL_TYPE_LIQUID_RENDERING		=4
+};
+
+
+
+
 /*
  * Subset of the ShaderFeatures struct, which is customizable at runtime, depending on
  * material and LightingPipelineStage and Render target;
@@ -184,23 +205,31 @@ enum ShadingFeatures
  * */
 struct ShaderFeaturesLocal
 {
+	//lighting stage-dependent features:
+	//{
 	RenderingTechnique renderingTechnique;
 	//renderTargetTextureType delegates creation and/or configuration of a geometry shader,
 	//defining layers for cubemap rendering or general layered rendering
 	TextureType renderTargetTextureType;
+	//}
+	//material dependent features:
+	//{
+	VisualMaterialType visualMaterialType;
 	ShadingFeatures shadingFeatures;
 	bool instancedRendering;
+	//}
 
 	explicit ShaderFeaturesLocal(
 			RenderingTechnique renderingTechnique = RENDERING_TECHNIQUE_DEFAULT_LIGHTING,
 			TextureType renderTargetTextureType = TEXTURE_TYPE_2D,
+			VisualMaterialType visualMaterialType = VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING ,
 			ShadingFeatures shadingFeatures = SHADING_FEATURE_DIRECT_LIGHTING,
 			bool instancedRendering = true
 	);
 
 	explicit ShaderFeaturesLocal(const ShaderFeaturesLocal& rhs);
 
-	bool isSharable()const;
+	//bool isSharable()const;
 	//bool operator==(const ShaderFeaturesLocal& rhs);
 	const ShaderFeaturesLocal& operator=(const ShaderFeaturesLocal& rhs);
 };
@@ -253,23 +282,11 @@ struct ShaderFeaturesGlobal
 			//bool renderIndices = false
 	);
 
-	explicit ShaderFeaturesGlobal(const ShaderFeaturesGlobal& rhs);
+
+	ShaderFeaturesGlobal(const ShaderFeaturesGlobal& rhs);
+
 	bool operator==(const ShaderFeaturesGlobal& rhs);
 	const ShaderFeaturesGlobal& operator=(const ShaderFeaturesGlobal& rhs);
-};
-
-
-//rough categorization of materials:
-//these are distinct visual rendering techniques which
-//use different shader generation templates;
-enum VisualMaterialType
-{
-	VISUAL_MATERIAL_TYPE_LIGHTING,
-	VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING,
-	VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY,
-
-	VISUAL_MATERIAL_TYPE_GAS_RENDERING,
-	VISUAL_MATERIAL_TYPE_LIQUID_RENDERING
 };
 
 ///\}

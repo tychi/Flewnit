@@ -899,6 +899,9 @@ void RenderTarget::detachDepthBuffer()
 					"When rendering to multisample textures, request a multisample depth render buffer"
 					"instead;");
 			break;
+		default:
+			assert(0 && "bullshit texturetype");
+			break;
 		}
 
 		mCurrentlyAttachedDepthTexture = 0;

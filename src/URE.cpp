@@ -256,14 +256,14 @@ void URE::resetEngine()
 
 SimulatorInterface* URE::getSimulator(SimulationDomain sd)const throw(SimulatorException)
 {
-	//BOOST_FOREACH(SimulatorInterface* s, mSimulators)
-	for(int i=0; i< mSimulators.size();i++)
+	BOOST_FOREACH(SimulatorInterface* s, mSimulators)
+	//for(int i=0; i< mSimulators.size();i++)
 	{
-		//if(s->getSimDomain() == sd)
-		if(mSimulators[i]->getSimDomain() ==sd)
+		if(s->getSimDomain() == sd)
+		//if(mSimulators[i]->getSimDomain() ==sd)
 		{
-			return mSimulators[i];
-			//return s;
+			//return mSimulators[i];
+			return s;
 		}
 	}
 	throw(SimulatorException("Simulator with specified domain does not exist."));
