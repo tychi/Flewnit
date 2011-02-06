@@ -203,7 +203,7 @@ class		GenericBufferVoxelGridGeometry;
 class		UniformGridImplicitVoxelGridGeometry;
 
 class Material;
-class	LightingMaterial;
+class	VisualMaterial;
 //to be continued;
 
 //following obsolete
@@ -215,8 +215,11 @@ class	LightingMaterial;
 
 //the "Massively Parallel Program"; Abstraction for CUDA, OpenCL, OpenGL, DirectCompute etc pp;
 class MPP;
-class Shader;
-class OpenCLKernel;
+
+	class ShaderManager;
+	class Shader;
+
+	class OpenCLKernel;
 
 
 

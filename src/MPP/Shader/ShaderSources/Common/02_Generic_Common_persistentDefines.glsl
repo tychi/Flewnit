@@ -5,7 +5,7 @@
 
 //{%persistentdefines}
 //{
-
+	TODO REDO ACCORDING TO CURRENT BUFFERSEMANTICS ENUM
 	#define	POSITION_SEMANTICS 	0
 	#define	NORMAL_SEMANTICS	1
 	#define	TANGENT_SEMANTICS	2
@@ -23,14 +23,14 @@
 	//indicators for e.g. a geometry shader to delegate layered rendering 
 	//or a fragment shader to know if to wirt to color or to gl_FragDepth;
 	
-	#define TEXTURE_TYPE_1D						0
+	#define TEXTURE_TYPE_1D					0
 	#define TEXTURE_TYPE_1D_ARRAY				1
-	#define TEXTURE_TYPE_2D						2
+	#define TEXTURE_TYPE_2D					2
 	#define TEXTURE_TYPE_2D_RECT				3
 	#define TEXTURE_TYPE_2D_CUBE				4
 	#define TEXTURE_TYPE_2D_ARRAY				5
 	#define TEXTURE_TYPE_2D_MULTISAMPLE			6
-	#define TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE 	7
+	#define TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE 		7
 	
 	#define TEXTURE_TYPE_2D_DEPTH				8
 	#define TEXTURE_TYPE_2D_RECT_DEPTH			9 
@@ -39,7 +39,7 @@
 	//#define TEXTURE_TYPE_2D_MULTISAMPLE_DEPTH 		12 //not supported yet
 	//#define TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE_DEPTH 	13 //not supported yet
 	
-	#define TEXTURE_TYPE_3D						14
+	#define TEXTURE_TYPE_3D					14
 
 
 	//-----rendering technique stuff---------------------------
@@ -78,12 +78,12 @@
 	#define RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL		5
 	#define RENDERING_TECHNIQUE_DEFERRED_LIGHTING			6
 	//value to indicate a special shader
-	#define RENDERING_TECHNIQUE_CUSTOM						7
+	#define RENDERING_TECHNIQUE_CUSTOM				7
 	
 	//---------------------------------------------------------
 	
 	
-	#define LIGHT_SOURCES_LIGHTING_FEATURE_NONE						0
+	#define LIGHT_SOURCES_LIGHTING_FEATURE_NONE				0
 	#define LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT			1
 	#define LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT			2
 	#define LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS			3
@@ -100,7 +100,7 @@
 	#define SHADOW_TECHNIQUE_DEFAULT	1
 	#define SHADOW_TECHNIQUE_PCFSS		2
 	
-	#define SHADING_FEATURE_NONE				0
+	#define SHADING_FEATURE_NONE			0
 	#define SHADING_FEATURE_DIRECT_LIGHTING		1<<0
 	//global lighting via layered depth images or stuff... just a brainstroming, won't be implemented	
 	#define SHADING_FEATURE_GLOBAL_LIGHTING		1<<1
@@ -108,7 +108,7 @@
 	#define SHADING_FEATURE_NORMAL_MAPPING		1<<3
 	#define SHADING_FEATURE_CUBE_MAPPING		1<<4
 	#define SHADING_FEATURE_AMBIENT_OCCLUSION	1<<5
-	#define SHADING_FEATURE_TESSELATION			1<<6
+	#define SHADING_FEATURE_TESSELATION		1<<6
 
 
 //}

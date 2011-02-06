@@ -12,9 +12,13 @@
 namespace Flewnit
 {
 
-class LightingSimulator: public SimulatorInterface
+class LightingSimulator:
+	public SimulatorInterface
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+
+
+
 public:
 	LightingSimulator(ConfigStructNode* simConfigNode);
 	virtual ~LightingSimulator();
@@ -24,6 +28,24 @@ public:
 	virtual bool initPipeLine()throw(SimulatorException) ;
 	//check if pipeline stages are compatible to each other (also to those stages form other simulators (they might have to interact!))
 	virtual bool validatePipeLine()throw(SimulatorException) ;
+
+	ShaderManager* getShaderManager()const;
+	RenderTarget* getGlobalRenderTarget()const;
+	LightSourceManager* getLightSourceManager()const;
+	Camera* getMainCamera()const;
+
+private:
+	//debug
+	void testStuff();
+
+	RenderTarget* mGlobalRenderTarget;
+	Camera* mMainCamera;
+	LightSourceManager* mLightSourceManager;
+	ShaderManager* mShaderManager;
+
+
+
+
 
 };
 

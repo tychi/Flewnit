@@ -15,6 +15,8 @@
 
 
 
+
+
 namespace Flewnit
 {
 
@@ -160,7 +162,7 @@ enum ShadowTechnique
 	SHADOW_TECHNIQUE_PCFSS		=2
 };
 
-enum ShadingFeature
+enum ShadingFeatures
 {
 	SHADING_FEATURE_NONE				=0,
 	SHADING_FEATURE_DIRECT_LIGHTING		=1<<0,
@@ -175,43 +177,85 @@ enum ShadingFeature
 };
 
 
-
-struct ShaderFeatures
+/*
+ * Subset of the ShaderFeatures struct, which is customizable at runtime, depending on
+ * material and LightingPipelineStage and Render target;
+ *
+ * */
+struct ShaderFeaturesLocal
 {
 	RenderingTechnique renderingTechnique;
-	//renderTargetType delegates creation and/or configuration of a geometry shader,
+	//renderTargetTextureType delegates creation and/or configuration of a geometry shader,
 	//defining layers for cubemap rendering or general layered rendering
 	TextureType renderTargetTextureType;
-	ShadingFeature shadingFeature;
-	LightSourcesLightingFeature lightSourcesLightingFeature;
-	LightSourcesShadowFeature lightSourcesShadowFeature;
-	ShadowTechnique shadowTechnique;
+	ShadingFeatures shadingFeatures;
+	bool instancedRendering;
 
-	//features not needed by every kind of shader:
-	int numMaxLightSources;
-	int numMultiSamples;
-	int numMaxInstancesRenderable;
-	TextureType GBufferType;
-	bool renderIndices;
-
-	explicit ShaderFeatures(
+	explicit ShaderFeaturesLocal(
 			RenderingTechnique renderingTechnique = RENDERING_TECHNIQUE_DEFAULT_LIGHTING,
 			TextureType renderTargetTextureType = TEXTURE_TYPE_2D,
-			ShadingFeature shadingFeature = SHADING_FEATURE_DIRECT_LIGHTING,
+			ShadingFeatures shadingFeatures = SHADING_FEATURE_DIRECT_LIGHTING,
+			bool instancedRendering = true
+	);
+
+	explicit ShaderFeaturesLocal(const ShaderFeaturesLocal& rhs);
+
+	bool isSharable()const;
+	//bool operator==(const ShaderFeaturesLocal& rhs);
+	const ShaderFeaturesLocal& operator=(const ShaderFeaturesLocal& rhs);
+};
+
+//we need this function to use  ShaderFeaturesLocal as key value to boost::unordered map
+std::size_t hash_value(ShaderFeaturesLocal const& sfl);
+bool operator==(ShaderFeaturesLocal const& lhs, ShaderFeaturesLocal const& rhs);
+
+
+
+
+
+/*
+ * Shader feature values globally defined on Engine initialization;
+ * a shader will be generated on the base of both an per-stage/per-material customizable
+ * ShaderFeaturesLocal and the ShaderFeaturesGlobal struct;
+ * We need some values to be globally and uniquely defined in order to assure rendering
+ * consistency; e.g. a shadowmap should be generated and sampled by every shader in the same way;
+ */
+struct ShaderFeaturesGlobal
+{
+
+	LightSourcesLightingFeature lightSourcesLightingFeature;//querieable from LightSourceManager
+	LightSourcesShadowFeature lightSourcesShadowFeature;	//querieable from LightSourceManager
+	ShadowTechnique shadowTechnique;						//querieable from LightSourceManager
+	int numMaxLightSources;									//querieable from LightSourceManager
+
+	int numMaxInstancesRenderable;							//queryable from URE
+	//{  only relevant for the deferred lighting stage
+	//   (for g-buffer texel fetch from MS textures, accumulation of samples etc.);
+	TextureType GBufferType; 								//queryable from URE
+	int numMultiSamples;									//queryable from URE
+	//}
+
+	//custom stuff: render to integer texture; will be handled in a custom shader;
+	//bool renderIndices;
+
+
+	explicit ShaderFeaturesGlobal(
 			LightSourcesLightingFeature lightSourcesLightingFeature = LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT,
 			LightSourcesShadowFeature lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_NONE,
 			ShadowTechnique shadowTechnique = SHADOW_TECHNIQUE_NONE,
 			int numMaxLightSources = 1,
-			int numMultiSamples	= 1,
+
 			int numMaxInstancesRenderable = 1,
+
 			TextureType GBufferType = TEXTURE_TYPE_2D_RECT,
-			bool renderIndices = false
+			int numMultiSamples	= 1
+
+			//bool renderIndices = false
 	);
 
-	explicit ShaderFeatures(const ShaderFeatures& rhs);
-	//return false if some stuff on one side has "custom"...
-	bool operator==(const ShaderFeatures& rhs);
-	const ShaderFeatures& operator=(const ShaderFeatures& rhs);
+	explicit ShaderFeaturesGlobal(const ShaderFeaturesGlobal& rhs);
+	bool operator==(const ShaderFeaturesGlobal& rhs);
+	const ShaderFeaturesGlobal& operator=(const ShaderFeaturesGlobal& rhs);
 };
 
 

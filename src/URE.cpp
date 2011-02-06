@@ -253,6 +253,23 @@ void URE::resetEngine()
 	Profiler::getInstance().printRegisteredObjects();
 }
 
+
+SimulatorInterface* URE::getSimulator(SimulationDomain sd)const throw(SimulatorException)
+{
+	//BOOST_FOREACH(SimulatorInterface* s, mSimulators)
+	for(int i=0; i< mSimulators.size();i++)
+	{
+		//if(s->getSimDomain() == sd)
+		if(mSimulators[i]->getSimDomain() ==sd)
+		{
+			return mSimulators[i];
+			//return s;
+		}
+	}
+	throw(SimulatorException("Simulator with specified domain does not exist."));
+}
+
+
 bool URE::enterMainLoop()
 {
 	//TODO

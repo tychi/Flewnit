@@ -144,6 +144,8 @@ void GLFWWindowManager::init()
 	glfwOpenWindowHint(GLFW_OPENGL_FORWARD_COMPAT,
 			enforceCoreProfile ? GL_TRUE : GL_FALSE);
 
+	//antialiasing stuff; test if it works after first triangle rendering
+	//glfwOpenWindowHint(GLFW_FSAA_SAMPLES,8);
 
 	createWindow(fullscreen,winPos,winRes);
 

@@ -15,6 +15,11 @@
 #include "Util/Loader/Config.h"
 #include "../Util/Loader/LoaderHelper.h"
 
+#include "SimulationPipelineStage.h"
+
+#include <boost/foreach.hpp>
+#include "Simulator/SPHFluidMechanicsSimulator/SPHFluidMechanicsSimulator.h"
+#include "Simulator/LightingSimulator/LightingSimulator.h"
 
 namespace Flewnit
 {
@@ -31,6 +36,30 @@ SimulatorInterface::~SimulatorInterface()
 	// TODO Auto-generated destructor stub
 }
 
+SimulationPipelineStage* SimulatorInterface::getStage(String name)const // throw(SimulatorException)
+{
+	BOOST_FOREACH(SimulationPipelineStage* s, mSimStages)
+	{
+		if(s->getName() == name)
+		{
+			return s;
+		}
+	}
+	return 0;
+}
+
+bool SimulatorInterface::isSPHFluidMechanicsSimulator()const
+{
+	return (dynamic_cast<const SPHFluidMechanicsSimulator*>(this) != 0 );
+}
+bool SimulatorInterface::isLightingSimulator()const
+{
+	return (dynamic_cast<const LightingSimulator*>(this) != 0 );
+}
+bool SimulatorInterface::isSoundSimulator()const
+{
+	return (dynamic_cast<const SoundSimulator*>(this) != 0 );
+}
 
 
 //casting functions, assert(0) if wrong casted ;(

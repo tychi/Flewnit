@@ -30,13 +30,7 @@ public:
 
 
 
-	RenderTarget* getGlobalRenderTarget()const;
-
 	Scene* getScene()const;
-
-	LightSourceManager* getLightSourceManager()const;
-	Camera* getMainCamera()const;
-
 
 
 	//when a Simulation pass nears its end, it should let do the instance managers the
@@ -55,19 +49,15 @@ public:
 	//and I don't work with smart pointers; so do a manual deletion only if you are absolutely sure
 	//that the buffer is't used by other objects;
 	//void deleteBufferInterface(BufferInterface* bi);
-
 	void registerTexture(Texture* tex);
 	Texture* getTexture(String name);
 	//void deleteTexture(Texture* tex);
-
 	void registerMPP(MPP* mpp);
 	MPP* getMPP(String name);
 	//void deleteMPP(MPP* mpp);
-
 	void registerMaterial(Material* mat);
 	Material* getMaterial(String name);
 	//void deleteMaterial(Material* mat);
-
 	void registerGeometry(Geometry* geo);
 	Geometry* getGeometry(String name);
 	//void deleteGeometry(Geometry* geo);
@@ -79,11 +69,6 @@ private:
 
 
 	Scene* mScene;
-	RenderTarget* mGlobalRenderTarget;
-	Camera* mMainCamera;
-	LightSourceManager* mLightSourceManager;
-
-
 
 
 	Map<String, InstanceManager*> mInstanceManagers;
@@ -118,7 +103,6 @@ private:
 	//OpenGL kernels and OpenGL Shaders stored centrally for multiple usage
 	Map<String, MPP*>		mMPPs;
 
-	void testStuff();
 };
 
 }

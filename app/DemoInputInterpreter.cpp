@@ -6,7 +6,9 @@
  */
 
 #include "DemoInputInterpreter.h"
-#include "Util/Log/Log.h"
+
+#include "UserInterface/Input/InputManager.h"
+
 
 #include "URE.h"
 
@@ -16,9 +18,16 @@
 #include "UserInterface/Input/WiiMote.h"
 
 #include "UserInterface/WindowManager/WindowManager.h"
-#include "Simulator/SimulationResourceManager.h"
+//#include "Simulator/SimulationResourceManager.h"
 #include "Simulator/LightingSimulator/Camera/Camera.h"
-#include "UserInterface/Input/InputManager.h"
+
+
+#include "Simulator/SimulatorInterface.h"
+#include "Simulator/LightingSimulator/LightingSimulator.h"
+
+#include "Util/Log/Log.h"
+
+
 
 #ifdef FLEWNIT_USE_GLFW
 #	include <GL/glfw.h>
@@ -131,7 +140,8 @@ void DemoInputInterpreter::interpretInput(Mouse* mouse)
 					<<");\n"
 					;
 
-			Camera* mainCamera = SimulationResourceManager::getInstance().getMainCamera();
+			Camera* mainCamera = //SimulationResourceManager::getInstance().getMainCamera();
+					URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
 
 			//Matrix4x4 lookAtMatrix = mainCamera->getViewMatrix();
 			float differenceHorizontal =  static_cast<float>(mouse->getRecentPosition().x - mouse->getLastPosition().x);

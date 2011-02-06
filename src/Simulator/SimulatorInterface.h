@@ -32,6 +32,8 @@ protected:
 
 	ConfigStructNode* mSimConfigNode;
 
+	List<SimulationPipelineStage*> mSimStages;
+
 public:
 
 	virtual ~SimulatorInterface();
@@ -39,6 +41,8 @@ public:
 	//factory function;
 	static SimulatorInterface* create(ConfigStructNode* simConfigNode) throw(SimulatorException);
 
+	//resturns NULL if stage does not exist;
+	SimulationPipelineStage* getStage(String name)const; //throw(SimulatorException);
 
 	virtual bool stepSimulation() throw(SimulatorException)  =0;
 	//build pipeline according to config;
@@ -46,7 +50,11 @@ public:
 	//check if pipeline stages are compatible to each other (also to those stages form other simulators (they might have to interact!))
 	virtual bool validatePipeLine() throw(SimulatorException) =0;
 
-	//casting functions, assert(0) if wrong casted ;(
+	bool isSPHFluidMechanicsSimulator()const;
+	bool isLightingSimulator()const;
+	bool isSoundSimulator()const;
+
+	//casting functions, throw exception if wrong casted ;(
 	SPHFluidMechanicsSimulator* toSPHFluidMechanicsSimulator()throw(SimulatorException) ;
 	LightingSimulator* toLightingSimulator()throw(SimulatorException) ;
 	SoundSimulator* toSoundSimulator()throw(SimulatorException) ;

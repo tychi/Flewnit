@@ -42,36 +42,41 @@ class Shader
 :public MPP
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+
+	friend class ShaderManager;
+
+	Shader(String name, const ShaderFeaturesLocal& localShaderFeatures,
+			Path codeDirectory);
+
 public:
-	Shader(String name, const ShaderFeatures& shaderFeatures,
-			Path directoryToTemplateCode);
 	virtual ~Shader();
 
 	//check for equality in order to check if a shader with the desired properties
 	//(shader feature set) already exists in the ResourceManager;
-	//compares path an mShaderFeatures
+	//compares path and mLocalShaderFeatures
 	bool operator==(const Shader& rhs)const;
 
 	virtual void generateShaderSources()=0;
 
 	void compile();
+
 	void link();
 
-	void use();
+	virtual void use(VisualMaterial* visMat)throw(SimulatorException)=0;
+
+
+
+	inline const ShaderFeaturesLocal& getLocalShaderFeatures()const{return mLocalShaderFeatures;}
+private:
 
 	//bind G-buffer textures to output fragments, or bind them as input samplers,
 	//bind the lightsource buffers and set the related uniforms,...
-	virtual void bindCommonUniforms()=0;
-	virtual void bindMaterialSpecificUniforms(Material* currentActiveMaterial);
-	virtual void bindSamplers(Material* currentActiveMaterial)=0;
+	virtual void bindUniforms(VisualMaterial* currentActiveMaterial)=0;
 
-	virtual void setupAndUse();
 
-	inline const ShaderFeatures& getShaderFeatures()const{return mShaderFeatures;}
-private:
-	ShaderFeatures mShaderFeatures;
+	ShaderFeaturesLocal mLocalShaderFeatures;
 
-	Path mDirectoryToTemplateCode;
+	Path mCodeDirectory;
 
 	GLuint mGLProgramHandle;
 };
