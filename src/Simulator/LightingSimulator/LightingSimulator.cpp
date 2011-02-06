@@ -59,10 +59,10 @@ LightingSimulator::LightingSimulator(ConfigStructNode* simConfigNode)
 	),
 	//mShaderManager(new ShaderManager()),
 	mShaderManager(
-		new ShaderManager( parseGlobalShaderFeatureFormConfig(),
-			Path(
-
-			)
+		new ShaderManager(
+			parseGlobalShaderFeatureFromConfig(),
+			Path( 	ConfigCaster::cast<String>(simConfigNode->get("generalSettings",0).
+					  get("GlobalShadingFeatures",0).get("shaderCodeDirectory",0))		)
 		)
 	),
 	mLightSourceManager(0)//TODO
@@ -71,7 +71,7 @@ LightingSimulator::LightingSimulator(ConfigStructNode* simConfigNode)
 	testStuff();
 }
 
-ShaderFeaturesGlobal LightingSimulator::parseGlobalShaderFeatureFormConfig()
+ShaderFeaturesGlobal LightingSimulator::parseGlobalShaderFeatureFromConfig()
 {
 	ShaderFeaturesGlobal sfg;
 

@@ -35,7 +35,7 @@ class ShaderManager
 public:
 
 	ShaderManager(const ShaderFeaturesGlobal& globalShaderFeatures,
-			Path codeDirectory = FLEWNIT_DEFAULT_SHADER_SOURCES_PATH);
+			Path shaderCodeDirectory = FLEWNIT_DEFAULT_SHADER_SOURCES_PATH);
 	virtual ~ShaderManager();
 
 	//TODO rewrite this documentation ;)
@@ -87,10 +87,18 @@ public:
 
 private:
 
+	Path mShaderCodeDirectory;
+
 	List<VisualMaterial*> mRegisteredVisualMaterials;
 
 	ShaderFeaturesGlobal mGlobalShaderFeatures;
-	ShaderFeaturesLocal mCurrenLocalShaderFeatures;
+
+	RenderingTechnique mRenderingTechnique;
+	//renderTargetTextureType delegates creation and/or configuration of a geometry shader,
+	//defining layers for cubemap rendering or general layered rendering
+	TextureType mRenderTargetTextureType;
+
+	//ShaderFeaturesLocal mCurrenLocalShaderFeatures;
 	bool mIsInitializedGuard;
 
 	boost::unordered_map<ShaderFeaturesLocal, Shader*> mShaderMap;

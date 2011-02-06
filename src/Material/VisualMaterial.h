@@ -60,8 +60,7 @@ public:
 
 	//check for equality in order to check if a material with the desired properties
 	//(shader feature set and textures) already exists in the ResourceManager;
-	virtual bool operator==(const Material& rhs) const = 0;
-
+	virtual bool operator==(const Material& rhs) const;
 
 	virtual void activate(
 			SimulationPipelineStage* currentStage,
@@ -69,8 +68,9 @@ public:
 	virtual void deactivate();
 
 	//called by ShaderManager when a new shader becomes necessary as the rendering scenario has changed;
-	//can be overriden by special materials to react appropriat (throw exception, for example ;))
-	virtual void setShader(Shader* shader)throw(SimulatorException);
+	//can be overridden by special materials to react appropriately (throw exception, for example ;))
+	//virtual void setShader(Shader* shader)throw(SimulatorException);
+	void setShader(Shader* shader);
 
 	//looks within the ResourceManager for a shader with the same feature set as this
 	//Material; if found, mShader is set to this found shader and its reference count;
@@ -118,8 +118,49 @@ private:
 };
 
 class SkyDomeMaterial
+: public VisualMaterial
 {
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
+public:
+
+	SkyDomeMaterial(String name, Texture2DCube* cubeTex);
+	virtual ~SkyDomeMaterial();
+
+	//check for equality in order to check if a material with the desired properties
+	//(shader feature set and textures) already exists in the ResourceManager;
+	virtual bool operator==(const Material& rhs) const;
+
+	virtual void activate(
+			SimulationPipelineStage* currentStage,
+			SubObject* currentUsingSuboject) throw(SimulatorException);
+	virtual void deactivate();
+};
+
+
+
+//we'll see if we need an actual debug draw material or if it is handled by the visual mat..
+
+
+
+class LiquidVisualMaterial
+: public VisualMaterial
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+
+	//will be extended when needed
+	LiquidVisualMaterial(String name);
+	virtual ~LiquidVisualMaterial();
+
+	//check for equality in order to check if a material with the desired properties
+	//(shader feature set and textures) already exists in the ResourceManager;
+	virtual bool operator==(const Material& rhs) const;
+
+	virtual void activate(
+			SimulationPipelineStage* currentStage,
+			SubObject* currentUsingSuboject) throw(SimulatorException);
+	virtual void deactivate();
 };
 
 

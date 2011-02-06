@@ -64,8 +64,6 @@ public:
 
 	virtual void use(VisualMaterial* visMat)throw(SimulatorException)=0;
 
-
-
 	inline const ShaderFeaturesLocal& getLocalShaderFeatures()const{return mLocalShaderFeatures;}
 private:
 

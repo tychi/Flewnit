@@ -227,7 +227,7 @@ struct ShaderFeaturesLocal
 			bool instancedRendering = true
 	);
 
-	explicit ShaderFeaturesLocal(const ShaderFeaturesLocal& rhs);
+	ShaderFeaturesLocal(const ShaderFeaturesLocal& rhs);
 
 	//bool isSharable()const;
 	//bool operator==(const ShaderFeaturesLocal& rhs);

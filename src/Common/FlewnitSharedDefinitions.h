@@ -46,7 +46,7 @@ typedef boost::filesystem::path Path;
 
 
 #define FLEWNIT_DEFAULT_CONFIG_PATH String("./config/FlewnitConfig.xml")
-#define FLEWNIT_DEFAULT_SHADER_SOURCES_PATH String(".src/MPP/Shader/ShaderSources/")
+#define FLEWNIT_DEFAULT_SHADER_SOURCES_PATH String("./src/MPP/Shader/ShaderSources/")
 
 #define FLEWNIT_DEFAULT_LOG_FILEPATH "./flewnitLog.txt"
 
