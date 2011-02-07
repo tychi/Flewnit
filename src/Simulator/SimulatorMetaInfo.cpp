@@ -320,7 +320,39 @@ bool ShaderFeaturesGlobal::operator==(const ShaderFeaturesGlobal& rhs)
 
 }
 
+void ShaderFeaturesGlobal::validate()throw(SimulatorException)
+{
+	assert(numMaxShadowCasters <= numMaxLightSources);
 
+	if(
+		(lightSourcesLightingFeature == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT )
+	 ||	(lightSourcesLightingFeature == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT )
+	)
+	{
+		numMaxLightSources = 1;
+		numMaxShadowCasters = 1;
+		assert("shadow feature may not involve more lightsources than the lighting feature" &&
+			(lightSourcesShadowFeature != LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS	)
+		);
+	}
+	else
+	{
+		if(lightSourcesLightingFeature == LIGHT_SOURCES_LIGHTING_FEATURE_NONE )
+		{
+			assert(lightSourcesShadowFeature == LIGHT_SOURCES_SHADOW_FEATURE_NONE);
+			numMaxLightSources = 0;
+			numMaxShadowCasters = 0;
+		}
+		else
+		{
+			//keep init-values as we have many lightsources
+		}
+
+
+
+		//further validation comes later, if necessary
+	}
+}
 
 
 }

@@ -20,13 +20,8 @@ class SimulationPipelineStage
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
-	//SimulationPipelineRequirements* mSimulationPipelineRequirements;
-	//SimulationPipelineFeatures*  mSimulationPipelineFeatures;
-
-	Map<String,BufferInterface*> mRenderingResults;
-
 public:
-	SimulationPipelineStage( String name, SimulationDomain sd);
+	SimulationPipelineStage( String name, SimulationDomain sd, ConfigStructNode* simConfigNode);
 	virtual ~SimulationPipelineStage();
 
 	virtual bool stepSimulation() throw(SimulatorException)  =0;
@@ -37,8 +32,12 @@ public:
 
 	//acessor to the different buffers, if subsequent stages need them
 	//returns NULL if Buffer with specified name does not exist
-	BufferInterface* getRenderingResult(String what);
+	BufferInterface* getRenderingResult(BufferSemantics what);
 
+protected:
+	ConfigStructNode* mSimConfigNode;
+
+	Map<BufferSemantics,BufferInterface*> mRenderingResults;
 
 };
 

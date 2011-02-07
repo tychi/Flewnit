@@ -18,8 +18,6 @@
  */
 
 
-TODO outsource to ShadowMapGenerationStage;
-
 #pragma once
 
 #include "Common/Singleton.h"
@@ -74,7 +72,6 @@ public:
 			const Vector3D& specularColor = Vector3D(1.0f, 1.0f, 1.0f)
 	) throw(SimulatorException);
 
-	inline int getMaxLightSources()const{return mNumMaxLightSources;}
 
 	inline int getNumCurrentlyActiveLightingLightSources()const{return mNumCurrentActiveLightingLightSources;}
 	inline int getNumCurrentlyActiveShadowingLightSources()const{return mNumCurrentActiveShadowingLightSources;}
@@ -88,10 +85,6 @@ public:
 	inline float getLightSourceProjectionMatrixNearClipPlane()const{return mLightSourceProjectionMatrixNearClipPlane;}
 	inline float getLightSourceProjectionMatrixFarClipPlane()const{return mLightSourceProjectionMatrixFarClipPlane;}
 
-
-
-	//FrustumCulling wont't be implemented too soon ;(
-	void renderShadowMaps(float maxDistanceToMainCam = 1000.0f, bool doFrustumCulling= false);
 
 
 	//fill buffers with recent values
@@ -108,12 +101,6 @@ private:
 	void unregisterLightSource(LightSource* ls);
 
 	///\{
-	LightSourcesLightingFeature mLightSourcesLightingFeature;
-	LightSourcesShadowFeature mLightSourcesShadowFeature;
-	int mNumMaxLightSources;
-	int mNumMaxShadowCasters;
-	int mShadowMapResolution; //shadowmap is alwayas of squared size:
-
 	float mLightSourceProjectionMatrixNearClipPlane;
 	float mLightSourceProjectionMatrixFarClipPlane;
 
@@ -137,13 +124,6 @@ private:
 	 *  the biased viewProjectionMatrices for the fragment shader;
 	 */
 	Buffer* mShadowMapMatricesUniformBuffer;
-
-
-	RenderTarget* mShadowMapRenderTarget;
-	//Texture2DDepth, Texture2DDepthArray or Texture2DDepthCube,
-	//depending on the shadow feature
-	//Texture* mShadowMapDepthTexture; //<-- wil lbe integrated as member of the rendertarget;
-	Shader* mShadowMapGenerationShader;
 	///\}
 
 

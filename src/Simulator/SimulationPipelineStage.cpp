@@ -10,8 +10,10 @@
 namespace Flewnit
 {
 
-SimulationPipelineStage::SimulationPipelineStage( String name, SimulationDomain sd)
-:SimulationObject(name,sd)
+SimulationPipelineStage::SimulationPipelineStage( String name, SimulationDomain sd,ConfigStructNode* simConfigNode)
+:
+		SimulationObject(name,sd),
+		mSimConfigNode(simConfigNode)
 {
 	// TODO Auto-generated constructor stub
 
@@ -19,11 +21,11 @@ SimulationPipelineStage::SimulationPipelineStage( String name, SimulationDomain 
 
 SimulationPipelineStage::~SimulationPipelineStage()
 {
-	// TODO Auto-generated destructor stub
+	//nothing to do
 }
 
 //acessor to the different buffers, if subsequent stages need them
-BufferInterface* SimulationPipelineStage::getRenderingResult(String what)
+BufferInterface* SimulationPipelineStage::getRenderingResult(BufferSemantics what)
 {
 	if(mRenderingResults.find(what) != mRenderingResults.end())
 	{

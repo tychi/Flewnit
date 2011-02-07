@@ -167,7 +167,8 @@ bool URE::init(Path& pathToGlobalConfigFile)
 
 	}
 
-	//load the scene
+	//load the scene before the pipeline are initialized so that the pipelines have some
+	//world objects/materials/geometry to grab for shader/kernel generation
 	mLoader->loadScene();
 
 	BOOST_FOREACH(SimulatorInterface* simulator, mSimulators)

@@ -75,6 +75,7 @@ public:
 	bool hasStencilAttachment();
 
 	inline String getName()const{return mName;}
+	inline TextureType getTextureType()const{return mTextureType;}
 	bool isCurrentlyBound();
 
 	void bind(bool forReading = false);

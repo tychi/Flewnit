@@ -31,6 +31,9 @@ ShaderManager::ShaderManager(
 
 		mIsInitializedGuard(false)
 {
+	mGlobalShaderFeatures.validate();
+
+
 	// TODO Auto-generated constructor stub
 //	ShaderFeaturesLocal s;
 //	ShaderFeaturesLocal t(RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL);
@@ -115,16 +118,13 @@ void ShaderManager::registerVisualMaterial(VisualMaterial* mat)
 				newShader = new LiquidShader (mShaderCodeDirectory,sfl);
 				break;
 			}
-			//create unique name:
-			//shaderName.append(sfl.stringify());
 
-			//Texture2D =
-			//mShaderMap[sfl] = new Shader(mShaderCodeDirectory,shaderName,sfl);
-			//assert(0&&"TODO implement shader");
+			mShaderMap[sfl] = newShader;
+
 		}
 
 		mat->setShader(mShaderMap[sfl]);
-		assert(0&&"TODO implement visual mat");
+		//assert(0&&"TODO implement visual mat");
 	}
 }
 

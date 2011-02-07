@@ -296,6 +296,8 @@ struct ShaderFeaturesGlobal
 
 	bool operator==(const ShaderFeaturesGlobal& rhs);
 	const ShaderFeaturesGlobal& operator=(const ShaderFeaturesGlobal& rhs);
+
+	void validate()throw(SimulatorException);
 };
 
 ///\}

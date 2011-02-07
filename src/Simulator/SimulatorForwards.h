@@ -44,6 +44,9 @@ class Log;
 
 
 class Config;
+class ConfigStructNode;
+template <typename T> class ConfigValueNode;
+
 class Loader;
 
 class WindowManager;

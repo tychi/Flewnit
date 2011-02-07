@@ -22,7 +22,7 @@ class LightingSimStageBase
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
 public:
-	LightingSimStageBase( String name, RenderingTechnique renderingTechnique, RenderTarget* usedRenderTarget);
+	LightingSimStageBase( String name, RenderingTechnique renderingTechnique,ConfigStructNode* simConfigNode);
 	virtual ~LightingSimStageBase();
 
 	inline RenderingTechnique getRenderingTechnique()const {return mRenderingTechnique;}
@@ -36,11 +36,16 @@ public:
 
 	inline RenderTarget* getUsedRenderTarget()const{return mUsedRenderTarget;}
 
+
+protected:
+	//init to 0
+	RenderTarget* mUsedRenderTarget;
+
 private:
 
 	//NULL if rendering to screen;
 	RenderingTechnique mRenderingTechnique;
-	RenderTarget* mUsedRenderTarget;
+
 };
 
 

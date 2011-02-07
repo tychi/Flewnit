@@ -38,6 +38,9 @@ public:
 			Path shaderCodeDirectory = FLEWNIT_DEFAULT_SHADER_SOURCES_PATH);
 	virtual ~ShaderManager();
 
+	inline const ShaderFeaturesGlobal& getGlobalShaderFeatures()const{return mGlobalShaderFeatures;}
+	inline Path getShaderCodeDirectory()const{return mShaderCodeDirectory;}
+
 	//TODO rewrite this documentation ;)
 	//get shader with help of a subset of the ShaderFeatures-structure;
 	//The missoing params are derived from the global state of the engine
