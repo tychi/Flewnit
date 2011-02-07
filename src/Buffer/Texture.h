@@ -87,6 +87,8 @@ public:
 	virtual ~Texture();
 	//must be implemented by concrete textures;
 	virtual bool operator==(const BufferInterface& rhs) const =0;
+	//must be re-implemented by concrete textures;
+	//virtual bool operator==(const BufferInterface& rhs) const;
 
 	//virtual void loadFromFile(Path filename) throw(BufferException){throw(BufferException("concete class has no loader functionality"));}
 	inline const TextureInfo& getTextureInfo()const{return *mTextureInfoCastPtr;}

@@ -697,6 +697,9 @@ void RenderTarget::requestCreateAndStoreColorTexture(BufferSemantics which)throw
 							//no mipmaps needed
 							false
 					);
+
+					//Texture2D testTex;
+					//testTex = (*(dynamic_cast<Texture2D*>(mOwnedTexturePool[which])));
 					break;
 				case TEXTURE_TYPE_2D_CUBE:
 					mOwnedTexturePool[which] = new Texture2DCube(

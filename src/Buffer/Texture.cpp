@@ -32,6 +32,15 @@ Texture::~Texture()
 	mGraphicsBufferHandle = 0;
 }
 
+//bool Texture::operator==(const BufferInterface& rhs) const
+//{
+//	const Texture* rhsTexPtr = dynamic_cast<const Texture*>(&rhs);
+//	if (rhsTexPtr)
+//	{return   (*mTextureInfoCastPtr) == (rhsTexPtr->getTextureInfo()) ;}
+//	else {return false;}
+//}
+
+
 //internal function to set the compare func etc;
 void Texture::setupDepthTextureParameters()
 {

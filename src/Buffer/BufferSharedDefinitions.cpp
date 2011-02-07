@@ -61,8 +61,8 @@ BufferInfo::~BufferInfo()
 bool BufferInfo::operator==(const BufferInfo& rhs) const
 {
 		return
-				//NOT name equality, this doesn't matter, in the contrary, the names should be unique for convenient referancation in the data base!
-				name==rhs.name	&&
+				//DON'T compare the name! the structure of the framework asserts unique names!
+				//name==rhs.name	&&
 				usageContexts==rhs.usageContexts &&
 				bufferSemantics==rhs.bufferSemantics &&
 				elementType==rhs.elementType &&
@@ -76,7 +76,8 @@ bool BufferInfo::operator==(const BufferInfo& rhs) const
 
 const BufferInfo& BufferInfo::operator=(const BufferInfo& rhs)
 {
-	name=rhs.name; //TODO check if name copying has side effects;
+	//DON'T copy the name!
+	//name=rhs.name; //TODO check if name copying has side effects;
 	usageContexts=rhs.usageContexts;
 	bufferSemantics=rhs.bufferSemantics;
 	elementType=rhs.elementType;

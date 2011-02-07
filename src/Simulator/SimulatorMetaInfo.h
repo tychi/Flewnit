@@ -187,12 +187,13 @@ enum ShadingFeatures
 //use different shader generation templates;
 enum VisualMaterialType
 {
-	VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING  		=0,
-	VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING		=1,
-	VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY		=2,	//just set a color value or something
+	VISUAL_MATERIAL_TYPE_NONE					=0,
+	VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING  		=1,
+	VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING		=2,
+	VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY		=3,	//just set a color value or something
 
-	VISUAL_MATERIAL_TYPE_GAS_RENDERING			=3,
-	VISUAL_MATERIAL_TYPE_LIQUID_RENDERING		=4
+	VISUAL_MATERIAL_TYPE_GAS_RENDERING			=4,
+	VISUAL_MATERIAL_TYPE_LIQUID_RENDERING		=5
 };
 
 
@@ -212,12 +213,14 @@ struct ShaderFeaturesLocal
 	//defining layers for cubemap rendering or general layered rendering
 	TextureType renderTargetTextureType;
 	//}
-	//material dependent features:
+	//material dependent features: they play no role for "global" shaders
+	//like depthmap generation or deferred lighting
 	//{
 	VisualMaterialType visualMaterialType;
 	ShadingFeatures shadingFeatures;
-	bool instancedRendering;
 	//}
+	//geometry dependent feature
+	bool instancedRendering;
 
 	explicit ShaderFeaturesLocal(
 			RenderingTechnique renderingTechnique = RENDERING_TECHNIQUE_DEFAULT_LIGHTING,
@@ -232,6 +235,9 @@ struct ShaderFeaturesLocal
 	//bool isSharable()const;
 	//bool operator==(const ShaderFeaturesLocal& rhs);
 	const ShaderFeaturesLocal& operator=(const ShaderFeaturesLocal& rhs);
+
+	//convert to a string unique for every permutation
+	String stringify();
 };
 
 //we need this function to use  ShaderFeaturesLocal as key value to boost::unordered map
@@ -248,20 +254,23 @@ bool operator==(ShaderFeaturesLocal const& lhs, ShaderFeaturesLocal const& rhs);
  * ShaderFeaturesLocal and the ShaderFeaturesGlobal struct;
  * We need some values to be globally and uniquely defined in order to assure rendering
  * consistency; e.g. a shadowmap should be generated and sampled by every shader in the same way;
+ *
+ * This struct is stored in and queriable from LightingSimulator
  */
 struct ShaderFeaturesGlobal
 {
 
-	LightSourcesLightingFeature lightSourcesLightingFeature;//querieable from LightSourceManager
-	LightSourcesShadowFeature lightSourcesShadowFeature;	//querieable from LightSourceManager
-	ShadowTechnique shadowTechnique;						//querieable from LightSourceManager
-	int numMaxLightSources;									//querieable from LightSourceManager
+	LightSourcesLightingFeature lightSourcesLightingFeature;
+	LightSourcesShadowFeature lightSourcesShadowFeature;
+	ShadowTechnique shadowTechnique;
+	int numMaxLightSources;
+	int numMaxShadowCasters;
 
-	int numMaxInstancesRenderable;							//queryable from URE
+	int numMaxInstancesRenderable;
 	//{  only relevant for the deferred lighting stage
 	//   (for g-buffer texel fetch from MS textures, accumulation of samples etc.);
-	TextureType GBufferType; 								//queryable from URE
-	int numMultiSamples;									//queryable from URE
+	TextureType GBufferType;
+	int numMultiSamples;
 	//}
 
 	//custom stuff: render to integer texture; will be handled in a custom shader;
@@ -273,7 +282,7 @@ struct ShaderFeaturesGlobal
 			LightSourcesShadowFeature lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_NONE,
 			ShadowTechnique shadowTechnique = SHADOW_TECHNIQUE_NONE,
 			int numMaxLightSources = 1,
-
+			int numMaxShadowCasters = 1,
 			int numMaxInstancesRenderable = 1,
 
 			TextureType GBufferType = TEXTURE_TYPE_2D_RECT,

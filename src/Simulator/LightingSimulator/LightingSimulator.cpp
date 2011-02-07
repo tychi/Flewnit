@@ -33,6 +33,7 @@ LightingSimulator::LightingSimulator(ConfigStructNode* simConfigNode)
 			new RenderTarget(
 					String("globalRenderTarget"),
 					WindowManager::getInstance().getWindowResolution(),
+					//TODO make customizable
 					TEXTURE_TYPE_2D_RECT,
 					DEPTH_RENDER_BUFFER
 					)
@@ -114,6 +115,7 @@ ShaderFeaturesGlobal LightingSimulator::parseGlobalShaderFeatureFromConfig()
 			sfg.shadowTechnique = SHADOW_TECHNIQUE_PCFSS;
 
 	sfg.numMaxLightSources =	ConfigCaster::cast<int>(node.get("numMaxLightSources",0));
+	sfg.numMaxShadowCasters =	ConfigCaster::cast<int>(node.get("numMaxShadowCasters",0));
 	sfg.numMaxInstancesRenderable =	ConfigCaster::cast<int>(node.get("numMaxInstancesRenderable",0));
 
 	String GBufferTypeString =

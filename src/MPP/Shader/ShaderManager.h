@@ -81,9 +81,6 @@ public:
 	//void setRenderingScenario(RenderingTechnique rendTech,TextureType renderTargetTextureType, RenderTarget* rt)throw(SimulatorException);
 	void setRenderingScenario(LightingSimStageBase* lightingStage)throw(SimulatorException);
 
-	//
-	//Shader* getShaderForCurrentRenderingScenario(ShadingFeatures shadingFeatures,bool forInstancedRendering);
-
 
 private:
 
@@ -93,10 +90,10 @@ private:
 
 	ShaderFeaturesGlobal mGlobalShaderFeatures;
 
-	RenderingTechnique mRenderingTechnique;
+	RenderingTechnique mCurrentRenderingTechnique;
 	//renderTargetTextureType delegates creation and/or configuration of a geometry shader,
 	//defining layers for cubemap rendering or general layered rendering
-	TextureType mRenderTargetTextureType;
+	TextureType mCurrentRenderTargetTextureType;
 
 	//ShaderFeaturesLocal mCurrenLocalShaderFeatures;
 	bool mIsInitializedGuard;

@@ -17,6 +17,9 @@
  *
  */
 
+
+TODO outsource to ShadowMapGenerationStage;
+
 #pragma once
 
 #include "Common/Singleton.h"
@@ -72,9 +75,11 @@ public:
 	) throw(SimulatorException);
 
 	inline int getMaxLightSources()const{return mNumMaxLightSources;}
+
 	inline int getNumCurrentlyActiveLightingLightSources()const{return mNumCurrentActiveLightingLightSources;}
 	inline int getNumCurrentlyActiveShadowingLightSources()const{return mNumCurrentActiveShadowingLightSources;}
 	inline int getNumCurrentlyExistingLightSources()const{return mLightSources.size();}
+
 	inline LightSource* getLightSource(unsigned int index)const{assert(index<mLightSources.size()); return mLightSources[index];}
 	inline Buffer* getShadowMapMatricesUniformBuffer()const{return mShadowMapMatricesUniformBuffer;}
 	inline Buffer* getLightSourceUniformBuffer()const{return mLightSourceUniformBuffer;}
@@ -87,6 +92,8 @@ public:
 
 	//FrustumCulling wont't be implemented too soon ;(
 	void renderShadowMaps(float maxDistanceToMainCam = 1000.0f, bool doFrustumCulling= false);
+
+
 	//fill buffers with recent values
 	void setupBuffersForShading(float maxDistanceToMainCam = 1000.0f);
 
