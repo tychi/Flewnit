@@ -79,34 +79,59 @@ void Shader::build()
 
     Grantlee::FileSystemTemplateLoader::Ptr loader = Grantlee::FileSystemTemplateLoader::Ptr( new Grantlee::FileSystemTemplateLoader() );
     String shaderDirectory=	(mCodeDirectory / mShaderName).string() ;
-    loader->setTemplateDirs( QStringList() << shaderDirectory.c_str() );
+    String commonCodeSnippetsDirectory = (mCodeDirectory / Path("Common")).string();
+    loader->setTemplateDirs( QStringList() << shaderDirectory.c_str() << commonCodeSnippetsDirectory.c_str());
     templateEngine->addTemplateLoader(loader);
 
     //setup the context to delegate template rendering according to the shaderFeatures (both local and global):
     TemplateContextMap contextMap;
     setupTemplateContext(contextMap);
     Grantlee::Context shaderTemplateContext(contextMap);
-
+    String shaderSourceCode;
 
     //--------------------------------------------------------------------
 
     //generate vertex shader source code:
-    Grantlee::Template vertexShaderTemplate = templateEngine->loadByName( "test.vert" );
-    String shaderSourceCode = vertexShaderTemplate->render(&shaderTemplateContext).toStdString();
+    //TODO uncomment when vertex shader stage is derived from needs of the frsagment shder stage;
 
-    LOG<< DEBUG_LOG_LEVEL <<  shaderSourceCode;
+//    Grantlee::Template vertexShaderTemplate = templateEngine->loadByName( "main.vert" );
+//    shaderSourceCode = vertexShaderTemplate->render(&shaderTemplateContext).toStdString();
+//
+//    LOG<< DEBUG_LOG_LEVEL << "VERTEX SHADER CODE:\n"<<  shaderSourceCode;
+//
+//    assert(0 && "inspecting shader code, therefore stop ;) ");
+//
+//    //create the vertex shader:
+//    mShaderStages[VERTEX_SHADER_STAGE] = new ShaderStage(VERTEX_SHADER_STAGE,shaderSourceCode);
 
-    //create the vertex shader:
-    mShaderStages[VERTEX_SHADER_STAGE] = new ShaderStage(VERTEX_SHADER_STAGE,shaderSourceCode);
+
+    //--------------------------------------------------------------------
+    //TODO derive a condition where we need a geometry shader:
+    if(false)
+    {
+        //generate geom shader source code:
+    	Grantlee::Template geomShaderTemplate = templateEngine->loadByName( "main.geom" );
+        shaderSourceCode = geomShaderTemplate->render(&shaderTemplateContext).toStdString();
+
+        LOG<< DEBUG_LOG_LEVEL << "GEOMETRY SHADER CODE:\n"<<  shaderSourceCode;
+        assert(0 && "inspecting shader code, therefore stop ;) ");
+
+        //create the geometry shader:
+        mShaderStages[GEOMETRY_SHADER_STAGE] = new ShaderStage(GEOMETRY_SHADER_STAGE, shaderSourceCode);
+    }
 
 
     //--------------------------------------------------------------------
 
+    //generate fragment shader source code:
+	Grantlee::Template fragmentShaderTemplate = templateEngine->loadByName( "main.frag" );
+    shaderSourceCode = fragmentShaderTemplate->render(&shaderTemplateContext).toStdString();
 
+    LOG<< DEBUG_LOG_LEVEL << "FRAGMENT SHADER CODE:\n"<<  shaderSourceCode;
+    assert(0 && "inspecting shader code, therefore stop ;) ");
 
-
-    //--------------------------------------------------------------------
-
+    //create the geometry shader:
+    mShaderStages[GEOMETRY_SHADER_STAGE] = new ShaderStage(FRAGMENT_SHADER_STAGE, shaderSourceCode);
 
 
 
@@ -152,7 +177,15 @@ bool Shader::operator==(const Shader& rhs)const
 
 void Shader::setupTemplateContext(TemplateContextMap& context)
 {
+	//test values; TODO setup according to shaderfeatures struct
 	context.insert("name", "Wayne intressierts");
+	context.insert("renderingTechniqueDefaultLighting",true);
+	context.insert("renderingTechniqueGBufferFill",true);
+
+	context.insert("shadingFeatureDecalTexturing",true);
+	context.insert("shadingFeatureNormalMapping",true);
+	context.insert("shadingFeatureCubeMapping",true);
+
 }
 
 

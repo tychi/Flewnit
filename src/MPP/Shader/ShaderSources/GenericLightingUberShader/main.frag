@@ -1,89 +1,26 @@
-
-//{%comment}
-//{
-	/*
-	Third concept of a fragment shader template:
-
-	Keywords of the template language:
-		comment : long comment which shall be configurable to be ex
-	*/
- //}
-
-
-
-//{%import ../Common/00_Generic_Common_VersionTag.glsl}
-//{%import ../Common/01_Generic_Common_precisionTag.glsl}
-//{%import ../Common/03_Generic_Common_customizableDefines.glsl}
-
-
-//{%import ./04_Fragment_appCodeIncludable_dataTypes.glsl}
-//{%import ./05_Fragment_materialSamplers.glsl}
-//{%import ./06_Fragment_shadowMapSamplers.glsl}
-//{%import ./07_Fragment_GBufferSamplers.glsl}
-//{%import ./08_Fragment_Uniforms.glsl}
-//{%import ./09_Fragment_input.glsl}
-//{%import ./10_Fragment_output.glsl}
-//{%import ./11_Fragment_subroutine_getDistanceAttenuation.glsl}
-//{%import ./11_Fragment_subroutine_getNormal.glsl}
-//{%import ./11_Fragment_subroutine_getShadowAttenuation.glsl}
-//{%import ./11_Fragment_subroutine_getSpotLightAttenuation.glsl}
-
-
-//{%insert versionTag}
-
-//{%insert precisionTag}
-
-//{%insert persistentdefines}
-
-//customizable defines have definetely to be set by the shaders (via string concatenation):
-//for examples and explanation refer to file "02_Generic_persistentDefines.glsl";
-//{%customdefines}
-
-
-//{%typeDefinitions}
-
-
+//Third concept of a fragment shader template, this time in grantlee template engine syntax;
+{% include  "00_Generic_Common_VersionTag.glsl" %}
+{% include  "01_Generic_Common_precisionTag.glsl" %}
+//data type definition
+{% include  "./04_Fragment_appCodeIncludable_dataTypes.glsl" %}
 
 //---- interface ---------------------------------------------------------------------------------
-
 //---- application (uniform) input ----
-
-//{%materialSamplers}
-
-//{%shadowMapSamplers}
-
-//{%GBufferSamplers}
-
-//non-sampler uniforms and uniform buffers:
-//{%uniforms}
-
-
+{% include  "./05_Fragment_materialSamplers.glsl" %}
+{%comment%}
+{% include  "./06_Fragment_shadowMapSamplers.glsl" %}
+{% include  "./07_Fragment_GBufferSamplers.glsl" %}
+{% include  "./08_Fragment_Uniforms.glsl" %}
 //---- shader input --------------------
-
-//{%input}
-
+{% include  "./09_Fragment_input.glsl" %}
 //---- shader output -------------------
+{% include  "./10_Fragment_output.glsl" %}
+//----- subroutines ------------------------------------------------------------------------------
+{% include  "./11_Fragment_subroutine_getDistanceAttenuation.glsl" %}
+{% include  "./11_Fragment_subroutine_getNormal.glsl" %}
+{% include  "./11_Fragment_subroutine_getShadowAttenuation.glsl" %}
+{% include  "./11_Fragment_subroutine_getSpotLightAttenuation.glsl" %}
 
-//{%output}
-
-//------------------------------------------------------------------------------------------------
-
-
-
-
-//------------------------------------------------------------------------------------------------
-//subroutines (atm not in the GL4-style ;()
-//{%subroutines}
-//{
-	//{%subroutine_getNormal}
-
-	//{%subroutine_getShadowAttenuation}
-
-	//{%subroutine_getDistanceAttenuation}
-
-	//{%subroutine_getSpotLightAttenuation}
-
-//}
 
 
 void main()
@@ -247,3 +184,6 @@ void main()
 #endif
 
 } //endMain
+
+
+{%endcomment%}

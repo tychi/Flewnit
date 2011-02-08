@@ -1,8 +1,7 @@
-//GLSL Shader Template: persistent defines:
-//applicable to following stages: all
-
-//{%precisionTag}
-//{
+{%comment%}
+	GLSL precision Tag
+	applicable to following shader stages: all
+{%endcomment%}
 precision highp float;
-//}
+
 
