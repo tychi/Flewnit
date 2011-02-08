@@ -10,12 +10,19 @@
 #include "Simulator/OpenCL_Manager.h"
 #include "MPP/Shader/ShaderManager.h"
 
-//#include <grantlee_core.h>
-#include <grantlee/engine.h>
 #include "Util/Log/Log.h"
+
+
+
+#include <grantlee/engine.h>
+
+typedef QVariantHash TemplateContextMap;
+
+
 
 namespace Flewnit
 {
+
 
 //static member init:
 GLuint ShaderStage::mGLShaderStageIdentifiers[__NUM_SHADER_STAGES__] =
@@ -67,15 +74,45 @@ void Shader::build()
 {
 	GUARD( mGLProgramHandle = glCreateProgram() );
 
-	//create the vertex shader:
-	mShaderStages[VERTEX_SHADER_STAGE] = new ShaderStage(VERTEX_SHADER_STAGE,mCodeDirectory,mShaderName);
 
-    Grantlee::Engine *engine = new Grantlee::Engine(  );
-    Grantlee::Template t = engine->newTemplate("My name is {{ name }}.", "my_template_name");
-    QVariantHash mapping;
-    mapping.insert("name", "Grainne");
-    Grantlee::Context c(mapping);
-    LOG<< DEBUG_LOG_LEVEL << t->render(&c).toStdString(); // Returns "My name is Grainne."
+    Grantlee::Engine *templateEngine = new Grantlee::Engine();
+
+    Grantlee::FileSystemTemplateLoader::Ptr loader = Grantlee::FileSystemTemplateLoader::Ptr( new Grantlee::FileSystemTemplateLoader() );
+    String shaderDirectory=	(mCodeDirectory / mShaderName).string() ;
+    loader->setTemplateDirs( QStringList() << shaderDirectory.c_str() );
+    templateEngine->addTemplateLoader(loader);
+
+    //setup the context to delegate template rendering according to the shaderFeatures (both local and global):
+    TemplateContextMap contextMap;
+    setupTemplateContext(contextMap);
+    Grantlee::Context shaderTemplateContext(contextMap);
+
+
+    //--------------------------------------------------------------------
+
+    //generate vertex shader source code:
+    Grantlee::Template vertexShaderTemplate = templateEngine->loadByName( "test.vert" );
+    String shaderSourceCode = vertexShaderTemplate->render(&shaderTemplateContext).toStdString();
+
+    LOG<< DEBUG_LOG_LEVEL <<  shaderSourceCode;
+
+    //create the vertex shader:
+    mShaderStages[VERTEX_SHADER_STAGE] = new ShaderStage(VERTEX_SHADER_STAGE,shaderSourceCode);
+
+
+    //--------------------------------------------------------------------
+
+
+
+
+    //--------------------------------------------------------------------
+
+
+
+
+
+    //--------------------------------------------------------------------
+
 
 
 	//TODO coninue
@@ -113,9 +150,9 @@ bool Shader::operator==(const Shader& rhs)const
 
 
 
-void Shader::generateCustomDefines()
+void Shader::setupTemplateContext(TemplateContextMap& context)
 {
-
+	context.insert("name", "Wayne intressierts");
 }
 
 
@@ -140,10 +177,11 @@ void Shader::validate()throw(BufferException)
 //----------------------------------------------------------------------------------------------
 
 
-ShaderStage::ShaderStage(ShaderStageType shaderStageType, Path codeDirectory, Path shaderName)
+ShaderStage::ShaderStage(ShaderStageType shaderStageType, String sourceCode)
 :
-		mCodeDirectory(codeDirectory),
-		mShaderName(shaderName)
+		mScourceCode(sourceCode)
+		//mCodeDirectory(codeDirectory),
+		//mShaderName(shaderName)
 {
 	GUARD( mGLShaderStageHandle = glCreateShader(mGLShaderStageIdentifiers[shaderStageType]));
 }
@@ -155,18 +193,6 @@ ShaderStage::~ShaderStage()
 }
 
 
-//throw exception if file for code does not exist or if the section does not apply
-//to the shader type (e.g. customizable #defines cannot be loaded but only generated on the fly)
-void ShaderStage::loadCodeSection(ShaderCodeSectionID which )throw(SimulatorException)
-{
-
-}
-
-
-void ShaderStage::propagateLoadedSourceToGL()
-{
-
-}
 
 
 void ShaderStage::compile()
@@ -175,10 +201,10 @@ void ShaderStage::compile()
 }
 
 
-//for later debugging of the final code of a stage:
+//for later inspection of the final code of a stage:
 void ShaderStage::writeToDisk()
 {
-
+	//TODO
 }
 
 
@@ -188,5 +214,17 @@ void ShaderStage::validate()throw(BufferException)
 }
 
 
+////throw exception if file for code does not exist or if the section does not apply
+////to the shader type (e.g. customizable #defines cannot be loaded but only generated on the fly)
+//void ShaderStage::loadCodeSection(ShaderCodeSectionID which )throw(SimulatorException)
+//{
+//
+//}
+//
+//
+//void ShaderStage::propagateLoadedSourceToGL()
+//{
+//
+//}
 
 }

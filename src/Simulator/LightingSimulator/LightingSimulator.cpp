@@ -217,10 +217,10 @@ void LightingSimulator::testStuff()
 	///\{ TEST STUFF DEBUG
 
 
-	//Shader* testShader = new GenericLightingUberShader(
-	//		ShaderManager::getInstance().getShaderCodeDirectory(),ShaderFeaturesLocal());
-	//Profiler::getInstance().updateMemoryTrackingInfo();
-	//delete testShader;
+	Shader* testShader = new GenericLightingUberShader(
+			ShaderManager::getInstance().getShaderCodeDirectory(),ShaderFeaturesLocal());
+	Profiler::getInstance().updateMemoryTrackingInfo();
+	delete testShader;
 
 
 

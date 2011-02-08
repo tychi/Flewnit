@@ -13,12 +13,17 @@
 #include "Common/FlewnitSharedDefinitions.h"
 #include "Simulator/SimulatorForwards.h"
 
-#include <set>
 
+class QString;
+class QVariant;
+template <class Key, class T>class QHash;
+typedef QHash<QString, QVariant> QVariantHash;
+typedef QVariantHash TemplateContextMap;
 
 
 namespace Flewnit
 {
+
 
 enum ShaderStageType
 {
@@ -30,30 +35,30 @@ enum ShaderStageType
 	__NUM_SHADER_STAGES__
 };
 
-enum ShaderCodeSectionID
-{
-	VERSION_TAG,
-	PRECISION_TAG,
-	PERSISTENT_DEFINES,
-	CUSTOMIZABLE_DEFINES,
-
-	DATA_TYPES,
-	MATERIAL_SAMPLERS,
-	SHADOWMAP_SAMPLERS,
-	GBUFFER_SAMPLERS,
-	UNIFORMS,
-	INPUT,
-	OUTPUT,
-
-	SUBROUTINE_GET_DISTANCE_ATTENUATION,
-	SUBROUTINE_GET_NORMAL,
-	SUBROUTINE_GET_SHADOW_ATTENUATION,
-	SUBROUTINE_GET_SPOTLIGHT_ATTENUATION,
-
-	MAIN_ROUTINE,
-
-	__NUM_SHADER_CODE_SECTIONS__
-};
+//enum ShaderCodeSectionID
+//{
+//	VERSION_TAG,
+//	PRECISION_TAG,
+//	PERSISTENT_DEFINES,
+//	CUSTOMIZABLE_DEFINES,
+//
+//	DATA_TYPES,
+//	MATERIAL_SAMPLERS,
+//	SHADOWMAP_SAMPLERS,
+//	GBUFFER_SAMPLERS,
+//	UNIFORMS,
+//	INPUT,
+//	OUTPUT,
+//
+//	SUBROUTINE_GET_DISTANCE_ATTENUATION,
+//	SUBROUTINE_GET_NORMAL,
+//	SUBROUTINE_GET_SHADOW_ATTENUATION,
+//	SUBROUTINE_GET_SPOTLIGHT_ATTENUATION,
+//
+//	MAIN_ROUTINE,
+//
+//	__NUM_SHADER_CODE_SECTIONS__
+//};
 
 class ShaderStage
 :public BasicObject
@@ -64,29 +69,31 @@ private:
 
 	friend class Shader;
 
-	ShaderStage(ShaderStageType shaderStageType, Path codeDirectory, Path shaderName);
+	ShaderStage(ShaderStageType shaderStageType, String sourceCode);
 	~ShaderStage();
 
 	//throw exceptionif the section does not apply to the shader type
 	//(e.g. customizable #defines cannot be loaded but only generated on the fly)
 	//if file for code does not exist, it is assumed that this is on purpose as the code
 	//snippet is not needed for this stage (like shadow attenuation for geometry, for example ;))
-	void loadCodeSection(ShaderCodeSectionID which )throw(SimulatorException);
-	void propagateLoadedSourceToGL();
+	//void loadCodeSection(ShaderCodeSectionID which )throw(SimulatorException);
+	//void propagateLoadedSourceToGL();
+
 	void compile();
 	//for later debugging of the final code of a stage:
 	void writeToDisk();
 	void validate()throw(BufferException);
 
-	Path mCodeDirectory;
-	Path mShaderName;
+	//	Path mCodeDirectory;
+	//	Path mShaderName;
 
 	ShaderStageType type;
 
 	GLuint mGLShaderStageHandle;
 
 
-	String mCodeSectionStrings[__NUM_SHADER_CODE_SECTIONS__];
+	//String mCodeSectionStrings[__NUM_SHADER_CODE_SECTIONS__];
+	String mScourceCode;
 	static GLuint mGLShaderStageIdentifiers[__NUM_SHADER_STAGES__];
 
 };
@@ -142,8 +149,8 @@ protected:
 	//called by ShaderManager::setRenderingScenario
 	virtual void bindFragDataLocations(RenderTarget* rt) throw(BufferException)=0;
 
-	//virtual void generateCustomDefines()=0;
-	void generateCustomDefines();
+	//setup the context for template rendering:
+	void setupTemplateContext(TemplateContextMap& context);
 
 	void attachCompiledStage(ShaderStageType which);
 	void detachCompiledStage(ShaderStageType which);
@@ -156,7 +163,7 @@ protected:
 
 	//filled by generateCustomDefines(), used for straig forward #define-string generation OR for
 	//parsing a template
-	std::set<String> mDefinitionsSet[__NUM_CUSTOM_SHADER_DEFINITIONS__];
+	//std::set<String> mDefinitionsSet[__NUM_CUSTOM_SHADER_DEFINITIONS__];
 
 	GLuint mGLProgramHandle;
 	ShaderStage* mShaderStages[__NUM_SHADER_STAGES__];
