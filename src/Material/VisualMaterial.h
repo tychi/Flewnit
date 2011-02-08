@@ -65,8 +65,8 @@ public:
 	virtual void activate(
 			SimulationPipelineStage* currentStage,
 			SubObject* currentUsingSuboject) throw(SimulatorException);
-	virtual void deactivate();
-
+	virtual void deactivate(SimulationPipelineStage* currentStage,
+			SubObject* currentUsingSuboject) throw(SimulatorException);
 
 	//looks within the ResourceManager for a shader with the same feature set as this
 	//Material; if found, mShader is set to this found shader and its reference count;
@@ -141,7 +141,8 @@ public:
 	virtual void activate(
 			SimulationPipelineStage* currentStage,
 			SubObject* currentUsingSuboject) throw(SimulatorException);
-	virtual void deactivate();
+	virtual void deactivate(SimulationPipelineStage* currentStage,
+			SubObject* currentUsingSuboject) throw(SimulatorException);
 };
 
 
@@ -167,7 +168,8 @@ public:
 	virtual void activate(
 			SimulationPipelineStage* currentStage,
 			SubObject* currentUsingSuboject) throw(SimulatorException);
-	virtual void deactivate();
+	virtual void deactivate(SimulationPipelineStage* currentStage,
+			SubObject* currentUsingSuboject) throw(SimulatorException);
 };
 
 

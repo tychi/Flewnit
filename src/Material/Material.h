@@ -40,7 +40,8 @@ public:
 			SimulationPipelineStage* currentStage,
 			SubObject* currentUsingSuboject) throw(SimulatorException)=0;
 	//undoing stuff, like re-enable depth test etc.
-	virtual void deactivate()=0;
+	virtual void deactivate(SimulationPipelineStage* currentStage,
+			SubObject* currentUsingSuboject) throw(SimulatorException)=0;
 };
 
 

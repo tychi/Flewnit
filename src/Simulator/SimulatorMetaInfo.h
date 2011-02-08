@@ -139,7 +139,8 @@ enum RenderingTechnique
 	//will be ignored by the management logic of the ShaderManager;
 	//The special stage and the special material with the special shader
 	//will interact in their own way;
-	RENDERING_TECHNIQUE_CUSTOM						=7
+	RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION	=7,
+	RENDERING_TECHNIQUE_CUSTOM						=8
 };
 
 enum LightSourcesLightingFeature
@@ -174,10 +175,11 @@ enum ShadingFeatures
 	//global lighting via layered depth images or stuff... just a brainstroming, won't be implemented
 	SHADING_FEATURE_GLOBAL_LIGHTING		=1<<1,
 	SHADING_FEATURE_DECAL_TEXTURING		=1<<2,
-	SHADING_FEATURE_NORMAL_MAPPING		=1<<3,
-	SHADING_FEATURE_CUBE_MAPPING		=1<<4,
-	SHADING_FEATURE_AMBIENT_OCCLUSION	=1<<5,
-	SHADING_FEATURE_TESSELATION			=1<<6,
+	SHADING_FEATURE_DETAIL_TEXTURING	=1<<3,
+	SHADING_FEATURE_NORMAL_MAPPING		=1<<4,
+	SHADING_FEATURE_CUBE_MAPPING		=1<<5,
+	SHADING_FEATURE_AMBIENT_OCCLUSION	=1<<6,
+	SHADING_FEATURE_TESSELATION			=1<<7,
 
 };
 
@@ -237,7 +239,7 @@ struct ShaderFeaturesLocal
 	const ShaderFeaturesLocal& operator=(const ShaderFeaturesLocal& rhs);
 
 	//convert to a string unique for every permutation
-	String stringify();
+	String stringify()const;
 };
 
 //we need this function to use  ShaderFeaturesLocal as key value to boost::unordered map
@@ -299,6 +301,36 @@ struct ShaderFeaturesGlobal
 
 	void validate()throw(SimulatorException);
 };
+
+//for number values, also define its inverse, no matter if needed or not
+enum CustomShaderDefinitionIDs
+{
+	 RENDERING_TECHNIQUE,
+	 RENDER_TARGET_TEXTURE_TYPE,
+	 VISUAL_MATERIAL_TYPE,
+	 SHADING_FEATURES,
+	 INSTANCED_RENDERING,
+	 LIGHTSOURCES_LIGHTING_FEATURE,
+	 LIGHTSOURCES_SHADOW_FEATURE,
+	 SHADOW_TECHNIQUE,
+
+	 NUM_MAX_LIGHTSOURCES,
+	 INV_NUM_MAX_LIGHTSOURCES,
+
+	 NUM_MAX_SHADOW_CASTERS,
+	 INV_NUM_MAX_SHADOW_CASTERS,
+
+	 NUM_MAX_INSTANCES_RENDERABLE,
+
+	 G_BUFFER_TYPE,
+
+	 NUM_MULTISAMPLES,
+	 INV_NUM_MULTISAMPLES,
+
+	 __NUM_CUSTOM_SHADER_DEFINITIONS__
+};
+
+
 
 ///\}
 

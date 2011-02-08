@@ -28,8 +28,9 @@ protected:
 	friend class ShaderManager;
 	LiquidShader(Path codeDirectory, const ShaderFeaturesLocal& localShaderFeatures);
 
+	//virtual bool operator==(const Shader& rhs)const;
 
-	virtual void generateCustomDefines();
+	//virtual void generateCustomDefines();
 	virtual void bindFragDataLocations(RenderTarget* rt) throw(BufferException);
 };
 

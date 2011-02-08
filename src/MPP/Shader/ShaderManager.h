@@ -85,7 +85,14 @@ public:
 	void setRenderingScenario(LightingSimStageBase* lightingStage)throw(SimulatorException);
 
 
+	//needed for creation of/access to specialshaders like the primitive id-renderer:
+	Shader* getShader(const ShaderFeaturesLocal& sfl);
+
 private:
+
+
+	void assignShader(VisualMaterial* mat);
+	Shader* generateShader(const ShaderFeaturesLocal& sfl);
 
 	Path mShaderCodeDirectory;
 

@@ -78,7 +78,8 @@
 	#define RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL		5
 	#define RENDERING_TECHNIQUE_DEFERRED_LIGHTING			6
 	//value to indicate a special shader
-	#define RENDERING_TECHNIQUE_CUSTOM				7
+	#define RENDERING_TECHNIQUE_CUSTOM						7
+	#define RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION 	8
 	
 	//---------------------------------------------------------
 	
@@ -105,10 +106,11 @@
 	//global lighting via layered depth images or stuff... just a brainstroming, won't be implemented	
 	#define SHADING_FEATURE_GLOBAL_LIGHTING		1<<1
 	#define SHADING_FEATURE_DECAL_TEXTURING		1<<2
-	#define SHADING_FEATURE_NORMAL_MAPPING		1<<3
-	#define SHADING_FEATURE_CUBE_MAPPING		1<<4
-	#define SHADING_FEATURE_AMBIENT_OCCLUSION	1<<5
-	#define SHADING_FEATURE_TESSELATION		1<<6
+	#define	SHADING_FEATURE_DETAIL_TEXTURING	1<<3
+	#define SHADING_FEATURE_NORMAL_MAPPING		1<<4
+	#define SHADING_FEATURE_CUBE_MAPPING		1<<5
+	#define SHADING_FEATURE_AMBIENT_OCCLUSION	1<<6
+	#define SHADING_FEATURE_TESSELATION			1<<6
 
 
 //}

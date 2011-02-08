@@ -27,7 +27,9 @@ protected:
 	SkyDomeShader(Path codeDirectory,
 			TextureType renderTargetTextureType);
 
-	virtual void generateCustomDefines();
+	//virtual bool operator==(const Shader& rhs)const;
+
+	//virtual void generateCustomDefines();
 	virtual void bindFragDataLocations(RenderTarget* rt) throw(BufferException);
 };
 

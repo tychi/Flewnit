@@ -57,7 +57,7 @@ const ShaderFeaturesLocal& ShaderFeaturesLocal::operator=(const ShaderFeaturesLo
 	return *this;
 }
 
-String ShaderFeaturesLocal::stringify()
+String ShaderFeaturesLocal::stringify()const
 {
 	String returnString = "";
 
@@ -82,6 +82,9 @@ String ShaderFeaturesLocal::stringify()
 			break;
 		case RENDERING_TECHNIQUE_DEFERRED_LIGHTING:
 			returnString.append("_DeferredLighting");
+			break;
+		case RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION:
+			returnString.append("_PrimIDRasterize");
 			break;
 		case RENDERING_TECHNIQUE_CUSTOM:
 			returnString.append("_CustomRenderingTechnique");
@@ -152,6 +155,9 @@ String ShaderFeaturesLocal::stringify()
 		case VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING:
 			returnString.append("_MatSkyDome");
 			break;
+//		case VISUAL_MATERIAL_TYPE_PRIMITIVE_ID_RENDERING:
+//			returnString.append("_MatPrimID");
+//			break;
 		case VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY:
 			returnString.append("_MatPureDebugDraw");
 			break;
@@ -179,6 +185,9 @@ String ShaderFeaturesLocal::stringify()
 			break;
 		case SHADING_FEATURE_DECAL_TEXTURING:
 			returnString.append("_ShadeDecal");
+			break;
+		case SHADING_FEATURE_DETAIL_TEXTURING:
+			returnString.append("_ShadeDetail");
 			break;
 		case SHADING_FEATURE_NORMAL_MAPPING:
 			returnString.append("_ShadeNormalMapping");
@@ -221,7 +230,7 @@ std::size_t hash_value(ShaderFeaturesLocal const& sfl)
 //    		   ;
 
        int integerizedSFLvalue =
-    		   //bit 31..28 (4bits) for number in [0..7]=3 bits --> fits
+    		   //bit 31..28 (4bits) for number in [0..8]=4 bits --> fits
     		   ( static_cast<int>(sfl.renderingTechnique) <<28 ) |
     		   //bit 27..20 (8bits) for number in [0..14]=4 bits --> fits
     		   ( static_cast<int>(sfl.renderTargetTextureType) <<20 ) |

@@ -51,6 +51,8 @@ BufferInfo::BufferInfo(String name,
 BufferInfo::BufferInfo(const BufferInfo& rhs)
 {
 	(*this) = rhs;
+	//in constructor, copy name; we only dont want a name copy in assignment per operator=
+	name=rhs.name;
 }
 
 BufferInfo::~BufferInfo()

@@ -10,11 +10,14 @@
 
 
 #include "Shader.h"
+#include "GenericLightingUberShader.h"
 #include "SkyDomeShader.h"
 #include "MPP/Shader/LiquidShader.h"
+#include "DepthImageGenerationShader.h"
+
+#include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
 
 #include <boost/foreach.hpp>
-
 
 
 namespace Flewnit {
@@ -51,7 +54,7 @@ ShaderManager::ShaderManager(
 
 ShaderManager::~ShaderManager()
 {
-	//to nothing, every object is "owned" by the sim resource manager
+	//do nothing, every object is "owned" by the sim resource manager
 }
 
 //iterates all visual materials and assigns them shaders fitting the current scenario;
@@ -62,15 +65,109 @@ ShaderManager::~ShaderManager()
 //void setRenderingScenario(RenderingTechnique rendTech,TextureType renderTargetTextureType, RenderTarget* rt)throw(SimulatorException);
 void ShaderManager::setRenderingScenario(LightingSimStageBase* lightingStage)throw(SimulatorException)
 {
-	//TODO
-	assert(0 && "still to implement");
-
 	mIsInitializedGuard = true;
 
-//	BOOST_FOREACH(VisualMaterial* mat, mRegisteredVisualMaterials)
-//	{
+	mCurrentRenderingTechnique = lightingStage->getRenderingTechnique();
+	//we use tex2d as type if rendering to screen
+	mCurrentRenderTargetTextureType = TEXTURE_TYPE_2D;
+	RenderTarget* rt = lightingStage->getUsedRenderTarget();
+	if(rt)
+	{
+		mCurrentRenderTargetTextureType = rt->getTextureType();
+	}
+
+
+	BOOST_FOREACH(VisualMaterial* mat, mRegisteredVisualMaterials)
+	{
+		assignShader(mat);
+	}
+
+}
+
+void  ShaderManager::assignShader(VisualMaterial* mat)
+{
+	ShaderFeaturesLocal sfl = ShaderFeaturesLocal(
+		mCurrentRenderingTechnique,
+		mCurrentRenderTargetTextureType,
+		mat->getType(),
+		mat->getShadingFeatures(),
+		mat->isInstanced()
+	);
+
+	if(mShaderMap.find(sfl) == mShaderMap.end())
+	{
+		mat->setShader(generateShader(sfl));
+	}
+	else
+	{
+		mat->setShader(mShaderMap[sfl]);
+	}
+
+}
+
+
+Shader* ShaderManager::getShader(const ShaderFeaturesLocal& sfl)
+{
+	if(mShaderMap.find(sfl) == mShaderMap.end())
+	{
+		return mShaderMap[sfl];
+	}
+	else
+	{
+		return generateShader(sfl);
+	}
+}
+
+Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
+{
+	assert(0 && "have to finish shader implementation first");
+	//TODO
+//	assert(mShaderMap.find(sfl) == mShaderMap.end());
 //
+//	Shader* newShader = 0;
+//
+//	if( ( sfl.renderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION ) ||
+//		( sfl.renderingTechnique == RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION ) ||
+//		( sfl.renderingTechnique == RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION	) )
+//	{
+//		//depth stuff
+//		newShader = new DepthImageGenerationShader(
+//				mShaderCodeDirectory,
+//				sfl.renderingTechnique,
+//				sfl.renderTargetTextureType,
+//				sfl.instancedRendering
+//		);
 //	}
+//	else
+//	{
+//		//color stuff
+//		switch(sfl.visualMaterialType)
+//		{
+//		case VISUAL_MATERIAL_TYPE_NONE:
+//			assert(0&&"invalid material flag");
+//			break;
+//		case VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING:
+//			newShader = new GenericLightingUberShader(mShaderCodeDirectory,sfl);
+//			break;
+//		case VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING:
+//			newShader = new SkyDomeShader(mShaderCodeDirectory, sfl.renderTargetTextureType);
+//			break;
+//		case VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY:
+//			assert(0&&"pure debug draw seems not necessary until now");
+//			break;
+//		case VISUAL_MATERIAL_TYPE_GAS_RENDERING:
+//			assert(0&&"gas rendering won't be implemented too soon");
+//			break;
+//		case VISUAL_MATERIAL_TYPE_LIQUID_RENDERING:
+//			//newShader = new LiquidShader (mShaderCodeDirectory,sfl);
+//			assert(0&&"liquid rendering comes later");
+//			break;
+//		}
+//	}
+//
+//	mShaderMap[sfl] = newShader;
+//
+//	return newShader;
 
 }
 
@@ -83,48 +180,7 @@ void ShaderManager::registerVisualMaterial(VisualMaterial* mat)
 
 	if(mIsInitializedGuard)
 	{
-		ShaderFeaturesLocal sfl = ShaderFeaturesLocal(
-			mCurrentRenderingTechnique,
-			mCurrentRenderTargetTextureType,
-			mat->getType(),
-			mat->getShadingFeatures(),
-			mat->isInstanced()
-		);
-
-
-		if(mShaderMap.find(sfl) == mShaderMap.end())
-		{
-			Shader* newShader = 0;
-
-			switch(mat->getType())
-			{
-			//TODO make shadername configuarable
-			case VISUAL_MATERIAL_TYPE_NONE:
-				assert(0&&"invalid material flag");
-				break;
-			case VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING:
-				newShader = new GenericLightingUberShader(mShaderCodeDirectory,sfl);
-				break;
-			case VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING:
-				newShader = new SkyDomeShader(mShaderCodeDirectory, sfl.renderTargetTextureType);
-				break;
-			case VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY:
-				assert(0&&"pure debug draw seems not necessary until now");
-				break;
-			case VISUAL_MATERIAL_TYPE_GAS_RENDERING:
-				assert(0&&"gas rendering won't be implemented too soon");
-				break;
-			case VISUAL_MATERIAL_TYPE_LIQUID_RENDERING:
-				newShader = new LiquidShader (mShaderCodeDirectory,sfl);
-				break;
-			}
-
-			mShaderMap[sfl] = newShader;
-
-		}
-
-		mat->setShader(mShaderMap[sfl]);
-		//assert(0&&"TODO implement visual mat");
+		assignShader(mat);
 	}
 }
 

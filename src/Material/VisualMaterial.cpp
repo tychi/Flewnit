@@ -8,8 +8,12 @@
 #include "VisualMaterial.h"
 #include "MPP/Shader/ShaderManager.h"
 #include "Buffer/Texture.h"
+#include "MPP/Shader/Shader.h"
+#include "Simulator/LightingSimulator/LightingSimStageBase.h"
 
 #include <boost/foreach.hpp>
+#include "Simulator/LightingSimulator/LightingStages/ShadowMapGenerationStage.h"
+
 
 namespace Flewnit
 {
@@ -120,82 +124,122 @@ bool VisualMaterial::operator==(const Material& rhs) const
 	return true;
 }
 
-//void VisualMaterial::activate(
-//			SimulationPipelineStage* currentStage,
-//			SubObject* currentUsingSuboject) throw(SimulatorException)
-//{
-//
-//}
-//
-//void VisualMaterial::deactivate()
-//{
-//
-//}
-//
-//
-////called by ShaderManager when a new shader becomes necessary as the rendering scenario has changed;
-////calls validate()
-//void VisualMaterial::setShader(Shader* shader)
-//{
-//
-//}
-//
-//
-////calls "validate"
-//void VisualMaterial::setTexture(Texture* tex)
-//{
-//
-//}
-//
-////returns NULL if doesn't exist;
-//Texture* VisualMaterial::getTexture(BufferSemantics bs)const
-//{
-//
-//}
-//
-//
-////assert that every material- (and hence shader-)used texture is available and that it is of the correct type;
-////called by constructor
-//void VisualMaterial::validateTextures()throw(SimulatorException)
-//{
-//
-//}
-////called by setShader();
-//void VisualMaterial::validateShader()throw(SimulatorException)
-//{
-//
-//}
-////-----------------------------------------------------------------
-//
-//
-//SkyDomeMaterial::SkyDomeMaterial(String name, Texture2DCube* cubeTex)
-//{
-//
-//}
-//
-//SkyDomeMaterial::~SkyDomeMaterial()
-//{
-//
-//}
-//
-////check for equality in order to check if a material with the desired properties
-////(shader feature set and textures) already exists in the ResourceManager;
-//bool SkyDomeMaterial::operator==(const Material& rhs) const
-//{
-//
-//}
-//
-//void SkyDomeMaterial::activate(
-//			SimulationPipelineStage* currentStage,
-//			SubObject* currentUsingSuboject) throw(SimulatorException)
-//{
-//
-//}
-//
-//void SkyDomeMaterial::deactivate()
-//{
-//
-//}
+void VisualMaterial::activate(
+			SimulationPipelineStage* currentStage,
+			SubObject* currentUsingSuboject) throw(SimulatorException)
+{
+	//assert("is lighting stage" && dynamic_cast<LightingSimStageBase*>(currentStage));
+	dynamic_cast<ShadowMapGenerationStage*>(currentStage);
+
+	LightingSimStageBase* castedStage= reinterpret_cast<LightingSimStageBase*>(currentStage);
+	assert(castedStage->getRenderingTechnique() != RENDERING_TECHNIQUE_DEFERRED_LIGHTING);
+	if( castedStage->getRenderingTechnique() == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION )
+		{assert(mCastsShadows);}
+	if( castedStage->getRenderingTechnique() == RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL )
+		{assert(! mIsTransparent);}
+
+	mCurrentlyUsedShader->use(currentUsingSuboject);
+}
+
+void VisualMaterial::deactivate(
+		SimulationPipelineStage* currentStage,
+		SubObject* currentUsingSuboject) throw(SimulatorException)
+{
+	//do nothing in this base class;
+}
+
+
+//called by ShaderManager when a new shader becomes necessary as the rendering scenario has changed;
+//calls validate()
+void VisualMaterial::setShader(Shader* shader)
+{
+	mCurrentlyUsedShader = shader;
+	validateShader();
+}
+
+
+//calls "validate"
+void VisualMaterial::setTexture(Texture* tex)
+{
+	mTextures[tex->getBufferInfo().bufferSemantics] = tex;
+	validateTextures();
+}
+
+//returns NULL if doesn't exist;
+Texture* VisualMaterial::getTexture(BufferSemantics bs)const
+{
+	if(mTextures.find(bs)== mTextures.end())
+	{
+		return 0;
+	}
+	return mTextures.find(bs)->second;
+	//return mTextures[bs];
+}
+
+
+//assert that every material- (and hence shader-)used texture is available and that it is of the correct type;
+//called by constructor
+void VisualMaterial::validateTextures()throw(SimulatorException)
+{
+	if(mType == VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING)
+	{
+		if( (mShadingFeatures &  SHADING_FEATURE_DECAL_TEXTURING) != 0)
+		{
+			assert(mTextures.find(DECAL_COLOR_SEMANTICS) != mTextures.end());
+		}
+		if( (mShadingFeatures &  SHADING_FEATURE_DETAIL_TEXTURING) != 0)
+		{
+			assert(mTextures.find(DETAIL_TEXTURE_SEMANTICS) != mTextures.end());
+		}
+		if( (mShadingFeatures &  SHADING_FEATURE_NORMAL_MAPPING) != 0)
+		{
+			assert(mTextures.find(NORMAL_SEMANTICS) != mTextures.end());
+		}
+		if( (mShadingFeatures &  SHADING_FEATURE_CUBE_MAPPING) != 0)
+		{
+			assert(mTextures.find(ENVMAP_SEMANTICS) != mTextures.end());
+		}
+		if( (mShadingFeatures & SHADING_FEATURE_AMBIENT_OCCLUSION ) != 0)
+		{
+			assert(mTextures.find(POSITION_SEMANTICS) != mTextures.end()
+			        && "for ambient occlusion calc, at the moment, "
+					"there is no other way then binding a position texture, "
+					"as in the shader generation, the depth-optimazation is not included yet");
+		}
+
+		//shadow map check:
+		if( (ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+				!= LIGHT_SOURCES_SHADOW_FEATURE_NONE)
+			&&
+			( (mShadingFeatures & SHADING_FEATURE_DIRECT_LIGHTING  ) != 0)
+		)
+		{
+			assert(mTextures.find(SHADOW_MAP_SEMANTICS) != mTextures.end());
+		}
+
+		return;
+
+	}
+
+	if(mType == VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING)
+	{
+		assert(mTextures.find(ENVMAP_SEMANTICS) != mTextures.end());
+		return;
+	}
+
+
+	throw(SimulatorException("no other visual material type supported yet"));
+
+	//tex->getTextureType()
+}
+//called by setShader();
+void VisualMaterial::validateShader()throw(SimulatorException)
+{
+	assert( (mCurrentlyUsedShader->getLocalShaderFeatures().instancedRendering )
+			== mIsInstanced );
+
+	//TODO further validdation when needed
+}
 
 
 }

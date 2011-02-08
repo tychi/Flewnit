@@ -11,6 +11,7 @@
 #include "Simulator/SimulationPipelineStage.h"
 #include "Simulator/SimulatorMetaInfo.h"
 
+#include <typeinfo>
 
 
 namespace Flewnit {

@@ -5,12 +5,15 @@
  *      Author: tychi
  */
 
+#pragma once
+
+
 #include "MPP/MPP.h"
 
 #include "Common/FlewnitSharedDefinitions.h"
 #include "Simulator/SimulatorForwards.h"
 
-#pragma once
+#include <set>
 
 
 
@@ -62,9 +65,12 @@ private:
 	friend class Shader;
 
 	ShaderStage(ShaderStageType shaderStageType, Path codeDirectory, Path shaderName);
+	~ShaderStage();
 
-	//throw exception if file for code does not exist or if the section does not apply
-	//to the shader type (e.g. customizable #defines cannot be loaded but only generated on the fly)
+	//throw exceptionif the section does not apply to the shader type
+	//(e.g. customizable #defines cannot be loaded but only generated on the fly)
+	//if file for code does not exist, it is assumed that this is on purpose as the code
+	//snippet is not needed for this stage (like shadow attenuation for geometry, for example ;))
 	void loadCodeSection(ShaderCodeSectionID which )throw(SimulatorException);
 	void propagateLoadedSourceToGL();
 	void compile();
@@ -72,13 +78,20 @@ private:
 	void writeToDisk();
 	void validate()throw(BufferException);
 
+	Path mCodeDirectory;
+	Path mShaderName;
+
 	ShaderStageType type;
 
 	GLuint mGLShaderStageHandle;
 
+
 	String mCodeSectionStrings[__NUM_SHADER_CODE_SECTIONS__];
+	static GLuint mGLShaderStageIdentifiers[__NUM_SHADER_STAGES__];
 
 };
+
+
 
 class Shader
 :public MPP
@@ -91,10 +104,10 @@ public:
 	//check for equality in order to check if a shader with the desired properties
 	//(shader feature set) already exists in the ResourceManager;
 	//compares path and mLocalShaderFeatures
-	bool operator==(const Shader& rhs)const;
+	virtual bool operator==(const Shader& rhs)const;
 
 
-	void generateShaderSources();
+	//void generateShaderSources();
 
 	void link();
 
@@ -129,44 +142,27 @@ protected:
 	//called by ShaderManager::setRenderingScenario
 	virtual void bindFragDataLocations(RenderTarget* rt) throw(BufferException)=0;
 
-	virtual void generateCustomDefines()=0;
+	//virtual void generateCustomDefines()=0;
+	void generateCustomDefines();
 
 	void attachCompiledStage(ShaderStageType which);
-
-	ShaderFeaturesLocal mLocalShaderFeatures;
+	void detachCompiledStage(ShaderStageType which);
 
 	Path mCodeDirectory;
 	Path mShaderName;
+
+	ShaderFeaturesLocal mLocalShaderFeatures;
+
+
+	//filled by generateCustomDefines(), used for straig forward #define-string generation OR for
+	//parsing a template
+	std::set<String> mDefinitionsSet[__NUM_CUSTOM_SHADER_DEFINITIONS__];
 
 	GLuint mGLProgramHandle;
 	ShaderStage* mShaderStages[__NUM_SHADER_STAGES__];
 
 	//to be compared to rendertarget; Initial state: all -1;
 	GLint mCurrentFragDataBindings[__NUM_TOTAL_SEMANTICS__];
-};
-
-
-
-
-
-class GenericLightingUberShader
-: public Shader
-{
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-
-public:
-	//public constructor for material-less deferred lighting
-	GenericLightingUberShader(Path codeDirectory, const ShaderFeaturesLocal& localShaderFeatures);
-
-	virtual ~GenericLightingUberShader();
-
-	virtual void use(SubObject* so)throw(SimulatorException);
-
-protected:
-
-
-	virtual void generateCustomDefines();
-	virtual void bindFragDataLocations(RenderTarget* rt) throw(BufferException);
 };
 
 }

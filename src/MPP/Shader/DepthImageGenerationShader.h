@@ -27,6 +27,8 @@ public:
 
 	virtual ~DepthImageGenerationShader();
 
+	//virtual bool operator==(const Shader& rhs)const;
+
 	virtual void use(SubObject* so)throw(SimulatorException);
 
 protected:
