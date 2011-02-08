@@ -229,7 +229,7 @@ struct ShaderFeaturesLocal
 			TextureType renderTargetTextureType = TEXTURE_TYPE_2D,
 			VisualMaterialType visualMaterialType = VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING ,
 			ShadingFeatures shadingFeatures = SHADING_FEATURE_DIRECT_LIGHTING,
-			bool instancedRendering = true
+			bool instancedRendering = false
 	);
 
 	ShaderFeaturesLocal(const ShaderFeaturesLocal& rhs);

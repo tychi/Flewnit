@@ -79,8 +79,10 @@ FIND_PACKAGE (OPENCL)
 
 
 #check for qt
-#find_package(Qt4 REQUIRED)
-#include(${QT_USE_FILE})
+find_package(Qt4 REQUIRED)
+include(${QT_USE_FILE})
+
+
 
 if(UNIX)
 
@@ -161,6 +163,7 @@ endif(UNIX)
      include
      ${GLM_DIRECTORY}  	
      include/opencl10
+     ${QT_INCLUDES}
  )
 
 link_directories(
@@ -238,11 +241,13 @@ add_library(flewnit ${LIBRARY_SOURCE_FILES})
 #TODO: add gpuTE ass dependency :D
 #TODO: unterstand why only relevant qt stuff will be linked against ;) yes, I'm noob with cmake and qt ;)
 #${QT_LIBRARIES}
-target_link_libraries(flewnit ${OPENGL_LIB} ${OPENCL_LIBRARIES} )
+target_link_libraries(flewnit ${OPENGL_LIB} ${OPENCL_LIBRARIES} ${QT_LIBRARIES} )
 
 target_link_libraries(flewnit boost_filesystem)
 
 target_link_libraries(flewnit tinyxml freeimageplus assimp)
+
+target_link_libraries(flewnit grantlee_core)
 
 
 

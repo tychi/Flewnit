@@ -32,7 +32,7 @@ protected:
 
 	ConfigStructNode* mSimConfigNode;
 
-	List<SimulationPipelineStage*> mSimStages;
+	std::vector<SimulationPipelineStage*> mSimStages;
 
 public:
 

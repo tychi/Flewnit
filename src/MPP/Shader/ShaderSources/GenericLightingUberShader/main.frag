@@ -1,24 +1,43 @@
-//Second concept of a fragment shader template
 
-/*
-This "generic uber shader" shall not only serve as example for the template structure,
-but also do every rendering in the framework except:
-	- pure depth/position image generation (like for cube shadowmaps, which need dpeth values in translated wolrd space, 
-		or for ambient occlusion-depth/position rendering-only passes)
-	- specialized fluidrendering (might be done anyway later, if the shader structure turns out to be compatible)
-Even debug stuff (index visualization etc.) shall be done by this shader
-*/
+//{%comment}
+//{
+	/*
+	Third concept of a fragment shader template:
+
+	Keywords of the template language:
+		comment : long comment which shall be configurable to be ex
+	*/
+ //}
 
 
-//{%versionTag}
 
-//{%precisionTag}
+//{%import ../Common/00_Generic_Common_VersionTag.glsl}
+//{%import ../Common/01_Generic_Common_precisionTag.glsl}
+//{%import ../Common/03_Generic_Common_customizableDefines.glsl}
 
-//{%persistentdefines}
+
+//{%import ./04_Fragment_appCodeIncludable_dataTypes.glsl}
+//{%import ./05_Fragment_materialSamplers.glsl}
+//{%import ./06_Fragment_shadowMapSamplers.glsl}
+//{%import ./07_Fragment_GBufferSamplers.glsl}
+//{%import ./08_Fragment_Uniforms.glsl}
+//{%import ./09_Fragment_input.glsl}
+//{%import ./10_Fragment_output.glsl}
+//{%import ./11_Fragment_subroutine_getDistanceAttenuation.glsl}
+//{%import ./11_Fragment_subroutine_getNormal.glsl}
+//{%import ./11_Fragment_subroutine_getShadowAttenuation.glsl}
+//{%import ./11_Fragment_subroutine_getSpotLightAttenuation.glsl}
+
+
+//{%insert versionTag}
+
+//{%insert precisionTag}
+
+//{%insert persistentdefines}
 
 //customizable defines have definetely to be set by the shaders (via string concatenation):
 //for examples and explanation refer to file "02_Generic_persistentDefines.glsl";
-//{%customizabledefines}
+//{%customdefines}
 
 
 //{%typeDefinitions}

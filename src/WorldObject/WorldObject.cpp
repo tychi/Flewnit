@@ -32,7 +32,7 @@ WorldObject::~WorldObject()
 }
 
 
-List<SubObject*>& WorldObject::getSubObjects(SimulationDomain whichDomain)
+std::vector<SubObject*>& WorldObject::getSubObjects(SimulationDomain whichDomain)
 {
 	assert(whichDomain < __NUM_SIM_DOMAINS__);
 	return mPhysicalReps[whichDomain];

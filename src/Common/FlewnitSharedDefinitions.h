@@ -70,10 +70,10 @@ typedef std::string 		String;
 //for "invalid ID" tagging, we use -1, so we typedef the ID stuff to int instead of insigned int
 typedef int 				ID;
 typedef unsigned int		uint;
-#define List std::vector
-#define Map std::map
-#define Stack std::stack
-#define Pair std::pair
+//#define List std::vector
+//#define Map std::map
+//#define Stack std::stack
+//#define Pair std::pair
 
 
 //-----------------------------------------------------------------------

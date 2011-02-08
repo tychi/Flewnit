@@ -46,7 +46,7 @@ ConfigStructNode::~ConfigStructNode()
 
 
 
-List<ConfigStructNode*>& ConfigStructNode::operator[](String name)
+std::vector<ConfigStructNode*>& ConfigStructNode::operator[](String name)
 {
 
 //	if(mChildren.find(name) ==  mChildren.end())
@@ -58,7 +58,7 @@ List<ConfigStructNode*>& ConfigStructNode::operator[](String name)
 	return mChildren[name];
 }
 
-List<ConfigStructNode*>& ConfigStructNode::get(String name)
+std::vector<ConfigStructNode*>& ConfigStructNode::get(String name)
 {
 	assert("requested config entry exists" && childExists(name,0));
 	return mChildren[name];

@@ -71,7 +71,7 @@ private:
 	Scene* mScene;
 
 
-	Map<String, InstanceManager*> mInstanceManagers;
+	std::map<String, InstanceManager*> mInstanceManagers;
 
 	//Map<String, SimulationPipelineStage*> mRegisteredPipeLineStages;
 
@@ -82,26 +82,26 @@ private:
 	//Map<ID, SubObject*>	mSubObjects;
 
 	//Material can be used by multiple subobjects, so there must be a central maintainance
-	Map<String, Material*> mMaterials;
+	std::map<String, Material*> mMaterials;
 	//Geometry can be used by up to two SubObjects without instancing,
 	//namely the mechanical and the lighting representation of a worldobject
 	//(CL_GL-Buffer Sharing)
 	//WITHOUT usage of instancing the is no limit of re-usage of Geometry by several WorldObjects
-	Map<String, Geometry*> mGeometries;
+	std::map<String, Geometry*> mGeometries;
 
 
 	//generic buffers are also shared, but rather on a local level; They are
 	//stored centrally to resolve "posession" ambiguities between simulation domains;
-	Map<String, BufferInterface* > mBuffers;
+	std::map<String, BufferInterface* > mBuffers;
 
 	//Textures can be globally shared (as Rendertarget for multiple simulation stages, or by multiple materials),
 	//and hence are stored centrally in order to
 	//be dereferenced by name by a material; This is no "owning" data structure but
 	//a subset of mBuffers for easier reference.
-	Map<String, Texture*> mTextures;
+	std::map<String, Texture*> mTextures;
 
 	//OpenGL kernels and OpenGL Shaders stored centrally for multiple usage
-	Map<String, MPP*>		mMPPs;
+	std::map<String, MPP*>		mMPPs;
 
 };
 

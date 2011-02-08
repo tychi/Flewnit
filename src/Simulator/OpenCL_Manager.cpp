@@ -38,11 +38,11 @@ bool OpenCL_Manager::init(bool useCPU)
 	 * Code ideas from "Adventures with OpenCL, part2 from enja;
 	 * */
 
-	List<cl::Platform> platforms;
+	std::vector<cl::Platform> platforms;
 	GUARD( mLastCLError = cl::Platform::get(&platforms) );
 	LOG<<INFO_LOG_LEVEL<<platforms.size()<<" OpenCL platforms found;\n";
 
-	List<cl::Device> devices;
+	std::vector<cl::Device> devices;
 	if(useCPU)
 	{
 		LOG<<WARNING_LOG_LEVEL<<"Using CPU instead of GPU; Expect a heavy performance impact!\n";

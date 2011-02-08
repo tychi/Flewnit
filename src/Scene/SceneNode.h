@@ -51,7 +51,7 @@ public:
 	bool isLeafNode()const{return (mChildren.size()==0);}
 
 	//access for easier iteration
-	Map<String, SceneNode* >& getChildren(){return mChildren;}
+	std::map<String, SceneNode* >& getChildren(){return mChildren;}
 
 
 
@@ -120,7 +120,7 @@ private:
 	SceneNodeTypeFlags mTypeFlags;
 	String mName;
 
-	typedef Map<String, SceneNode* > Nodemap;
+	typedef std::map<String, SceneNode* > Nodemap;
 	Nodemap mChildren;
 
 	AmendedTransform mLocalTransform;

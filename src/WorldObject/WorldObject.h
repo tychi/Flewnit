@@ -35,7 +35,7 @@ public:
 
 	virtual ~WorldObject();
 
-	List<SubObject*>& getSubObjects(SimulationDomain whichDomain);
+	std::vector<SubObject*>& getSubObjects(SimulationDomain whichDomain);
 
 	//in which of the lists it will be inserted is determined by the SimulationDomain flag of the subObject;
 	void addSubObject(SubObject* so);
@@ -47,7 +47,7 @@ private:
 
 	//if more than one SubObject for the mechanical domain is useful is in doubt.
 	//But it makes sense for lighting and sound domains. Flexibility brings responsiblity :P.
-	List<SubObject*> mPhysicalReps[__NUM_SIM_DOMAINS__];
+	std::vector<SubObject*> mPhysicalReps[__NUM_SIM_DOMAINS__];
 
 
 };

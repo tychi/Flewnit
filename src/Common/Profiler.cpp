@@ -74,7 +74,7 @@ void Profiler::printMemoryStatus()
 
 void Profiler::printRegisteredObjects()
 {
-	Pair<ID,BasicObject*> boPair;
+	std::pair<ID,BasicObject*> boPair;
 	BOOST_FOREACH(boPair, mRegisteredBasicObjects)
 		{
 			printObjectStatus(boPair.second);

@@ -117,7 +117,7 @@ private:
 
 
     //typedef Map<String,SimulatorInterface*> SimulatorMap;
-   	List<SimulatorInterface*>	mSimulators;
+   	std::vector<SimulatorInterface*>	mSimulators;
 
 
 

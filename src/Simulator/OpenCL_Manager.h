@@ -58,7 +58,7 @@ class OpenCL_Manager
 
     //the Manager class tracks all shared buffers, as they shall be acquired
     //at once when passing control from GL to CL; this hopefully improves performance;
-    List<cl::Memory> mRegisteredCLGLSharedBuffers;
+    std::vector<cl::Memory> mRegisteredCLGLSharedBuffers;
     bool mCLhasAcquiredSharedObjects;
 
 

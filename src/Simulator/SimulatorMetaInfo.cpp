@@ -210,6 +210,8 @@ String ShaderFeaturesLocal::stringify()const
 		returnString.append("_instanced");
 	}
 
+	return returnString;
+
 
 }
 

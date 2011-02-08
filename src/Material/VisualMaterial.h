@@ -34,7 +34,7 @@ public:
 			//ShaderFeatures shaderFeatures,
 			ShadingFeatures shadingFeatures,
 			//must contain at least the textures used in the shader as samplers
-			const Map<BufferSemantics, Texture*>& textures,
+			const std::map<BufferSemantics, Texture*>& textures,
 			//some stuff shall not cast shadows, like the skybox or
 			//lightsource/camera visualization geometry
 			bool castsShadows = true,
@@ -116,7 +116,7 @@ private:
 	//ShaderFeatures mShaderFeatures;
 	Shader* mCurrentlyUsedShader;
 
-	typedef Map<BufferSemantics, Texture*> SemanticsToTextureMap;
+	typedef std::map<BufferSemantics, Texture*> SemanticsToTextureMap;
 	SemanticsToTextureMap mTextures;
 
 	//friend class ShaderManager;

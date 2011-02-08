@@ -7,21 +7,24 @@
 
 #include "LightingSimulator.h"
 
+#include "URE.h"
 #include "UserInterface/WindowManager/WindowManager.h"
-
-#include "Simulator/LightingSimulator/Camera/Camera.h"
-#include "Simulator/LightingSimulator/Light/LightSourceManager.h"
-#include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
 #include "MPP/Shader/ShaderManager.h"
+#include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 
+#include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
 #include "Buffer/Texture.h"
+#include "Simulator/LightingSimulator/Camera/Camera.h"
 
-#include "Util/Log/Log.h"
+#include "MPP/Shader/GenericLightingUberShader.h"
+
 
 #include "Util/Loader/LoaderHelper.h"
-#include "URE.h"
+#include "Util/Log/Log.h"
+
 
 #include <typeinfo>
+#include "Common/Profiler.h"
 
 
 namespace Flewnit
@@ -212,6 +215,16 @@ bool LightingSimulator::validatePipeLine()  throw(SimulatorException)
 void LightingSimulator::testStuff()
 {
 	///\{ TEST STUFF DEBUG
+
+
+	//Shader* testShader = new GenericLightingUberShader(
+	//		ShaderManager::getInstance().getShaderCodeDirectory(),ShaderFeaturesLocal());
+	//Profiler::getInstance().updateMemoryTrackingInfo();
+	//delete testShader;
+
+
+
+
 	mGlobalRenderTarget->bind();
 	mGlobalRenderTarget->requestCreateAndStoreColorTexture(FINAL_RENDERING_SEMANTICS);
 	mGlobalRenderTarget->attachStoredColorTexture(FINAL_RENDERING_SEMANTICS, 0);

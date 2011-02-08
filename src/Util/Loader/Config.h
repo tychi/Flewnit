@@ -42,7 +42,8 @@ private:
 };
 
 class ConfigStructNode;
-typedef Map<String, List<ConfigStructNode*> > ConfigMap;
+//typedef Map<String, List<ConfigStructNode*> > ConfigMap;
+typedef std::map<String, std::vector<ConfigStructNode*> > ConfigMap;
 
 class ConfigStructNode: public BasicObject
 {
@@ -67,9 +68,9 @@ public:
 
 	bool isLeafNode()const{return (mChildren.size()==0);}
 
-	List<ConfigStructNode*>& operator[](String name);
+	std::vector<ConfigStructNode*>& operator[](String name);
 
-	List<ConfigStructNode*>& get(String name);
+	std::vector<ConfigStructNode*>& get(String name);
 	ConfigStructNode& get(String name, int index);
 	bool childExists(String name, int index);
 	ConfigMap& getChildren(){return mChildren;}

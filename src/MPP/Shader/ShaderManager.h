@@ -96,7 +96,7 @@ private:
 
 	Path mShaderCodeDirectory;
 
-	List<VisualMaterial*> mRegisteredVisualMaterials;
+	std::vector<VisualMaterial*> mRegisteredVisualMaterials;
 
 	ShaderFeaturesGlobal mGlobalShaderFeatures;
 
@@ -126,7 +126,7 @@ private:
 //		>
 //	> mGeneratedShaders;
 
-	friend VisualMaterial::VisualMaterial(String,VisualMaterialType,ShadingFeatures,const Map<BufferSemantics, Texture*>&,
+	friend VisualMaterial::VisualMaterial(String,VisualMaterialType,ShadingFeatures,const std::map<BufferSemantics, Texture*>&,
 			bool,bool,bool,bool,bool,bool); //registerToShaderManager();
 	friend VisualMaterial::~VisualMaterial();//unregisterFromShaderManager();
 	void registerVisualMaterial(VisualMaterial* mat);

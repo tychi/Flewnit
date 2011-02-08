@@ -37,7 +37,7 @@ public:
 protected:
 	ConfigStructNode* mSimConfigNode;
 
-	Map<BufferSemantics,BufferInterface*> mRenderingResults;
+	std::map<BufferSemantics,BufferInterface*> mRenderingResults;
 
 };
 

@@ -106,7 +106,7 @@ private:
 
 	int mNumCurrentActiveLightingLightSources;
 	int mNumCurrentActiveShadowingLightSources;
-	List<LightSource*> mLightSources;
+	std::vector<LightSource*> mLightSources;
 
 	/*
 	 * Only used if mLightSourcesLightingFeature corresponds to multiple lightsource shading;

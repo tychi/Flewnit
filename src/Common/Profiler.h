@@ -119,13 +119,13 @@ private:
 	///\brief Members to track IDs and freed IDs for re-usage;
 	///\detail Why messing around with ID re-usage? Because if an engine runs for a long time with many objects created and deleted, the IDs will overflow some time;
 	/// This may leed to strange bugs; It's very unlikely for this engine to happen, but let's design carefully and with scalability in mind from the beginning;
-	Map<ID,BasicObject*> mRegisteredBasicObjects;
+	std::map<ID,BasicObject*> mRegisteredBasicObjects;
 
 
-	List<BasicObject*> mRegisteredButUntrackedObjects;
+	std::vector<BasicObject*> mRegisteredButUntrackedObjects;
 
 
-	Stack<ID> mIDsFromFreedObjects;
+	std::stack<ID> mIDsFromFreedObjects;
 	ID mMaxAssignedID;
 	///\}
 

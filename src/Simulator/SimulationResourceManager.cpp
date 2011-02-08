@@ -32,31 +32,31 @@ SimulationResourceManager::~SimulationResourceManager()
 {
 	//delete the "small" objects first, then the containers/managers
 
-	typedef Map<String, InstanceManager*> InstanceManagerMap;
+	typedef std::map<String, InstanceManager*> InstanceManagerMap;
 	BOOST_FOREACH( InstanceManagerMap::value_type & pair, mInstanceManagers)
 	{
 		delete pair.second;
 	}
 
-	typedef Map<String, Material*> MaterialMap;
+	typedef std::map<String, Material*> MaterialMap;
 	BOOST_FOREACH( MaterialMap::value_type & pair, mMaterials)
 	{
 		delete pair.second;
 	}
 
-	typedef Map<String, Geometry*> GeometryMap;
+	typedef std::map<String, Geometry*> GeometryMap;
 	BOOST_FOREACH( GeometryMap::value_type & pair, mGeometries)
 	{
 		delete pair.second;
 	}
 
-	typedef Map<String, BufferInterface* > BufferMap;
+	typedef std::map<String, BufferInterface* > BufferMap;
 	BOOST_FOREACH( BufferMap::value_type & pair, mBuffers)
 	{
 		delete pair.second;
 	}
 
-	typedef Map<String, MPP*> MPPMap;
+	typedef std::map<String, MPP*> MPPMap;
 	BOOST_FOREACH( MPPMap::value_type & pair, mMPPs)
 	{
 		delete pair.second;
