@@ -1,10 +1,16 @@
-//G-Buffer samplers:
+{%comment%}
+	GLSL Shader Template: G-Buffer samplers:
+	applicable to following stages: fragment
+{%endcomment%} 
 
-//applicable to following stages: fragment
 
+{% ifequal shaderFeatures.renderingTechnique RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
+	//the shadow map, its sampler type depends on the number and type of shadow casting lightsources
+	{% if lightSourcesShadowFeatureOneSpotLight 	%}uniform sampler2DShadow 			shadowMap;	{%endif%}
+	{% if lightSourcesShadowFeatureOnePointLight 	%}uniform samplerCubeShadow 		shadowMap;	{%endif%}
+	{% if lightSourcesShadowFeatureAllSpotLights	%}uniform sampler2DArrayShadow 	shadowMap;	{%endif%}
+{% endif %}
 
-//{%GBufferSamplers}
-//{
 
 	#if (SHADING_FEATURE & SHADING_FEATURE_AMBIENT_OCCLUSION) \
 	  ||(RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_LIGHTING)
@@ -39,19 +45,17 @@
 	#endif
 
 	//no texcoord stuff, because simple decal texturing or cubemapping will be applied directly (the overhead with materialIndices 
-	//write/read, texcoord write/read and several textures to be dependently read (or globbed into an array) seems not worth the benefit of saving mor overdraw
+	//write/read, texcoord write/read and several textures to be dependently read (or globbed into an array) seems not worth the benefit of saving more overdraw
 	//(i may be wrong... ;()
  
 
 	#if (RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_LIGHTING)
 		uniform GBUFFER_SAMPLER 	normalInWorldCoordsTexture;
-		
 		//no tangent stuff needed for the same reasons as for the texture coords
-
 		//no texcoords needed, as "final" color already in colorTexture
 		uniform GBUFFER_SAMPLER 	colorTexture; //code shininess in alpha channel
 	#	ifdef GBUFFER_INDEX_RENDERING
 	    	uniform GBUFFER_ISAMPLER	genericIndicesTexture;
 	#	endif
 	#endif
-//}
+

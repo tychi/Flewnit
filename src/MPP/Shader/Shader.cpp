@@ -16,6 +16,8 @@
 
 #include <grantlee/engine.h>
 
+#include "GrantleeShaderFeaturesContext.h"
+
 typedef QVariantHash TemplateContextMap;
 
 
@@ -46,7 +48,13 @@ Shader::Shader(Path codeDirectory, Path shaderName, const ShaderFeaturesLocal& l
 		),
 		mCodeDirectory(ShaderManager::getInstance().getShaderCodeDirectory()),
 		mShaderName(shaderName),
-		mLocalShaderFeatures(localShaderFeatures)
+		mLocalShaderFeatures(localShaderFeatures),
+		mGrantleeShaderFeaturesContext(
+				new GrantleeShaderFeaturesContext(
+					mLocalShaderFeatures,
+					ShaderManager::getInstance().getGlobalShaderFeatures()
+				)
+		)
 {
 	for(int i=0; i< __NUM_SHADER_STAGES__; i++)
 	{
@@ -85,7 +93,17 @@ void Shader::build()
 
     //setup the context to delegate template rendering according to the shaderFeatures (both local and global):
     TemplateContextMap contextMap;
-    setupTemplateContext(contextMap);
+
+    //setupTemplateContext(contextMap);
+	QVariant shaderFeaturesVariant= QVariant::fromValue(reinterpret_cast<QObject*>( mGrantleeShaderFeaturesContext));
+	contextMap.insert("shaderFeatures",shaderFeaturesVariant);
+	contextMap.insert("renderingTechniqueDefaultLighting",true);
+
+    QObject *object = new MyClass();
+    contextMap.insert("myObj", QVariant::fromValue(object));
+
+
+
     Grantlee::Context shaderTemplateContext(contextMap);
     String shaderSourceCode;
 
@@ -178,13 +196,25 @@ bool Shader::operator==(const Shader& rhs)const
 void Shader::setupTemplateContext(TemplateContextMap& context)
 {
 	//test values; TODO setup according to shaderfeatures struct
-	context.insert("name", "Wayne intressierts");
+
+
+
+	QVariant shaderFeaturesVariant= QVariant::fromValue(mGrantleeShaderFeaturesContext);
+	context.insert("shaderFeatures",shaderFeaturesVariant);
+
+
+
+
 	context.insert("renderingTechniqueDefaultLighting",true);
 	context.insert("renderingTechniqueGBufferFill",true);
 
 	context.insert("shadingFeatureDecalTexturing",true);
 	context.insert("shadingFeatureNormalMapping",true);
 	context.insert("shadingFeatureCubeMapping",true);
+
+	context.insert("lightSourcesShadowFeatureOneSpotLight",true);
+	context.insert("lightSourcesShadowFeatureOnePointLight",false);
+	context.insert("lightSourcesShadowFeatureAllSpotLights",false);
 
 }
 

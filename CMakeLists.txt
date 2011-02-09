@@ -86,7 +86,7 @@ include(${QT_USE_FILE})
 
 if(UNIX)
 
-    #check for opengl3 headers and download them if they don't exist ---------------------------------------------
+    #check for opengl3 headers aLIBRARY_SOURCE_DIRECTORYnd download them if they don't exist ---------------------------------------------
     function(download_gl_header GL_HEADER)
         if(NOT EXISTS include/GL3/${GL_HEADER})
 	    	execute_process(
@@ -228,6 +228,8 @@ file(GLOB_RECURSE LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/*.cpp)
 #----------------------------------------------------------------------------------------------------------
 
 
+#qt4_wrap_cpp (MOC_OUTFILES ${CMAKE_SOURCE_DIR}/include/qtMocedFiles/GrantleeShaderFeaturesContext.h)
+qt4_wrap_cpp (MOC_OUTFILES ${LIBRARY_SOURCE_DIRECTORY}/MPP/Shader/GrantleeShaderFeaturesContext.h)
 
 
 ###########################################################################################################
@@ -235,7 +237,9 @@ file(GLOB_RECURSE LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/*.cpp)
 #tell cmake to create a library named "libflewnit", which uses auch library source file list as input for sources ;)
 #shasred is bad for debugging :(
 #add_library(flewnit SHARED ${LIBRARY_SOURCE_FILES})
-add_library(flewnit ${LIBRARY_SOURCE_FILES})
+add_library(flewnit ${LIBRARY_SOURCE_FILES} ${MOC_OUTFILES})
+
+
 
 #tell cmake to link the libflewnit library against the given third party libraries
 #TODO: add gpuTE ass dependency :D

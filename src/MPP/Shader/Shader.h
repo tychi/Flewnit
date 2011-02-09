@@ -21,8 +21,12 @@ typedef QHash<QString, QVariant> QVariantHash;
 typedef QVariantHash TemplateContextMap;
 
 
+class GrantleeShaderFeaturesContext;
+
 namespace Flewnit
 {
+
+
 
 
 enum ShaderStageType
@@ -170,6 +174,8 @@ protected:
 
 	//to be compared to rendertarget; Initial state: all -1;
 	GLint mCurrentFragDataBindings[__NUM_TOTAL_SEMANTICS__];
+
+	GrantleeShaderFeaturesContext* mGrantleeShaderFeaturesContext;
 };
 
 }

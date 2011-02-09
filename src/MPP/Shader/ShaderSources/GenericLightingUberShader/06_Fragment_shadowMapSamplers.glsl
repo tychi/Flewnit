@@ -1,20 +1,10 @@
-//  shadow map samplers:
-
-//applicable to following stages: fragment
-
-//{%shadowMapSamplers}
-//{
-
-	#if LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT
-	uniform sampler2DShadow shadowMap;
-	#else
-	#if LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT
-	uniform samplerCubeShadow shadowMap;
-	#else
-	#if LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS
-	uniform sampler2DArrayShadow shadowMap;
-	#endif	
-	#endif
-	#endif
-
-//}
+{%comment%}
+	GLSL Shader Template: shadow map samplers:
+	applicable to following stages: fragment
+{%endcomment%} 
+{% ifequal shaderFeatures.renderingTechnique.key RENDERING_TECHNIQUE_DEFAULT_LIGHTING %}
+	//the shadow map, its sampler type depends on the number and type of shadow casting lightsources
+	{% if lightSourcesShadowFeatureOneSpotLight 	%}uniform sampler2DShadow 			shadowMap;	{%endif%}
+	{% if lightSourcesShadowFeatureOnePointLight 	%}uniform samplerCubeShadow 		shadowMap;	{%endif%}
+	{% if lightSourcesShadowFeatureAllSpotLights	%}uniform sampler2DArrayShadow 	shadowMap;	{%endif%}
+{% endif %}

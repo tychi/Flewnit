@@ -7,8 +7,10 @@
 //---- interface ---------------------------------------------------------------------------------
 //---- application (uniform) input ----
 {% include  "./05_Fragment_materialSamplers.glsl" %}
-{%comment%}
 {% include  "./06_Fragment_shadowMapSamplers.glsl" %}
+
+
+{%comment%}
 {% include  "./07_Fragment_GBufferSamplers.glsl" %}
 {% include  "./08_Fragment_Uniforms.glsl" %}
 //---- shader input --------------------
