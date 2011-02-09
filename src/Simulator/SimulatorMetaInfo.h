@@ -9,6 +9,7 @@
 
 
 #include "Simulator/SimulatorForwards.h"
+
 #include "Buffer/BufferSharedDefinitions.h"
 
 #include <typeinfo>
@@ -87,115 +88,6 @@ enum SceneNodeTypeFlags
 	//for debug drawing, we'll treat structures like uniform grids, kd trees etc. like WolrdObjects
 	SPATIAL_DATA_STRUCTURE_OBJECT = 1<<9	//implicit representation, debug drawn via instancing
 
-};
-
-
-
-///\{
-
-
-enum RenderingTechnique
-{
-	/*
-	 	render depth values to a depth texture, attached to the framebuffer's
-	 	depth attachment:
-		- if ShaderFeatures.lightSourcesShadowFeature==
-					LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT:
-			just a vertex shader, rendering implicitly only the "1/z" gl_FragDepth value
-			to 2d-depth texture, no color stuff
-
-		- if ShaderFeatures.lightSourcesShadowFeature==
-					LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT:
-			vertex + geometry + fragment shader, rendering the z-value in Camera Coordinates
-			into a cubic depth texture by writing explicitly to gl_FragDepth;
-			The geometry shader generates a primitive for every cubemap face;
-		if ShaderFeatures.lightSourcesShadowFeature==
-					LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS:
-			vertex +geometry shader, rendering implicitly only the "1/z" gl_FragDepth value
-			to a 2d-depth texture array, no color stuff.
-			The geometry shader generates a primitive for every array layer;
-	*/
-	RENDERING_TECHNIQUE_SHADOWMAP_GENERATION		=0,
-	//same as RENDERING_TECHNIQUE_CAMERA_SPACE_DEPTH_IMAGE_GENERATION, except we don't render
-	//just the camera space z-value to gl_FragDepth, but the whole
-	//camera space vec4 to a color texture
-	RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION 	=1,
-
-
-	//setup: same as RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION,
-	//but as memory-footprint-optimization, we write only the z-value
-	//to a one-component (GL_RED) texture; the other values will be reconstructed
-	//from view frustum and frag coord when needed.
-	RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION		=2,
-
-
-	RENDERING_TECHNIQUE_DEFAULT_LIGHTING			=3,
-	RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING	=4,
-	RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL		=5,
-	RENDERING_TECHNIQUE_DEFERRED_LIGHTING			=6,
-	//value to indicate a special lighting stage, involving only
-	//a few objects (like fluid objects), with special shader not
-	//fitting the automatically-generated structure; materials with a custom-tag
-	//will be ignored by the management logic of the ShaderManager;
-	//The special stage and the special material with the special shader
-	//will interact in their own way;
-	RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION	=7,
-	RENDERING_TECHNIQUE_CUSTOM						=8
-};
-
-enum LightSourcesLightingFeature
-{
-	LIGHT_SOURCES_LIGHTING_FEATURE_NONE						=0,
-	LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT			=1,
-	LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT			=2,
-	LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS			=3,
-	LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS			=4,
-	LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS	=5
-};
-
-enum LightSourcesShadowFeature
-{
-	LIGHT_SOURCES_SHADOW_FEATURE_NONE			=0,
-	LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT	=1,
-	LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT	=2,
-	LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS	=3
-};
-
-enum ShadowTechnique
-{
-	SHADOW_TECHNIQUE_NONE		=0,
-	SHADOW_TECHNIQUE_DEFAULT	=1,
-	SHADOW_TECHNIQUE_PCFSS		=2
-};
-
-enum ShadingFeatures
-{
-	SHADING_FEATURE_NONE				=0,
-	SHADING_FEATURE_DIRECT_LIGHTING		=1<<0,
-	//global lighting via layered depth images or stuff... just a brainstroming, won't be implemented
-	SHADING_FEATURE_GLOBAL_LIGHTING		=1<<1,
-	SHADING_FEATURE_DECAL_TEXTURING		=1<<2,
-	SHADING_FEATURE_DETAIL_TEXTURING	=1<<3,
-	SHADING_FEATURE_NORMAL_MAPPING		=1<<4,
-	SHADING_FEATURE_CUBE_MAPPING		=1<<5,
-	SHADING_FEATURE_AMBIENT_OCCLUSION	=1<<6,
-	SHADING_FEATURE_TESSELATION			=1<<7,
-
-};
-
-
-//rough categorization of materials:
-//these are distinct visual rendering techniques which
-//use different shader generation templates;
-enum VisualMaterialType
-{
-	VISUAL_MATERIAL_TYPE_NONE					=0,
-	VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING  		=1,
-	VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING		=2,
-	VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY		=3,	//just set a color value or something
-
-	VISUAL_MATERIAL_TYPE_GAS_RENDERING			=4,
-	VISUAL_MATERIAL_TYPE_LIQUID_RENDERING		=5
 };
 
 
@@ -330,16 +222,6 @@ enum CustomShaderDefinitionIDs
 	 __NUM_CUSTOM_SHADER_DEFINITIONS__
 };
 
-
-
-///\}
-
-
-
-//enum LightingSimulationStageType
-//{
-//
-//};
 
 
 }

@@ -16,7 +16,7 @@
 
 #include <grantlee/engine.h>
 
-#include "GrantleeShaderFeaturesContext.h"
+//#include "GrantleeShaderFeaturesContext.h"
 
 typedef QVariantHash TemplateContextMap;
 
@@ -48,13 +48,13 @@ Shader::Shader(Path codeDirectory, Path shaderName, const ShaderFeaturesLocal& l
 		),
 		mCodeDirectory(ShaderManager::getInstance().getShaderCodeDirectory()),
 		mShaderName(shaderName),
-		mLocalShaderFeatures(localShaderFeatures),
-		mGrantleeShaderFeaturesContext(
-				new GrantleeShaderFeaturesContext(
-					mLocalShaderFeatures,
-					ShaderManager::getInstance().getGlobalShaderFeatures()
-				)
-		)
+		mLocalShaderFeatures(localShaderFeatures)
+//		mGrantleeShaderFeaturesContext(
+//				new GrantleeShaderFeaturesContext(
+//					mLocalShaderFeatures,
+//					ShaderManager::getInstance().getGlobalShaderFeatures()
+//				)
+//		)
 {
 	for(int i=0; i< __NUM_SHADER_STAGES__; i++)
 	{
@@ -94,13 +94,14 @@ void Shader::build()
     //setup the context to delegate template rendering according to the shaderFeatures (both local and global):
     TemplateContextMap contextMap;
 
-    //setupTemplateContext(contextMap);
-	QVariant shaderFeaturesVariant= QVariant::fromValue(reinterpret_cast<QObject*>( mGrantleeShaderFeaturesContext));
-	contextMap.insert("shaderFeatures",shaderFeaturesVariant);
-	contextMap.insert("renderingTechniqueDefaultLighting",true);
+    setupTemplateContext(contextMap);
 
-    QObject *object = new MyClass();
-    contextMap.insert("myObj", QVariant::fromValue(object));
+//	QVariant shaderFeaturesVariant= QVariant::fromValue(reinterpret_cast<QObject*>( mGrantleeShaderFeaturesContext));
+//	contextMap.insert("shaderFeatures",shaderFeaturesVariant);
+//	contextMap.insert("renderingTechniqueDefaultLighting",true);
+//
+//    QObject *object = new MyClass();
+//    contextMap.insert("myObj", QVariant::fromValue(object));
 
 
 
@@ -146,7 +147,7 @@ void Shader::build()
     shaderSourceCode = fragmentShaderTemplate->render(&shaderTemplateContext).toStdString();
 
     LOG<< DEBUG_LOG_LEVEL << "FRAGMENT SHADER CODE:\n"<<  shaderSourceCode;
-    assert(0 && "inspecting shader code, therefore stop ;) ");
+   // assert(0 && "inspecting shader code, therefore stop ;) ");
 
     //create the geometry shader:
     mShaderStages[GEOMETRY_SHADER_STAGE] = new ShaderStage(FRAGMENT_SHADER_STAGE, shaderSourceCode);
@@ -193,28 +194,100 @@ bool Shader::operator==(const Shader& rhs)const
 
 
 
-void Shader::setupTemplateContext(TemplateContextMap& context)
+void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 {
 	//test values; TODO setup according to shaderfeatures struct
 
 
 
-	QVariant shaderFeaturesVariant= QVariant::fromValue(mGrantleeShaderFeaturesContext);
-	context.insert("shaderFeatures",shaderFeaturesVariant);
+	//QVariant shaderFeaturesVariant= QVariant::fromValue(mGrantleeShaderFeaturesContext);
+	//context.insert("shaderFeatures",shaderFeaturesVariant);
+
+	const ShaderFeaturesGlobal& sfg = ShaderManager::getInstance().getGlobalShaderFeatures();
+	ShaderFeaturesLocal sfl (mLocalShaderFeatures);
+
+	//DEBUG mod the features in order to check template rendering
+	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_DECAL_TEXTURING );
+	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_DETAIL_TEXTURING);
+	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_NORMAL_MAPPING );
+	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_CUBE_MAPPING);
+
+	for(unsigned int i = 0; i < __NUM_RENDERING_TECHNIQUES__;i++)
+	{
+		contextMap.insert(
+				RenderingTechniqueStrings[i].c_str(),
+				(bool) ( (unsigned int)(sfl.renderingTechnique) == i)
+		);
+	}
+
+	//propagete RT and G-Buffer texture type to template
+	for(unsigned int i = 0; i < __NUM_TEXTURE_TYPES__;i++)
+	{
+		contextMap.insert(
+				(String("RENDER_TARGET_") + TextureTypeStrings[i]).c_str(),
+				(bool) ( (unsigned int)(sfl.renderTargetTextureType) == i)
+		);
+
+		contextMap.insert(
+				(String("G_BUFFER_") + TextureTypeStrings[i]).c_str(),
+				(bool) ( (unsigned int)(sfg.GBufferType) == i)
+		);
+	}
 
 
 
+	for(unsigned int i = 0; i < __NUM_SHADING_FEATURES__;i++)
+	{
+		contextMap.insert(
+				ShadingFeatureStrings[i].c_str(),
+				(bool) (
+					 (
+						(unsigned int)(sfl.shadingFeatures) & (1<<i)
+					 ) != 0
+				)
+		);
+	}
 
-	context.insert("renderingTechniqueDefaultLighting",true);
-	context.insert("renderingTechniqueGBufferFill",true);
+	contextMap.insert("instancedRendering", mLocalShaderFeatures.instancedRendering);
 
-	context.insert("shadingFeatureDecalTexturing",true);
-	context.insert("shadingFeatureNormalMapping",true);
-	context.insert("shadingFeatureCubeMapping",true);
 
-	context.insert("lightSourcesShadowFeatureOneSpotLight",true);
-	context.insert("lightSourcesShadowFeatureOnePointLight",false);
-	context.insert("lightSourcesShadowFeatureAllSpotLights",false);
+	for(unsigned int i = 0; i < __NUM_LIGHT_SOURCES_LIGHTING_FEATURES__;i++)
+	{
+		contextMap.insert(
+				LightSourcesLightingFeatureStrings[i].c_str(),
+				(bool) ( (unsigned int)(sfg.lightSourcesLightingFeature) == i)
+		);
+	}
+
+	for(unsigned int i = 0; i < __NUM_LIGHT_SOURCES_SHADOW_FEATURES__;i++)
+	{
+		contextMap.insert(
+				LightSourcesShadowFeatureStrings[i].c_str(),
+				(bool) ( (unsigned int)(sfg.lightSourcesShadowFeature) == i)
+		);
+	}
+
+
+	for(unsigned int i = 0; i < __NUM_SHADOW_TECHNIQUES__;i++)
+	{
+		contextMap.insert(
+				ShadowTechniqueStrings[i].c_str(),
+				(bool) ( (unsigned int)(sfg.shadowTechnique) == i)
+		);
+	}
+
+	contextMap.insert("numMaxLightSources", sfg.numMaxLightSources);
+	contextMap.insert("invNumMaxLightSources", 1.0f /sfg.numMaxLightSources);
+
+	contextMap.insert("numMaxShadowCasters", sfg.numMaxShadowCasters);
+	contextMap.insert("invNumMaxShadowCasters", 1.0f /sfg.numMaxShadowCasters);
+
+	contextMap.insert("numMaxInstancesRenderable", sfg.numMaxInstancesRenderable);
+	contextMap.insert("invNumMaxInstancesRenderable", 1.0f /sfg.numMaxInstancesRenderable);
+
+	contextMap.insert("numMultiSamples", sfg.numMultiSamples);
+	contextMap.insert("invNumMultiSamples", 1.0f /sfg.numMultiSamples);
+
 
 }
 

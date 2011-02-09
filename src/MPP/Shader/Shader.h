@@ -21,7 +21,7 @@ typedef QHash<QString, QVariant> QVariantHash;
 typedef QVariantHash TemplateContextMap;
 
 
-class GrantleeShaderFeaturesContext;
+//class GrantleeShaderFeaturesContext;
 
 namespace Flewnit
 {
@@ -154,7 +154,7 @@ protected:
 	virtual void bindFragDataLocations(RenderTarget* rt) throw(BufferException)=0;
 
 	//setup the context for template rendering:
-	void setupTemplateContext(TemplateContextMap& context);
+	void setupTemplateContext(TemplateContextMap& contextMap);
 
 	void attachCompiledStage(ShaderStageType which);
 	void detachCompiledStage(ShaderStageType which);
@@ -175,7 +175,7 @@ protected:
 	//to be compared to rendertarget; Initial state: all -1;
 	GLint mCurrentFragDataBindings[__NUM_TOTAL_SEMANTICS__];
 
-	GrantleeShaderFeaturesContext* mGrantleeShaderFeaturesContext;
+	//GrantleeShaderFeaturesContext* mGrantleeShaderFeaturesContext;
 };
 
 }

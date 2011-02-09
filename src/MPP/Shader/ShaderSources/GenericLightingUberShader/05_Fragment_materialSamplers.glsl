@@ -2,18 +2,10 @@
 	GLSL Shader Template: material samplers:
 	applicable to following stages: fragment
 {%endcomment%} 
-
-what is shaderFeatures?: {{ shaderFeatures.renderingTechnique.3.key }}
-
-renderingTechniqueDefaultLighting: {{renderingTechniqueDefaultLighting}}
-
-Oliver is value {{ myObj.Oliver }}.
-
-{% if shaderFeatures.renderingTechnique  %}
-YEAH
+{% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING %}
 	//following textures helping to determine the "unlit" fragment color to be lit or to be written to the Color buffer of the G-Buffer
-	{% if shadingFeatureDecalTexturing 	%}uniform sampler2D decalTexture;	{%endif%}
-	{% if shadingFeatureNormalMapping 	%}uniform sampler2D normalMap;		{%endif%}
-	{% if shadingFeatureCubeMapping	 		%}uniform sampler2D cubeMap;			{%endif%}
+	{% if SHADING_FEATURE_DECAL_TEXTURING 	%}uniform sampler2D decalTexture;		{%endif%}
+	{% if SHADING_FEATURE_DETAIL_TEXTURING 	%}uniform sampler2D detailTexture;	{%endif%}
+	{% if SHADING_FEATURE_NORMAL_MAPPING 		%}uniform sampler2D normalMap;			{%endif%}
+	{% if SHADING_FEATURE_CUBE_MAPPING	 		%}uniform sampler2D cubeMap;				{%endif%}
 {% endif %}
-

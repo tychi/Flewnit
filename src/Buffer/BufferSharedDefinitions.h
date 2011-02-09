@@ -13,14 +13,19 @@
 
 #include "Simulator/SimulatorForwards.h"
 
+
 #include "Common/Math.h"
 #include "Common/CL_GL_Common.h"
 
+//#define FLEWNIT_NOT_INCLUDED_FOR_QT_META_OBJECT
+#include "Simulator/ShaderFeatureRelevantEnums.h"
+//#undef FLEWNIT_NOT_INCLUDED_FOR_QT_META_OBJECT
 
 
 
 namespace Flewnit
 {
+
 
 typedef void* CPUBufferHandle;
 typedef GLuint GraphicsBufferHandle;
@@ -119,29 +124,7 @@ enum BufferSemantics
 	INVALID_SEMANTICS
 };
 
-//is mirrored as defines in the shaders; don't let them get out of sync
-//TODO in far future: wirte script to generate shaderdefs and C++-enums consitstently
-enum TextureType
-{
-	TEXTURE_TYPE_1D						=0,
-	TEXTURE_TYPE_1D_ARRAY				=1,
 
-	TEXTURE_TYPE_2D						=2,
-	TEXTURE_TYPE_2D_RECT				=3,
-	TEXTURE_TYPE_2D_CUBE				=4,
-	TEXTURE_TYPE_2D_ARRAY				=5,
-	TEXTURE_TYPE_2D_MULTISAMPLE			=6,
-	TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE 	=7,
-
-	TEXTURE_TYPE_2D_DEPTH				=8,
-	TEXTURE_TYPE_2D_RECT_DEPTH			=9,
-	TEXTURE_TYPE_2D_CUBE_DEPTH			=10,
-	TEXTURE_TYPE_2D_ARRAY_DEPTH			=11,
-	TEXTURE_TYPE_2D_MULTISAMPLE_DEPTH 		=12, //not supported yet
-	TEXTURE_TYPE_2D_ARRAY_MULTISAMPLE_DEPTH 	=13, //not supported yet
-
-	TEXTURE_TYPE_3D						=14
-};
 
 
 //-----------------------------------------------

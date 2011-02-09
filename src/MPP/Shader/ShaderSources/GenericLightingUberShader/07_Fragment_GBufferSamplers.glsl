@@ -4,7 +4,7 @@
 {%endcomment%} 
 
 
-{% ifequal shaderFeatures.renderingTechnique RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
+{% if renderingTechniqueDefaultLighting %}
 	//the shadow map, its sampler type depends on the number and type of shadow casting lightsources
 	{% if lightSourcesShadowFeatureOneSpotLight 	%}uniform sampler2DShadow 			shadowMap;	{%endif%}
 	{% if lightSourcesShadowFeatureOnePointLight 	%}uniform samplerCubeShadow 		shadowMap;	{%endif%}

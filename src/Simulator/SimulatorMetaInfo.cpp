@@ -238,7 +238,7 @@ std::size_t hash_value(ShaderFeaturesLocal const& sfl)
     		   ( static_cast<int>(sfl.renderTargetTextureType) <<20 ) |
     		   //bit 19..16 (4bits) for number in [0..5]=3 bits --> fits
     		   ( static_cast<int>(sfl.visualMaterialType) <<16 ) |
-    		   //bit 15..1 (15 bits) for 7-bit bitfield --> fits
+    		   //bit 15..1 (15 bits) for 9-bit bitfield --> fits
     		   ( static_cast<int>(sfl.shadingFeatures) << 1 ) |
     		   //bit 0 for integer value (1 bit) --> fits
     		   (sfl.instancedRendering? 1: 0)
