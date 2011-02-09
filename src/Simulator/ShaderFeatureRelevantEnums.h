@@ -103,13 +103,13 @@ namespace Flewnit
 		RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING	=4,
 		RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL		=5,
 		RENDERING_TECHNIQUE_DEFERRED_LIGHTING			=6,
+		RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION	=7,
 		//value to indicate a special lighting stage, involving only
 		//a few objects (like fluid objects), with special shader not
 		//fitting the automatically-generated structure; materials with a custom-tag
 		//will be ignored by the management logic of the ShaderManager;
 		//The special stage and the special material with the special shader
 		//will interact in their own way;
-		RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION	=7,
 		RENDERING_TECHNIQUE_CUSTOM						=8,
 		__NUM_RENDERING_TECHNIQUES__					=9
 	};

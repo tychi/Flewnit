@@ -3,16 +3,15 @@
 {% include  "01_Generic_Common_precisionTag.glsl" %}
 //data type definition
 {% include  "./04_Fragment_appCodeIncludable_dataTypes.glsl" %}
-
 //---- interface ---------------------------------------------------------------------------------
 //---- application (uniform) input ----
 {% include  "./05_Fragment_materialSamplers.glsl" %}
 {% include  "./06_Fragment_shadowMapSamplers.glsl" %}
-
-
-{%comment%}
 {% include  "./07_Fragment_GBufferSamplers.glsl" %}
 {% include  "./08_Fragment_Uniforms.glsl" %}
+{%comment%}
+
+
 //---- shader input --------------------
 {% include  "./09_Fragment_input.glsl" %}
 //---- shader output -------------------

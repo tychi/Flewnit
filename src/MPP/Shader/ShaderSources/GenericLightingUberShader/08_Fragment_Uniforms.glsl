@@ -1,38 +1,50 @@
-// uniforms and uniform buffers:
-//{%uniforms}
-//{
-	uniform int numCurrentlyActiveLightSources = 1;
+{%comment%}
+	GLSL Shader Template: uniforms and uniform buffers:
+	applicable to following stages: fragment 		{%endcomment%} 
 
-	#if (SHADING_FEATURE != SHADING_FEATURE_NONE)
+{% if not SHADING_FEATURE_NONE %}
+
 	uniform vec4 eyeVecInWorldCoords;
+
+	//following some non-dependently generated material relevant uniforms; even if they aren'T used by some shader permutations,
+	//masking them according to shader features would be overkill; defined ansd unsued may is better than undefined and written to 
+	//by the app
+	//{
+	uniform int numCurrentlyActiveLightSources =  {{ numMaxLightSources }} ;
+	uniform float invNumCurrentlyActiveLightSources = {{ invNumMaxLightSources }} ;
+	
+	//number of lightsources casting shadows being currently active
+	uniform int numCurrentlyActiveShadowCasters = {{ numMaxShadowCasters }} ;
+	uniform float invNumCurrentlyActiveShadowShadowCasters =  {{ invNumMaxShadowCasters }} ;
+
+	{% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING  %}	
+	uniform float shininess = 2.0; 
+	{%comment%} in the deferred case, it is coded into the decal textures' alpha channel; We have to mask this uniform, because the name will
+							be re-used in the deferred case {%endcomment%}
+	{% endif %}
+	//factor of attenuation outside the outer light cone
+	uniform float spotLightAmbientFactor = 0.1;
+	uniform float cubeMapReflectivity = 0.33;
 
 	//clamp the attenuation due to shadowmapping to [minimalshadowAttenuation, 1.0]
 	uniform float minimalshadowAttenuation = 0.2;
-	#if (RENDERING_TECHNIQUE != RENDERING_TECHNIQUE_DEFERRED_LIGHTING)
-		uniform float shininess = 2.0;
-	#endif
-	uniform float spotLightAmbientFactor = 0.1;
-	uniform float cubeMapReflectivity = 0.33;
-	#endif
+	//} end non-dependently generated material relevant uniforms;
 
 	//----- begin lightsource/shadowmap interface ------------------------------------
-
-	#if    (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT ) \
-	    || (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT )
-	uniform LightSource lightSource;
-	#else
-	#	if    (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS ) \
-	 	   || (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS ) \
-	 	   || (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
-		layout(shared) uniform lightSourceBuffer
-		{
-			LightSource lightSources[NUM_MAX_LIGHT_SOURCES];
-		};
-	#	endif
-	#endif
+	
+	{% if LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT or LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT  %}	
+		uniform LightSource lightSource;
+	{% else %}
+		{% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS  or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS 	 or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
+			layout(shared) uniform lightSourceBuffer
+			{
+				LightSource lightSources[ {{ numMaxLightSources }} ];
+			};
+		{% endif %}	
+	{% endif %}
 
 
-
+{%comment%}
 	#if (LIGHT_SOURCES_SHADOW_FEATURE != LIGHT_SOURCES_SHADOW_FEATURE_NONE)
 
 	//any hint we need more than one shadowmap? (assert also that multiple-lightsource-lighting is enabled)
@@ -75,5 +87,6 @@
 	//with no shadow mapping, we don't need a shadowmap transformation, of course :P
 	#endif //(LIGHT_SOURCES_SHADOW_FEATURE != LIGHT_SOURCES_SHADOW_FEATURE_NONE)
 	//-----end lightsource/shadowmap interface
+{%endcomment%}
 
-//}
+{% endif %}

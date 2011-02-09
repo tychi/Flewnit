@@ -147,7 +147,7 @@ void Shader::build()
     shaderSourceCode = fragmentShaderTemplate->render(&shaderTemplateContext).toStdString();
 
     LOG<< DEBUG_LOG_LEVEL << "FRAGMENT SHADER CODE:\n"<<  shaderSourceCode;
-   // assert(0 && "inspecting shader code, therefore stop ;) ");
+    assert(0 && "inspecting shader code, therefore stop ;) ");
 
     //create the geometry shader:
     mShaderStages[GEOMETRY_SHADER_STAGE] = new ShaderStage(FRAGMENT_SHADER_STAGE, shaderSourceCode);
@@ -203,7 +203,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	//QVariant shaderFeaturesVariant= QVariant::fromValue(mGrantleeShaderFeaturesContext);
 	//context.insert("shaderFeatures",shaderFeaturesVariant);
 
-	const ShaderFeaturesGlobal& sfg = ShaderManager::getInstance().getGlobalShaderFeatures();
+	ShaderFeaturesGlobal sfg(ShaderManager::getInstance().getGlobalShaderFeatures());
 	ShaderFeaturesLocal sfl (mLocalShaderFeatures);
 
 	//DEBUG mod the features in order to check template rendering
@@ -211,6 +211,12 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_DETAIL_TEXTURING);
 	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_NORMAL_MAPPING );
 	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_CUBE_MAPPING);
+
+	sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT;
+
+	sfl.renderingTechnique= RENDERING_TECHNIQUE_DEFAULT_LIGHTING;
+
+	//END DEBUG
 
 	for(unsigned int i = 0; i < __NUM_RENDERING_TECHNIQUES__;i++)
 	{
@@ -248,7 +254,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 		);
 	}
 
-	contextMap.insert("instancedRendering", mLocalShaderFeatures.instancedRendering);
+	contextMap.insert("instancedRendering", sfl.instancedRendering);
 
 
 	for(unsigned int i = 0; i < __NUM_LIGHT_SOURCES_LIGHTING_FEATURES__;i++)

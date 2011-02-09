@@ -44,4 +44,3 @@ struct LightSource
 		bool isSpotLight() {return innerSpotCutOff_Radians==0.0f;}
 	//{%endcomment%}
 };
-
