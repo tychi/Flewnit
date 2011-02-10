@@ -9,6 +9,7 @@
 
 #include "Simulator/OpenCL_Manager.h"
 #include "MPP/Shader/ShaderManager.h"
+#include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 
 #include "Util/Log/Log.h"
 
@@ -147,6 +148,7 @@ void Shader::build()
     shaderSourceCode = fragmentShaderTemplate->render(&shaderTemplateContext).toStdString();
 
     LOG<< DEBUG_LOG_LEVEL << "FRAGMENT SHADER CODE:\n"<<  shaderSourceCode;
+
     assert(0 && "inspecting shader code, therefore stop ;) ");
 
     //create the geometry shader:
@@ -212,7 +214,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_NORMAL_MAPPING );
 	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_CUBE_MAPPING);
 
-	sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT;
+	//sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT;
 
 	sfl.renderingTechnique= RENDERING_TECHNIQUE_DEFAULT_LIGHTING;
 
@@ -293,6 +295,10 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 
 	contextMap.insert("numMultiSamples", sfg.numMultiSamples);
 	contextMap.insert("invNumMultiSamples", 1.0f /sfg.numMultiSamples);
+
+	contextMap.insert("inverse_lightSourcesFarClipPlane",
+			1.0f / LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane());
+
 
 
 }

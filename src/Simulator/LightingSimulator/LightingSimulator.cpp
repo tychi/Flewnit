@@ -69,7 +69,7 @@ LightingSimulator::LightingSimulator(ConfigStructNode* simConfigNode)
 					  get("GlobalShadingFeatures",0).get("shaderCodeDirectory",0))		)
 		)
 	),
-	mLightSourceManager(0)//TODO
+	mLightSourceManager(new LightSourceManager())//TODO
 {
 	// TODO Auto-generated constructor stub
 	testStuff();

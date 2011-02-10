@@ -111,7 +111,8 @@ PointLight* LightSourceManager::createPointLight(
 		const Vector3D& specularColor
 ) throw(SimulatorException)
 {
-
+	//TODO
+	assert(0&&"//TODO");
 }
 
 
@@ -131,7 +132,8 @@ SpotLight* LightSourceManager::createSpotLight(
 		const Vector3D& specularColor
 ) throw(SimulatorException)
 {
-
+	//TODO
+	assert(0&&"//TODO");
 }
 
 
@@ -140,7 +142,8 @@ SpotLight* LightSourceManager::createSpotLight(
 //fill buffers with recent values
 void LightSourceManager::setupBuffersForShading(float maxDistanceToMainCam)
 {
-
+	//TODO
+	assert(0&&"//TODO");
 }
 
 

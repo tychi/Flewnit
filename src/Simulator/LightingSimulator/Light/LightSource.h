@@ -93,47 +93,6 @@ private:
 
  };
 
-Matrix4x4 PointLight::mPointLightShadowMapNonTranslationalViewMatrices[6] =
-	{
-			//rotational part of the view matrices
-			//refer to the omni-directional Shadows- paper, slide 14:
-			//+x
-			Matrix4x4(
-			0.0f,	0.0f,	-1.0f,	0.0f,
-			0.0f,	-1.0f,	0.0f,	0.0f,
-			-1.0f,	0.0f,	0.0f,	0.0f,
-			0.0f,	0.0f,	0.0f,	1.0f),
-			//-x
-			Matrix4x4(
-			0.0f,	0.0f,	1.0f,	0.0f,
-			0.0f,	-1.0f,	0.0f,	0.0f,
-			1.0f,	0.0f,	0.0f,	0.0f,
-			0.0f,	0.0f,	0.0f,	1.0f),
-			//+y
-			Matrix4x4(
-			1.0f,	0.0f,	0.0f,	0.0f,
-			0.0f,	0.0f,	-1.0f,	0.0f,
-			0.0f,	1.0f,	0.0f,	0.0f,
-			0.0f,	0.0f,	0.0f,	1.0f),
-			//-y
-			Matrix4x4(
-			1.0f,	0.0f,	0.0f,	0.0f,
-			0.0f,	0.0f,	1.0f,	0.0f,
-			0.0f,	-1.0f,	0.0f,	0.0f,
-			0.0f,	0.0f,	0.0f,	1.0f),
-			//+z
-			Matrix4x4(
-			1.0f,	0.0f,	0.0f,	0.0f,
-			0.0f,	-1.0f,	0.0f,	0.0f,
-			0.0f,	0.0f,	-1.0f,	0.0f,
-			0.0f,	0.0f,	0.0f,	1.0f),
-			//-z
-			Matrix4x4(
-			-1.0f,	0.0f,	0.0f,	0.0f,
-			0.0f,	-1.0f,	0.0f,	0.0f,
-			0.0f,	0.0f,	1.0f,	0.0f,
-			0.0f,	0.0f,	0.0f,	1.0f),
-	};
 
 
 class SpotLight

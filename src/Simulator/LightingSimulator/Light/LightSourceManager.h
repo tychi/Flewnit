@@ -37,6 +37,7 @@ class LightSourceManager
 : 	public Singleton<LightSourceManager>,
 	public BasicObject
 {
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	//will configure itself according to config file in future; at the moment, there
 	//are hard codes in the constructor ;(
