@@ -28,15 +28,26 @@
 {%comment%} ################################# following shadow/pos/depth inputs ##############################################################{%endcomment%}
 {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION or RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION  %}
   {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION and LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT %}
-    in vec4 inFPosition_LS_norm; //light space linear coords, scaled by inverse farclipplane of lightsource camera ({{inverse_lightSourcesFarClipPlane}})
+   
+    //following variable listing in descending optimazation; i will begin with the non optimized and hence fewest error prone one
+    //in float inFDepthViewSpaceNORMALIZED;
+    //in float inFDepthViewSpaceUNSCALED;
+    //in vec4 inFPositionViewSpaceNORMALIZED; //light space linear coords, scaled by inverse farclipplane of lightsource camera ({{inverse_lightSourcesFarClipPlane}})
+    in vec4 inFPositionViewSpaceUNSCALED; //light space linear coords, unscaled to test the most simple case before the more error prone optimized one
+                                    
   {% else %}{% if RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION %}
     in vec4 inFPosition;
   {% else %}{% if RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %}  
-    in float inFDepthView;  //just the linear z value in view space, for usage in a non-deferred AO contexts; 
+    //in float inFDepthViewSpace;  //just the linear z value in view space, for usage in a non-deferred AO contexts; 
                             //if this value will be scaled to [0..1] via the farclipplane and written to gl_FragDeapth
                             //or just written unscaled to a single componentent color texture has still TO BE DETERMINED
+    //commented out the above variable as i don't know if a single value will be interpolated correctly 
+    //it is improbable that the above will caus problems, buto omit as many driver bugs as possible, 
+    //let's first pass an UNSCALED linear vec4: 
+    in vec4 inFPositionViewSpaceUNSCALED;
   {% endif %}{% endif %}{% endif %}
-  {%comment%} for default spotlight shadowmap generation, there is no fragment shader necessary at all, hence no input {%endcomment%}
+  
+  {%comment%} for default spotlight shadowmap generation, there is no fragment shader necessary at all, hence no input variable {%endcomment%}
 {% endif %}
 
 {%comment%} ################################# following ID inputs ##############################################################{%endcomment%}

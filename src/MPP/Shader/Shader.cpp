@@ -161,7 +161,7 @@ void Shader::build()
 
     LOG<< DEBUG_LOG_LEVEL << "FRAGMENT SHADER CODE:\n"<<  shaderSourceCode;
 
-    assert(0 && "inspecting shader code, therefore stop ;) ");
+    //assert(0 && "inspecting shader code, therefore stop ;) ");
 
     //create the geometry shader:
     mShaderStages[GEOMETRY_SHADER_STAGE] = new ShaderStage(FRAGMENT_SHADER_STAGE, shaderSourceCode);
@@ -228,7 +228,8 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 
 	//sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT;
 
-	//sfl.renderingTechnique= RENDERING_TECHNIQUE_DEFAULT_LIGHTING;
+	sfl.renderingTechnique= RENDERING_TECHNIQUE_SHADOWMAP_GENERATION;
+	sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT;
 	//sfl.visualMaterialType = VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY;
 
 	//END DEBUG

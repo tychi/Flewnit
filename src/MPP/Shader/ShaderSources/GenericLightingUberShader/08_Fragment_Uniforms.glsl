@@ -1,6 +1,11 @@
 {%comment%}
   GLSL Shader Template: uniforms and uniform buffers:
   applicable to following stages: fragment     {%endcomment%} 
+  
+  {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION and LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT %}
+    //must be scaled by 1/farclipPlane of lightSource
+    uniform float inverse_lightSourcesFarClipPlane = {{ inverse_lightSourcesFarClipPlane }} ;
+  {% endif %}
 
 {% if not SHADING_FEATURE_NONE %}
   uniform vec4 eyePosition_WS;

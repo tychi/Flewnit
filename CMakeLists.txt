@@ -227,12 +227,11 @@ file(GLOB_RECURSE LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/*.cpp)
 #endforeach(LIBRARY_RELATIVE_DIRECTORY)
 #----------------------------------------------------------------------------------------------------------
 
-
-#qt4_wrap_cpp (MOC_OUTFILES ${CMAKE_SOURCE_DIR}/include/qtMocedFiles/GrantleeShaderFeaturesContext.h)
-qt4_wrap_cpp (MOC_OUTFILES 
-    ${LIBRARY_SOURCE_DIRECTORY}/MPP/Shader/GrantleeShaderFeaturesContext.h
-    ${LIBRARY_SOURCE_DIRECTORY}/Simulator/ShaderFeatureRelevantEnums.h 
-)
+#found a way to propagate stuff to grantlee without qt meta objects, no moc'ing necessaray anymore :)
+#qt4_wrap_cpp (MOC_OUTFILES 
+#    ${LIBRARY_SOURCE_DIRECTORY}/MPP/Shader/GrantleeShaderFeaturesContext.h
+#    ${LIBRARY_SOURCE_DIRECTORY}/Simulator/ShaderFeatureRelevantEnums.h 
+#)
 
 
 ###########################################################################################################

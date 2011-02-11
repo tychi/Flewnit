@@ -2,23 +2,23 @@
 {% include  "00_Generic_Common_VersionTag.glsl" %}
 {% include  "01_Generic_Common_precisionTag.glsl" %}
 //data type definition
-{% include  "./04_Fragment_appCodeIncludable_dataTypes.glsl" %}
+{% include  "04_Fragment_appCodeIncludable_dataTypes.glsl" %}
 //---- interface ---------------------------------------------------------------------------------
 //---- application (uniform) input ----
-{% include  "./05_Fragment_materialSamplers.glsl" %}
-{% include  "./06_Fragment_shadowMapSamplers.glsl" %}
-{% include  "./07_Fragment_GBufferSamplers.glsl" %}
-{% include  "./08_Fragment_Uniforms.glsl" %}
+{% include  "05_Fragment_materialSamplers.glsl" %}
+{% include  "06_Fragment_shadowMapSamplers.glsl" %}
+{% include  "07_Fragment_GBufferSamplers.glsl" %}
+{% include  "08_Fragment_Uniforms.glsl" %}
 //---- shader input --------------------
-{% include  "./09_Fragment_input.glsl" %}
+{% include  "09_Fragment_input.glsl" %}
 //---- shader output -------------------
-{% include  "./10_Fragment_output.glsl" %}
+{% include  "10_Fragment_output.glsl" %}
 //----- subroutines ------------------------------------------------------------------------------
-{% include  "./11_Fragment_subroutine_getDistanceAttenuation.glsl" %}
-{% include  "./11_Fragment_subroutine_getNormal.glsl" %}
-{% include  "./11_Fragment_subroutine_getShadowAttenuation.glsl" %}
-{% include  "./11_Fragment_subroutine_getSpotLightAttenuation.glsl" %}
-{% include  "./11_Fragment_subroutine_getAOAttenuation.glsl" %}
+{% include  "11_Fragment_subroutine_getDistanceAttenuation.glsl" %}
+{% include  "11_Fragment_subroutine_getNormal.glsl" %}
+{% include  "11_Fragment_subroutine_getShadowAttenuation.glsl" %}
+{% include  "11_Fragment_subroutine_getSpotLightAttenuation.glsl" %}
+{% include  "11_Fragment_subroutine_getAOAttenuation.glsl" %}
 
 
 
@@ -134,7 +134,40 @@ void main()
 
 {%comment%} ################################# following shadow/pos/depth generation code ################################################## {%endcomment%}
 
+{% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION or RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION  %}
+  
+  {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION and LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT %}
+    //following variable listing in descending optimazation; i will begin with the non optimized and hence fewest error prone one
+    //gl_FragDepth = inFDepthViewSpaceNORMALIZED;
+    //gl_FragDepth = inFDepthViewSpaceUNSCALED / inverse_lightSourcesFarClipPlane;
+    //gl_FragDepth = inFPositionViewSpaceNORMALIZED.z; //light space linear coords, scaled by inverse farclipplane of lightsource camera ({{inverse_lightSourcesFarClipPlane}})
+     gl_FragDepth = inFPositionViewSpaceUNSCALED.z / inverse_lightSourcesFarClipPlane; //light space linear coords, unscaled to test the most simple case before the more error prone optimized one
+   {% endif %}
+  
+  {% if RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION %}
+    outFPosition = inFPosition;
+  {% endif %}
+  
+  {% if RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %}  
+    //out float outFDepthView;  //just the linear z value in view space, for usage in a non-deferred AO contexts; 
+                              //if this value will be scaled to [0..1] via the farclipplane and written to gl_FragDeapth
+                              //or just written unscaled to a single componentent color texture has still TO BE DETERMINED; 
+                              //TODO try out when optimizing the G buffer position texture or coming to AO 
+    //lets at first try out a one channel 32bit float color texture where we write the linear view space z value into, without any scaling/clamping:
+    outFDepthViewSpaceUNSCALED = inFPosViewSpaceUNSCALED.z;                           
+  {% endif %}
+  
+  {%comment%} for default spotlight shadowmap generation, there is no fragment shader necessary at all, hence no input {%endcomment%}
+  
+{% endif %}
 
 {%comment%} ################################# following ID generation code ##############################################################{%endcomment%}
+
+{% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION  %}
+      int z_Index = //TODO define relevant interface and calculation routines etc ....
+			outFGBufferGenericIndices = ivec4(gl_PrimitiveID, z_Index); //usage examples : x: gl_PrimitiveID; y: z index of voxel z: material id
+{% endif %}
+
+
 
 } //end main
