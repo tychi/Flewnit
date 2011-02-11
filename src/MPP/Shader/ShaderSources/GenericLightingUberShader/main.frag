@@ -18,6 +18,7 @@
 {% include  "./11_Fragment_subroutine_getNormal.glsl" %}
 {% include  "./11_Fragment_subroutine_getShadowAttenuation.glsl" %}
 {% include  "./11_Fragment_subroutine_getSpotLightAttenuation.glsl" %}
+{% include  "./11_Fragment_subroutine_getAOAttenuation.glsl" %}
 
 
 
