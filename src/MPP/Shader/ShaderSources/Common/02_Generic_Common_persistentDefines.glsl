@@ -48,17 +48,17 @@
 	 	render depth values to a depth texture, attached to the framebuffer's
 	 	depth attachment:
 		- if ShaderFeatures.lightSourcesShadowFeature==
-					LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT:
+					LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT:
 			just a vertex shader, rendering implicitly only the "1/z" gl_FragDepth value
 			to 2d-depth texture, no color stuff
 
 		- if ShaderFeatures.lightSourcesShadowFeature==
-					LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT:
+					LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT:
 			vertex + geometry + fragment shader, rendering the z-value in Camera Coordinates
 			into a cubic depth texture by writing explicitly to gl_FragDepth;
 			The geometry shader generates a primitive for every cubemap face;
 		if ShaderFeatures.lightSourcesShadowFeature==
-					LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS:
+					LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS:
 			vertex +geometry shader, rendering implicitly only the "1/z" gl_FragDepth value
 			to a 2d-depth texture array, no color stuff.
 			The geometry shader generates a primitive for every array layer;
@@ -93,9 +93,9 @@
 	
 	
 	#define LIGHT_SOURCES_SHADOW_FEATURE_NONE			0
-	#define LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT	1
-	#define LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT	2
-	#define LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS	3
+	#define LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT	1
+	#define LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT	2
+	#define LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS	3
 
 	#define SHADOW_TECHNIQUE_NONE		0
 	#define SHADOW_TECHNIQUE_DEFAULT	1

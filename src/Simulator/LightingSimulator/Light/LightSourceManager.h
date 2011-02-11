@@ -119,7 +119,7 @@ private:
 
 
 	/*
-	 * Only used if mLightSourcesShadowFeature == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS;
+	 * Only used if mLightSourcesShadowFeature == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS;
 	 * In shadowmap generation passes, it contains the viewProjectionMatrices of the
 	 * "lightsource cameras" for the geometry shader; in lighting passes, it contains
 	 *  the biased viewProjectionMatrices for the fragment shader;

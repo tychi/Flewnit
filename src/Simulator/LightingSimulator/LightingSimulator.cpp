@@ -102,12 +102,12 @@ ShaderFeaturesGlobal LightingSimulator::parseGlobalShaderFeatureFromConfig()
 	String lightSourcesShadowFeatureString = ConfigCaster::cast<String>(	node.get("lightSourcesShadowFeature",0));
 	if(lightSourcesShadowFeatureString == "LIGHT_SOURCES_SHADOW_FEATURE_NONE")
 			sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_NONE;
-	if(lightSourcesShadowFeatureString == "LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT")
-			sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT;
-	if(lightSourcesShadowFeatureString == "LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT")
-			sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT;
-	if(lightSourcesShadowFeatureString == "LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS")
-			sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS;
+	if(lightSourcesShadowFeatureString == "LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT")
+			sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT;
+	if(lightSourcesShadowFeatureString == "LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT")
+			sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT;
+	if(lightSourcesShadowFeatureString == "LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS")
+			sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS;
 
 	String shadowTechniqueString =	ConfigCaster::cast<String>(	node.get("shadowTechnique",0));
 	if(shadowTechniqueString == "SHADOW_TECHNIQUE_NONE")

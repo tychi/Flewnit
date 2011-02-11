@@ -3,7 +3,17 @@
   applicable to following stages: fragment     {%endcomment%} 
 
 {% if not SHADING_FEATURE_NONE %}
-  uniform vec4 eyeVecInWorldCoords;
+  uniform vec4 eyePosition_WS;
+  
+  uniform vec2 tangensCamFov; //for position calculation from pure linear depth value;
+	uniform vec2 cotangensCamFov; //for texcoord calculation from viewspace position value;/inverso of tanget, pass from outside to save calculations
+  
+  {% if SHADING_FEATURE_AMBIENT_OCCLUSION %}
+    uniform float AOinfluenceRadius;
+    uniform float AOattenuation;
+	  {%comment%} TODO if really doing AO, we have to determine the texture type, the coordinate system etc. pp.; 
+	             this is just a conceptional stub for AO                                                             {%endcomment%} 	
+	{%endif%}
 
   //following some non-dependently generated material relevant uniforms; even if they aren'T used by some shader permutations,
   //masking them according to shader features would be overkill; defined ansd unsued may is better than undefined and written to 
@@ -43,7 +53,7 @@
   
   {% if not LIGHT_SOURCES_SHADOW_FEATURE_NONE  %}  
     //begin shadowmap matrix stuff
-    {% if LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS %}
+    {% if LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS %}
     {%comment%}  any hint we need more than one shadowmap transformation matrix?
                   (pointlight cube shadow map counts as one and needs no matrix for lookup)? 
                   (assert also that multiple-lightsource-LIGHTING is enabled)                  {% endcomment %}
@@ -51,21 +61,24 @@
         //multiple light source shadow map lookup parameters
         layout(shared) uniform worldToShadowMapMatrixBuffer
         {
-          mat4 worldToShadowMapMatrices[  {{ numMaxShadowCasters }} ]; //bias*perspLight*viewLight
+          mat4 worldToShadowMapMatrices[  {{ numMaxShadowCasters }} ]; //bias*perspLight*viewLight                for light calcs in world space and
+                                                                       //bias*perspLight*viewLight * (camView)⁻1  for light calcs in view space
         };
     {% endif %}    
-    {% else %}
-        //single light source shadow map lookup parameters
-        {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT %}
-          //only one spot light source for shadowing
-          uniform mat4 worldToShadowMapMatrix; //bias*perspLight*viewLight
+    {% else %}//single light source shadow map lookup parameters following:
+        {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}//only one spot light source for shadowing:
+          uniform mat4 worldToShadowMapMatrix; //bias*perspLight*viewLight                for light calcs in world space and
+                                               //bias*perspLight*viewLight * (camView)⁻1  for light calcs in view space
         {% endif %}
-        {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT %}
+        {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT %}
           //in case of one point light shadow mapping, the lookup is in "non-1/z" camera space, 
-          //i.e. needs no additional transformation matrix;
+          //i.e. needs no additional transformation matrix when calculating in world space; 
+          
+          //BUT BEWARE: when calculating in view spcace, we need a matrix:    
+          uniform mat4 viewToPointShadowMapMatrix; // inverse_lightSourcesFarClipPlane * inversepointLightTranslation * (camView)⁻1
           //but because the depth buffer is always clamped to [0..1], the depth value
           //must be scaled by 1/farclipPlane of lightSource
-          uniform float inverse_lightSourcesFarClipPlane = {{ inverse_lightSourcesFarClipPlane }} ;
+          //uniform float inverse_lightSourcesFarClipPlane = {{ inverse_lightSourcesFarClipPlane }} ;
           //bias for lookup, in case the glPolygonOffset doesn't apply when writing the gl_FragDepth manually;
           uniform float shadowMapComparisonOffset= -0.01;
         {% endif %}  

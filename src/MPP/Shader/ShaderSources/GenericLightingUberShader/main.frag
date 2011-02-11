@@ -9,13 +9,11 @@
 {% include  "./06_Fragment_shadowMapSamplers.glsl" %}
 {% include  "./07_Fragment_GBufferSamplers.glsl" %}
 {% include  "./08_Fragment_Uniforms.glsl" %}
-{%comment%}
-
-
 //---- shader input --------------------
 {% include  "./09_Fragment_input.glsl" %}
 //---- shader output -------------------
 {% include  "./10_Fragment_output.glsl" %}
+{%comment%}
 //----- subroutines ------------------------------------------------------------------------------
 {% include  "./11_Fragment_subroutine_getDistanceAttenuation.glsl" %}
 {% include  "./11_Fragment_subroutine_getNormal.glsl" %}
@@ -29,7 +27,7 @@ void main()
 
 #if (RENDERING_TECHNIQUE != RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL)
 
-	finalLuminance = vec4(0.0,0.0,0.0,0.0);
+	outFFinalLuminance = vec4(0.0,0.0,0.0,0.0);
 	
 //{%codeFragment_initSampleValues}
 //{
@@ -38,31 +36,31 @@ void main()
 	for(int sampleIndex = 0; sampleIndex < NUM_MULTISAMPLES ;sampleIndex++);
 	{
 		//acquire G-buffer values in order to omit multiple reads to same texture and to use the same variable names in the following code;
-		vec3 normalWN		=	GBUFFER_ACQUIRE(normalInWorldCoordsTexture, sampleIndex).xyz;
+		vec3 normalWN		=	GBUFFER_ACQUIRE(normalTexture, sampleIndex).xyz;
 		if(length(normalWN) < 0.1 )
 		{
 			//normal should have length 1, unless the fragment was never written (or on purpose set to 0, as for skydomes)!
 			//tihs means, it is a background sample that MAY NOT BE SHADED; so continue;
 			continue;
 		}
-		vec3 positionInWorldCoords = 	GBUFFER_ACQUIRE(positionInWorldCoordsTexture, sampleIndex).xyz;
+		vec3 inFPosition = 	GBUFFER_ACQUIRE(positionTexture, sampleIndex).xyz;
 		vec4 fragmentColor =		GBUFFER_ACQUIRE(colorTexture, sampleIndex).xyzw;
 		float shininess = fragmentColor.w;
 		fragmentColor.w = 1.0; //reset alpha to omit some fuckup
 		#ifdef GBUFFER_INDEX_RENDERING
-	    	ivec4 genericIndices = 		GBUFFER_ACQUIRE(genericIndicesTexture, sampleIndex).xyzw;
+	    	ivec4 inFGenericIndices = 		GBUFFER_ACQUIRE(genericIndicesTexture, sampleIndex).xyzw;
 		#endif
 	#else //endif deferred lighting
 		vec3 normalWN = getNormal();
 		vec4 fragmentColor =
 			#if (SHADING_FEATURE & SHADING_FEATURE_DECAL_TEXTURING)
-			texture(decalTexture,texCoords.xy);
+			texture(decalTexture,inFTexCoords.xy);
 			#else
 			vec4(1.0,1.0,1.0,1.0);
 			#endif
 	#endif //(RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_LIGHTING)
 
-		vec3 fragToCamN = normalize(eyeVecInWorldCoords - positionInWorldCoords);
+		vec3 fragToCamN = normalize(eyePosition_WS - inFPosition);
 
 //} //end codeFragment_initSampleValues
 
@@ -90,7 +88,7 @@ void main()
 
 //{%codeFragment_diffuseLightingCalc}
 //{
-			vec3 lightToFragW =   positionInWorldCoords - lightSource.position;
+			vec3 lightToFragW =   inFPosition - lightSource.position;
 			vec3 lightToFragWN =  normalize(lightToFragW);
 
 			float cosFragToLight_Normal = dot( (-1.0) * lightToFragWN , normalWN);
@@ -114,7 +112,7 @@ void main()
 				incidentLight + =
 					getDistanceAttenuation(lightToFragW) 
 					* 
-					getShadowAttenuation(lightSource.shadowMapLayer, positionInWorldCoords) 
+					getShadowAttenuation(lightSource.shadowMapLayer, inFPosition) 
 					* 
 					#if (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT ) \
 					  ||  (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS )
@@ -151,17 +149,17 @@ void main()
 		totalValidMultiSamples += 1.0;
 		#endif
 
-		finalLuminance += incidentLight * fragmentColor;
+		outFFinalLuminance += incidentLight * fragmentColor;
 
 		#else 	//if (SHADING_FEATURE & SHADING_FEATURE_DIRECT_LIGHTING)
-		finalLuminance += fragmentColor; //only accum fragment colors without shading
+		outFFinalLuminance += fragmentColor; //only accum fragment colors without shading
 		#endif 	//if (SHADING_FEATURE & SHADING_FEATURE_DIRECT_LIGHTING)
 
 
 	#if (RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_LIGHTING)	
 	} //end of for multisamples-loop
 	//divide accumulated luminance by numSamples:
-	if(totalValidMultiSamples >0.0) finalLuminance /= totalValidMultiSamples;
+	if(totalValidMultiSamples >0.0) outFFinalLuminance /= totalValidMultiSamples;
 	#endif //(RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_LIGHTING)
 //} //end codeFragment_accumSampleValues
 
@@ -170,7 +168,7 @@ void main()
 //{
 	#if (SHADING_FEATURE & SHADING_FEATURE_CUBE_MAPPING)
 	//lerp between actual color and cubemap color
-	finalLuminance = mix( 	finalLuminance, 
+	outFFinalLuminance = mix( 	outFFinalLuminance, 
 				texture(cubeMap, normalWN),
 				cubeMapReflectivity );
 	#endif

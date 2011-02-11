@@ -58,7 +58,7 @@ LightSourceManager::LightSourceManager()
 
 	mShadowMapMatricesUniformBuffer=0;
 	if(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
-		 == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS)
+		 == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)
 	{
 		mShadowMapMatricesUniformBuffer = new Buffer(
 			BufferInfo(

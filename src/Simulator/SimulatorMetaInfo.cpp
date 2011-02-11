@@ -343,7 +343,7 @@ void ShaderFeaturesGlobal::validate()throw(SimulatorException)
 		numMaxLightSources = 1;
 		numMaxShadowCasters = 1;
 		assert("shadow feature may not involve more lightsources than the lighting feature" &&
-			(lightSourcesShadowFeature != LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS	)
+			(lightSourcesShadowFeature != LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS	)
 		);
 	}
 	else

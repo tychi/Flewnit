@@ -17,37 +17,37 @@
 		//-----------------------------------------------------------------------------------------------
 
 		//spotlightcalc:
-		#if	(LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT) \
-		  ||	(LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS)
+		#if	(LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT) \
+		  ||	(LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)
 
-			#if(LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT)
+			#if(LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT)
 				if(shadowMapLayer > 0.001 )
 				{
 					return 1.0;
 				}			
 
-				vec3 shadowCoord =positionInWorldCoords * worldToShadowMapMatrix;
+				vec3 inFShadowCoord =inFPosition * worldToShadowMapMatrix;
 				//divide by homogene coord:
-				shadowCoord /= shadowCoord.w;
+				inFShadowCoord /= inFShadowCoord.w;
 			#endif
 
-			#if(LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS)
-				vec4 shadowCoord =positionInWorldCoords * worldToShadowMapMatrices[(int)(floor(shadowMapLayer+0.5))];
+			#if(LIGHT_SOURCES_SHADOW_FEATURE == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)
+				vec4 inFShadowCoord =inFPosition * worldToShadowMapMatrices[(int)(floor(shadowMapLayer+0.5))];
 				//divide by homogene coord:
-				shadowCoord /= shadowCoord.w;
+				inFShadowCoord /= inFShadowCoord.w;
 				//rearrange for array shadowmap lookup:		
-				shadowCoord = 	vec4(	shadowCoord.x,shadowCoord.y, 
+				inFShadowCoord = 	vec4(	inFShadowCoord.x,inFShadowCoord.y, 
 							//hope that I understood the spec correctly, that there is no [0..1] scaling like in texture2D:
 							//max 0,min d −1, floorlayer0.5
 							shadowMapLayer,
-							shadowCoord.z 	) ;
+							inFShadowCoord.z 	) ;
 			#endif
 	
 
 			//we don't want a squared shadow-throwing lightsource impression, but a circled one:	
-			if( length(vec2(0.5 + shadowCoord.x, 0.5  shadowCoord.y)) < 0.5 )
+			if( length(vec2(0.5 + inFShadowCoord.x, 0.5  inFShadowCoord.y)) < 0.5 )
 			{
-				return  clamp(texture( shadowMap, shadowCoord ), minimalshadowAttenuation , 1.0);	
+				return  clamp(texture( shadowMap, inFShadowCoord ), minimalshadowAttenuation , 1.0);	
 			}
 			else {return minimalshadowAttenuation;}
 		#endif //spotlightcalc
@@ -58,7 +58,7 @@
 		//assert also that the LIGHTING is only single pointlight, otherwise the shading logic would be TO unrealistic
 		//(a technical reason for this restriction is also, that a lookup in GPU global memory due to the uniform buffer lookup shall be omitted due to 	
 		//performance reasons)
-		#if  (LIGHT_SOURCES_SHADOW_FEATURE   == LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT) \
+		#if  (LIGHT_SOURCES_SHADOW_FEATURE   == LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT) \
 		  && (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT)
 		
 			if(shadowMapLayer > 0.001 )

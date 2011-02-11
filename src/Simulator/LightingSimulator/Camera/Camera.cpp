@@ -43,7 +43,7 @@ const Matrix4x4& Camera::perspective(	float fieldOfView_Angles,
 }
 
 //needed for stuff like static mesh voxelization per rasterization;
-//then, the params should be (0,voxelsPerDimension,0,voxelsPerDimension,0,voxelsPerDimension)
+//then, the params should be (-voxelsPerDimension/2,+voxelsPerDimension/2,-voxelsPerDimension/2,+voxelsPerDimension/2,0,voxelsPerDimension)
 //so that every integral pixel coord corresponds to one voxel;
 const Matrix4x4& Camera::ortho	(float left,
 						float right,

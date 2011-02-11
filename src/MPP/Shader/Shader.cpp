@@ -214,7 +214,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_NORMAL_MAPPING );
 	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_CUBE_MAPPING);
 
-	//sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT;
+	//sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT;
 
 	sfl.renderingTechnique= RENDERING_TECHNIQUE_DEFAULT_LIGHTING;
 

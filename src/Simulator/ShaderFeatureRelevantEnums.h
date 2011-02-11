@@ -70,17 +70,17 @@ namespace Flewnit
 			render depth values to a depth texture, attached to the framebuffer's
 			depth attachment:
 			- if ShaderFeatures.lightSourcesShadowFeature==
-						LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT:
+						LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT:
 				just a vertex shader, rendering implicitly only the "1/z" gl_FragDepth value
 				to 2d-depth texture, no color stuff
 
 			- if ShaderFeatures.lightSourcesShadowFeature==
-						LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT:
+						LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT:
 				vertex + geometry + fragment shader, rendering the z-value in Camera Coordinates
 				into a cubic depth texture by writing explicitly to gl_FragDepth;
 				The geometry shader generates a primitive for every cubemap face;
 			if ShaderFeatures.lightSourcesShadowFeature==
-						LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS:
+						LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS:
 				vertex +geometry shader, rendering implicitly only the "1/z" gl_FragDepth value
 				to a 2d-depth texture array, no color stuff.
 				The geometry shader generates a primitive for every array layer;
@@ -128,9 +128,9 @@ namespace Flewnit
 	enum LightSourcesShadowFeature
 	{
 		LIGHT_SOURCES_SHADOW_FEATURE_NONE			=0,
-		LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT	=1,
-		LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT	=2,
-		LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS	=3,
+		LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT	=1,
+		LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT	=2,
+		LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS	=3,
 		__NUM_LIGHT_SOURCES_SHADOW_FEATURES__		=4
 	};
 
@@ -228,9 +228,9 @@ namespace Flewnit
 	const String LightSourcesShadowFeatureStrings[] =
 	{
 		"LIGHT_SOURCES_SHADOW_FEATURE_NONE",
-		"LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT",
-		"LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT",
-		"LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS",
+		"LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT",
+		"LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT",
+		"LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS",
 		"__NUM_LIGHT_SOURCES_SHADOW_FEATURES__"
 	};
 

@@ -49,13 +49,13 @@ void ShadowMapGenerationStage::initStage()throw(SimulatorException)
 
 		switch(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature)
 		{
-		case LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOTLIGHT:
+		case LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT:
 			texType = TEXTURE_TYPE_2D;
 			break;
-		case LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINTLIGHT:
+		case LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT:
 			texType = TEXTURE_TYPE_2D_CUBE;
 			break;
-		case LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOTLIGHTS:
+		case LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS:
 			texType = TEXTURE_TYPE_2D_ARRAY;
 			//keep ini shadowcaster value
 			break;
