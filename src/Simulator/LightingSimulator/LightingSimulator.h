@@ -34,9 +34,11 @@ public:
 	LightSourceManager* getLightSourceManager()const;
 	Camera* getMainCamera()const;
 
-private:
 	//debug
 	void testStuff();
+
+private:
+
 
 	ShaderFeaturesGlobal parseGlobalShaderFeatureFromConfig();
 

@@ -13,7 +13,6 @@
 {% include  "./09_Fragment_input.glsl" %}
 //---- shader output -------------------
 {% include  "./10_Fragment_output.glsl" %}
-{%comment%}
 //----- subroutines ------------------------------------------------------------------------------
 {% include  "./11_Fragment_subroutine_getDistanceAttenuation.glsl" %}
 {% include  "./11_Fragment_subroutine_getNormal.glsl" %}
@@ -25,164 +24,116 @@
 void main()
 {
 
-#if (RENDERING_TECHNIQUE != RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL)
+{%comment%} ################################# following "coloring" code: shading and GBuffer fill ######################################### {%endcomment%}
 
-	outFFinalLuminance = vec4(0.0,0.0,0.0,0.0);
-	
-//{%codeFragment_initSampleValues}
-//{
-	#if (RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_LIGHTING)
-	float totalValidMultiSamples=0.0;
-	for(int sampleIndex = 0; sampleIndex < NUM_MULTISAMPLES ;sampleIndex++);
-	{
-		//acquire G-buffer values in order to omit multiple reads to same texture and to use the same variable names in the following code;
-		vec3 normalWN		=	GBUFFER_ACQUIRE(normalTexture, sampleIndex).xyz;
-		if(length(normalWN) < 0.1 )
-		{
-			//normal should have length 1, unless the fragment was never written (or on purpose set to 0, as for skydomes)!
-			//tihs means, it is a background sample that MAY NOT BE SHADED; so continue;
-			continue;
-		}
-		vec3 inFPosition = 	GBUFFER_ACQUIRE(positionTexture, sampleIndex).xyz;
-		vec4 fragmentColor =		GBUFFER_ACQUIRE(colorTexture, sampleIndex).xyzw;
-		float shininess = fragmentColor.w;
-		fragmentColor.w = 1.0; //reset alpha to omit some fuckup
-		#ifdef GBUFFER_INDEX_RENDERING
-	    	ivec4 inFGenericIndices = 		GBUFFER_ACQUIRE(genericIndicesTexture, sampleIndex).xyzw;
-		#endif
-	#else //endif deferred lighting
-		vec3 normalWN = getNormal();
-		vec4 fragmentColor =
-			#if (SHADING_FEATURE & SHADING_FEATURE_DECAL_TEXTURING)
-			texture(decalTexture,inFTexCoords.xy);
-			#else
-			vec4(1.0,1.0,1.0,1.0);
-			#endif
-	#endif //(RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_LIGHTING)
+{% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL or RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
+  
+  {% if VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY %}
+    outFFinalLuminance = vec4(1.0,0.0,1.0,0.0); //some funny debug draw color^^
+    return;
+  {% else %} {% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
+    {% if not SHADING_FEATURE_CUBE_MAPPING %} what the fuck, add a cube map! {% endif %}
+    //one of those exceptions: for cuba mapping: we have to pass WORLD coords and not VIEW coords!11
+    outFFinalLuminance = texture(cubeMap, normalize( (-1.0) * inFPosition.xyz));
+    //TODO try when stable non normalized lookup:
+    // outFFinalLuminance = texture(cubeMap,  (-1.0) * inFPosition.xyz );
+    return;
+  {% else %} 
+  
+    {%comment%} now the common stuff begins {%endcomment%}
+     
+    //codeFragment_initNonDefLightingSampleValues
+    //{
+    {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING  %} 
+      {%comment%} get the fragment values in the classical way {%endcomment%}
+      vec3 normalVN = getNormal(0); //sampleindex zero, as no multisampling is used
+      vec4 fragmentColor =  {% if SHADING_FEATURE_DECAL_TEXTURING %}  texture(decalTexture,inFTexCoords.xy);
+                            {% else %} vec4(1.0,1.0,1.0,1.0);
+                            {% endif %}  
+    {% endif %}
+    //} //end codeFragment_initNonDefLightingSampleValues
+    
+    
+    {% if RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL  %}
+      //we have all relevant values, now flush the GBuffer;
+      outFGBufferPosition = inFPosition; //TODO NOT write position out this wasting way: try writing gl_FragDepth or single floating point texture instead when this default way is stable works
+      outFGBufferNormal = vec4(normalVN,0.0);   //TODO NOT write normal   out this wasting way: try writing to two-channel normalized 8bit signed int texture instead when this default way is stable works out
+      outFGBufferColor = vec4(fragmentColor.xyz, shininess);  //code shininess into alph channel 
+    {% else %}
+    
+      {%comment%} now iterate over all lights and fragment samples and perform lighting calculations {%endcomment%}
+    
+      outFFinalLuminance = vec4(0.0,0.0,0.0,0.0); //init to zero as it will be accumulated over samples and lightsources
+      vec3 fragToCamN = normalize( (-1.0) * inFPosition);   //vec3 fragToCamN = normalize(eyePosition_WS - inFPosition); <--legacy worldspace code
+       
+               
+      {% if RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
+        //{############### begin outer samples loop ####################################################################
+        {%comment%} get the fragment values from the (possibly multisampled) G-Buffer {%endcomment%}
+        {% include "./12_Fragment_codeSnippet_beginGBufferSampleIteration.glsl" %}
+      {% endif %} 
+        
+                  {%comment%} no matter if we are doing deferred or direct lighting now, the calculations are the same  {%endcomment%}
+                  
+                  {% if not SHADING_FEATURE_DIRECT_LIGHTING %}
+                      outFFinalLuminance += fragmentColor; //only accum fragment colors without shading    
+                  {% else %}
+                  
+                       vec4 incidentLight = vec4(0.0,0.0,0.0,0.0); //variable to accum all light for one sample
+                       
+                     
+                       {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
+                         //there was once a bug in the driver preventing variable lenght-loops; TODO check out if it works now after the rest has been veryfied:
+                         //{############### begin inner lighting loop #######################################################
+                         //for(int lightIndex = 0; lightIndex < numCurrentlyActiveLightSources ;lightIndex++)
+                         for(int lightIndex = 0; lightIndex < NUM_LIGHTSOURCES ;lightIndex++) //<-- hard coded, precompiled loop termination condition variable
+                          {
+                              //lets hope that there will be a component wise copy and NOT some C++-f***up about non-existing operator=() ;)
+                               LightSource lightSource = lightSources[lightIndex]; //copy from uniform buffer to shared memory and name this variable like the uniform variable in the one-lightsource- context
+                      {% endif %}
+                      
+                              //{~~~~ begin per sample, per lightsource calculations ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                              {% include "./12_Fragment_codeSnippet_performLightingCalculationsPerFragmentPerLight.glsl" %}
+                              //}~~~~ end   per sample, per lightsource calculations ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-		vec3 fragToCamN = normalize(eyePosition_WS - inFPosition);
+                      {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
+                          } //end of for lightsources-loop
+                          //}############### end   inner lighting loop #######################################################
+                      {% endif %}  
+                      
 
-//} //end codeFragment_initSampleValues
+                      outFFinalLuminance += incidentLight * fragmentColor;  //accum the incident light for all lightsources, multiplicated with th color of the current fragment;
+                                                                            //do this for every sample      
+                     
+                      
+                  {% endif %} {%comment%} end distinction between if lighting the samples or not {%endcomment%}
+            
+      {% if RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
+        {%comment%} get the fragment values from the (possibly multisampled) G-Buffer {%endcomment%}
+        } //end of for multisamples-loop; see its beginning in "./12_Fragment_codeSnippet_beginGBufferSampleIteration.glsl"
+        //divide accumulated luminance by numSamples:
+        if(totalValidMultiSamples >0.0) { outFFinalLuminance /= totalValidMultiSamples};
+        //}############### end   outer samples loop ####################################################################   
+      {% endif %} 
+      
+      
+      {% if SHADING_FEATURE_CUBE_MAPPING and RENDERING_TECHNIQUE_DEFAULT_LIGHTING %} 
+        //lerp between actual color and cubemap color; only possible for default lighting; for deferred lighting, the fact that it is a cube map material
+        //cannot be handled in a clean way without wasting much memory; hence, like transparent materials, cube mapped geometry may no be rendered deferred
+        fragmentColor = mix(   outFFinalLuminance, texture(cubeMap, normalVN), cubeMapReflectivity        );
+      {% endif %}
+   
+    
+    {% endif %}     {%comment%} end distinction between G-buffer fill and lighting  {%endcomment%}
+         
 
+  {% endif %}{% endif %}   {%comment%} endifs from debug draw and skydome {%endcomment%}
 
-//{%codeFragment_initLightValues}
-//{
-		//variable to accum all light for one sample
-		vec4 incidentLight = vec4(0.0,0.0,0.0,0.0);
+{% endif %} {%comment%} end "coloring" stuff {%endcomment%}
 
-		#if (SHADING_FEATURE & SHADING_FEATURE_DIRECT_LIGHTING)
-		
-		#if    (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS ) \
-		 	   || (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS ) \
-		 	   || (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )	
-		for(int lightIndex = 0; lightIndex < NUM_LIGHTSOURCES ;lightIndex++);
-		//there was once a bug in the driver preventing variable lenght-loops;
-		// TODO check out if it works now after the rest has been veryfied;
-		//for(int lightIndex = 0; lightIndex < numCurrentlyActiveLightSources ;lightIndex++)
-		{
-			//lets hope that there will be a component wise copy and NOT some C++-f***up about non-existing operator=() ;)
-			LightSource lightSource = lightSources[lightIndex];
-		#endif
-
-//} //end codeFragment_initLightValues
-
-//{%codeFragment_diffuseLightingCalc}
-//{
-			vec3 lightToFragW =   inFPosition - lightSource.position;
-			vec3 lightToFragWN =  normalize(lightToFragW);
-
-			float cosFragToLight_Normal = dot( (-1.0) * lightToFragWN , normalWN);
-
-			//is fragment facing to the light?
-			if(cosFragToLight_Normal > 0)
-			{			
-				float diffuseFactor  = cosFragToLight_Normal;
-//} //end codeFragment_diffuseLightingCalc
-
-//{%codeFragment_specularLightingCalc}
-//{
-				vec3 reflectedlightToFragW = reflect ( lightToFragWN , normalWN);
-				float cosFragToCam_reflectedlightToFragW = dot(fragToCamN,reflectedlightToFragW);
-				float specularFactor = pow(cosFragToCam_reflectedlightToFragW, shininess);
-//} //end codeFragment_specularLightingCalc
-
-
-//{%codeFragment_accumLightValues}
-//{	
-				incidentLight + =
-					getDistanceAttenuation(lightToFragW) 
-					* 
-					getShadowAttenuation(lightSource.shadowMapLayer, inFPosition) 
-					* 
-					#if (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT ) \
-					  ||  (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS )
-	
-						#if(LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
-						//is the lightsource a spotlight?
-						(lightSource.innerSpotCutOff_Radians <= 0.0) ? 1.0 : //if cutoff <=0.0, it will be interpreted as point light
-						#endif
-						getSpotLightAttenuation(	lightSource.direction,			
-										lightSource.spotExponent, 
-										lightSource.innerSpotCutOff_Radians, 
-										lightSource.outerSpotCutOff_Radians, 
-										lightToFragWN				) 
-						*
-					#endif	
-					(
-						( vec4(lightSource.diffuseColor.xyz,1.0) *  diffuseFactor ) +
-						( vec4(lightSource.specularColor.xyz,1.0) *  specularFactor )
-					);
-
-			} //endif is fragment facing to the light (cosFragToLight_Normal > 0)	
-
-		#if  (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS ) \
-	 	 || (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS ) \
-	 	 || (LIGHT_SOURCES_LIGHTING_FEATURE == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
-		} //end of for lightsources-loop
-		#endif
-//} //end codeFragment_initLightValues
+{%comment%} ################################# following shadow/pos/depth generation code ################################################## {%endcomment%}
 
 
-//{%codeFragment_accumSampleValues}
-//{
-		#if (RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_LIGHTING)
-		totalValidMultiSamples += 1.0;
-		#endif
+{%comment%} ################################# following ID generation code ##############################################################{%endcomment%}
 
-		outFFinalLuminance += incidentLight * fragmentColor;
-
-		#else 	//if (SHADING_FEATURE & SHADING_FEATURE_DIRECT_LIGHTING)
-		outFFinalLuminance += fragmentColor; //only accum fragment colors without shading
-		#endif 	//if (SHADING_FEATURE & SHADING_FEATURE_DIRECT_LIGHTING)
-
-
-	#if (RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_LIGHTING)	
-	} //end of for multisamples-loop
-	//divide accumulated luminance by numSamples:
-	if(totalValidMultiSamples >0.0) outFFinalLuminance /= totalValidMultiSamples;
-	#endif //(RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_LIGHTING)
-//} //end codeFragment_accumSampleValues
-
-
-//{%codeFragment_cubeMapping}
-//{
-	#if (SHADING_FEATURE & SHADING_FEATURE_CUBE_MAPPING)
-	//lerp between actual color and cubemap color
-	outFFinalLuminance = mix( 	outFFinalLuminance, 
-				texture(cubeMap, normalWN),
-				cubeMapReflectivity );
-	#endif
-//} //end codeFragment_cubeMapping
-	
-#endif//(RENDERING_TECHNIQUE != RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL)
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#if (RENDERING_TECHNIQUE == RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL)
-	//TODO, too tired now
-#endif
-
-} //endMain
-
-
-{%endcomment%}
+} //end main

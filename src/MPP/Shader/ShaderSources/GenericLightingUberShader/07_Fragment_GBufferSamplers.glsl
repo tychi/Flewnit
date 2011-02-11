@@ -27,8 +27,5 @@
 	{%comment%}	no texcoord and tangent stuff, because simple decal texturing, cube and/or normal mapping will be applied directly 
 							(the overhead with materialIndices write/read, texcoord write/read and several textures to be dependently read 
 							(or globbed into an array) seems not worth the benefit of saving more overdraw, especially if a z-pass prepends 
-							the G-Buffer- fill pass. (i may be wrong... ;() 																																		{%endcomment%}
-	{% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION %}
-	   	uniform GBUFFER_ISAMPLER	genericIndicesTexture;
-	{% endif %}
+							the G-Buffer- fill pass. (i may be wrong... ;() 																{%endcomment%}
 {% endif %}

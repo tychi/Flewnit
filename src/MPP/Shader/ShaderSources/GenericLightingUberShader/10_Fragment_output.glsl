@@ -7,13 +7,9 @@
 {% endif %}
 	
 {% if RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}
-		out vec4 outFGBufferPosition; //TODO NOT write position out this wasting way: write gl_FragDepth or single floating point texture instead
-		out vec4 outFGBufferNormal;
+		out vec4 outFGBufferPosition; //TODO NOT write position out this wasting way: try writing gl_FragDepth or single floating point texture instead when this default way is stable works
+		out vec4 outFGBufferNormal;   //TODO NOT write normal   out this wasting way: try writing to two-channel normalized 8bit signed int texture instead when this default way is stable works out
 		out vec4 outFGBufferColor; 	
-{% endif %}
-
-{% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION  %}
-			out ivec4 gBufferGenericIndices; //usage examples : x: gl_PrimitiveID; y: z index of voxel z: material id
 {% endif %}
 
 
@@ -27,4 +23,8 @@
                               //or just written unscaled to a single componentent color texture has still TO BE DETERMINED
   {% endif %}{% endif %}
   {%comment%} for default spotlight shadowmap generation, there is no fragment shader necessary at all, hence no input {%endcomment%}
+{% endif %}
+
+{% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION  %}
+			out ivec4 outFGBufferGenericIndices; //usage examples : x: gl_PrimitiveID; y: z index of voxel z: material id
 {% endif %}

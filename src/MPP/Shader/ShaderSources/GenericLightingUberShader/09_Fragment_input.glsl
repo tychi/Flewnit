@@ -6,7 +6,9 @@
 {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}
   in vec4 inFPosition;
   in vec4 inFNormal;
-  in vec4 inFTexCoords;
+  {% if SHADING_FEATURE_DECAL_TEXTURING or SHADING_FEATURE_DETAIL_TEXTURING	%}
+    in vec4 inFTexCoords;
+  {%endif%}
   {% if SHADING_FEATURE_NORMAL_MAPPING %}
     {%comment%} 
       create TBN-matrix in fragment shader due to the several lightsources (we cannot pass a lightsource-to-fragment

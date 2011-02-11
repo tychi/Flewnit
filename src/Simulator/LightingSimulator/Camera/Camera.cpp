@@ -14,8 +14,13 @@
 
 namespace Flewnit {
 
-Camera::Camera(String name, const AmendedTransform& localTransform, float fieldOfView_Angles)
-: SceneNode(name, CAMERA_NODE, localTransform)
+Camera::Camera(String name, const AmendedTransform& localTransform,
+		float fieldOfView_Angles,
+		float nearClipPlane,
+		float farClipPlane)
+:
+		SceneNode(name, CAMERA_NODE, localTransform),
+		mNearClipPlane(nearClipPlane), mFarClipPlane(farClipPlane)
 {
 	perspective(
 			fieldOfView_Angles,

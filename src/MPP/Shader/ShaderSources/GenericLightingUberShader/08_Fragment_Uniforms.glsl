@@ -7,6 +7,8 @@
   
   uniform vec2 tangensCamFov; //for position calculation from pure linear depth value;
 	uniform vec2 cotangensCamFov; //for texcoord calculation from viewspace position value;/inverso of tanget, pass from outside to save calculations
+	uniform float cameraFarClipPlane = {{ cameraFarClipPlane }};
+	uniform float invCameraFarClipPlane = {{ invCameraFarClipPlane }};
   
   {% if SHADING_FEATURE_AMBIENT_OCCLUSION %}
     uniform float AOinfluenceRadius;
@@ -75,7 +77,7 @@
           //i.e. needs no additional transformation matrix when calculating in world space; 
           
           //BUT BEWARE: when calculating in view spcace, we need a matrix:    
-          uniform mat4 viewToPointShadowMapMatrix; // inverse_lightSourcesFarClipPlane * inversepointLightTranslation * (camView)⁻1
+          uniform mat4 viewToPointLightShadowMapMatrix; // inverse_lightSourcesFarClipPlane * inversepointLightTranslation * (camView)⁻1
           //but because the depth buffer is always clamped to [0..1], the depth value
           //must be scaled by 1/farclipPlane of lightSource
           //uniform float inverse_lightSourcesFarClipPlane = {{ inverse_lightSourcesFarClipPlane }} ;

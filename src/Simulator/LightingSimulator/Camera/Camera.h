@@ -21,7 +21,10 @@ public:
 	//at 45° FOV, 1/1 aspect ratio perspective;
 	//grabs the viewport from the WindowManager Singleton window size;
 	//setup the relevtant matrices per hand if you want different params;
-	Camera(String name, const AmendedTransform& localTransform = AmendedTransform(), float fieldOfView_Angles = 45.0f);
+	Camera(String name, const AmendedTransform& localTransform = AmendedTransform(),
+			float fieldOfView_Angles = 45.0f,
+			float nearClipPlane = 0.1f,
+			float farClipPlane = 100.0f);
 
 	virtual ~Camera();
 
@@ -32,6 +35,9 @@ public:
 									float nearClipPlane = 0.1f,
 									float farClipPlane = 100.0f	);
 	//glm::gtc::matrix_projection::perspective()
+
+	inline float getNearClipPlane()const{return mNearClipPlane;}
+	inline float getFarClipPlane()const{return mFarClipPlane;}
 
 	//needed for stuff like static mesh voxelization per rasterization;
 	//then, the params should be (0,voxelsPerDimension,0,voxelsPerDimension,0,voxelsPerDimension)
@@ -52,6 +58,8 @@ public:
 
 private:
 
+	float mNearClipPlane;
+	float mFarClipPlane;
 	Matrix4x4 mProjectionMatrix;
 };
 

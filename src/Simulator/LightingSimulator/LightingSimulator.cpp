@@ -72,7 +72,6 @@ LightingSimulator::LightingSimulator(ConfigStructNode* simConfigNode)
 	mLightSourceManager(new LightSourceManager())//TODO
 {
 	// TODO Auto-generated constructor stub
-	testStuff();
 }
 
 ShaderFeaturesGlobal LightingSimulator::parseGlobalShaderFeatureFromConfig()

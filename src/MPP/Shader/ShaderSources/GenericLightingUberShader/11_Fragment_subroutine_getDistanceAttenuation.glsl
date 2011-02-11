@@ -1,18 +1,15 @@
-//GLSL Shader Template: distance attenuation calculations:
+{%comment%}
+GLSL Shader Template: subroutine for distance attenuation calculations:
+applicable to following stages: fragment                                {%endcomment%} 
 
-//applicable to following stages: fragment
-
-
-//{%subroutine_getDistanceAttenuation}
-//{
-	float 	getDistanceAttenuation(vec3 lightToFragW) 			
-	{
-		/*	
-		distanceAttenuation formula hopefully more performant than the following:
-		distanceAttenuation = 1.0 / (length(fragToLight)* length(fragToLight));
-		(first take a sqrt, than take the reciprocal of its sqare... this is too much overhead :P)	
-		*/
-		return  1.0 / ( (lightToFragW.x * lightToFragW.x) + (lightToFragW.y * lightToFragW.y) + (lightToFragW.z * lightToFragW.z) );
-	}
-//}
-
+{% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING or RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
+float 	getDistanceAttenuation(vec3 lightToFragW) 			
+{
+	/*	
+	distanceAttenuation formula hopefully more performant than the following:
+	distanceAttenuation = 1.0 / (length(fragToLight)* length(fragToLight));
+	(first take a sqrt, than take the reciprocal of its sqare... this is too much overhead :P)	
+	*/
+	return  1.0 / ( (lightToFragW.x * lightToFragW.x) + (lightToFragW.y * lightToFragW.y) + (lightToFragW.z * lightToFragW.z) );
+}
+{% endif %}  {%comment%} endif RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_LIGHTING {%endcomment%}

@@ -7,12 +7,17 @@
 
 #include "Shader.h"
 
+#include "URE.h"
+
 #include "Simulator/OpenCL_Manager.h"
 #include "MPP/Shader/ShaderManager.h"
 #include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 
-#include "Util/Log/Log.h"
+#include "Simulator/LightingSimulator/LightingSimulator.h"
+#include "Simulator/LightingSimulator/Camera/Camera.h"
 
+
+#include "Util/Log/Log.h"
 
 
 #include <grantlee/engine.h>
@@ -144,6 +149,13 @@ void Shader::build()
     //--------------------------------------------------------------------
 
     //generate fragment shader source code:
+
+//    QVariantHash::iterator it = contextMap.find("vertGeomToFragInterfaceSpecifier");
+//	contextMap.erase(it);
+//	contextMap.insert("vertGeomToFragInterfaceSpecifier", "out");
+//    contextMap["vertGeomToFragInterfaceSpecifier"] ="out";
+//    shaderTemplateContext = Grantlee::Context(contextMap);
+
 	Grantlee::Template fragmentShaderTemplate = templateEngine->loadByName( "main.frag" );
     shaderSourceCode = fragmentShaderTemplate->render(&shaderTemplateContext).toStdString();
 
@@ -209,16 +221,27 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	ShaderFeaturesLocal sfl (mLocalShaderFeatures);
 
 	//DEBUG mod the features in order to check template rendering
-	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_DECAL_TEXTURING );
-	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_DETAIL_TEXTURING);
-	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_NORMAL_MAPPING );
-	sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_CUBE_MAPPING);
+	//sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_DECAL_TEXTURING );
+	//sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_DETAIL_TEXTURING);
+	//sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_NORMAL_MAPPING );
+	//sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_CUBE_MAPPING);
 
 	//sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT;
 
-	sfl.renderingTechnique= RENDERING_TECHNIQUE_DEFAULT_LIGHTING;
+	//sfl.renderingTechnique= RENDERING_TECHNIQUE_DEFAULT_LIGHTING;
+	//sfl.visualMaterialType = VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY;
 
 	//END DEBUG
+
+
+	for(unsigned int i = 0; i < __NUM_VISUAL_MATERIAL_TYPES__;i++)
+	{
+		contextMap.insert(
+				VisualMaterialTypeStrings[i].c_str(),
+				(bool) ( (unsigned int)(sfl.visualMaterialType) == i)
+		);
+	}
+
 
 	for(unsigned int i = 0; i < __NUM_RENDERING_TECHNIQUES__;i++)
 	{
@@ -296,9 +319,15 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	contextMap.insert("numMultiSamples", sfg.numMultiSamples);
 	contextMap.insert("invNumMultiSamples", 1.0f /sfg.numMultiSamples);
 
+
 	contextMap.insert("inverse_lightSourcesFarClipPlane",
 			1.0f / LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane());
 
+	contextMap.insert("cameraFarClipPlane",
+			URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera()->getFarClipPlane());
+	contextMap.insert("invCameraFarClipPlane",
+			1.0f /
+			URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera()->getFarClipPlane());
 
 
 }
