@@ -24,13 +24,13 @@ float getShadowAttenuation(float shadowMapLayer, vec3 fragPosVS)
       // ---------- spotlight calculations ----------------------------------------------------------------------
       {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
         {% if not SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER %}     
-          vec3 inFShadowCoord =  worldToShadowMapMatrix * inFPosition;
+          vec3 inFShadowCoord =  worldToShadowMapMatrix * input.position;
           inFShadowCoord /= inFShadowCoord.w; //divide by homogene coord:
         {%endif%}  
       {% endif %}
 
       {% if LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS %}
-        vec4 inFShadowCoord = worldToShadowMapMatrices[(int)(floor(shadowMapLayer+0.5))] * inFPosition;
+        vec4 inFShadowCoord = worldToShadowMapMatrices[(int)(floor(shadowMapLayer+0.5))] * input.position;
         inFShadowCoord /= inFShadowCoord.w; //divide by homogene coord:
         //rearrange shadow coord for array-shadowmap lookup:    
         inFShadowCoord =   vec4(  inFShadowCoord.x,inFShadowCoord.y, 

@@ -21,6 +21,7 @@
 
 
 #include <grantlee/engine.h>
+#include "Buffer/BufferHelperUtils.h"
 
 //#include "GrantleeShaderFeaturesContext.h"
 
@@ -118,7 +119,8 @@ void Shader::build()
 
     //generate vertex shader source code:
     //TODO uncomment when vertex shader stage is derived from needs of the frsagment shder stage;
-
+    contextMap["geom2fragInterfaceSpecifier"] ="out";
+    shaderTemplateContext = Grantlee::Context(contextMap);
 //    Grantlee::Template vertexShaderTemplate = templateEngine->loadByName( "main.vert" );
 //    shaderSourceCode = vertexShaderTemplate->render(&shaderTemplateContext).toStdString();
 //
@@ -135,6 +137,9 @@ void Shader::build()
     if(false)
     {
         //generate geom shader source code:
+
+        contextMap["geom2fragInterfaceSpecifier"] ="out";
+        shaderTemplateContext = Grantlee::Context(contextMap);
     	Grantlee::Template geomShaderTemplate = templateEngine->loadByName( "main.geom" );
         shaderSourceCode = geomShaderTemplate->render(&shaderTemplateContext).toStdString();
 
@@ -150,18 +155,15 @@ void Shader::build()
 
     //generate fragment shader source code:
 
-//    QVariantHash::iterator it = contextMap.find("vertGeomToFragInterfaceSpecifier");
-//	contextMap.erase(it);
-//	contextMap.insert("vertGeomToFragInterfaceSpecifier", "out");
-//    contextMap["vertGeomToFragInterfaceSpecifier"] ="out";
-//    shaderTemplateContext = Grantlee::Context(contextMap);
+    contextMap["geom2fragInterfaceSpecifier"] ="in";
+    shaderTemplateContext = Grantlee::Context(contextMap);
 
 	Grantlee::Template fragmentShaderTemplate = templateEngine->loadByName( "main.frag" );
     shaderSourceCode = fragmentShaderTemplate->render(&shaderTemplateContext).toStdString();
 
     LOG<< DEBUG_LOG_LEVEL << "FRAGMENT SHADER CODE:\n"<<  shaderSourceCode;
 
-    //assert(0 && "inspecting shader code, therefore stop ;) ");
+    assert(0 && "inspecting shader code, therefore stop ;) ");
 
     //create the geometry shader:
     mShaderStages[GEOMETRY_SHADER_STAGE] = new ShaderStage(FRAGMENT_SHADER_STAGE, shaderSourceCode);
@@ -235,6 +237,16 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	//END DEBUG
 
 
+	for(unsigned int i = 0; i < __NUM_TOTAL_SEMANTICS__;i++)
+	{
+		//add the numeric value of the semantics enum in order to define the layout qualifier for the vertex shader
+		contextMap.insert(
+				BufferHelper::BufferSemanticsToString(BufferSemantics(i)).c_str(),
+				i
+		);
+	}
+
+
 	for(unsigned int i = 0; i < __NUM_VISUAL_MATERIAL_TYPES__;i++)
 	{
 		contextMap.insert(
@@ -280,7 +292,6 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 		);
 	}
 
-	contextMap.insert("instancedRendering", sfl.instancedRendering);
 
 
 	for(unsigned int i = 0; i < __NUM_LIGHT_SOURCES_LIGHTING_FEATURES__;i++)
@@ -308,14 +319,18 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 		);
 	}
 
+
+	contextMap.insert("instancedRendering", sfl.instancedRendering);
+	contextMap.insert("numMaxInstancesRenderable", sfg.numMaxInstancesRenderable);
+	contextMap.insert("invNumMaxInstancesRenderable", 1.0f /sfg.numMaxInstancesRenderable);
+
+
 	contextMap.insert("numMaxLightSources", sfg.numMaxLightSources);
 	contextMap.insert("invNumMaxLightSources", 1.0f /sfg.numMaxLightSources);
 
 	contextMap.insert("numMaxShadowCasters", sfg.numMaxShadowCasters);
 	contextMap.insert("invNumMaxShadowCasters", 1.0f /sfg.numMaxShadowCasters);
 
-	contextMap.insert("numMaxInstancesRenderable", sfg.numMaxInstancesRenderable);
-	contextMap.insert("invNumMaxInstancesRenderable", 1.0f /sfg.numMaxInstancesRenderable);
 
 	contextMap.insert("numMultiSamples", sfg.numMultiSamples);
 	contextMap.insert("invNumMultiSamples", 1.0f /sfg.numMultiSamples);

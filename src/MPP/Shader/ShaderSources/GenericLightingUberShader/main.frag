@@ -10,7 +10,10 @@
 {% include  "07_Fragment_GBufferSamplers.glsl" %}
 {% include  "08_Fragment_Uniforms.glsl" %}
 //---- shader input --------------------
-{% include  "09_Fragment_input.glsl" %}
+{% include  "09_Generic_InterfaceData.glsl" %}
+
+in InterfaceData input; //input from one of the previous stages;
+
 //---- shader output -------------------
 {% include  "10_Fragment_output.glsl" %}
 //----- subroutines ------------------------------------------------------------------------------
@@ -35,9 +38,9 @@ void main()
   {% else %} {% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
     {% if not SHADING_FEATURE_CUBE_MAPPING %} what the fuck, add a cube map! {% endif %}
     //one of those exceptions: for cuba mapping: we have to pass WORLD coords and not VIEW coords!11
-    outFFinalLuminance = texture(cubeMap, normalize( (-1.0) * inFPosition.xyz));
+    outFFinalLuminance = texture(cubeMap, normalize( (-1.0) * input.position.xyz));
     //TODO try when stable non normalized lookup:
-    // outFFinalLuminance = texture(cubeMap,  (-1.0) * inFPosition.xyz );
+    // outFFinalLuminance = texture(cubeMap,  (-1.0) * input.position.xyz );
     return;
   {% else %} 
   
@@ -48,7 +51,7 @@ void main()
     {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING  %} 
       {%comment%} get the fragment values in the classical way {%endcomment%}
       vec3 normalVN = getNormal(0); //sampleindex zero, as no multisampling is used
-      vec4 fragmentColor =  {% if SHADING_FEATURE_DECAL_TEXTURING %}  texture(decalTexture,inFTexCoords.xy);
+      vec4 fragmentColor =  {% if SHADING_FEATURE_DECAL_TEXTURING %}  texture(decalTexture,input.texCoords.xy);
                             {% else %} vec4(1.0,1.0,1.0,1.0);
                             {% endif %}  
     {% endif %}
@@ -57,7 +60,7 @@ void main()
     
     {% if RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL  %}
       //we have all relevant values, now flush the GBuffer;
-      outFGBufferPosition = inFPosition; //TODO NOT write position out this wasting way: try writing gl_FragDepth or single floating point texture instead when this default way is stable works
+      outFGBufferPosition = input.position; //TODO NOT write position out this wasting way: try writing gl_FragDepth or single floating point texture instead when this default way is stable works
       outFGBufferNormal = vec4(normalVN,0.0);   //TODO NOT write normal   out this wasting way: try writing to two-channel normalized 8bit signed int texture instead when this default way is stable works out
       outFGBufferColor = vec4(fragmentColor.xyz, shininess);  //code shininess into alph channel 
     {% else %}
@@ -65,7 +68,7 @@ void main()
       {%comment%} now iterate over all lights and fragment samples and perform lighting calculations {%endcomment%}
     
       outFFinalLuminance = vec4(0.0,0.0,0.0,0.0); //init to zero as it will be accumulated over samples and lightsources
-      vec3 fragToCamN = normalize( (-1.0) * inFPosition);   //vec3 fragToCamN = normalize(eyePosition_WS - inFPosition); <--legacy worldspace code
+      vec3 fragToCamN = normalize( (-1.0) * input.position);   //vec3 fragToCamN = normalize(eyePosition_WS - input.position); <--legacy worldspace code
        
                
       {% if RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
@@ -136,25 +139,21 @@ void main()
 
 {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION or RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION  %}
   
-  {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION and LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT %}
-    //following variable listing in descending optimazation; i will begin with the non optimized and hence fewest error prone one
-    //gl_FragDepth = inFDepthViewSpaceNORMALIZED;
-    //gl_FragDepth = inFDepthViewSpaceUNSCALED / inverse_lightSourcesFarClipPlane;
-    //gl_FragDepth = inFPositionViewSpaceNORMALIZED.z; //light space linear coords, scaled by inverse farclipplane of lightsource camera ({{inverse_lightSourcesFarClipPlane}})
-     gl_FragDepth = inFPositionViewSpaceUNSCALED.z / inverse_lightSourcesFarClipPlane; //light space linear coords, unscaled to test the most simple case before the more error prone optimized one
+  {%comment%} haxx as the engine cannot combine AND and OR ;):
+              read:  if we wanna make a pointlight shadow map or an AO depth map, then ..{%endcomment%} 
+  {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %} 
+   {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %}
+    //goal: writing a linear viewspace depthvalue, scaled to [0..1] to the gl_FragDepth;
+    //following variable listing in descending optimization; i will begin with the non optimized and hence fewest error prone one
+    //gl_FragDepth = input.depthViewSpaceNORMALIZED;
+    //gl_FragDepth = input.depthViewSpaceUNSCALED / inverse_lightSourcesFarClipPlane;
+    //gl_FragDepth = input.positionViewSpaceNORMALIZED.z; //light space linear coords, scaled by inverse farclipplane of lightsource camera ({{inverse_lightSourcesFarClipPlane}})
+     gl_FragDepth = input.positionViewSpaceUNSCALED.z / inverse_lightSourcesFarClipPlane; //light space linear coords, unscaled to test the most simple case before the more error prone optimized one
    {% endif %}
-  
-  {% if RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION %}
-    outFPosition = inFPosition;
   {% endif %}
   
-  {% if RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %}  
-    //out float outFDepthView;  //just the linear z value in view space, for usage in a non-deferred AO contexts; 
-                              //if this value will be scaled to [0..1] via the farclipplane and written to gl_FragDeapth
-                              //or just written unscaled to a single componentent color texture has still TO BE DETERMINED; 
-                              //TODO try out when optimizing the G buffer position texture or coming to AO 
-    //lets at first try out a one channel 32bit float color texture where we write the linear view space z value into, without any scaling/clamping:
-    outFDepthViewSpaceUNSCALED = inFPosViewSpaceUNSCALED.z;                           
+  {% if RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION %}
+    outFPosition = input.position;
   {% endif %}
   
   {%comment%} for default spotlight shadowmap generation, there is no fragment shader necessary at all, hence no input {%endcomment%}

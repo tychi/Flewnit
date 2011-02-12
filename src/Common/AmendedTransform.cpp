@@ -132,11 +132,11 @@ Matrix4x4 AmendedTransform::getLookAtMatrix()const
 			mAccumTranslationRotationScaleMatrix * getInverseScaleMatrix() );
 }
 
-//normal matrix: rotation matrix, scaled by 1/scale
-Matrix3x3 AmendedTransform::getNormalMatrix()const
-{
-	return getRotationMatrix()*  (1.0f/mScale) ;
-}
+////normal matrix: rotation matrix, scaled by 1/scale
+//Matrix3x3 AmendedTransform::getNormalMatrix()const
+//{
+//	return getRotationMatrix()*  (1.0f/mScale) ;
+//}
 //accum: translationMatrix* Mat4(normalMatrix)* scaleMatrix;
 Matrix4x4 AmendedTransform::getTotalTransform()const
 {

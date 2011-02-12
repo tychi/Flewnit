@@ -99,16 +99,16 @@ layout(location = CUSTOM_SEMANTICS ) 	in vec4 inVCustomAttribute;
 //section 8:  shader specific output:
 //{%shaderSpecificOutput}
 //{
-out vec4 inFPosition;
+out vec4 input.position;
 
-out vec4 inFNormal;
+out vec4 input.normal;
 #ifdef SHADER_FEATURE_DECAL_TEXTURING
-out vec4 inFTexCoords;
+out vec4 input.texCoords;
 #endif
 #ifdef SHADER_FEATURE_NORMAL_MAPPING
 //create TBN-matrix in fragment shader due to the several lightsources;
 //we transform from tangent space to view space via putting the vectors column-wise into a 3x3-matrix: mat3(t,b,n);
-out vec4 inFTangent;
+out vec4 input.tangent;
 #endif
 
 #ifdef GBUFFER_INDEX_RENDERING
@@ -131,21 +131,21 @@ void main()
 	mat4 normalMatrix = normalMatrices[gl_InstanceID];
 #	endif
 
-	inFPosition =  	modelMatrix * inVPosition;
-	inFNormal = 		normalMatrix * inVNormal;
+	input.position =  	modelMatrix * inVPosition;
+	input.normal = 		normalMatrix * inVNormal;
 
 #	ifdef SHADER_FEATURE_NORMAL_MAPPING
-	inFTangent = 		normalMatrix * inVTangent;
+	input.tangent = 		normalMatrix * inVTangent;
 #	endif
 
 #	ifdef SHADER_FEATURE_DECAL_TEXTURING
-	inFTexCoords = inVTexCoord;
+	input.texCoords = inVTexCoord;
 #	endif
 
 #if 	(defined(SHADER_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER) && defined(SHADER_FEATURE_SHADOWING) )
-	inFShadowCoord = worldToShadowMapMatrix *  inFPosition;
+	inFShadowCoord = worldToShadowMapMatrix *  input.position;
 #	endif
 
-	gl_Position = viewProjectionMatrix * inFPosition;
+	gl_Position = viewProjectionMatrix * input.position;
 
 }

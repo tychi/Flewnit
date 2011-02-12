@@ -17,16 +17,10 @@
 {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION or RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION  %}
   {% if RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION %}
     out vec4 outFPosition;
-  {% else %}{% if RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %}  
-    //out float outFDepthView;  //just the linear z value in view space, for usage in a non-deferred AO contexts; 
-                              //if this value will be scaled to [0..1] via the farclipplane and written to gl_FragDeapth
-                              //or just written unscaled to a single componentent color texture has still TO BE DETERMINED
-   //lets at first try out a one channel 32bit float color texture where we write the linear view space z value into, without any scaling/clamping:
-   out float outFDepthViewSpaceUNSCALED;
-  {% endif %}{% endif %}
+{% endif %}
   
   {%comment%} for default spotlight shadowmap generation, there is no fragment shader necessary at all, hence no output variable {%endcomment%}
-  {%comment%} for        pointlight shadowmap generation, there is written directly to gl_FragDepth,    hence no output variable {%endcomment%}
+  {%comment%} for pointlight shadowmap or generic depth image generation, the output is written directly to gl_FragDepth,  hence no output variable {%endcomment%}
 {% endif %}
 
 {%comment%} ################################# following index            output ##############################################################{%endcomment%}
