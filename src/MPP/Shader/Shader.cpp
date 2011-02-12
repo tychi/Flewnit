@@ -103,13 +103,6 @@ void Shader::build()
 
     setupTemplateContext(contextMap);
 
-//	QVariant shaderFeaturesVariant= QVariant::fromValue(reinterpret_cast<QObject*>( mGrantleeShaderFeaturesContext));
-//	contextMap.insert("shaderFeatures",shaderFeaturesVariant);
-//	contextMap.insert("renderingTechniqueDefaultLighting",true);
-//
-//    QObject *object = new MyClass();
-//    contextMap.insert("myObj", QVariant::fromValue(object));
-
 
 
     Grantlee::Context shaderTemplateContext(contextMap);
@@ -118,21 +111,26 @@ void Shader::build()
     //--------------------------------------------------------------------
 
     //generate vertex shader source code:
-    //TODO uncomment when vertex shader stage is derived from needs of the frsagment shder stage;
-//    Grantlee::Template vertexShaderTemplate = templateEngine->loadByName( "main.vert" );
-//    shaderSourceCode = vertexShaderTemplate->render(&shaderTemplateContext).toStdString();
-//
-//    LOG<< DEBUG_LOG_LEVEL << "VERTEX SHADER CODE:\n"<<  shaderSourceCode;
-//
-//    assert(0 && "inspecting shader code, therefore stop ;) ");
-//
-//    //create the vertex shader:
-//    mShaderStages[VERTEX_SHADER_STAGE] =
-//    	new ShaderStage(VERTEX_SHADER_STAGE,shaderSourceCode,
-//   					mCodeDirectory, mShaderName);
+
+    Grantlee::Template vertexShaderTemplate = templateEngine->loadByName( "main.vert" );
+    shaderSourceCode = vertexShaderTemplate->render(&shaderTemplateContext).toStdString();
+
+    LOG<< DEBUG_LOG_LEVEL << "VERTEX SHADER CODE:\n"<<  shaderSourceCode;
+    writeToDisk(shaderSourceCode, VERTEX_SHADER_STAGE);
+
+    //assert(0 && "inspecting shader code, therefore stop ;) ");
+
+    //create the vertex shader:
+    mShaderStages[VERTEX_SHADER_STAGE] =
+    	new ShaderStage(VERTEX_SHADER_STAGE,shaderSourceCode,
+   					mCodeDirectory, mShaderName);
+    attachCompiledStage(VERTEX_SHADER_STAGE);
+
 
     //--------------------------------------------------------------------
     //TODO derive a condition where we need a geometry shader:
+	//when do we need a geometry shader?
+	//if we need to trender to a cubemap, an array texture or if wee need to render primitive IDs
     if(false)
     {
         //generate geom shader source code:
@@ -143,12 +141,14 @@ void Shader::build()
         shaderSourceCode = geomShaderTemplate->render(&shaderTemplateContext).toStdString();
 
         LOG<< DEBUG_LOG_LEVEL << "GEOMETRY SHADER CODE:\n"<<  shaderSourceCode;
+        writeToDisk(shaderSourceCode, GEOMETRY_SHADER_STAGE);
         //assert(0 && "inspecting shader code, therefore stop ;) ");
 
         //create the geometry shader:
         mShaderStages[GEOMETRY_SHADER_STAGE] =
         	new ShaderStage(GEOMETRY_SHADER_STAGE, shaderSourceCode,
         					mCodeDirectory, mShaderName);
+        attachCompiledStage(GEOMETRY_SHADER_STAGE);
     }
 
 
@@ -168,17 +168,15 @@ void Shader::build()
     mShaderStages[FRAGMENT_SHADER_STAGE] =
     		new ShaderStage(FRAGMENT_SHADER_STAGE, shaderSourceCode,
     						mCodeDirectory, mShaderName);
+    attachCompiledStage(FRAGMENT_SHADER_STAGE);
 
     //assert(0 && "inspecting shader code, therefore stop ;) ");
 
     //--------------------------------------------------------------------
 
+    link();
 
 
-	//TODO coninue
-
-	//when do we need a geometry shader?
-	//if we need to trender to a cubemap, an array texture or if wee need to render primitive IDs
 }
 
 
@@ -410,7 +408,24 @@ void Shader::link()
 //check compiled and linked programm for errors
 void Shader::validate()throw(BufferException)
 {
-	//TODO
+	const int buffSize = 1000000; //yes, one million ;P
+	int shaderInfoLogSize=0;
+	static GLchar logBuffer[buffSize];
+
+	GUARD( glValidateProgram(mGLProgramHandle) );
+
+	GUARD(glGetProgramInfoLog(mGLProgramHandle,buffSize,&shaderInfoLogSize,logBuffer));
+
+
+	String logFileName=
+			mShaderName.string() +
+			String("_shaderProgramInfoLog.txt");
+
+	Path logFilePath= mCodeDirectory / Path(logFileName);
+	std::fstream fileStream;
+	fileStream.open(logFilePath.string().c_str(), std::ios::out);
+	fileStream << logBuffer;
+	fileStream.close();
 }
 
 
@@ -481,7 +496,7 @@ void ShaderStage::validate()throw(BufferException)
 			mShaderName.string() +
 			String("_GENERATED_")+
 			ShaderStageFileEndings[mType]+
-			String("_shaderInfoLog.txt");
+			String("_shaderStageInfoLog.txt");
 
 	Path logFilePath= mCodeDirectory / Path(logFileName);
 
