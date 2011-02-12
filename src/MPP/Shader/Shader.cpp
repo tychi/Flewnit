@@ -119,8 +119,6 @@ void Shader::build()
 
     //generate vertex shader source code:
     //TODO uncomment when vertex shader stage is derived from needs of the frsagment shder stage;
-    contextMap["geom2fragInterfaceSpecifier"] ="out";
-    shaderTemplateContext = Grantlee::Context(contextMap);
 //    Grantlee::Template vertexShaderTemplate = templateEngine->loadByName( "main.vert" );
 //    shaderSourceCode = vertexShaderTemplate->render(&shaderTemplateContext).toStdString();
 //
@@ -129,8 +127,9 @@ void Shader::build()
 //    assert(0 && "inspecting shader code, therefore stop ;) ");
 //
 //    //create the vertex shader:
-//    mShaderStages[VERTEX_SHADER_STAGE] = new ShaderStage(VERTEX_SHADER_STAGE,shaderSourceCode);
-
+//    mShaderStages[VERTEX_SHADER_STAGE] =
+//    	new ShaderStage(VERTEX_SHADER_STAGE,shaderSourceCode,
+//   					mCodeDirectory, mShaderName);
 
     //--------------------------------------------------------------------
     //TODO derive a condition where we need a geometry shader:
@@ -144,10 +143,12 @@ void Shader::build()
         shaderSourceCode = geomShaderTemplate->render(&shaderTemplateContext).toStdString();
 
         LOG<< DEBUG_LOG_LEVEL << "GEOMETRY SHADER CODE:\n"<<  shaderSourceCode;
-        assert(0 && "inspecting shader code, therefore stop ;) ");
+        //assert(0 && "inspecting shader code, therefore stop ;) ");
 
         //create the geometry shader:
-        mShaderStages[GEOMETRY_SHADER_STAGE] = new ShaderStage(GEOMETRY_SHADER_STAGE, shaderSourceCode);
+        mShaderStages[GEOMETRY_SHADER_STAGE] =
+        	new ShaderStage(GEOMETRY_SHADER_STAGE, shaderSourceCode,
+        					mCodeDirectory, mShaderName);
     }
 
 
@@ -162,14 +163,13 @@ void Shader::build()
     shaderSourceCode = fragmentShaderTemplate->render(&shaderTemplateContext).toStdString();
 
     LOG<< DEBUG_LOG_LEVEL << "FRAGMENT SHADER CODE:\n"<<  shaderSourceCode;
+	writeToDisk(shaderSourceCode, FRAGMENT_SHADER_STAGE);
+    //create the fragment shader:
+    mShaderStages[FRAGMENT_SHADER_STAGE] =
+    		new ShaderStage(FRAGMENT_SHADER_STAGE, shaderSourceCode,
+    						mCodeDirectory, mShaderName);
 
-    assert(0 && "inspecting shader code, therefore stop ;) ");
-
-    //create the geometry shader:
-    mShaderStages[GEOMETRY_SHADER_STAGE] = new ShaderStage(FRAGMENT_SHADER_STAGE, shaderSourceCode);
-
-
-
+    //assert(0 && "inspecting shader code, therefore stop ;) ");
 
     //--------------------------------------------------------------------
 
@@ -179,6 +179,20 @@ void Shader::build()
 
 	//when do we need a geometry shader?
 	//if we need to trender to a cubemap, an array texture or if wee need to render primitive IDs
+}
+
+
+//for later inspection of the final code of a stage:
+void Shader::writeToDisk(String sourceCode, ShaderStageType type)
+{
+	String shaderDirectory=
+		(	mCodeDirectory /
+			  Path( mShaderName.string()+ String("_GENERATED.") + ShaderStageFileEndings[type] )
+		).string() ;
+	std::fstream fileStream;
+	fileStream.open(shaderDirectory.c_str(), std::ios::out);
+	fileStream << sourceCode;
+	fileStream.close();
 }
 
 
@@ -230,8 +244,8 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 
 	//sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT;
 
-	sfl.renderingTechnique= RENDERING_TECHNIQUE_SHADOWMAP_GENERATION;
-	sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT;
+	//sfl.renderingTechnique= RENDERING_TECHNIQUE_SHADOWMAP_GENERATION;
+	//sfg.lightSourcesShadowFeature = LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT;
 	//sfl.visualMaterialType = VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY;
 
 	//END DEBUG
@@ -339,7 +353,9 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	contextMap.insert("inverse_lightSourcesFarClipPlane",
 			1.0f / LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane());
 
-	float tangensCamFov;
+
+	float tangensCamFovHorizontal;
+	float tangensCamFovVertical;
 	float cameraFarClipPlane;
 
 	if(sfl.renderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
@@ -347,27 +363,37 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 		cameraFarClipPlane = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->
 				getLightSourceManager()->getLightSourceProjectionMatrixFarClipPlane();
 
-		tangensCamFov = 1.0f; //tangens plays no role in shadow map generation;
+		tangensCamFovHorizontal = 1.0f; //tangens plays no role in shadow map generation;
+		tangensCamFovVertical= 1.0f; //tangens plays no role in shadow map generation;
 	}
 	else
 	{
 		cameraFarClipPlane = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->
 				getMainCamera()->getFarClipPlane();
 
-		tangensCamFov =
-			glm::tan(
+
+		float camFOVVertRadians =
 				glm::radians(
-					URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->
+						URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->
 						getMainCamera()->getVerticalFOVAngle()
-				)
-			);
+				);
+		float aspect = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->
+							getMainCamera()->getAspectRatioXtoY();
+
+		tangensCamFovHorizontal = 	glm::tan( camFOVVertRadians * aspect );
+		tangensCamFovVertical = 	glm::tan( camFOVVertRadians );
+
+
 	}
 
 	contextMap.insert("cameraFarClipPlane", cameraFarClipPlane);
 	contextMap.insert("invCameraFarClipPlane", 1.0f / cameraFarClipPlane );
 
-	contextMap.insert("tangensCamFov", tangensCamFov);
-	contextMap.insert("cotangensCamFov", 1.0f / tangensCamFov );
+	contextMap.insert("tangensCamFovHorizontal", tangensCamFovHorizontal);
+	contextMap.insert("tangensCamFovVertical", tangensCamFovVertical);
+	contextMap.insert("cotangensCamFovHorizontal", 1.0f /  tangensCamFovHorizontal);
+	contextMap.insert("cotangensCamFovVertical", 1.0f / tangensCamFovVertical );
+
 
 }
 
@@ -389,17 +415,20 @@ void Shader::validate()throw(BufferException)
 
 
 
-
 //----------------------------------------------------------------------------------------------
 
 
-ShaderStage::ShaderStage(ShaderStageType shaderStageType, String sourceCode)
+ShaderStage::ShaderStage(ShaderStageType shaderStageType, String sourceCode, Path codeDirectory, Path shaderName)
 :
-		mScourceCode(sourceCode)
-		//mCodeDirectory(codeDirectory),
-		//mShaderName(shaderName)
+		mType(shaderStageType),
+		mSourceCode(sourceCode),
+		mCodeDirectory(codeDirectory),
+		mShaderName(shaderName)
 {
 	GUARD( mGLShaderStageHandle = glCreateShader(mGLShaderStageIdentifiers[shaderStageType]));
+	setSource(sourceCode);
+	compile();
+	validate();
 }
 
 
@@ -409,6 +438,27 @@ ShaderStage::~ShaderStage()
 }
 
 
+void ShaderStage::setSource(String sourceCode)
+{
+	mSourceCode = sourceCode;
+
+	const GLchar* codeAsChar = mSourceCode.c_str();
+	GLint codeLength = mSourceCode.length();
+
+	GUARD(
+		glShaderSource(
+			mGLShaderStageHandle,
+			1,
+			& codeAsChar,
+			& codeLength
+			//static_cast<const GLchar**>( & reinterpret_cast<const GLchar*>( sourceCode.c_str() ) ),
+			//static_cast<const GLchar**>( &( sourceCode.c_str() ) ),
+			//& static_cast<const GLint>( (sourceCode.length()) )
+		)
+
+	);
+}
+
 
 
 void ShaderStage::compile()
@@ -417,16 +467,29 @@ void ShaderStage::compile()
 }
 
 
-//for later inspection of the final code of a stage:
-void ShaderStage::writeToDisk()
-{
-	//TODO
-}
 
 
 void ShaderStage::validate()throw(BufferException)
 {
+	const int buffSize = 1000000; //yes, one million ;P
+	int shaderInfoLogSize=0;
+	static GLchar logBuffer[buffSize];
+	GUARD(glGetShaderInfoLog(mGLShaderStageHandle,buffSize,&shaderInfoLogSize,logBuffer));
 
+
+	String logFileName=
+			mShaderName.string() +
+			String("_GENERATED_")+
+			ShaderStageFileEndings[mType]+
+			String("_shaderInfoLog.txt");
+
+	Path logFilePath= mCodeDirectory / Path(logFileName);
+
+
+	std::fstream fileStream;
+	fileStream.open(logFilePath.string().c_str(), std::ios::out);
+	fileStream << logBuffer;
+	fileStream.close();
 }
 
 

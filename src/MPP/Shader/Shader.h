@@ -39,6 +39,16 @@ enum ShaderStageType
 	__NUM_SHADER_STAGES__
 };
 
+const String ShaderStageFileEndings[] =
+{
+	"vert",
+	"geom",
+	"tessCtrl",
+	"tessEval",
+	"frag"
+};
+
+
 //enum ShaderCodeSectionID
 //{
 //	VERSION_TAG,
@@ -73,7 +83,8 @@ private:
 
 	friend class Shader;
 
-	ShaderStage(ShaderStageType shaderStageType, String sourceCode);
+	ShaderStage(ShaderStageType shaderStageType, String sourceCode,
+				Path codeDirectory, Path shaderName);
 	~ShaderStage();
 
 	//throw exceptionif the section does not apply to the shader type
@@ -83,21 +94,22 @@ private:
 	//void loadCodeSection(ShaderCodeSectionID which )throw(SimulatorException);
 	//void propagateLoadedSourceToGL();
 
+	void setSource(String sourceCode);
 	void compile();
-	//for later debugging of the final code of a stage:
-	void writeToDisk();
+
 	void validate()throw(BufferException);
 
-	//	Path mCodeDirectory;
-	//	Path mShaderName;
 
-	ShaderStageType type;
+	ShaderStageType mType;
 
 	GLuint mGLShaderStageHandle;
 
 
-	//String mCodeSectionStrings[__NUM_SHADER_CODE_SECTIONS__];
-	String mScourceCode;
+	String mSourceCode;
+
+	Path mCodeDirectory;
+	Path mShaderName;
+
 	static GLuint mGLShaderStageIdentifiers[__NUM_SHADER_STAGES__];
 
 };
@@ -144,6 +156,10 @@ protected:
 
 	//called by constructor
 	void build();
+	//setup the context for template rendering:
+	void setupTemplateContext(TemplateContextMap& contextMap);
+	//for later debugging of the final code of a stage:
+	void writeToDisk(String sourceCode, ShaderStageType type);
 
 	//bind G-buffer textures to output fragments;
 	//if the RenderTarget has no texture attached to with a semantics
@@ -153,8 +169,6 @@ protected:
 	//called by ShaderManager::setRenderingScenario
 	virtual void bindFragDataLocations(RenderTarget* rt) throw(BufferException)=0;
 
-	//setup the context for template rendering:
-	void setupTemplateContext(TemplateContextMap& contextMap);
 
 	void attachCompiledStage(ShaderStageType which);
 	void detachCompiledStage(ShaderStageType which);

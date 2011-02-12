@@ -69,8 +69,8 @@ void main()
                   now iterate over all lights and fragment samples and perform lighting calculations {%endcomment%}
     
       outFFinalLuminance = vec4(0.0,0.0,0.0,0.0); //init to zero as it will be accumulated over samples and lightsources
-      vec3 fragToCamN = normalize( (-1.0) * input.position);   //vec3 fragToCamN = normalize(eyePosition_WS - input.position); <--legacy worldspace code
-      {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING %} vec4 position = input.postion; /*have to do this to assur code compatibility for dereferred and default lighting calculations*/  {% endif %} 
+      vec3 fragToCamN = normalize( (-1.0) * input.position.xyz);   //vec3 fragToCamN = normalize(eyePosition_WS - input.position); <--legacy worldspace code
+      {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING %} vec4 position = input.position; /*have to do this to assur code compatibility for dereferred and default lighting calculations*/  {% endif %} 
                
       {% if RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
         //{############### begin outer samples loop ####################################################################

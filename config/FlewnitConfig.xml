@@ -30,8 +30,8 @@
 
 			<enforceCustomResolutionInFullScreen type="BOOL" value="false" />
 
-			<resolution type="VEC2I" x="400" y="200" GUIVisibility="read" tweakConfigString="TODO"/>
-			<position type="VEC2I" x="500" y="450" GUIVisibility="read" tweakConfigString="TODO"/>
+			<resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
+			<position type="VEC2I" x="400" y="100" GUIVisibility="read" tweakConfigString="TODO"/>
 			
 			<numMultiSamples type="INT" value ="1" />
 			

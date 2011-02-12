@@ -2,8 +2,8 @@
   GLSL Shader Template: uniforms and uniform buffers:
   applicable to following stages: fragment     {%endcomment%} 
   
-  uniform vec2 tangensCamFov = {{tangensCamFov}}; //for position calculation from pure linear depth value;
-	uniform vec2 cotangensCamFov= {{cotangensCamFov}}; //for texcoord calculation from viewspace position value;/inverso of tanget, pass from outside to save calculations
+  uniform vec2 tangensCamFov = vec2 ( {{tangensCamFovHorizontal}}, {{tangensCamFovVertical}}   ); //for position calculation from pure linear depth value;
+	uniform vec2 cotangensCamFov= vec2 ( {{cotangensCamFovHorizontal}}, {{cotangensCamFovVertical}}   ); //for texcoord calculation from viewspace position value;/inverso of tanget, pass from outside to save calculations
 	uniform float cameraFarClipPlane = {{ cameraFarClipPlane }};
 	uniform float invCameraFarClipPlane = {{ invCameraFarClipPlane }};
 

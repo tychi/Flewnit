@@ -2,7 +2,7 @@
   GLSL Shader Template: Fragment shader code snippet: do th lighting calculations for one given fragment and one given lightsource
   applicable to following stages: fragment     {%endcomment%} 
   
-                              vec3 lightToFragV =   position - lightSource.position;
+                              vec3 lightToFragV =   position.xyz - lightSource.position;
                               vec3 lightToFragVN =  normalize(lightToFragV);
 
                               float cosFragToLight_Normal = dot( (-1.0) * lightToFragVN , normalVN);
@@ -23,10 +23,10 @@
                                 //} //end codeFragment_specularLightingCalc
 
 
-                                incidentLight + =
+                                incidentLight +=
                                   getDistanceAttenuation(lightToFragV) 
                                   * 
-                                  getShadowAttenuation(lightSource.shadowMapLayer, position) 
+                                  getShadowAttenuation(lightSource.shadowMapLayer, position.xyz) 
                                   * 
                                   {% if LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
                                     {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
