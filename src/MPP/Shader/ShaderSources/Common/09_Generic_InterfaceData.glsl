@@ -9,9 +9,6 @@ struct InterfaceData
 {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}
   vec4 position;
   vec4 normal;
-  {% if SHADING_FEATURE_DECAL_TEXTURING or SHADING_FEATURE_DETAIL_TEXTURING	%}
-    vec4 texCoords;
-  {%endif%}
   {% if SHADING_FEATURE_NORMAL_MAPPING %}
     {%comment%} 
       create TBN-matrix in fragment shader due to the several lightsources (we cannot pass a lightsource-to-fragment
@@ -20,11 +17,15 @@ struct InterfaceData
       hence, we transform instead the normals from tangent space to world space in the fragment shader (via putting the vectors 
       column-wise into a 3x3-matrix: mat3(t,b,n)), and perform the lighting calculations in world space;                                  {%endcomment%}
     vec4 tangent;
-   {% endif %}
+  {% endif %}
+  
+  {% if SHADING_FEATURE_DECAL_TEXTURING or SHADING_FEATURE_DETAIL_TEXTURING	%}
+    vec4 texCoords;
+  {%endif%}
   {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
    {%comment%} later TODO test this optimaziation for one shadowmap; this would save one multiplication 
                of the fragment world position with the biased sm-MVP matrix in the fragment shader         {%endcomment%}
-    vec4 inFShadowCoord;
+    vec4 shadowCoord;
   {% endif %}
 {% endif %}  {%comment%} end of "coloring" inputs {%endcomment%}
 	

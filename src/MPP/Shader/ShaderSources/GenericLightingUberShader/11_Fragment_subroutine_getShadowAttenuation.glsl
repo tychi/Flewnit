@@ -23,27 +23,33 @@ float getShadowAttenuation(float shadowMapLayer, vec3 fragPosVS)
     {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT or LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS  %}
       // ---------- spotlight calculations ----------------------------------------------------------------------
       {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
-        {% if not SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER %}     
-          vec3 inFShadowCoord =  worldToShadowMapMatrix * input.position;
-          inFShadowCoord /= inFShadowCoord.w; //divide by homogene coord:
+        {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER %}   
+          vec4 shadowCoord= input.shadowCoord; 
+        {% else %}  
+          vec4 shadowCoord =  worldToShadowMapMatrix * input.position;
+          shadowCoord /= shadowCoord.w; //divide by homogene coord:
         {%endif%}  
       {% endif %}
 
       {% if LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS %}
-        vec4 inFShadowCoord = worldToShadowMapMatrices[(int)(floor(shadowMapLayer+0.5))] * input.position;
-        inFShadowCoord /= inFShadowCoord.w; //divide by homogene coord:
+        vec4 shadowCoord = worldToShadowMapMatrices[(int)(floor(shadowMapLayer+0.5))] * input.position;
+        shadowCoord /= shadowCoord.w; //divide by homogene coord:
         //rearrange shadow coord for array-shadowmap lookup:    
-        inFShadowCoord =   vec4(  inFShadowCoord.x,inFShadowCoord.y, 
+        shadowCoord =   vec4(  shadowCoord.x,shadowCoord.y, 
               //hope that I understood the spec correctly, that there is no [0..1] scaling of the layer like in texture2D:
               //max 0,min d −1, floorlayer0.5
               shadowMapLayer,
-              inFShadowCoord.z   ) ;
+              shadowCoord.z   ) ;
       {% endif %}
   
       //we don't want a squared shadow-throwing lightsource impression, but a circled one:  
-      if( length(vec2(0.5 + inFShadowCoord.x, 0.5  inFShadowCoord.y)) < 0.5 )
+      if( length(vec2(0.5 + shadowCoord.x, 0.5  shadowCoord.y)) < 0.5 )
       {
-        return  clamp(texture( shadowMap, inFShadowCoord ), minimalshadowAttenuation , 1.0);  
+        {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %} {%comment%} deistinguish between vec3 and vec4 lookup ;( {%endcomment%}
+          return  clamp(texture( shadowMap, shadowCoord.xyz ), minimalshadowAttenuation , 1.0);  
+        {% else %} 
+          return  clamp(texture( shadowMap, shadowCoord ), minimalshadowAttenuation , 1.0);   
+        {% endif %}       
       }
       else {return minimalshadowAttenuation;}
     {% endif %}  {%comment%} endif spotlight calculations {%endcomment%}

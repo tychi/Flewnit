@@ -10,8 +10,8 @@
 {% include  "07_Fragment_GBufferSamplers.glsl" %}
 {% include  "08_Fragment_Uniforms.glsl" %}
 //---- shader input --------------------
-{% include  "09_Generic_InterfaceData.glsl" %}
 
+{% include  "09_Generic_InterfaceData.glsl" %}
 in InterfaceData input; //input from one of the previous stages;
 
 //---- shader output -------------------
@@ -65,11 +65,12 @@ void main()
       outFGBufferColor = vec4(fragmentColor.xyz, shininess);  //code shininess into alph channel 
     {% else %}
     
-      {%comment%} now iterate over all lights and fragment samples and perform lighting calculations {%endcomment%}
+      {%comment%} rendering technique mus be default or deferred lighting:
+                  now iterate over all lights and fragment samples and perform lighting calculations {%endcomment%}
     
       outFFinalLuminance = vec4(0.0,0.0,0.0,0.0); //init to zero as it will be accumulated over samples and lightsources
       vec3 fragToCamN = normalize( (-1.0) * input.position);   //vec3 fragToCamN = normalize(eyePosition_WS - input.position); <--legacy worldspace code
-       
+      {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING %} vec4 position = input.postion; /*have to do this to assur code compatibility for dereferred and default lighting calculations*/  {% endif %} 
                
       {% if RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
         //{############### begin outer samples loop ####################################################################
@@ -146,9 +147,9 @@ void main()
     //goal: writing a linear viewspace depthvalue, scaled to [0..1] to the gl_FragDepth;
     //following variable listing in descending optimization; i will begin with the non optimized and hence fewest error prone one
     //gl_FragDepth = input.depthViewSpaceNORMALIZED;
-    //gl_FragDepth = input.depthViewSpaceUNSCALED / inverse_lightSourcesFarClipPlane;
-    //gl_FragDepth = input.positionViewSpaceNORMALIZED.z; //light space linear coords, scaled by inverse farclipplane of lightsource camera ({{inverse_lightSourcesFarClipPlane}})
-     gl_FragDepth = input.positionViewSpaceUNSCALED.z / inverse_lightSourcesFarClipPlane; //light space linear coords, unscaled to test the most simple case before the more error prone optimized one
+    //gl_FragDepth = input.depthViewSpaceUNSCALED * invCameraFarClipPlane;
+    //gl_FragDepth = input.positionViewSpaceNORMALIZED.z; //light space linear coords, scaled by inverse farclipplane of lightsource camera ({{invCameraFarClipPlane}})
+     gl_FragDepth = input.positionViewSpaceUNSCALED.z / invCameraFarClipPlane; //light space linear coords, unscaled to test the most simple case before the more error prone optimized one
    {% endif %}
   {% endif %}
   
@@ -164,7 +165,8 @@ void main()
 
 {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION  %}
       int z_Index = //TODO define relevant interface and calculation routines etc ....
-			outFGBufferGenericIndices = ivec4(gl_PrimitiveID, z_Index); //usage examples : x: gl_PrimitiveID; y: z index of voxel z: material id
+      //usage examples : x: gl_PrimitiveID; y: z index of voxel; z: instance id w: material id
+			outFGBufferGenericIndices = ivec4(gl_PrimitiveID, z_Index, input.genericIndices.x, input.genericIndices.y); 
 {% endif %}
 
 

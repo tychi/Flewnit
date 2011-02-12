@@ -2,18 +2,13 @@
   GLSL Shader Template: uniforms and uniform buffers:
   applicable to following stages: fragment     {%endcomment%} 
   
-  {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION and LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT %}
-    //must be scaled by 1/farclipPlane of lightSource
-    uniform float inverse_lightSourcesFarClipPlane = {{ inverse_lightSourcesFarClipPlane }} ;
-  {% endif %}
+  uniform vec2 tangensCamFov = {{tangensCamFov}}; //for position calculation from pure linear depth value;
+	uniform vec2 cotangensCamFov= {{cotangensCamFov}}; //for texcoord calculation from viewspace position value;/inverso of tanget, pass from outside to save calculations
+	uniform float cameraFarClipPlane = {{ cameraFarClipPlane }};
+	uniform float invCameraFarClipPlane = {{ invCameraFarClipPlane }};
 
 {% if not SHADING_FEATURE_NONE %}
   uniform vec4 eyePosition_WS;
-  
-  uniform vec2 tangensCamFov; //for position calculation from pure linear depth value;
-	uniform vec2 cotangensCamFov; //for texcoord calculation from viewspace position value;/inverso of tanget, pass from outside to save calculations
-	uniform float cameraFarClipPlane = {{ cameraFarClipPlane }};
-	uniform float invCameraFarClipPlane = {{ invCameraFarClipPlane }};
   
   {% if SHADING_FEATURE_AMBIENT_OCCLUSION %}
     uniform float AOinfluenceRadius;
@@ -82,11 +77,11 @@
           //i.e. needs no additional transformation matrix when calculating in world space; 
           
           //BUT BEWARE: when calculating in view spcace, we need a matrix:    
-          uniform mat4 viewToPointLightShadowMapMatrix; // inverse_lightSourcesFarClipPlane * inversepointLightTranslation * (camView)⁻1
+          uniform mat4 viewToPointLightShadowMapMatrix; // (inverse lightSource FarClipPlane) * inversepointLightTranslation * (camView)⁻1
           //but because the depth buffer is always clamped to [0..1], the depth value
-          //must be scaled by 1/farclipPlane of lightSource
-          //uniform float inverse_lightSourcesFarClipPlane = {{ inverse_lightSourcesFarClipPlane }} ;
-          //bias for lookup, in case the glPolygonOffset doesn't apply when writing the gl_FragDepth manually;
+          //must be scaled by 1/farclipPlane of lightSource camera ({{invCameraFarClipPlane}});
+          
+          //bias for lookup, in case the glPolygonOffset doesn't apply when writing the gl_FragDepth manually:
           uniform float shadowMapComparisonOffset= -0.01;
         {% endif %}  
     {% endif %}

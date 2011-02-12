@@ -22,7 +22,7 @@ public:
 	//grabs the viewport from the WindowManager Singleton window size;
 	//setup the relevtant matrices per hand if you want different params;
 	Camera(String name, const AmendedTransform& localTransform = AmendedTransform(),
-			float fieldOfView_Angles = 45.0f,
+			float verticalFOVAngle = 45.0f,
 			float nearClipPlane = 0.1f,
 			float farClipPlane = 100.0f);
 
@@ -30,12 +30,14 @@ public:
 
 
 
-	const Matrix4x4& perspective(	float fieldOfView_Angles,
+	const Matrix4x4& perspective(	float verticalFOVAngle,
 									float aspectRatioXtoY,
 									float nearClipPlane = 0.1f,
 									float farClipPlane = 100.0f	);
 	//glm::gtc::matrix_projection::perspective()
 
+	inline float getVerticalFOVAngle()const{return mVerticalFOVAngle;}
+	inline float getAspectRatioXtoY()const{ return mAspectRatioXtoY;}
 	inline float getNearClipPlane()const{return mNearClipPlane;}
 	inline float getFarClipPlane()const{return mFarClipPlane;}
 
@@ -58,6 +60,8 @@ public:
 
 private:
 
+	float mVerticalFOVAngle;
+	float mAspectRatioXtoY;
 	float mNearClipPlane;
 	float mFarClipPlane;
 	Matrix4x4 mProjectionMatrix;

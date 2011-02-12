@@ -339,12 +339,35 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	contextMap.insert("inverse_lightSourcesFarClipPlane",
 			1.0f / LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane());
 
-	contextMap.insert("cameraFarClipPlane",
-			URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera()->getFarClipPlane());
-	contextMap.insert("invCameraFarClipPlane",
-			1.0f /
-			URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera()->getFarClipPlane());
+	float tangensCamFov;
+	float cameraFarClipPlane;
 
+	if(sfl.renderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
+	{
+		cameraFarClipPlane = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->
+				getLightSourceManager()->getLightSourceProjectionMatrixFarClipPlane();
+
+		tangensCamFov = 1.0f; //tangens plays no role in shadow map generation;
+	}
+	else
+	{
+		cameraFarClipPlane = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->
+				getMainCamera()->getFarClipPlane();
+
+		tangensCamFov =
+			glm::tan(
+				glm::radians(
+					URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->
+						getMainCamera()->getVerticalFOVAngle()
+				)
+			);
+	}
+
+	contextMap.insert("cameraFarClipPlane", cameraFarClipPlane);
+	contextMap.insert("invCameraFarClipPlane", 1.0f / cameraFarClipPlane );
+
+	contextMap.insert("tangensCamFov", tangensCamFov);
+	contextMap.insert("cotangensCamFov", 1.0f / tangensCamFov );
 
 }
 

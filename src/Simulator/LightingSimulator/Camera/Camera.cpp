@@ -15,18 +15,20 @@
 namespace Flewnit {
 
 Camera::Camera(String name, const AmendedTransform& localTransform,
-		float fieldOfView_Angles,
+		float verticalFOVAngle,
 		float nearClipPlane,
 		float farClipPlane)
 :
 		SceneNode(name, CAMERA_NODE, localTransform),
+		mVerticalFOVAngle(verticalFOVAngle),
 		mNearClipPlane(nearClipPlane), mFarClipPlane(farClipPlane)
 {
-	perspective(
-			fieldOfView_Angles,
+	mAspectRatioXtoY =
 			static_cast<float>(WindowManager::getInstance().getWindowResolution().x) /
-			static_cast<float>(WindowManager::getInstance().getWindowResolution().y)
-	);
+			static_cast<float>(WindowManager::getInstance().getWindowResolution().y);
+
+	perspective( mVerticalFOVAngle, mAspectRatioXtoY, mNearClipPlane, mFarClipPlane);
+
 
 }
 
@@ -36,13 +38,18 @@ Camera::~Camera()
 }
 
 
-const Matrix4x4& Camera::perspective(	float fieldOfView_Angles,
+const Matrix4x4& Camera::perspective(	float verticalFOVAngle,
 								float aspectRatioXtoY,
 								float nearClipPlane,
 								float farClipPlane	)
 {
+	mVerticalFOVAngle=verticalFOVAngle;
+	mAspectRatioXtoY = aspectRatioXtoY;
+	mNearClipPlane=nearClipPlane;
+	mFarClipPlane=farClipPlane;
+
 	mProjectionMatrix =  glm::gtc::matrix_projection::perspective(
-			fieldOfView_Angles, aspectRatioXtoY, nearClipPlane, farClipPlane );
+			verticalFOVAngle, aspectRatioXtoY, nearClipPlane, farClipPlane );
 
 	return mProjectionMatrix;
 }
@@ -58,6 +65,9 @@ const Matrix4x4& Camera::ortho	(float left,
 						float farClipPlane
 						)
 {
+	mNearClipPlane=nearClipPlane;
+	mFarClipPlane=farClipPlane;
+
 	mProjectionMatrix = glm::gtc::matrix_projection::ortho(left,right,bottom,top,nearClipPlane,farClipPlane);
 	return mProjectionMatrix;
 }
