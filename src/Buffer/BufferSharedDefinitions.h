@@ -178,17 +178,20 @@ public:
 			GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
 			ContextType mappedToCPUContext = NO_CONTEXT_TYPE);
 
-	//add lean contructor for the cases where the concrete values must be computed later, but things
-	//like the name etc must already be known;
-	explicit BufferInfo(String name,
-				ContextTypeFlags usageContexts,
-				BufferSemantics bufferSemantics);
+
 
 	BufferInfo(const BufferInfo& rhs);
 
 	virtual ~BufferInfo();
 	bool operator==(const BufferInfo& rhs) const;
 	const BufferInfo& operator=(const BufferInfo& rhs);
+
+
+	//add lean contructor for the cases where the concrete values must be computed later, but things
+	//like the name etc must already be known; useful for TextureInfo
+	explicit BufferInfo(String name,
+				ContextTypeFlags usageContexts,
+				BufferSemantics bufferSemantics);
 
 };
 

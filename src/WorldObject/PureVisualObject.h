@@ -18,9 +18,9 @@ namespace Flewnit
 class PureVisualObject
 : public WorldObject
 {
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	PureVisualObject(String name,
-			const AmendedTransform& localtransform = AmendedTransform());
+	PureVisualObject(String name, const AmendedTransform& localtransform = AmendedTransform());
 
 	virtual ~PureVisualObject();
 };

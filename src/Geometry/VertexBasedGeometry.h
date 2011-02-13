@@ -26,8 +26,12 @@ public:
 	VertexBasedGeometry(String name, GeometryRepresentation geoRep);
 	virtual ~VertexBasedGeometry();
 
-	//none-pure virtual, as VertexGeom must override to handle VBO-attachment
-	virtual void setIndexBuffer(BufferInterface* buffi) throw(BufferException);
+	//the semantics of the buffer is readable from its bufferInfo
+	//non-pure virtual, as it must be overridden by VertexBasedGeometry to register
+	//to the VBO
+	virtual void setAttributeBuffer(BufferInterface* buffi) throw(BufferException);
+
+	void setIndexBuffer(BufferInterface* buffi) throw(BufferException);
 	//returns NULL if index buffer doesn't exist;
 	BufferInterface* getIndexBuffer();
 

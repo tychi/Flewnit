@@ -23,6 +23,8 @@ public:
 		return (countBits(num) <= 1);
 	}
 
+	static String toString(int number);
+
 	static int countBits(int num)
 	{
 		int bitCounter=0;

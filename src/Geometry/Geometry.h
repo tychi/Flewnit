@@ -125,14 +125,9 @@ public:
 	virtual ~BufferBasedGeometry();
 
 	//the semantics of the buffer is readable from its bufferInfo
-	//@param useInGLRendering controls if the buffer will be bound as a generic attribute buffer
-	//to the VBO for usage in vertex/geometry shaders; if false, the buffer will only have
-	//any use in OpenCL contexts; (Example: We need z-index etc in openCL, but in OpenGL
-	//at most for debug drawing;)
-	//The usageFlags param is not necessarily identical to buffi->getBufferInfo().usageFlags,
-	//as a certain shading may not use all features of a buffer and buffers may be shared by different
-	//geometry/WorldObjects and hence Materials;
-	void setAttributeBuffer(BufferInterface* buffi, ContextTypeFlags usageFlags) throw(BufferException);
+	//non-pure virtual, as it must be overridden by VertexBasedGeometry to register
+	//to the VBO
+	virtual void setAttributeBuffer(BufferInterface* buffi) throw(BufferException);
 
 
 	//can return NULL pointer if buffer is not registered for the given semantics

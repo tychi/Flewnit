@@ -7,18 +7,22 @@
 
 #include "HelperFunctions.h"
 
+#include <sstream>
+
 namespace Flewnit
 {
 
 HelperFunctions::HelperFunctions()
-{
-	// TODO Auto-generated constructor stub
-
-}
+{}
 
 HelperFunctions::~HelperFunctions()
+{}
+
+String HelperFunctions::toString(int number)
 {
-	// TODO Auto-generated destructor stub
+	std::stringstream s;
+	s<<number;
+	return s.str();
 }
 
 }
