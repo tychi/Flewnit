@@ -36,6 +36,19 @@ SceneNode::~SceneNode()
 	}
 }
 
+void SceneNode::traverse(SceneNodeVisitor* visitor)
+{
+	//the following should be depth-first, left-first traversal; TODO validate ;(
+
+	visitor->visitSceneNode(this);
+
+	BOOST_FOREACH(Nodemap::value_type nodepair, mChildren)
+	{
+		nodepair.second->traverse(visitor);
+	}
+}
+
+
 void SceneNode::invalidateAABB()
 {
 	mGlobalAABBisValidFlag = false;

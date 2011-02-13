@@ -21,6 +21,7 @@
 
 #include "Simulator/LightingSimulator/LightingStages/SkyBoxRenderer.h"
 #include "Simulator/LightingSimulator/LightingStages/ShadowMapGenerator.h"
+#include "Simulator/LightingSimulator/LightingStages/DefaultLightingStage.h"
 
 
 
@@ -28,10 +29,9 @@
 #include "Util/Log/Log.h"
 #include "Util/Loader/LoaderHelper.h"
 
-
+#include <boost/foreach.hpp>
 
 #include <typeinfo>
-#include "Simulator/LightingSimulator/LightingStages/DefaultLightingStage.h"
 
 
 
@@ -156,12 +156,18 @@ ShaderFeaturesGlobal LightingSimulator::parseGlobalShaderFeatureFromConfig()
 
 LightingSimulator::~LightingSimulator()
 {
-	// TODO Auto-generated destructor stub
+
+	BOOST_FOREACH(SimulationPipelineStage* stage, mSimStages)
+	{
+		delete stage;
+	}
 
 	delete mGlobalRenderTarget;
 	delete mMainCamera;
 	delete mLightSourceManager;
 	delete mShaderManager;
+
+
 }
 
 

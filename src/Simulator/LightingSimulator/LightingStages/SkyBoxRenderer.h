@@ -27,6 +27,12 @@ public:
 	virtual void initStage()throw(SimulatorException);
 	virtual void validateStage()throw(SimulatorException);
 
+	//override to look for the skybox in the scene graph;
+	//virtual void visitSceneNode(SceneNode* node);
+private:
+
+	SkyBox* mSkyBox;
+
 };
 
 }

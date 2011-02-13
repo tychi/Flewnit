@@ -21,4 +21,10 @@ Scene::~Scene()
 	delete mRootNode;
 }
 
+void Scene::traverse(SceneNodeVisitor* visitor)
+{
+	mRootNode->traverse(visitor);
+}
+
+
 }

@@ -9,6 +9,7 @@
 
 
 #include "SimulationObject.h"
+#include "Scene/SceneNode.h"
 
 #include  "SimulatorMetaInfo.h"
 
@@ -16,7 +17,8 @@ namespace Flewnit
 {
 
 class SimulationPipelineStage
-: public SimulationObject
+: public SimulationObject,
+  public SceneNodeVisitor
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
@@ -28,6 +30,7 @@ public:
 	virtual void initStage()throw(SimulatorException) = 0;
 	virtual void validateStage()throw(SimulatorException) = 0;
 
+	virtual void visitSceneNode(SceneNode* node)=0;
 
 
 	//acessor to the different buffers, if subsequent stages need them

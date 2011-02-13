@@ -7,13 +7,24 @@
 
 #include "DefaultLightingStage.h"
 
-#include "Util/Log/Log.h"
 #include "MPP/Shader/ShaderManager.h"
+#include "Simulator/SimulationResourceManager.h"
+
+#include "Scene/Scene.h"
+
+#include "Util/Log/Log.h"
+
+
 
 namespace Flewnit {
 
 DefaultLightingStage::DefaultLightingStage(ConfigStructNode* simConfigNode)
-: LightingSimStageBase("ShadowMapGenerationStage",RENDERING_TECHNIQUE_DEFAULT_LIGHTING,simConfigNode)
+: LightingSimStageBase(
+		"ShadowMapGenerationStage",
+		RENDERING_TECHNIQUE_DEFAULT_LIGHTING,
+		//mask for shadable materials
+		VisualMaterialFlags(false,false,true,false,false,false),
+		simConfigNode)
 {
 	//TODO configure main render target etc..
 
@@ -26,7 +37,9 @@ DefaultLightingStage::~DefaultLightingStage()
 
 bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
 {
-	LOG<<DEBUG_LOG_LEVEL<<"DefaultLightingStage generator in action! ;(;\n";
+	//LOG<<DEBUG_LOG_LEVEL<<"DefaultLightingStage generator in action! ;(;\n";
+
+	SimulationResourceManager::getInstance().getScene()->traverse(this);
 
 	return true;
 }

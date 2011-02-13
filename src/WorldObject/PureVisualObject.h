@@ -3,15 +3,26 @@
  *
  *  Created on: Jan 29, 2011
  *      Author: tychi
+ *
+ *  class for every objects which hav no other representation but the visual one
  */
 
-#ifndef PUREVISUALOBJECT_H_
-#define PUREVISUALOBJECT_H_
 
-class PureVisualObject {
+#include "WorldObject/WorldObject.h"
+
+#pragma once
+
+namespace Flewnit
+{
+
+class PureVisualObject
+: public WorldObject
+{
 public:
-	PureVisualObject();
+	PureVisualObject(String name,
+			const AmendedTransform& localtransform = AmendedTransform());
+
 	virtual ~PureVisualObject();
 };
 
-#endif /* PUREVISUALOBJECT_H_ */
+}

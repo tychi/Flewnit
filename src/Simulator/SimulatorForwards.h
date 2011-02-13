@@ -143,6 +143,8 @@ class Scene;
 class SceneNode;
 //WorldObject is derived from SceneNode
 class WorldObject;
+class	PureVisualObject;
+class 	SkyBox;
 ///\{ following: concrete WorldObjects with different purpose:
 class Camera;
 
@@ -207,6 +209,7 @@ class		UniformGridImplicitVoxelGridGeometry;
 
 class Material;
 class	VisualMaterial;
+class VisualMaterialFlags;
 //to be continued;
 
 //following obsolete
@@ -223,10 +226,6 @@ class MPP;
 	class Shader;
 
 	class OpenCLKernel;
-
-
-
-
 
 
 }

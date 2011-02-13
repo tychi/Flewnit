@@ -7,11 +7,21 @@
 
 #include "PureVisualObject.h"
 
-PureVisualObject::PureVisualObject() {
-	// TODO Auto-generated constructor stub
+
+namespace Flewnit
+{
+
+PureVisualObject::PureVisualObject(String name,
+		const AmendedTransform& localtransform)
+:
+		WorldObject( name, VISUAL_OBJECT,localtransform)
+{
 
 }
 
-PureVisualObject::~PureVisualObject() {
-	// TODO Auto-generated destructor stub
+PureVisualObject::~PureVisualObject()
+{
+
+}
+
 }

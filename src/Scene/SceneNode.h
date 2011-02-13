@@ -18,6 +18,13 @@
 namespace Flewnit
 {
 
+class SceneNodeVisitor
+{
+public:
+	virtual void visitSceneNode(SceneNode* node)=0;
+};
+
+
 
 
 class SceneNode
@@ -37,6 +44,8 @@ public:
 //			float localScale = 1.0f);
 
 	virtual ~SceneNode();
+
+	void traverse(SceneNodeVisitor* visitor);
 
 	//implement according to underlying geometry (if it exists)
 	virtual void updateLocalAABB(){}

@@ -17,8 +17,12 @@ namespace Flewnit
 {
 
 ShadowMapGenerator::ShadowMapGenerator(ConfigStructNode* simConfigNode)
-: LightingSimStageBase("ShadowMapGenerationStage",RENDERING_TECHNIQUE_SHADOWMAP_GENERATION,simConfigNode)
-	,mShadowMapResolution(0) //set in init function
+: LightingSimStageBase("ShadowMapGenerationStage",
+		RENDERING_TECHNIQUE_SHADOWMAP_GENERATION,
+		//mask every material not castnig shadows:
+		VisualMaterialFlags(true,false,false,false,false),
+		simConfigNode),
+	mShadowMapResolution(0) //set in init function
 {
 
 

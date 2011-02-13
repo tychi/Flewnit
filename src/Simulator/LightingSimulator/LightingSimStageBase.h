@@ -11,6 +11,8 @@
 #include "Simulator/SimulationPipelineStage.h"
 #include "Simulator/SimulatorMetaInfo.h"
 
+#include "Material/VisualMaterial.h"
+
 #include <typeinfo>
 
 
@@ -23,14 +25,26 @@ class LightingSimStageBase
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
 public:
-	LightingSimStageBase( String name, RenderingTechnique renderingTechnique,ConfigStructNode* simConfigNode);
+	LightingSimStageBase(
+			String name,
+			RenderingTechnique renderingTechnique,
+			const VisualMaterialFlags& materialFlagMask,
+			ConfigStructNode* simConfigNode);
 	virtual ~LightingSimStageBase();
 
 	inline RenderingTechnique getRenderingTechnique()const {return mRenderingTechnique;}
 
 	//iterates over the scenegraph and issues material activations and geometry draw calls on materials
 	//compatible to the specific rendering technique;
-	void drawAllCompliantGeometry(const ShaderFeaturesLocal& sfl);
+	//uses VisualMaterialFlags::areCompatibleTo(materialFlagMask) to decide which SubObject in the SceneGraph
+	//to draw and which not
+	//void drawAllCompliantGeometry(const VisualMaterialFlags& materialFlagMask);
+
+	//NON-null virtual here, because many lighting stages don't need any special implementation;
+	//usually, a scene node is tested if it is a world object an if true, its "visual domain" subobjects are
+	//checked for compatibility with the current material type mask, and if the check passed,
+	//their material is activated and their geometry drawn;
+	virtual void visitSceneNode(SceneNode* node);
 
 	virtual bool stepSimulation() throw(SimulatorException)  =0;
 	virtual void initStage()throw(SimulatorException) = 0;
@@ -47,6 +61,7 @@ private:
 
 	//NULL if rendering to screen;
 	RenderingTechnique mRenderingTechnique;
+	VisualMaterialFlags mMaterialFlagMask;
 
 };
 
