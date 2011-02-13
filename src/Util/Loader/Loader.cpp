@@ -20,6 +20,7 @@
 #include "WorldObject/Box.h"
 #include "Simulator/SimulationResourceManager.h"
 #include "Scene/Scene.h"
+#include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 
 
 
@@ -52,6 +53,8 @@ void Loader::createHardCodedSceneStuff()
 	SimulationResourceManager::getInstance().getScene()->root().addChild(
 		new Box("MyBox",AmendedTransform(Vector3D(0,0,-5)),Vector3D(3,2,1))
 	);
+
+	LightSourceManager::getInstance().createPointLight(Vector3D(1,15,-10),false);
 
 
 }

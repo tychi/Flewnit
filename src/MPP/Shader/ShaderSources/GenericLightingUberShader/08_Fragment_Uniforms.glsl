@@ -8,7 +8,7 @@
 	uniform float invCameraFarClipPlane = {{ invCameraFarClipPlane }};
 
 {% if not SHADING_FEATURE_NONE %}
-  uniform vec4 eyePosition_WS;
+  //uniform vec4 eyePosition_WS; <-- legacy;
   
   {% if SHADING_FEATURE_AMBIENT_OCCLUSION %}
     uniform float AOinfluenceRadius;
