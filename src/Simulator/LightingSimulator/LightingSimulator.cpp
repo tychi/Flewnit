@@ -18,13 +18,21 @@
 
 #include "MPP/Shader/GenericLightingUberShader.h"
 
+#include "Simulator/LightingSimulator/LightingStages/SkyBoxRenderer.h"
 
-#include "Util/Loader/LoaderHelper.h"
+
+
+#include "Common/Profiler.h"
 #include "Util/Log/Log.h"
+#include "Util/Loader/LoaderHelper.h"
+
 
 
 #include <typeinfo>
-#include "Common/Profiler.h"
+
+
+
+
 
 
 namespace Flewnit
@@ -177,19 +185,27 @@ Camera*  LightingSimulator::getMainCamera()const
 
 
 
-bool LightingSimulator::stepSimulation()  throw(SimulatorException)
-{
-	// TODO Auto-generated destructor stub
-	//LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
-	glClearColor(1,1,0,0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	return true;
-}
 
 
 //build pipeline according to config;
 bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 {
+	unsigned int numStages = mSimConfigNode->get("SimulationPipelineStage").size();
+
+	for(unsigned int i =0 ; i < numStages; i++)
+	{
+		String stageType = ConfigCaster::cast<String>(
+				mSimConfigNode->get("SimulationPipelineStage",i).get("Type",0));
+
+		if(stageType  == "SkyBoxRenderer")
+		{
+			mSimStages.push_back(new SkyBoxRenderer( &( mSimConfigNode->get("SimulationPipelineStage",i) ) ) );
+		}
+
+	}
+
+
+
 	// TODO Auto-generated destructor stub
 	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  initPipeLine() \n";
 	return true;
@@ -207,8 +223,16 @@ bool LightingSimulator::validatePipeLine()  throw(SimulatorException)
 }
 
 
+bool LightingSimulator::stepSimulation()  throw(SimulatorException)
+{
+	// TODO Auto-generated destructor stub
+	//LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
+	glClearColor(0,1,1,0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	return true;
+}
 
-
+//##################################################################################
 
 
 void LightingSimulator::testStuff()

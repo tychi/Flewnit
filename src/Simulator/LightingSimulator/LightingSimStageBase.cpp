@@ -22,7 +22,8 @@ LightingSimStageBase::~LightingSimStageBase() {
 
 //iterates over the scenegraph and issues material activations and geometry draw calls on materials
 //compatible to the specific rendering technique;
-void LightingSimStageBase::drawAllCompliantGeometry() {
+void LightingSimStageBase::drawAllCompliantGeometry(const ShaderFeaturesLocal& sfl)
+{
 	//TODO
 	assert(0 && "still to implement");
 }

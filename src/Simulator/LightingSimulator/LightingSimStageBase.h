@@ -27,9 +27,10 @@ public:
 	virtual ~LightingSimStageBase();
 
 	inline RenderingTechnique getRenderingTechnique()const {return mRenderingTechnique;}
+
 	//iterates over the scenegraph and issues material activations and geometry draw calls on materials
 	//compatible to the specific rendering technique;
-	void drawAllCompliantGeometry();
+	void drawAllCompliantGeometry(const ShaderFeaturesLocal& sfl);
 
 	virtual bool stepSimulation() throw(SimulatorException)  =0;
 	virtual void initStage()throw(SimulatorException) = 0;

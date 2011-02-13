@@ -1,30 +1,27 @@
 /*
- * DefaultLightingStage.h
+ * SkyBoxRenderer.h
  *
- *  Created on: Feb 5, 2011
+ *  Created on: Feb 13, 2011
  *      Author: tychi
  */
 
 #pragma once
 
 
-
 #include "Simulator/LightingSimulator/LightingSimStageBase.h"
 
+namespace Flewnit {
 
 
-namespace Flewnit
-{
 
-
-class DefaultLightingStage
+class SkyBoxRenderer
 : public LightingSimStageBase
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
 public:
-	DefaultLightingStage(ConfigStructNode* simConfigNode);
-	virtual ~DefaultLightingStage();
+	SkyBoxRenderer(ConfigStructNode* simConfigNode);
+	virtual ~SkyBoxRenderer();
 
 	virtual bool stepSimulation() throw(SimulatorException);
 	virtual void initStage()throw(SimulatorException);
@@ -33,4 +30,3 @@ public:
 };
 
 }
-

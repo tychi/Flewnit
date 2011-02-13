@@ -17,6 +17,46 @@
 namespace Flewnit
 {
 
+struct VisualMaterialFlags
+{
+	VisualMaterialFlags(
+			bool castsShadows = true,
+			bool isTransparent = false,
+			bool isShadable = true,
+			bool isDynamicCubeMapRenderable = true,
+			bool isInstanced=false,
+			bool isCustomMaterial=false);
+	VisualMaterialFlags(const VisualMaterialFlags& rhs);
+	virtual ~VisualMaterialFlags(){}
+	bool operator==(const VisualMaterialFlags& rhs) const;
+
+
+	//checker to compare a meterial's flags with those of a lighting stage in order to check if they are compatible
+	bool areCompatibleTo(const VisualMaterialFlags& rhs)const;
+
+	//some stuff shall not cast shadows, like the skybox or
+	//lightsource/camera visualization geometry
+	bool castsShadows;
+	bool isTransparent;
+	//value to mask some dummy geometry, e.g.
+	//-a low-detail model only used for shadowmap generation,
+	//-the skybox cube which shall not be lit
+	//the uniform grid structure, which shall only be rendered for debug purposes
+	bool isShadable;
+	//mask out th to-be-cube mapped geometry itself (like a car chassis),
+	//as otherwise it would occlude everything
+	bool isDynamicCubeMapRenderable;
+	bool isInstanced;
+	//flag to indicate that this material does not fit the default rendering
+	//structure, i.e. the default shaders etc.
+	//in default _shading_ rendering stages, gemometry associated to such a custom material
+	//will be completely ignored; Anyway, if the castsShadows flag is set,
+	//it will be issued for shadowmap generation;
+	bool isCustomMaterial;
+};
+
+
+
 /*
  * Base class of all Materials in the visual domain; In classic 3D-Rendering-Engine
  * terms, it is the "Material" ;).
@@ -35,25 +75,7 @@ public:
 			ShadingFeatures shadingFeatures,
 			//must contain at least the textures used in the shader as samplers
 			const std::map<BufferSemantics, Texture*>& textures,
-			//some stuff shall not cast shadows, like the skybox or
-			//lightsource/camera visualization geometry
-			bool castsShadows = true,
-			bool isTransparent = false,
-			//value to mask some dummy geometry, e.g.
-			//-a low-detail model only used for shadowmap generation,
-			//-the skybox cube which shall not be lit
-			//the uniform grid structure, which shall only be rendered for debug purposes
-			bool isShadable = true,
-			//mask out th to-be-cube mapped geometry itself (like a car chassis),
-			//as otherwise it would occlude everything
-			bool isDynamicCubeMapRenderable = true,
-			bool isInstanced = false,
-			//flag to indicate that this material does not fit the default rendering
-			//structure, i.e. the default shaders etc.
-			//in default _shading_ rendering stages, gemometry associated to such a custom material
-			//will be completely ignored; Anyway, if the castsShadows flag is set,
-			//it will be issued for shadowmap generation;
-			bool isCustomMaterial =false
+			const VisualMaterialFlags& visualMaterialFlags
 			);
 
 	virtual ~VisualMaterial();
@@ -77,12 +99,13 @@ public:
 	//inline const ShaderFeatures& getShaderFeatures()const{return mShaderFeatures;}
 	inline ShadingFeatures getShadingFeatures()const{return mShadingFeatures;}
 
-	inline bool castsShadows()const{return mCastsShadows;}
-	inline bool isTransparent()const{return mIsTransparent;}
-	inline bool isShadable()const{return mIsShadable;}
-	inline bool isDynamicCubeMapRenderable()const{return mIsDynamicCubeMapRenderable;}
-	inline bool isInstanced()const{return mIsInstanced;}
-	inline bool isCustomMaterial()const{return mIsCustomMaterial;}
+	inline  const VisualMaterialFlags& getFlags()const{ return mVisMatFlags;}
+	inline bool castsShadows()const{return mVisMatFlags.castsShadows;}
+	inline bool isTransparent()const{return mVisMatFlags.isTransparent;}
+	inline bool isShadable()const{return mVisMatFlags.isShadable;}
+	inline bool isDynamicCubeMapRenderable()const{return mVisMatFlags.isDynamicCubeMapRenderable;}
+	inline bool isInstanced()const{return mVisMatFlags.isInstanced;}
+	inline bool isCustomMaterial()const{return mVisMatFlags.isCustomMaterial;}
 
 
 	//calls validateTextures()
@@ -106,12 +129,7 @@ private:
 	VisualMaterialType mType;
 	ShadingFeatures mShadingFeatures;
 
-	bool mCastsShadows;
-	bool mIsTransparent;
-	bool mIsShadable;
-	bool mIsDynamicCubeMapRenderable;
-	bool mIsInstanced;
-	bool mIsCustomMaterial;
+	VisualMaterialFlags mVisMatFlags;
 
 	//ShaderFeatures mShaderFeatures;
 	Shader* mCurrentlyUsedShader;

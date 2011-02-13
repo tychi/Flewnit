@@ -36,8 +36,8 @@ void main()
     outFFinalLuminance = vec4(1.0,0.0,1.0,0.0); //some funny debug draw color^^
     return;
   {% else %} {% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
-    {% if not SHADING_FEATURE_CUBE_MAPPING %} what the fuck, add a cube map! {% endif %}
-    //one of those exceptions: for cuba mapping: we have to pass WORLD coords and not VIEW coords!11
+    {% if not SHADING_FEATURE_CUBE_MAPPING %} what the f***, add a cube map! {% endif %}
+    //one of those exceptions: for cube mapping: we have to pass WORLD coords and not VIEW coords!11
     outFFinalLuminance = texture(cubeMap, normalize( (-1.0) * input.position.xyz));
     //TODO try when stable non normalized lookup:
     // outFFinalLuminance = texture(cubeMap,  (-1.0) * input.position.xyz );

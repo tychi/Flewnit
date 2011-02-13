@@ -18,6 +18,57 @@
 namespace Flewnit
 {
 
+VisualMaterialFlags::VisualMaterialFlags(
+		bool castsShadows,bool isTransparent,bool isShadable, bool isDynamicCubeMapRenderable,
+		bool isInstanced,bool isCustomMaterial)
+:		castsShadows(castsShadows),
+ 		isTransparent(isTransparent),
+		isShadable(isShadable),
+		isDynamicCubeMapRenderable(isDynamicCubeMapRenderable),
+		isInstanced(isInstanced),
+		isCustomMaterial(isCustomMaterial)
+{}
+
+VisualMaterialFlags::VisualMaterialFlags(const VisualMaterialFlags& rhs)
+:		castsShadows(rhs.castsShadows),
+ 		isTransparent(rhs.isTransparent),
+		isShadable(rhs.isShadable),
+		isDynamicCubeMapRenderable(rhs.isDynamicCubeMapRenderable),
+		isInstanced(rhs.isInstanced),
+		isCustomMaterial(rhs.isCustomMaterial)
+{}
+
+//checker to compare a meterial's flags with those of a lighting stage in order to check if they are compatible
+bool VisualMaterialFlags::areCompatibleTo(const VisualMaterialFlags& rhs)const
+{
+	if(rhs.castsShadows && (! castsShadows )) return false;
+	if(rhs.isTransparent && (! isTransparent )) return false;
+	if(rhs.isShadable && (! isShadable )) return false;
+	if(rhs.isDynamicCubeMapRenderable && (! isDynamicCubeMapRenderable )) return false;
+
+	//Instancing is not tested, as it should not play any role, the shader generation
+	//and the geometry implementation should completely hide the special treatment of instanced geometry...
+
+
+	//mask any kind of custom material, is handled by another control flow of special lighting stages;
+	if(rhs.isCustomMaterial || isCustomMaterial ) return false;
+
+	return true;
+}
+
+bool VisualMaterialFlags::operator==(const VisualMaterialFlags& rhs) const
+{
+	return
+		castsShadows ==rhs.castsShadows &&
+		isTransparent ==rhs.isTransparent &&
+		isShadable  ==rhs.isShadable &&
+		isDynamicCubeMapRenderable ==rhs.isDynamicCubeMapRenderable &&
+		isInstanced ==rhs.isInstanced &&
+		isCustomMaterial  ==rhs.isCustomMaterial
+		;
+}
+
+
 VisualMaterial::VisualMaterial(
 			String name,
 			VisualMaterialType type,
@@ -25,36 +76,12 @@ VisualMaterial::VisualMaterial(
 			ShadingFeatures shadingFeatures,
 			//must contain at least the textures used in the shader as samplers
 			const std::map<BufferSemantics, Texture*>& textures,
-			//some stuff shall not cast shadows, like the skybox or
-			//lightsource/camera visualization geometry
-			bool castsShadows,
-			bool isTransparent,
-			//value to mask some dummy geometry, e.g.
-			//-a low-detail model only used for shadowmap generation,
-			//-the skybox cube which shall not be lit
-			//the uniform grid structure, which shall only be rendered for debug purposes
-			bool isShadable,
-			//mask out th to-be-cube mapped geometry itself (like a car chassis),
-			//as otherwise it would occlude everything
-			bool isDynamicCubeMapRenderable,
-			bool isInstanced,
-			//flag to indicate that this material does not fit the default rendering
-			//structure, i.e. the default shaders etc.
-			//in default _shading_ rendering stages, gemometry associated to such a custom material
-			//will be completely ignored; Anyway, if the castsShadows flag is set,
-			//it will be issued for shadowmap generation;
-			bool isCustomMaterial
+			const VisualMaterialFlags& visualMaterialFlags
 			)
 : 	Material(name, VISUAL_SIM_DOMAIN),
 	mType(type),
 	mShadingFeatures(shadingFeatures),
-
-	mCastsShadows(castsShadows),
-	mIsTransparent(isTransparent),
-	mIsShadable(isShadable),
-	mIsDynamicCubeMapRenderable(isDynamicCubeMapRenderable),
-	mIsInstanced(isInstanced),
-	mIsCustomMaterial(isCustomMaterial),
+	mVisMatFlags(visualMaterialFlags),
 
 	mCurrentlyUsedShader(0)
 {
@@ -86,13 +113,7 @@ bool VisualMaterial::operator==(const Material& rhs) const
 		if(
 				mType == castedMat->getType() &&
 				mShadingFeatures == castedMat->getShadingFeatures() &&
-
-				mCastsShadows == castedMat->castsShadows() &&
-				mIsTransparent == castedMat->isTransparent() &&
-				mIsShadable  == castedMat->isShadable() &&
-				mIsDynamicCubeMapRenderable == castedMat->isDynamicCubeMapRenderable() &&
-				mIsInstanced == castedMat->isInstanced() &&
-				mIsCustomMaterial  == castedMat->isCustomMaterial()
+				mVisMatFlags == castedMat->getFlags()
 		)
 		{
 			//compare textures; that the texture state is valid, has already been asserted,
@@ -134,9 +155,9 @@ void VisualMaterial::activate(
 	LightingSimStageBase* castedStage= reinterpret_cast<LightingSimStageBase*>(currentStage);
 	assert(castedStage->getRenderingTechnique() != RENDERING_TECHNIQUE_DEFERRED_LIGHTING);
 	if( castedStage->getRenderingTechnique() == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION )
-		{assert(mCastsShadows);}
+		{assert(castsShadows());}
 	if( castedStage->getRenderingTechnique() == RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL )
-		{assert(! mIsTransparent);}
+		{assert(! isTransparent());}
 
 	mCurrentlyUsedShader->use(currentUsingSuboject);
 }
@@ -236,7 +257,7 @@ void VisualMaterial::validateTextures()throw(SimulatorException)
 void VisualMaterial::validateShader()throw(SimulatorException)
 {
 	assert( (mCurrentlyUsedShader->getLocalShaderFeatures().instancedRendering )
-			== mIsInstanced );
+			== isInstanced() );
 
 	//TODO further validdation when needed
 }
