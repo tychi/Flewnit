@@ -149,14 +149,12 @@ protected:
 	//buffers can be set, but may be not used while openGL rendering
 	//(as e.g. their values are only needed in openCL)
 	//this array serves as indicator, which buffers should be part of the VBO-canon
-	ContextTypeFlags mUsageFlags[__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__];
+	//ContextTypeFlags mUsageFlags[__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__];
 
 
 	//compare buffers for sizees, types, number of elements etc;
 	virtual void validateBufferIntegrity()throw(BufferException)=0;
 
-	void bindSafe();
-	void unBindSave();
 };
 
 

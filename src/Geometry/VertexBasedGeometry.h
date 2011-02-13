@@ -50,6 +50,12 @@ private:
 
 	//compare buffers for sizees, types, number of elements etc;
 	virtual void validateBufferIntegrity()throw(BufferException);
+
+	void bind();
+	void unbind();
+
+//	void bindSafe();
+//	void unBindSave();
 };
 
 }
