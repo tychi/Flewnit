@@ -163,15 +163,15 @@
 				<cubeMapName type="STRING" value="cloudy_noon" />
 				<cubeMapFileEnding type="STRING" value="jpg" />
 
-			</SimulationPipelineStage> -->
+			</SimulationPipelineStage> 
 						
 			<SimulationPipelineStage>
 				<Type type="STRING" value="ShadowMapGenerator"/>
 
-			</SimulationPipelineStage>
+			</SimulationPipelineStage> -->
 						
 			<SimulationPipelineStage>
-				<Type type="STRING" value="ShadowedLightingStage"/>
+				<Type type="STRING" value="DefaultLightingStage"/>
 				
 				<renderToScreen type="STRING" value="true" />  <!-- indicator not to render to the main FBO -->
 

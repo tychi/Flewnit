@@ -7,13 +7,13 @@
 
 #pragma once
 
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-
-#include "Simulator/SimulatorMetaInfo.h"
-
-
-#include "Simulator/ShaderFeatureRelevantEnums.h"
+//#include <QtCore/qobject.h>
+//#include <QtCore/qvariant.h>
+//
+//#include "Simulator/SimulatorMetaInfo.h"
+//
+//
+//#include "Simulator/ShaderFeatureRelevantEnums.h"
 
 
 

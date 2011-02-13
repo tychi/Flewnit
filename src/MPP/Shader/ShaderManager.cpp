@@ -120,54 +120,59 @@ Shader* ShaderManager::getShader(const ShaderFeaturesLocal& sfl)
 
 Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 {
-	assert(0 && "have to finish shader implementation first");
-	//TODO
-//	assert(mShaderMap.find(sfl) == mShaderMap.end());
-//
-//	Shader* newShader = 0;
-//
-//	if( ( sfl.renderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION ) ||
-//		( sfl.renderingTechnique == RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION ) ||
-//		( sfl.renderingTechnique == RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION	) )
-//	{
-//		//depth stuff
-//		newShader = new DepthImageGenerationShader(
-//				mShaderCodeDirectory,
-//				sfl.renderingTechnique,
-//				sfl.renderTargetTextureType,
-//				sfl.instancedRendering
-//		);
-//	}
-//	else
-//	{
-//		//color stuff
-//		switch(sfl.visualMaterialType)
-//		{
-//		case VISUAL_MATERIAL_TYPE_NONE:
-//			assert(0&&"invalid material flag");
-//			break;
-//		case VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING:
-//			newShader = new GenericLightingUberShader(mShaderCodeDirectory,sfl);
-//			break;
-//		case VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING:
-//			newShader = new SkyDomeShader(mShaderCodeDirectory, sfl.renderTargetTextureType);
-//			break;
-//		case VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY:
-//			assert(0&&"pure debug draw seems not necessary until now");
-//			break;
-//		case VISUAL_MATERIAL_TYPE_GAS_RENDERING:
-//			assert(0&&"gas rendering won't be implemented too soon");
-//			break;
-//		case VISUAL_MATERIAL_TYPE_LIQUID_RENDERING:
-//			//newShader = new LiquidShader (mShaderCodeDirectory,sfl);
-//			assert(0&&"liquid rendering comes later");
-//			break;
-//		}
-//	}
-//
-//	mShaderMap[sfl] = newShader;
-//
-//	return newShader;
+	//assert(0 && "have to finish shader implementation first");
+
+	//TODO continue implementation
+
+	assert(mShaderMap.find(sfl) == mShaderMap.end());
+
+	Shader* newShader = 0;
+
+	if( ( sfl.renderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION ) ||
+		( sfl.renderingTechnique == RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION ) ||
+		( sfl.renderingTechnique == RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION	) )
+	{
+		//depth stuff
+		newShader = new DepthImageGenerationShader(
+				mShaderCodeDirectory,
+				sfl.renderingTechnique,
+				sfl.renderTargetTextureType,
+				sfl.instancedRendering
+		);
+	}
+	else
+	{
+		//color stuff
+		switch(sfl.visualMaterialType)
+		{
+		case VISUAL_MATERIAL_TYPE_NONE:
+			assert(0&&"invalid material flag");
+			break;
+		case VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING:
+			newShader = new GenericLightingUberShader(mShaderCodeDirectory,sfl);
+			break;
+		case VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING:
+			newShader = new SkyDomeShader(mShaderCodeDirectory, sfl.renderTargetTextureType);
+			break;
+		case VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY:
+			assert(0&&"pure debug draw seems not necessary until now");
+			break;
+		case VISUAL_MATERIAL_TYPE_GAS_RENDERING:
+			assert(0&&"gas rendering won't be implemented too soon");
+			break;
+		case VISUAL_MATERIAL_TYPE_LIQUID_RENDERING:
+			//newShader = new LiquidShader (mShaderCodeDirectory,sfl);
+			assert(0&&"liquid rendering comes later");
+			break;
+		default:
+			assert(0&&" unknown visual material type");
+			break;
+		}
+	}
+
+	mShaderMap[sfl] = newShader;
+
+	return newShader;
 
 }
 

@@ -1,20 +1,22 @@
 /*
- * ShadowMapGenerationStage.cpp
+ * ShadowMapGenerator.cpp
  *
  *  Created on: Feb 5, 2011
  *      Author: tychi
  */
 
-#include "ShadowMapGenerationStage.h"
+#include "ShadowMapGenerator.h"
 
 #include "MPP/Shader/ShaderManager.h"
 #include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
 #include "Buffer/BufferHelperUtils.h"
 #include "Buffer/Texture.h"
+#include "Util/Log/Log.h"
 
-namespace Flewnit {
+namespace Flewnit
+{
 
-ShadowMapGenerationStage::ShadowMapGenerationStage(ConfigStructNode* simConfigNode)
+ShadowMapGenerator::ShadowMapGenerator(ConfigStructNode* simConfigNode)
 : LightingSimStageBase("ShadowMapGenerationStage",RENDERING_TECHNIQUE_SHADOWMAP_GENERATION,simConfigNode)
 	,mShadowMapResolution(0) //set in init function
 {
@@ -22,20 +24,20 @@ ShadowMapGenerationStage::ShadowMapGenerationStage(ConfigStructNode* simConfigNo
 
 }
 
-ShadowMapGenerationStage::~ShadowMapGenerationStage()
+ShadowMapGenerator::~ShadowMapGenerator()
 {
 	//this stage owns this target, so it will destroy it
 	delete mUsedRenderTarget;
 }
 
-bool ShadowMapGenerationStage::stepSimulation() throw(SimulatorException)
+bool ShadowMapGenerator::stepSimulation() throw(SimulatorException)
 {
-
+	//LOG<<DEBUG_LOG_LEVEL<<"Shadowmap generator in action! ;(;\n";
 
 	return true;
 }
 
-void ShadowMapGenerationStage::initStage()throw(SimulatorException)
+void ShadowMapGenerator::initStage()throw(SimulatorException)
 {
 	//TODO remove hardCode
 	mShadowMapResolution = 512;
@@ -77,10 +79,10 @@ void ShadowMapGenerationStage::initStage()throw(SimulatorException)
 	mRenderingResults[SHADOW_MAP_SEMANTICS] = mUsedRenderTarget->getStoredDepthTexture();
 
 	//make even the depth generation shader material-associated;
-	//like this, there is no special treatment og "global shaders" in the logic,
+	//like this, there is no special treatment of "global shaders" in the logic,
 	//and some special materials like those of voxel fluids can contribute with their own shaders
 	//generated for them;
-	//cause shader creation now:
+	//cause shader generation now:
 	ShaderManager::getInstance().setRenderingScenario(this);
 
 //	mShadowMapGenerationShader = new DepthImageGenerationShader(
@@ -91,7 +93,7 @@ void ShadowMapGenerationStage::initStage()throw(SimulatorException)
 //	);
 }
 
-void ShadowMapGenerationStage::validateStage()throw(SimulatorException)
+void ShadowMapGenerator::validateStage()throw(SimulatorException)
 {
 	//no dependencies;
 }

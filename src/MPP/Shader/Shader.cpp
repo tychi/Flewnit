@@ -63,11 +63,13 @@ Shader::Shader(Path codeDirectory, Path shaderName, const ShaderFeaturesLocal& l
 //				)
 //		)
 {
+
 	for(int i=0; i< __NUM_SHADER_STAGES__; i++)
 	{
 		mShaderStages[i]=0;
 	}
 	build();
+
 }
 
 

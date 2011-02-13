@@ -15,12 +15,14 @@
 #include <boost/foreach.hpp>
 #include "MPP/Shader/ShaderManager.h"
 
+#include <sstream>
+
 namespace Flewnit
 {
 
 LightSourceManager::LightSourceManager()
-:	mNumCurrentActiveLightingLightSources(0),
-	mNumCurrentActiveShadowingLightSources(0)
+	//mNumCurrentActiveLightingLightSources(0),
+	//mNumCurrentActiveShadowingLightSources(0)
 {
 
 	mLightSourceProjectionMatrixNearClipPlane = 0.1f;
@@ -111,8 +113,42 @@ PointLight* LightSourceManager::createPointLight(
 		const Vector3D& specularColor
 ) throw(SimulatorException)
 {
-	//TODO
-	assert(0&&"//TODO");
+	LightSourcesLightingFeature lslf = ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature;
+	assert(
+			( lslf == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT)
+		||	( lslf == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS )
+		||	( lslf == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )) ;
+
+	if(( lslf == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT))
+	{
+		assert("only one lightsource allowed by global shading features;"
+				&& (mLightSources.size()==0));
+	}
+
+	assert("maximum of lightsources not reached" &&
+			(getNumTotalLightSources() < ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources) );
+
+	if(castsShadows)
+	{
+		LightSourcesShadowFeature lssf = ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature;
+		assert( "pointlight as shadowcaster allowed" && (lssf = LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT));
+		assert( "for point lights, only one shadow caster is valid" && (getNumTotalShadowingLightSources() ==0));
+	}
+
+	std::stringstream s; s<< mLightSources.size();
+
+	mLightSources.push_back(
+		new PointLight(
+				String("PointLight")+ s.str(),
+				castsShadows,
+				true,
+				LightSourceShaderStruct(
+					position,diffuseColor,specularColor,
+					Vector3D(0.0f,0.0f,-1.0f),0.0f,0.0f,0.0f,0.0f)
+		)
+	);
+
+	return reinterpret_cast<PointLight*> (mLightSources.back());
 }
 
 
@@ -132,15 +168,100 @@ SpotLight* LightSourceManager::createSpotLight(
 		const Vector3D& specularColor
 ) throw(SimulatorException)
 {
-	//TODO
-	assert(0&&"//TODO");
+	LightSourcesLightingFeature lslf = ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature;
+	assert(
+			( lslf == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT)
+		||	( lslf == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS )
+		||	( lslf == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )) ;
+
+	if(( lslf == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT))
+	{
+		assert("only one lightsource allowed by global shading features;"
+				&& (mLightSources.size()==0));
+	}
+
+	assert("maximum of lightsources not reached" &&
+			(getNumTotalLightSources() < ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources) );
+
+	if(castsShadows)
+	{
+		LightSourcesShadowFeature lssf = ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature;
+		assert( "spotlight as shadowcaster allowed" &&
+			(	(lssf == LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT) ||
+				(lssf == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)	 )
+		);
+		if(lssf == LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT)
+		{
+			assert( "only one shadow caster is valid" && (getNumTotalShadowingLightSources() ==0));
+		}
+		else
+		{
+			assert(getNumTotalShadowingLightSources() < ShaderManager::getInstance().getGlobalShaderFeatures().numMaxShadowCasters);
+		}
+
+	}
+
+	std::stringstream s; s<< mLightSources.size();
+
+	mLightSources.push_back(
+		new SpotLight(
+				String("SpotLight")+ s.str(),
+				castsShadows,
+				true,
+				LightSourceShaderStruct(
+					position,diffuseColor,specularColor,
+					direction,
+					glm::radians(innerSpotCutOff_Degrees),
+					glm::radians(outerSpotCutOff_Degrees),
+					spotExponent,
+					static_cast<float>(getNumTotalShadowingLightSources())
+				)
+		)
+	);
+
+	return reinterpret_cast<SpotLight*> (mLightSources.back());
 }
 
+int LightSourceManager::getNumCurrentlyActiveLightingLightSources()const
+{
+	int cnt=0;
+	BOOST_FOREACH(LightSource* ls, mLightSources)
+	{
+		if(ls->isEnabled()){cnt++;}
+	}
+	return cnt;
+}
+
+int LightSourceManager::getNumCurrentlyActiveShadowingLightSources()const
+{
+	int cnt=0;
+	BOOST_FOREACH(LightSource* ls, mLightSources)
+	{
+		if(ls->isEnabled() && ls->castsShadows() ){cnt++;}
+	}
+	return cnt;
+}
+
+int LightSourceManager::getNumTotalShadowingLightSources()const
+{
+	int cnt=0;
+	BOOST_FOREACH(LightSource* ls, mLightSources)
+	{
+		if( ls->castsShadows() ){cnt++;}
+	}
+	return cnt;
+}
 
 
 
 //fill buffers with recent values
 void LightSourceManager::setupBuffersForShading(float maxDistanceToMainCam)
+{
+	//TODO
+	assert(0&&"//TODO");
+}
+
+void LightSourceManager::setupBuffersForShadowMapGeneration(float maxDistanceToMainCam)
 {
 	//TODO
 	assert(0&&"//TODO");

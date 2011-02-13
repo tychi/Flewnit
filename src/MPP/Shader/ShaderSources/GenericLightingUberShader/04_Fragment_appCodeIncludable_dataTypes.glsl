@@ -21,8 +21,8 @@ struct LightSource
 	NAMESPACE_PREFIX vec3 specularColor;
 	//------------------------------------------------------------------------------------------------
 	//following spotlight stuff, but set it anyway for alignment reasons, even if it won't be used in the shader!
-	//to indicate a point light, those valus are all zero
-	NAMESPACE_PREFIX vec3 direction;
+	NAMESPACE_PREFIX vec3 direction; //for a pointlight, this is (0,0,-1)
+	//to indicate a point light, the following values are all zero
 	//value beyond with will be no lighting, to produce a nice light circle and to 
 	//hide the rectangular shape of the shadowmap ;)
 	float innerSpotCutOff_Radians;	//serves also as indicator if the source shall be treated as spot or not (zero= pointlight ;) )

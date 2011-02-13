@@ -1,5 +1,5 @@
 /*
- * ShadowMapGenerationStage.h
+ * ShadowMapGenerator.h
  *
  *  Created on: Feb 5, 2011
  *      Author: tychi
@@ -12,14 +12,14 @@
 
 namespace Flewnit {
 
-class ShadowMapGenerationStage
+class ShadowMapGenerator
 : public LightingSimStageBase
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
 public:
-	ShadowMapGenerationStage(ConfigStructNode* simConfigNode);
-	virtual ~ShadowMapGenerationStage();
+	ShadowMapGenerator(ConfigStructNode* simConfigNode);
+	virtual ~ShadowMapGenerator();
 
 
 	virtual bool stepSimulation() throw(SimulatorException);

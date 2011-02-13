@@ -24,12 +24,10 @@ public:
 
 protected:
 	friend class ShaderManager;
-	SkyDomeShader(Path codeDirectory,
-			TextureType renderTargetTextureType);
+	SkyDomeShader(Path codeDirectory, TextureType renderTargetTextureType);
 
 	//virtual bool operator==(const Shader& rhs)const;
 
-	//virtual void generateCustomDefines();
 	virtual void bindFragDataLocations(RenderTarget* rt) throw(BufferException);
 };
 

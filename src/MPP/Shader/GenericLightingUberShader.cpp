@@ -16,6 +16,18 @@ GenericLightingUberShader::GenericLightingUberShader(Path codeDirectory, const S
 :
 		Shader(codeDirectory, Path("GenericLightingUberShader"), localShaderFeatures)
 {
+	assert( "only lighting stuff allowed in this shader type" &&
+		(
+			( mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_DEFAULT_LIGHTING) ||
+			( mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING) ||
+			( mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL) ||
+			( mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_DEFERRED_LIGHTING)
+		)
+	);
+
+	assert(	"not other material but default lighting allowed; use special shaders for special stuff ;)." &&
+			(mLocalShaderFeatures.visualMaterialType == VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING)
+	 );
 
 }
 

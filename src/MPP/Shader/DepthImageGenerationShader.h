@@ -32,7 +32,7 @@ public:
 	virtual void use(SubObject* so)throw(SimulatorException);
 
 protected:
-	virtual void generateCustomDefines();
+
 	virtual void bindFragDataLocations(RenderTarget* rt) throw(BufferException);
 };
 }

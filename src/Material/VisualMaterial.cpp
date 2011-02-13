@@ -12,7 +12,7 @@
 #include "Simulator/LightingSimulator/LightingSimStageBase.h"
 
 #include <boost/foreach.hpp>
-#include "Simulator/LightingSimulator/LightingStages/ShadowMapGenerationStage.h"
+#include "Simulator/LightingSimulator/LightingStages/ShadowMapGenerator.h"
 
 
 namespace Flewnit
@@ -150,7 +150,7 @@ void VisualMaterial::activate(
 			SubObject* currentUsingSuboject) throw(SimulatorException)
 {
 	//assert("is lighting stage" && dynamic_cast<LightingSimStageBase*>(currentStage));
-	dynamic_cast<ShadowMapGenerationStage*>(currentStage);
+	dynamic_cast<ShadowMapGenerator*>(currentStage);
 
 	LightingSimStageBase* castedStage= reinterpret_cast<LightingSimStageBase*>(currentStage);
 	assert(castedStage->getRenderingTechnique() != RENDERING_TECHNIQUE_DEFERRED_LIGHTING);

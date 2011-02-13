@@ -74,9 +74,10 @@ public:
 	) throw(SimulatorException);
 
 
-	inline int getNumCurrentlyActiveLightingLightSources()const{return mNumCurrentActiveLightingLightSources;}
-	inline int getNumCurrentlyActiveShadowingLightSources()const{return mNumCurrentActiveShadowingLightSources;}
-	inline int getNumCurrentlyExistingLightSources()const{return mLightSources.size();}
+	int getNumCurrentlyActiveLightingLightSources()const;
+	int getNumCurrentlyActiveShadowingLightSources()const;
+	int getNumTotalShadowingLightSources()const;
+	inline int getNumTotalLightSources()const{return mLightSources.size();}
 
 	inline LightSource* getLightSource(unsigned int index)const{assert(index<mLightSources.size()); return mLightSources[index];}
 	inline Buffer* getShadowMapMatricesUniformBuffer()const{return mShadowMapMatricesUniformBuffer;}
@@ -90,6 +91,7 @@ public:
 
 	//fill buffers with recent values
 	void setupBuffersForShading(float maxDistanceToMainCam = 1000.0f);
+	void setupBuffersForShadowMapGeneration(float maxDistanceToMainCam = 1000.0f);
 
 
 private:
@@ -105,8 +107,8 @@ private:
 	float mLightSourceProjectionMatrixNearClipPlane;
 	float mLightSourceProjectionMatrixFarClipPlane;
 
-	int mNumCurrentActiveLightingLightSources;
-	int mNumCurrentActiveShadowingLightSources;
+	//int mNumCurrentActiveLightingLightSources;
+	//int mNumCurrentActiveShadowingLightSources;
 	std::vector<LightSource*> mLightSources;
 
 	/*

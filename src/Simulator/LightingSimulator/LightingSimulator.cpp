@@ -18,7 +18,9 @@
 
 #include "MPP/Shader/GenericLightingUberShader.h"
 
+
 #include "Simulator/LightingSimulator/LightingStages/SkyBoxRenderer.h"
+#include "Simulator/LightingSimulator/LightingStages/ShadowMapGenerator.h"
 
 
 
@@ -29,6 +31,7 @@
 
 
 #include <typeinfo>
+#include "Simulator/LightingSimulator/LightingStages/DefaultLightingStage.h"
 
 
 
@@ -202,6 +205,16 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 			mSimStages.push_back(new SkyBoxRenderer( &( mSimConfigNode->get("SimulationPipelineStage",i) ) ) );
 		}
 
+		if(stageType  == "ShadowMapGenerator")
+		{
+			mSimStages.push_back(new ShadowMapGenerator( &( mSimConfigNode->get("SimulationPipelineStage",i) ) ) );
+		}
+
+		if(stageType  == "DefaultLightingStage")
+		{
+			mSimStages.push_back(new DefaultLightingStage( &( mSimConfigNode->get("SimulationPipelineStage",i) ) ) );
+		}
+
 	}
 
 
@@ -229,6 +242,13 @@ bool LightingSimulator::stepSimulation()  throw(SimulatorException)
 	//LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
 	glClearColor(0,1,1,0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+	for(unsigned int i=0; i< mSimStages.size(); i++)
+	{
+		mSimStages[i]->stepSimulation();
+	}
+
 	return true;
 }
 
