@@ -70,7 +70,7 @@ Box::Box(String name, const AmendedTransform& localTransform, const Vector3D& ha
 					"BoxGeometryIndexBuffer",
 					ContextTypeFlags(HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG),
 					INDEX_SEMANTICS,
-					TYPE_INT32,
+					TYPE_UINT32,
 					36,
 					VERTEX_INDEX_BUFFER_TYPE,
 					NO_CONTEXT_TYPE
@@ -89,23 +89,23 @@ Box::Box(String name, const AmendedTransform& localTransform, const Vector3D& ha
 		int* indexBuffer = reinterpret_cast<int*>(vertGeo->getIndexBuffer()->getCPUBufferHandle());
 
 
-		Vector4D vertices[2][2][2];
-		for (int x= 0; x <= 1; x += 1)
-		{
-			for (int y= 0; y <= 1; y += 1)
-			{
-				for (int z= 0; z <= 1; z += 1)
-				{
-
-					vertices[x][y][z] = Vector4D(
-							halfextends.x * ((2*x)-1),
-							halfextends.y * ((2*y)-1),
-							halfextends.z * ((2*z)-1),
-							1.0f
-					);
-				}
-			}
-		}
+//		Vector4D vertices[2][2][2];
+//		for (int x= 0; x <= 1; x += 1)
+//		{
+//			for (int y= 0; y <= 1; y += 1)
+//			{
+//				for (int z= 0; z <= 1; z += 1)
+//				{
+//
+//					vertices[x][y][z] = Vector4D(
+//							halfextends.x * ((2*x)-1),
+//							halfextends.y * ((2*y)-1),
+//							halfextends.z * ((2*z)-1),
+//							1.0f
+//					);
+//				}
+//			}
+//		}
 
 		for(int axis=0; axis<3; axis++)
 		{

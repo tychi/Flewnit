@@ -48,7 +48,7 @@ void  VertexBasedGeometry::unbind()
 void VertexBasedGeometry::setAttributeBuffer(BufferInterface* buffi) throw(BufferException)
 {
 	bind();
-	VertexBasedGeometry::setAttributeBuffer(buffi);
+	BufferBasedGeometry::setAttributeBuffer(buffi);
 	validateBufferIntegrity();
 
 	buffi->bind(OPEN_GL_CONTEXT_TYPE);

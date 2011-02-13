@@ -49,9 +49,9 @@ void Loader::createHardCodedSceneStuff()
 {
 	//create the first rendering, to see anything and to test the camera, the buffers, the shares and to overall architectural frame:
 	//TODO
-//	SimulationResourceManager::getInstance().getScene()->root().addChild(
-//		new Box("MyBox",AmendedTransform(Vector3D(0,0,-5)),Vector3D(3,2,1))
-//	);
+	SimulationResourceManager::getInstance().getScene()->root().addChild(
+		new Box("MyBox",AmendedTransform(Vector3D(0,0,-5)),Vector3D(3,2,1))
+	);
 
 
 }

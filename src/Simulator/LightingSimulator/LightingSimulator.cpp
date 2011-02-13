@@ -223,6 +223,11 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 
 	}
 
+	BOOST_FOREACH(SimulationPipelineStage* stage, mSimStages)
+	{
+		stage->initStage();
+	}
+
 
 
 	// TODO Auto-generated destructor stub
