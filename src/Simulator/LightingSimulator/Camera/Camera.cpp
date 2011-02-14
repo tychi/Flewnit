@@ -10,6 +10,7 @@
 #include "UserInterface/WindowManager/WindowManager.h"
 
 #include "Common/CL_GL_Common.h"
+#include "Util/Log/Log.h"
 
 
 namespace Flewnit {
@@ -29,6 +30,10 @@ Camera::Camera(String name, const AmendedTransform& localTransform,
 
 	perspective( mVerticalFOVAngle, mAspectRatioXtoY, mNearClipPlane, mFarClipPlane);
 
+	LOG<<DEBUG_LOG_LEVEL<<"Camera Transformation Matrix:"<<getGlobalTransform().getTotalTransform()<<";\n";
+	LOG<<DEBUG_LOG_LEVEL<<"Camera Lookat Matrix:"<<getGlobalTransform().getLookAtMatrix()<<";\n";
+
+	LOG<<DEBUG_LOG_LEVEL<<"Camera Projection Matrix:"<<getProjectionMatrix()<<";\n";
 
 }
 

@@ -52,6 +52,9 @@ DemoInputInterpreter::~DemoInputInterpreter()
 
 void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 {
+	Camera* mainCamera = //SimulationResourceManager::getInstance().getMainCamera();
+						URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
+
 	if(keyboard->getRecentKey() == GLFW_KEY_ENTER)
 	{
 		if(keyboard->getRecentStatus() == GLFW_PRESS)
@@ -72,12 +75,24 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 	{
 		if(keyboard->getRecentStatus() == GLFW_PRESS)
 		{
-
+			mainCamera->getGlobalTransform().moveRelativeToDirection(1,0,0);
 			LOG<<DEBUG_LOG_LEVEL<<"w pressed;\n";
 		}
 		else
 		{
 			LOG<<DEBUG_LOG_LEVEL<<"w released;\n";
+		}
+	}
+	if( (keyboard->getRecentKey()) == 'A')
+	{
+		if(keyboard->getRecentStatus() == GLFW_PRESS)
+		{
+			mainCamera->getGlobalTransform().moveRelativeToDirection(-1,0,0);
+			LOG<<DEBUG_LOG_LEVEL<<"a pressed;\n";
+		}
+		else
+		{
+			LOG<<DEBUG_LOG_LEVEL<<"a released;\n";
 		}
 	}
 

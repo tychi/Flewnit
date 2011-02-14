@@ -314,7 +314,7 @@ bool URE::stepSimulation()
 //
 //	success =mSimulators[ACUSTIC_SIM_DOMAIN] -> stepSimulation();
 
-	mWindowManager->swapBuffers();
+	//mWindowManager->swapBuffers();
 
 	success = mInputManager->processInput();
 

@@ -387,6 +387,7 @@ void BufferInterface::transferData(bool fromSystemToDevice)throw(BufferException
 			CLMANAGER->acquireSharedBuffersForGraphics();
 		}
 
+		GUARD(bindGL());
 		if(fromSystemToDevice)
 		{
 			GUARD(writeGL(mCPU_Handle));

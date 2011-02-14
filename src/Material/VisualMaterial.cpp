@@ -248,6 +248,11 @@ void VisualMaterial::validateTextures()throw(SimulatorException)
 		return;
 	}
 
+	if(mType == VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY)
+	{
+		return;
+	}
+
 
 	throw(SimulatorException("no other visual material type supported yet"));
 

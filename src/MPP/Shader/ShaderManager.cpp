@@ -155,7 +155,8 @@ Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 			newShader = new SkyDomeShader(mShaderCodeDirectory, sfl.renderTargetTextureType);
 			break;
 		case VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY:
-			assert(0&&"pure debug draw seems not necessary until now");
+			newShader = new GenericLightingUberShader(mShaderCodeDirectory,sfl);
+			//assert(0&&"pure debug draw seems not necessary until now");
 			break;
 		case VISUAL_MATERIAL_TYPE_GAS_RENDERING:
 			assert(0&&"gas rendering won't be implemented too soon");

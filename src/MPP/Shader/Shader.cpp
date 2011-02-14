@@ -199,6 +199,7 @@ void Shader::writeToDisk(String sourceCode, ShaderStageType type)
 void Shader::attachCompiledStage(ShaderStageType which)
 {
 	GUARD(glAttachShader(mGLProgramHandle, mShaderStages[which]->mGLShaderStageHandle));
+	//GUARD(mShaderStages[which]->compile());
 }
 
 void Shader::detachCompiledStage(ShaderStageType which)
