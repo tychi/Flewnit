@@ -12,8 +12,8 @@
 //---- shader input --------------------
 
 {% include  "09_Generic_InterfaceData.glsl" %}
-in InterfaceData input; //input from one of the previous stages;
-
+in InterfaceData interfaceData; ; //input from one of the previous stages;
+in vec4 myAss;
 //---- shader output -------------------
 {% include  "10_Fragment_output.glsl" %}
 //----- subroutines ------------------------------------------------------------------------------
@@ -38,9 +38,9 @@ void main()
   {% else %} {% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
     {% if not SHADING_FEATURE_CUBE_MAPPING %} what the f***, add a cube map! {% endif %}
     //one of those exceptions: for cube mapping: we have to pass WORLD coords and not VIEW coords!11
-    outFFinalLuminance = texture(cubeMap, normalize( (-1.0) * input.position.xyz));
+    outFFinalLuminance = texture(cubeMap, normalize( (-1.0) * interfaceData.position.xyz));
     //TODO try when stable non normalized lookup:
-    // outFFinalLuminance = texture(cubeMap,  (-1.0) * input.position.xyz );
+    // outFFinalLuminance = texture(cubeMap,  (-1.0) * interfaceData.position.xyz );
     return;
   {% else %} 
   
@@ -51,7 +51,7 @@ void main()
     {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING  %} 
       {%comment%} get the fragment values in the classical way {%endcomment%}
       vec3 normalVN = getNormal(0); //sampleindex zero, as no multisampling is used
-      vec4 fragmentColor =  {% if SHADING_FEATURE_DECAL_TEXTURING %}  texture(decalTexture,input.texCoords.xy);
+      vec4 fragmentColor =  {% if SHADING_FEATURE_DECAL_TEXTURING %}  texture(decalTexture,interfaceData.texCoords.xy);
                             {% else %} vec4(1.0,1.0,1.0,1.0);
                             {% endif %}  
     {% endif %}
@@ -60,7 +60,7 @@ void main()
     
     {% if RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL  %}
       //we have all relevant values, now flush the GBuffer;
-      outFGBufferPosition = input.position; //TODO NOT write position out this wasting way: try writing gl_FragDepth or single floating point texture instead when this default way is stable works
+      outFGBufferPosition = interfaceData.position; //TODO NOT write position out this wasting way: try writing gl_FragDepth or single floating point texture instead when this default way is stable works
       outFGBufferNormal = vec4(normalVN,0.0);   //TODO NOT write normal   out this wasting way: try writing to two-channel normalized 8bit signed int texture instead when this default way is stable works out
       outFGBufferColor = vec4(fragmentColor.xyz, shininess);  //code shininess into alph channel 
     {% else %}
@@ -69,8 +69,8 @@ void main()
                   now iterate over all lights and fragment samples and perform lighting calculations {%endcomment%}
     
       outFFinalLuminance = vec4(0.0,0.0,0.0,0.0); //init to zero as it will be accumulated over samples and lightsources
-      vec3 fragToCamN = normalize( (-1.0) * input.position.xyz);   //vec3 fragToCamN = normalize(eyePosition_WS - input.position); <--legacy worldspace code
-      {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING %} vec4 position = input.position; /*have to do this to assur code compatibility for dereferred and default lighting calculations*/  {% endif %} 
+      vec3 fragToCamN = normalize( (-1.0) * interfaceData.position.xyz);   //vec3 fragToCamN = normalize(eyePosition_WS - interfaceData.position); <--legacy worldspace code
+      {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING %} vec4 position = interfaceData.position; /*have to do this to assur code compatibility for dereferred and default lighting calculations*/  {% endif %} 
                
       {% if RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
         //{############### begin outer samples loop ####################################################################
@@ -146,15 +146,15 @@ void main()
    {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %}
     //goal: writing a linear viewspace depthvalue, scaled to [0..1] to the gl_FragDepth;
     //following variable listing in descending optimization; i will begin with the non optimized and hence fewest error prone one
-    //gl_FragDepth = input.depthViewSpaceNORMALIZED;
-    //gl_FragDepth = input.depthViewSpaceUNSCALED * invCameraFarClipPlane;
-    //gl_FragDepth = input.positionViewSpaceNORMALIZED.z; //light space linear coords, scaled by inverse farclipplane of lightsource camera ({{invCameraFarClipPlane}})
-     gl_FragDepth = input.positionViewSpaceUNSCALED.z / invCameraFarClipPlane; //light space linear coords, unscaled to test the most simple case before the more error prone optimized one
+    //gl_FragDepth = interfaceData.depthViewSpaceNORMALIZED;
+    //gl_FragDepth = interfaceData.depthViewSpaceUNSCALED * invCameraFarClipPlane;
+    //gl_FragDepth = interfaceData.positionViewSpaceNORMALIZED.z; //light space linear coords, scaled by inverse farclipplane of lightsource camera ({{invCameraFarClipPlane}})
+     gl_FragDepth = interfaceData.positionViewSpaceUNSCALED.z / invCameraFarClipPlane; //light space linear coords, unscaled to test the most simple case before the more error prone optimized one
    {% endif %}
   {% endif %}
   
   {% if RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION %}
-    outFPosition = input.position;
+    outFPosition = interfaceData.position;
   {% endif %}
   
   {%comment%} for default spotlight shadowmap generation, there is no fragment shader necessary at all, hence no input {%endcomment%}
@@ -166,7 +166,7 @@ void main()
 {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION  %}
       int z_Index = //TODO define relevant interface and calculation routines etc ....
       //usage examples : x: gl_PrimitiveID; y: z index of voxel; z: instance id w: material id
-			outFGBufferGenericIndices = ivec4(gl_PrimitiveID, z_Index, input.genericIndices.x, input.genericIndices.y); 
+			outFGBufferGenericIndices = ivec4(gl_PrimitiveID, z_Index, interfaceData.genericIndices.x, interfaceData.genericIndices.y); 
 {% endif %}
 
 

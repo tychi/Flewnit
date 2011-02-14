@@ -96,7 +96,10 @@ layout(location = {{ CUSTOM_SEMANTICS }}      ) 	in vec4 inVCustomAttribute;
 
 //---- shader output -------------------
   {% include  "09_Generic_InterfaceData.glsl" %}
-  out InterfaceData output; //output to following stages;
+  out InterfaceData interfaceData; //output to following stages;
+  
+  out vec4 myAss;
+  
 //--------------------------------------
 
 
@@ -112,48 +115,51 @@ void main()
   {% endif %}	
 	
 	
-	{%comment%} ################################# following "coloring" outputs ################################################################### {%endcomment%}
+	{%comment%} ################################# following "coloring" output ################################################################### {%endcomment%}
   {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}
   
       {% if RENDER_TARGET_TEXTURE_TYPE_2D_CUBE or RENDER_TARGET_TEXTURE_TYPE_2D_CUBE_DEPTH %}
             
           //WORLD space transform, as view/viewproj transform is done for every layer in the geom shader
             gl_Position =  modelMatrix * inVPosition; 
-            output.position = gl_Position 	; //don't know if necessary; TODO check for optimization when stable
+            interfaceData.position = gl_Position 	; //don't know if necessary; TODO check for optimization when stable
            
-            output.normal = 		modelMatrix * inVNormal;    
+            interfaceData.normal = 		modelMatrix * inVNormal;    
             {% if SHADING_FEATURE_NORMAL_MAPPING %}
-              output.tangent = 	modelMatrix * inVTangent;
+              interfaceData.tangent = 	modelMatrix * inVTangent;
             {% endif %}   
             
             {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
               {%comment%} later TODO test this optimaziation for one shadowmap; this would save one multiplication 
                      of the fragment world position with the biased sm-MVP matrix in the fragment shader         {%endcomment%}
-                output.shadowCoord = worldToShadowMapMatrixFROMWORLDSPACE *  output.position;
+                interfaceData.shadowCoord = worldToShadowMapMatrixFROMWORLDSPACE *  interfaceData.position;
             {% endif %}         
              
       {% else %}  
       
           //default view space transform
             gl_Position =  modelViewProjectionMatrix  * inVPosition; //default MVP transform;
-            output.position =  	modelViewMatrix * inVPosition;
-           
-            output.normal = 		modelViewMatrix * inVNormal;    
+            interfaceData.position =  	modelViewMatrix * inVPosition;
+            
+            myAss = transpose(inverse( modelViewMatrix)) * inVNormal;   
+            interfaceData.normal = 		transpose(inverse( modelViewMatrix)) * inVNormal;  
+            
+              
             {% if SHADING_FEATURE_NORMAL_MAPPING %}
-              output.tangent = 	modelViewMatrix * inVTangent;
+              interfaceData.tangent = 	modelViewMatrix * inVTangent;
             {% endif %} 
 
             {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
               {%comment%} later TODO test this optimaziation for one shadowmap; this would save one multiplication 
                      of the fragment world position with the biased sm-MVP matrix in the fragment shader         {%endcomment%}
-                output.shadowCoord = worldToShadowMapMatrix *  output.position;
+                interfaceData.shadowCoord = worldToShadowMapMatrix *  interfaceData.position;
             {% endif %}
 
 
       {%endif%}
       
       {% if SHADING_FEATURE_DECAL_TEXTURING or SHADING_FEATURE_DETAIL_TEXTURING	%}
-         output.texCoords = inVTexCoord;
+         interfaceData.texCoords = inVTexCoord;
       {%endif%}    
       
 
@@ -169,7 +175,7 @@ void main()
        {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT or LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS %}
        
           //WORLD space transform, as view/viewproj transform is done for every layer in the geom shader
-            output. positionViewSpaceUNSCALED = modelMatrix * inVPosition; //TODO is obsolete in vertex shader! remove when stable
+            interfaceData. positionViewSpaceUNSCALED = modelMatrix * inVPosition; //TODO is obsolete in vertex shader! remove when stable
             gl_Position = modelMatrix * inVPosition;
        
        {% else %} {% comment %} can only be LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT {% endcomment  %}
@@ -182,23 +188,23 @@ void main()
     {% else %}{% if RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %}
     
           //VIEW space transform
-            //output.depthViewSpaceNORMALIZED = vec4(modelViewMatrix * inVPosition).z * invCameraFarClipPlane;
-            //output.depthViewSpaceUNSCALED = vec4(modelViewMatrix * inVPosition).z;
-            //output.positionViewSpaceNORMALIZED = (modelViewMatrix * inVPosition) * invCameraFarClipPlane;
-            output.positionViewSpaceUNSCALED = modelViewMatrix * inVPosition; //TODO check the optimized data pass variants when stable;
+            //interfaceData.depthViewSpaceNORMALIZED = vec4(modelViewMatrix * inVPosition).z * invCameraFarClipPlane;
+            //interfaceData.depthViewSpaceUNSCALED = vec4(modelViewMatrix * inVPosition).z;
+            //interfaceData.positionViewSpaceNORMALIZED = (modelViewMatrix * inVPosition) * invCameraFarClipPlane;
+            interfaceData.positionViewSpaceUNSCALED = modelViewMatrix * inVPosition; //TODO check the optimized data pass variants when stable;
             gl_Position = modelViewProjectionMatrix * inVPosition;
                 
     {% else %}{% if RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION %}
        //default view space transform, same as for the default shading case ;(
-            output.position =  	modelViewMatrix * inVPosition;
-            gl_Position =       modelViewProjectionMatrix * output.position; //default MVP transform;
+            interfaceData.position =  	modelViewMatrix * inVPosition;
+            gl_Position =       modelViewProjectionMatrix * interfaceData.position; //default MVP transform;
     {% endif %}{% endif %}{% endif %}
    
   {% endif %}
   
   {%comment%} ################################# following ID inputs ##############################################################{%endcomment%}
   {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION %}
-    output.genericIndices= ivec4(0,0,gl_InstanceID,23); //some funny value in w to check if it is passed anything
+    interfaceData.genericIndices= ivec4(0,0,gl_InstanceID,23); //some funny value in w to check if it is passed anything
   {% endif %}
 
 }

@@ -2,6 +2,8 @@
   GLSL Shader Template: Data to be exchanged between Vertex/Geom/TessEval and Fragment shader shader
   applicable to following stages: fragment     {%endcomment%} 
   
+  
+  
 struct InterfaceData
 {  
   

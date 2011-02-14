@@ -39,7 +39,7 @@ void AmendedTransform::setup()
 	mDirection = glm::normalize(mDirection);
 	mUpVector = glm::normalize(mUpVector);
 
-	LOG<<DEBUG_LOG_LEVEL<<"mDirection: "<<Vector4D(mDirection,0.0f)<<";\n";
+	//LOG<<DEBUG_LOG_LEVEL<<"mDirection: "<<Vector4D(mDirection,0.0f)<<";\n";
 
 	assert("direction and upVector not parallel"
 		&& ( std::fabs(glm::dot(mDirection, mUpVector)) < 0.99 ));

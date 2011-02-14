@@ -7,6 +7,8 @@
 
                               float cosFragToLight_Normal = dot( (-1.0) * lightToFragVN , normalVN);
 
+incidentLight= vec4(cosFragToLight_Normal);//interfaceData.normal;// vec4(, 1.0);
+
                               //is fragment facing to the light?
                               if(cosFragToLight_Normal > 0)
                               {  
@@ -23,9 +25,12 @@
                                 //} //end codeFragment_specularLightingCalc
 
 
+
+                            /*
                                 incidentLight +=
                                   getDistanceAttenuation(lightToFragV) 
-                                  * 
+                                 
+                                 * 
                                   getShadowAttenuation(lightSource.shadowMapLayer, position.xyz) 
                                   * 
                                   {% if LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
@@ -47,6 +52,8 @@
                                     ( vec4(lightSource.diffuseColor.xyz,1.0) *  diffuseFactor ) +
                                     ( vec4(lightSource.specularColor.xyz,1.0) *  specularFactor )
                                   );
-
+        */
                               } //endif is fragment facing to the light (cosFragToLight_Normal > 0)  
-                              
+                        
+                      
+       

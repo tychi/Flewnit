@@ -163,7 +163,9 @@ Box::Box(String name, const AmendedTransform& localTransform, const Vector3D& ha
 	Material* mat = SimulationResourceManager::getInstance().getMaterial("MinimalLightingMaterial");
 	if(! mat)
 	{
-		mat = new VisualMaterial("MinimalLightingMaterial",VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+		mat = new VisualMaterial("MinimalLightingMaterial",
+				//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+				VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,SHADING_FEATURE_DIRECT_LIGHTING,
 				std::map<BufferSemantics,Texture*>(), VisualMaterialFlags(true,false,true,true,false,false));
 
 	}

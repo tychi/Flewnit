@@ -78,16 +78,16 @@ void GenericLightingUberShader::use(SubObject* so)throw(SimulatorException)
 	glBindAttribLocation(mGLProgramHandle,0,"inVPosition");
 	glBindAttribLocation(mGLProgramHandle,1,"inVNormal");
 	//glBindAttribLocation(mGLProgramHandle,2,"inVPosition");
-	glLinkProgram(mGLProgramHandle);
+	//glLinkProgram(mGLProgramHandle);
 
 	Camera* mainCam = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
 	Matrix4x4 viewProjMatrix = mainCam->getProjectionMatrix() * mainCam->getGlobalTransform().getLookAtMatrix();
 
-	LOG<<DEBUG_LOG_LEVEL<<"Camera Transformation Matrix:"<< mainCam->getGlobalTransform().getTotalTransform()<<";\n";
-	LOG<<DEBUG_LOG_LEVEL<<"Camera Lookat Matrix:"<< mainCam->getGlobalTransform().getLookAtMatrix()<<";\n";
-
-	LOG<<DEBUG_LOG_LEVEL<<"Camera Projection Matrix:"<<mainCam->getProjectionMatrix()<<";\n";
-	LOG<<DEBUG_LOG_LEVEL<<"Camera View Projection Matrix:"<<mainCam->getProjectionMatrix()<<";\n";
+//	LOG<<DEBUG_LOG_LEVEL<<"Camera Transformation Matrix:"<< mainCam->getGlobalTransform().getTotalTransform()<<";\n";
+//	LOG<<DEBUG_LOG_LEVEL<<"Camera Lookat Matrix:"<< mainCam->getGlobalTransform().getLookAtMatrix()<<";\n";
+//
+//	LOG<<DEBUG_LOG_LEVEL<<"Camera Projection Matrix:"<<mainCam->getProjectionMatrix()<<";\n";
+//	LOG<<DEBUG_LOG_LEVEL<<"Camera View Projection Matrix:"<<mainCam->getProjectionMatrix()<<";\n";
 
 //	Matrix4x4 hardcodeViewMat = glm::lookAt(Vector3D(0.0f,0.0f,30.0f),Vector3D(0.0f,0.0f,0.0f),Vector3D(0.0f,1.0f,0.0f));
 //	Matrix4x4 hardcodeProjMat = glm::gtc::matrix_projection::perspective(45.0f,1.0f,0.1f,100.0f);
@@ -170,6 +170,12 @@ void GenericLightingUberShader::use(SubObject* so)throw(SimulatorException)
 
 	//-----------------------------------------------------------------------
 	const LightSourceShaderStruct& lsStruct = LightSourceManager::getInstance().getLightSource(0)->getdata();
+
+	GLint uniformLS = glGetUniformLocation(mGLProgramHandle,"lightSource.position");
+
+//	LOG<<DEBUG_LOG_LEVEL<<"uniform location of lightsource.position:"<<	uniformLS<<";\n";
+//	LOG<<DEBUG_LOG_LEVEL<<"uniform location of lightSource.diffuseColor:"<<	glGetUniformLocation(mGLProgramHandle,"lightSource.diffuseColor")<<";\n";
+//	LOG<<DEBUG_LOG_LEVEL<<"uniform location of lightSource.specularColor:"<<	glGetUniformLocation(mGLProgramHandle,"lightSource.specularColor")<<";\n";
 
 	GUARD(
 		glUniform3fv(
