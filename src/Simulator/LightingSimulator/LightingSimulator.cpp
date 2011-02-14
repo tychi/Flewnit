@@ -258,6 +258,7 @@ bool LightingSimulator::stepSimulation()  throw(SimulatorException)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //glEnable(GL_TEXTURE_2D);
 
 
 	GUARD(glClearColor(0.3,0.2,0.1,0));
