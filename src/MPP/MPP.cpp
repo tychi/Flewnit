@@ -6,6 +6,7 @@
  */
 
 #include "MPP.h"
+#include "Simulator/SimulationResourceManager.h"
 
 namespace Flewnit
 {
@@ -13,8 +14,7 @@ namespace Flewnit
 MPP::MPP(String name, SimulationDomain sd)
 : SimulationObject(name,sd)
 {
-	// TODO Auto-generated constructor stub
-
+	SimulationResourceManager::getInstance().registerMPP(this);
 }
 
 MPP::~MPP()

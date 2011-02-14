@@ -94,8 +94,10 @@ VisualMaterial::VisualMaterial(
 
 VisualMaterial::~VisualMaterial()
 {
-	ShaderManager::getInstance().unregisterVisualMaterial(this);
-
+	if(ShaderManager::isInitialised())
+	{
+		ShaderManager::getInstance().unregisterVisualMaterial(this);
+	}
 	//nothing to delete, every used stuff is "owned by other manager/container classes
 }
 

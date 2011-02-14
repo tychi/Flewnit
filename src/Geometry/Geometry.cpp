@@ -7,6 +7,7 @@
 
 #include "Geometry.h"
 #include "Buffer/BufferInterface.h"
+#include "Simulator/SimulationResourceManager.h"
 
 namespace Flewnit
 {
@@ -16,6 +17,7 @@ Geometry::Geometry( String name, GeometryRepresentation geoRep)
 		SimulationObject( name, GENERIC_SIM_DOMAIN),
 		mGeometryRepresentation(geoRep)
 {
+	SimulationResourceManager::getInstance().registerGeometry(this);
 }
 
 Geometry::~Geometry()

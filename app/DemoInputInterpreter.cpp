@@ -38,11 +38,14 @@
 namespace Flewnit
 {
 
-DemoInputInterpreter::DemoInputInterpreter(float cameraLookMouseSensivity)
-: mCameraLookMouseSensivity(cameraLookMouseSensivity)
+DemoInputInterpreter::DemoInputInterpreter(float cameraLookMouseSensivity, float movementSpeed)
+: mCameraLookMouseSensivity(cameraLookMouseSensivity),mMovementSpeed(movementSpeed)
 {
 	// TODO make cameraLookMouseSensivity  config file- configurable;
 
+	mMovementState[MOVEMENT_DIRECTION_FRONT_BACK] = MOVEMENT_STATE_STILL;
+	mMovementState[MOVEMENT_DIRECTION_RIGHT_LEFT] = MOVEMENT_STATE_STILL;
+	mMovementState[MOVEMENT_DIRECTION_UP_DOWN] = MOVEMENT_STATE_STILL;
 }
 
 DemoInputInterpreter::~DemoInputInterpreter()
@@ -50,10 +53,27 @@ DemoInputInterpreter::~DemoInputInterpreter()
 	// TODO Auto-generated destructor stub
 }
 
+//if no input is done, the interpretInput methods aren't called; to do stuff like continous
+//update of certain variables, this method is called after every frame
+void DemoInputInterpreter::perFrameCallback()
+{
+	//---------------------------------------------------------
+
+	URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->
+		getMainCamera()->getGlobalTransform().moveRelativeToDirection(
+			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_FRONT_BACK]) 	- 1.0f) * -1.0f *mMovementSpeed,
+			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_RIGHT_LEFT]) 	- 1.0f) * -1.0f * mMovementSpeed,
+			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_UP_DOWN])  	- 1.0f)	*mMovementSpeed
+	);
+
+
+	//---------------------------------------------------------
+}
+
 void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 {
-	Camera* mainCamera = //SimulationResourceManager::getInstance().getMainCamera();
-						URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
+	Camera* mainCamera =
+		URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
 
 	if(keyboard->getRecentKey() == GLFW_KEY_ENTER)
 	{
@@ -70,31 +90,65 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 		}
 	}
 
-	//if((unsigned char) (keyboard->getRecentKey() & 0xffff) == (int)('W'))
+
 	if( (keyboard->getRecentKey()) == 'W')
 	{
-		if(keyboard->getRecentStatus() == GLFW_PRESS)
-		{
-			mainCamera->getGlobalTransform().moveRelativeToDirection(1,0,0);
-			LOG<<DEBUG_LOG_LEVEL<<"w pressed;\n";
+		if(keyboard->getRecentStatus() == GLFW_PRESS){
+			mMovementState[MOVEMENT_DIRECTION_FRONT_BACK] = MOVEMENT_STATE_FORWARD;
 		}
-		else
-		{
-			LOG<<DEBUG_LOG_LEVEL<<"w released;\n";
+		else{
+			mMovementState[MOVEMENT_DIRECTION_FRONT_BACK] = MOVEMENT_STATE_STILL;
+		}
+	}
+	if( (keyboard->getRecentKey()) == 'S')
+	{
+		if(keyboard->getRecentStatus() == GLFW_PRESS){
+			mMovementState[MOVEMENT_DIRECTION_FRONT_BACK] = MOVEMENT_STATE_BACKWARD;
+		}
+		else{
+			mMovementState[MOVEMENT_DIRECTION_FRONT_BACK] = MOVEMENT_STATE_STILL;
+		}
+	}
+
+	if( (keyboard->getRecentKey()) == 'D')
+	{
+		if(keyboard->getRecentStatus() == GLFW_PRESS){
+			mMovementState[MOVEMENT_DIRECTION_RIGHT_LEFT] = MOVEMENT_STATE_FORWARD;
+		}
+		else{
+			mMovementState[MOVEMENT_DIRECTION_RIGHT_LEFT] = MOVEMENT_STATE_STILL;
 		}
 	}
 	if( (keyboard->getRecentKey()) == 'A')
 	{
-		if(keyboard->getRecentStatus() == GLFW_PRESS)
-		{
-			mainCamera->getGlobalTransform().moveRelativeToDirection(-1,0,0);
-			LOG<<DEBUG_LOG_LEVEL<<"a pressed;\n";
+		if(keyboard->getRecentStatus() == GLFW_PRESS){
+			mMovementState[MOVEMENT_DIRECTION_RIGHT_LEFT] = MOVEMENT_STATE_BACKWARD;
 		}
-		else
-		{
-			LOG<<DEBUG_LOG_LEVEL<<"a released;\n";
+		else{
+			mMovementState[MOVEMENT_DIRECTION_RIGHT_LEFT] = MOVEMENT_STATE_STILL;
 		}
 	}
+
+	if( (keyboard->getRecentKey()) == 'Q')
+	{
+		if(keyboard->getRecentStatus() == GLFW_PRESS){
+			mMovementState[MOVEMENT_DIRECTION_UP_DOWN] = MOVEMENT_STATE_BACKWARD;
+		}
+		else{
+			mMovementState[MOVEMENT_DIRECTION_UP_DOWN] = MOVEMENT_STATE_STILL;
+		}
+	}
+	if( (keyboard->getRecentKey()) == 'E')
+	{
+		if(keyboard->getRecentStatus() == GLFW_PRESS){
+			mMovementState[MOVEMENT_DIRECTION_UP_DOWN] = MOVEMENT_STATE_FORWARD;
+		}
+		else{
+			mMovementState[MOVEMENT_DIRECTION_UP_DOWN] = MOVEMENT_STATE_STILL;
+		}
+	}
+
+
 
 
 	if(keyboard->getRecentKey() == GLFW_KEY_ESC)
@@ -167,7 +221,7 @@ void DemoInputInterpreter::interpretInput(Mouse* mouse)
 			//pixels for this rule of thumb: a compromize between full hd and notebook displays ("HD ready ;( )
 			//4* half thumbrule screen size= 4* 1600 / 2:
 			const float pixelsCausingFullRotation = 3200.0f;
-			float degreesToYaw = (360.0f / pixelsCausingFullRotation) * differenceHorizontal * mCameraLookMouseSensivity;
+			float degreesToYaw = (-360.0f / pixelsCausingFullRotation) * differenceHorizontal * mCameraLookMouseSensivity;
 			//negative as mouse coord go from top to bottom
 			float degreesToPitch = (-360.0f / pixelsCausingFullRotation) * differenceVertical * mCameraLookMouseSensivity;
 

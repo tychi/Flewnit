@@ -16,8 +16,12 @@ class DemoInputInterpreter: public Flewnit::InputInterpreter
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	DemoInputInterpreter(float cameraLookMouseSensivity =1.0f);
+	DemoInputInterpreter(float cameraLookMouseSensivity =1.0f, float movementSpeed=0.5f);
 	virtual ~DemoInputInterpreter();
+
+	//if no input is done, the interpretInput methods aren't called; to do stuff like continous
+	//update of certain variables, this method is called after every frame
+	virtual void perFrameCallback();
 
 
 	//"partial visitor pattern": kind of virtual callback: Devices call these functions from their own callback functions, if they have some;
@@ -28,6 +32,27 @@ public:
 private:
 
 	float mCameraLookMouseSensivity;
+	float mMovementSpeed;
+
+	enum MovementDirections
+	{
+		MOVEMENT_DIRECTION_FRONT_BACK=0,
+		MOVEMENT_DIRECTION_RIGHT_LEFT=1,
+		MOVEMENT_DIRECTION_UP_DOWN=2,
+		__NUM_MOVEMENT_DIRECTIONS__= 3
+	};
+
+	enum MovementState
+	{
+//		FORWARD= 1,
+//		STILL =0,
+//		BACKWARD=-1
+		MOVEMENT_STATE_FORWARD= 0,
+		MOVEMENT_STATE_STILL =1,
+		MOVEMENT_STATE_BACKWARD=2
+	};
+
+	MovementState mMovementState[__NUM_MOVEMENT_DIRECTIONS__];
 };
 
 }

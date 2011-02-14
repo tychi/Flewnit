@@ -28,7 +28,11 @@ WorldObject::WorldObject(String name,
 
 WorldObject::~WorldObject()
 {
-	// TODO Auto-generated destructor stub
+	for (unsigned int i= 0; i<__NUM_SIM_DOMAINS__; i++)
+		BOOST_FOREACH(SubObject* so, mPhysicalReps[i])
+		{
+			delete so;
+		}
 }
 
 

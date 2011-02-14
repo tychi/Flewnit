@@ -80,6 +80,8 @@ bool InputManager::processInput()
 	// Wiimote has no functionality yet, but for the lulz, lets' "pull" some stuff, even if only stubs are invoked;
 	mWiiMote->pullStatus();
 
+	mInputInterpreter->perFrameCallback();
+
 	return true;
 
 }

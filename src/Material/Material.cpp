@@ -6,6 +6,7 @@
  */
 
 #include "Material.h"
+#include "Simulator/SimulationResourceManager.h"
 
 namespace Flewnit
 {
@@ -14,6 +15,7 @@ Material::Material(String name, SimulationDomain sd)
 :SimulationObject(name, sd)
 {
 	// TODO Auto-generated constructor stub
+	SimulationResourceManager::getInstance().registerMaterial(this);
 
 }
 

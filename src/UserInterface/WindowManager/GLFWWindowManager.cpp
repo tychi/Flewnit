@@ -155,7 +155,7 @@ void GLFWWindowManager::init()
 
 	//antialiasing stuff; test if it works after first triangle rendering
 	assert(HelperFunctions::isPowerOfTwo(numMultiSamples));
-	//glfwOpenWindowHint(GLFW_FSAA_SAMPLES,numMultiSamples <= 1 ? 0 : numMultiSamples);
+	glfwOpenWindowHint(GLFW_FSAA_SAMPLES,numMultiSamples <= 1 ? 0 : numMultiSamples);
 
 	createWindow(fullscreen,winPos,winRes);
 

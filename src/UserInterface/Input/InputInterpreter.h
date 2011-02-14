@@ -40,6 +40,10 @@ public:
 	virtual void interpretInput(Mouse* mouse)=0;
 	virtual void interpretInput(WiiMote* wiiMote)=0;
 
+	//if no input is done, the interpretInput methods aren't called; to do stuff like continous
+	//update of certain variables, this method is called after every frame
+	virtual void perFrameCallback()=0;
+
 };
 
 }
