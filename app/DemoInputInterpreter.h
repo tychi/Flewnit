@@ -16,7 +16,7 @@ class DemoInputInterpreter: public Flewnit::InputInterpreter
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	DemoInputInterpreter(float cameraLookMouseSensivity =1.0f, float movementSpeed=0.1f);
+	DemoInputInterpreter(float cameraLookMouseSensivity =1.0f, float movementSpeed=0.033f);
 	virtual ~DemoInputInterpreter();
 
 	//if no input is done, the interpretInput methods aren't called; to do stuff like continous

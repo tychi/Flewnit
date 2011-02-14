@@ -21,6 +21,8 @@
 #include "Simulator/SimulationResourceManager.h"
 #include "Scene/Scene.h"
 #include "Simulator/LightingSimulator/Light/LightSourceManager.h"
+#include "Buffer/BufferSharedDefinitions.h"
+#include "Util/Loader/Loader.h"
 
 
 
@@ -51,10 +53,11 @@ void Loader::createHardCodedSceneStuff()
 	//create the first rendering, to see anything and to test the camera, the buffers, the shares and to overall architectural frame:
 	//TODO
 	SimulationResourceManager::getInstance().getScene()->root().addChild(
-		new Box("MyBox",AmendedTransform(Vector3D(0,0,-50)),Vector3D(30,20,1))
+		new Box("MyBox",AmendedTransform(Vector3D(0,0,-30)),Vector3D(10.0f,7.0f,15.0f))
 	);
 
-	LightSourceManager::getInstance().createPointLight(Vector3D(10,30,10),false,Vector3D(1.0,0.5,0.1),Vector3D(0.1f,0.1f,1.0f));
+	LightSourceManager::getInstance().createPointLight(Vector3D(13,15,10),false,Vector3D(1.0,0.5,0.1),Vector3D(0.1f,0.1f,1.0f));
+
 
 
 }
@@ -95,7 +98,7 @@ void  addAlphaChannelToVec3FImage(const Vector3D* vec3Image, Vector4D* newVec4Im
 }
 
 Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path fileName,
-		TexelInfo texelPreferredLayout,
+		const TexelInfo& texelPreferredLayout,
 		bool allocHostMemory, bool shareWithOpenCL,  bool genMipmaps
 ) throw(BufferException)
 {
@@ -115,9 +118,9 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 	 //as it's only a temorary buffer
 	 void* buffer = malloc( sizeof(Vector4D) * image->getWidth()*image->getHeight());
 
-
+	 TexelInfo newTexeli(texelPreferredLayout);
 	 //fill buffer according to a rater sophisticated conversion:
-	 transformPixelData(bufferSemantics,buffer,texelPreferredLayout,image);
+	 transformPixelData(bufferSemantics,buffer,newTexeli,image);
 
 	  int dimensionality = (image->getHeight() >1) ? 2 : 1;
 

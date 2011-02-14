@@ -14,6 +14,9 @@
 #include "Buffer/Buffer.h"
 #include "Util/Log/Log.h"
 
+#include "URE.h"
+#include "Util/Loader/Loader.h"
+
 
 namespace Flewnit {
 
@@ -163,10 +166,27 @@ Box::Box(String name, const AmendedTransform& localTransform, const Vector3D& ha
 	Material* mat = SimulationResourceManager::getInstance().getMaterial("MinimalLightingMaterial");
 	if(! mat)
 	{
+//		Texture* tex= URE_INSTANCE->getLoader()->loadTexture(
+//				String("bunnyTex"),
+//				DECAL_COLOR_SEMANTICS,
+//				Path("./assets/textures/bunny.png"),
+//				TexelInfo(4,GPU_DATA_TYPE_UINT,8,true),
+//				true,
+//				false,
+//				false
+//		);
+//
+//		std::map<BufferSemantics,Texture*> myMap;
+//		myMap[DECAL_COLOR_SEMANTICS] = tex;
+
 		mat = new VisualMaterial("MinimalLightingMaterial",
 				//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
-				VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,SHADING_FEATURE_DIRECT_LIGHTING,
-				std::map<BufferSemantics,Texture*>(), VisualMaterialFlags(true,false,true,true,false,false));
+				VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+				SHADING_FEATURE_DIRECT_LIGHTING,
+				//ShadingFeatures( SHADING_FEATURE_DIRECT_LIGHTING | SHADING_FEATURE_DECAL_TEXTURING),
+				//myMap,
+				std::map<BufferSemantics,Texture*>(),
+				VisualMaterialFlags(true,false,true,true,false,false));
 
 	}
 

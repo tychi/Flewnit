@@ -19,6 +19,9 @@
 #include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 #include "Util/Log/Log.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include "Material/VisualMaterial.h"
+#include "Buffer/BufferInterface.h"
+#include "Buffer/Texture.h"
 
 namespace Flewnit {
 
@@ -177,11 +180,14 @@ void GenericLightingUberShader::use(SubObject* so)throw(SimulatorException)
 //	LOG<<DEBUG_LOG_LEVEL<<"uniform location of lightSource.diffuseColor:"<<	glGetUniformLocation(mGLProgramHandle,"lightSource.diffuseColor")<<";\n";
 //	LOG<<DEBUG_LOG_LEVEL<<"uniform location of lightSource.specularColor:"<<	glGetUniformLocation(mGLProgramHandle,"lightSource.specularColor")<<";\n";
 
+	Vector4D  lightPosViewSpace =  mainCam->getGlobalTransform().getLookAtMatrix() *
+			LightSourceManager::getInstance().getLightSource(0)->getGlobalTransform().getTotalTransform()*
+			Vector4D(lsStruct.position, 1.0f);
 	GUARD(
 		glUniform3fv(
 			glGetUniformLocation(mGLProgramHandle,"lightSource.position"),
 			1,
-			&(lsStruct.position[0])
+			&( lightPosViewSpace[0])
 		)
 	);
 	GUARD(
@@ -198,11 +204,13 @@ void GenericLightingUberShader::use(SubObject* so)throw(SimulatorException)
 				&(lsStruct.specularColor[0])
 			)
 	);
+	Vector4D  lightDirViewSpace =  mainCam->getGlobalTransform().getLookAtMatrix() *  Vector4D(lsStruct.direction,0.0f);
+
 	GUARD(
 			glUniform3fv(
 				glGetUniformLocation(mGLProgramHandle,"lightSource.direction"),
 				1,
-				&(lsStruct.direction[0])
+				&(lightDirViewSpace[0])
 			)
 	);
 	GUARD(	glUniform1f(	glGetUniformLocation(mGLProgramHandle,"lightSource.innerSpotCutOff_Radians"),
@@ -212,7 +220,20 @@ void GenericLightingUberShader::use(SubObject* so)throw(SimulatorException)
 	GUARD(	glUniform1f(	glGetUniformLocation(mGLProgramHandle,"lightSource.spotExponent"),
 							lsStruct.spotExponent	)											);
 	GUARD(	glUniform1f(	glGetUniformLocation(mGLProgramHandle,"lightSource.shadowMapLayer"),
-							lsStruct.shadowMapLayer	)											);
+							lsStruct.shadowMapLayer	)								);
+
+	VisualMaterial * visMat =  dynamic_cast<VisualMaterial*>(so->getMaterial());
+	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DECAL_TEXTURING ) !=0 ))
+	{
+		glActiveTexture(GL_TEXTURE0);
+		visMat->getTexture(DECAL_COLOR_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+		GUARD(	glUniform1i(glGetUniformLocation(mGLProgramHandle,"decalTexture"),
+					0	)
+		);
+	}
+
+
+
 
 	GUARD(glUseProgram(mGLProgramHandle));
 

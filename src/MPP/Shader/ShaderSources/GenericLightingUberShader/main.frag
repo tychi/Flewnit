@@ -109,7 +109,7 @@ void main()
 
                       outFFinalLuminance += incidentLight * fragmentColor;  //accum the incident light for all lightsources, multiplicated with th color of the current fragment;
                                                                             //do this for every sample      
-                     
+                     if(length(clamp(outFFinalLuminance.xyz,vec3(0.0),vec3(1.0) ))< 0.1 ){outFFinalLuminance = 0.2* vec4(lightSource.specularColor, 1.0);}
                       
                   {% endif %} {%comment%} end distinction between if lighting the samples or not {%endcomment%}
             

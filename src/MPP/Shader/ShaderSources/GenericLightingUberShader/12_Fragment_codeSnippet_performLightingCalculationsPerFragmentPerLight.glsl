@@ -7,10 +7,10 @@
 
                               float cosFragToLight_Normal = dot( (-1.0) * lightToFragVN , normalVN);
 
-incidentLight= vec4(cosFragToLight_Normal);//interfaceData.normal;// vec4(, 1.0);
+
 
                               //is fragment facing to the light?
-                              if(cosFragToLight_Normal > 0)
+                              if(cosFragToLight_Normal > 0.0)
                               {  
                                 //{%codeFragment_diffuseLightingCalc}
                                 //{    
@@ -21,12 +21,16 @@ incidentLight= vec4(cosFragToLight_Normal);//interfaceData.normal;// vec4(, 1.0)
                                 //{
                                 vec3 reflectedlightToFragV = reflect ( lightToFragVN , normalVN);
                                 float cosFragToCam_reflectedlightToFragV = dot(fragToCamN,reflectedlightToFragV);
-                                float specularFactor = pow(cosFragToCam_reflectedlightToFragV, shininess);
+                               
+                                float specularFactor=0.0;
+                                if(cosFragToCam_reflectedlightToFragV > 0.0)
+                                {
+                                  specularFactor = pow(cosFragToCam_reflectedlightToFragV, shininess);
+                                }
+                                //float specularFactor = clamp (pow(cosFragToCam_reflectedlightToFragV, shininess), 0.0,1.0 );
                                 //} //end codeFragment_specularLightingCalc
-
-
-
-                            /*
+                             
+                            
                                 incidentLight +=
                                   getDistanceAttenuation(lightToFragV) 
                                  
@@ -52,7 +56,7 @@ incidentLight= vec4(cosFragToLight_Normal);//interfaceData.normal;// vec4(, 1.0)
                                     ( vec4(lightSource.diffuseColor.xyz,1.0) *  diffuseFactor ) +
                                     ( vec4(lightSource.specularColor.xyz,1.0) *  specularFactor )
                                   );
-        */
+        
                               } //endif is fragment facing to the light (cosFragToLight_Normal > 0)  
                         
                       

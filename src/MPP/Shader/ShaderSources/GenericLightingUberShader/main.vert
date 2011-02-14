@@ -75,7 +75,7 @@ layout(location = {{ NORMAL_SEMANTICS }}      ) 	in vec4 inVNormal;
 {% if SHADER_FEATURE_NORMAL_MAPPING %}
 layout(location = {{ TANGENT_SEMANTICS }}     ) 	in vec4 inVTangent;
 {% endif %}
-{% if SHADER_FEATURE_DECAL_TEXTURING or SHADING_FEATURE_DETAIL_TEXTURING %}
+{% if SHADING_FEATURE_DECAL_TEXTURING or SHADING_FEATURE_DETAIL_TEXTURING %}
 layout(location = {{ TEXCOORD_SEMANTICS }}    ) 	in vec4 inVTexCoord;
 {% endif %}
 
