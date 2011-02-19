@@ -13,11 +13,24 @@ namespace Flewnit
 {
 
 VertexBasedGeometry::VertexBasedGeometry(String name, GeometryRepresentation geoRep)
-: BufferBasedGeometry(name, geoRep), mIndexBuffer(0)
+: BufferBasedGeometry(name, geoRep), mIndexBuffer(0),
+  //not needed
+  mNumVerticesPerPatch(0)
 {
 	GUARD( glGenVertexArrays(1, &mGLVBO));
 	bind();
 }
+
+VertexBasedGeometry::VertexBasedGeometry(String name, GLint verticesPerPatch)
+: BufferBasedGeometry(name, VERTEX_BASED_PATCHES), mIndexBuffer(0), mNumVerticesPerPatch(verticesPerPatch)
+{
+	GUARD( glGenVertexArrays(1, &mGLVBO));
+	bind();
+
+	validateBufferIntegrity();
+	GUARD(glPatchParameteri(GL_PATCH_VERTICES, verticesPerPatch));
+}
+
 
 VertexBasedGeometry::~VertexBasedGeometry()
 {
@@ -141,8 +154,6 @@ void VertexBasedGeometry::setIndexBuffer(BufferInterface* buffi) throw(BufferExc
 	bind();
 	buffi->bind(OPEN_GL_CONTEXT_TYPE);
 
-
-
 }
 
 
@@ -186,9 +197,11 @@ void VertexBasedGeometry::draw(
 	case VERTEX_BASED_TRIANGLES_ADJACENCY:
 		drawType = GL_TRIANGLES_ADJACENCY;
 	break;
+	case VERTEX_BASED_PATCHES:
+		drawType = GL_PATCHES;
 	default:
 		drawType = GL_POINTS;
-		assert(0 && "incompatible geometry draw type");
+		assert(0 && "incompatible vertex based geometry draw type");
 	break;
 	}
 
@@ -207,7 +220,8 @@ void VertexBasedGeometry::validateBufferIntegrity()throw(BufferException)
 			getGeometryRepresentation()==VERTEX_BASED_LINES ||
 			getGeometryRepresentation()==VERTEX_BASED_LINE_STRIP ||
 			getGeometryRepresentation()==VERTEX_BASED_TRIANGLES ||
-			getGeometryRepresentation()==VERTEX_BASED_TRIANGLES_ADJACENCY
+			getGeometryRepresentation()==VERTEX_BASED_TRIANGLES_ADJACENCY ||
+			getGeometryRepresentation()==VERTEX_BASED_PATCHES
 	);
 
 	//made a design mistake: texelinfo make also sense in bufferinfo (then should be called "ComponentInfo"),
@@ -241,10 +255,30 @@ void VertexBasedGeometry::validateBufferIntegrity()throw(BufferException)
 			&& "due to design mistake currently nothing else allowed" );
 		}
 	}
+
+	if(getGeometryRepresentation()== VERTEX_BASED_PATCHES)
+	{
+		assert( "only the following patch sizes are currently supported:" &&
+			(
+				(mNumVerticesPerPatch == 3)	||
+				(mNumVerticesPerPatch == 4) ||
+				(mNumVerticesPerPatch == 16)
+			)
+
+		);
+	}
+
+
+
 	if(mIndexBuffer)
 	{
 		assert((mIndexBuffer->getBufferInfo().elementType == TYPE_UINT32));
 		assert(mIndexBuffer->getBufferInfo().glBufferType == VERTEX_INDEX_BUFFER_TYPE);
+
+		if(getGeometryRepresentation()== VERTEX_BASED_PATCHES)
+		{
+			assert( "index count multiple of patch size" &&  (mIndexBuffer->getBufferInfo().numElements % mNumVerticesPerPatch  == 0 ));
+		}
 	}
 }
 

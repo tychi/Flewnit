@@ -41,6 +41,8 @@ enum GeometryRepresentation
 	VERTEX_BASED_TRIANGLES,
 	VERTEX_BASED_TRIANGLES_ADJACENCY,
 
+	VERTEX_BASED_PATCHES,
+
 	VERTEX_BASED_CONVEX_HULL,
 
 	//following two would be easy to abstract in CUDA, but not in OpenCL (yet) :C ;

@@ -229,6 +229,18 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 		stage->initStage();
 	}
 
+	RenderTarget::renderToScreen();
+	GUARD(glClearColor(0.3,0.2,0.1,0));
+	GUARD(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+
+	GUARD(glEnable(GL_DEPTH_TEST));
+	GUARD(glDepthFunc(GL_LESS));
+
+	//GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_POINT));
+	GUARD(glPointSize(10.0f));
+
+	//GUARD(glPolygonMode(GL_FRONT, GL_FILL));
+    GUARD(glEnable(GL_CULL_FACE));
 
 
 	// TODO Auto-generated destructor stub
@@ -253,16 +265,12 @@ bool LightingSimulator::stepSimulation()  throw(SimulatorException)
 	// TODO Auto-generated destructor stub
 	//LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
 
-	GUARD(glBindFramebuffer(GL_FRAMEBUFFER,0));
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     //glEnable(GL_TEXTURE_2D);
 
-
-	GUARD(glClearColor(0.3,0.2,0.1,0));
-	GUARD(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	//render to and clear screen
+	RenderTarget::renderToScreen();
+	GUARD(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 
 
 	URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera()->setGLViewPort(

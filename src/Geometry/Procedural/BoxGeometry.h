@@ -5,12 +5,19 @@
  *      Author: tychi
  */
 
-#ifndef BOXGEOMETRY_H_
-#define BOXGEOMETRY_H_
 
-namespace Flewnit {
+#pragma once
 
-class BoxGeometry {
+
+#include "Geometry/VertexBasedGeometry.h"
+
+namespace Flewnit
+{
+
+class BoxGeometry
+: public VertexBasedGeometry
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	BoxGeometry();
 	virtual ~BoxGeometry();
@@ -18,4 +25,4 @@ public:
 
 }
 
-#endif /* BOXGEOMETRY_H_ */
+

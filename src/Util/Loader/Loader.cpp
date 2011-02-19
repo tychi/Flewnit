@@ -56,6 +56,9 @@ void Loader::createHardCodedSceneStuff()
 		new Box("MyBox",AmendedTransform(Vector3D(0,0,-30)),Vector3D(10.0f,7.0f,15.0f))
 	);
 
+
+
+
 	LightSourceManager::getInstance().createPointLight(Vector3D(13,15,10),false,Vector3D(1.0,0.5,0.1),Vector3D(0.1f,0.1f,1.0f));
 
 
