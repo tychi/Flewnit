@@ -147,55 +147,6 @@ class BufferException : public std::exception
 };
 
 
-/**
- * some partially redundant information about the buffer;
- */
-class BufferInfo
-{
-public:
-	String name;
-	ContextTypeFlags usageContexts;
-	BufferSemantics bufferSemantics;
-
-
-	Type elementType; //default TYPE_UNDEF
-	cl_GLuint numElements;
-
-	GLBufferType glBufferType; //default NO_GL_BUFFER_TYPE; must have other value if the GL-flag is set in usageContexs
-	bool isPingPongBuffer; //default false, set by the appropriate class;
-	//guard if some buffer is mapped
-	ContextType mappedToCPUContext; //default NO_CONTEXT_TYPE, valid only the latter and OPEN_CL_CONTEXT_TYPE and OPEN_GL_CONTEXT_TYPE
-
-	//value automatically calulated by  numElements * BufferHelper::elementSize(elementType);
-	cl_GLuint bufferSizeInByte;
-
-	//default constructor for non-image buffers
-	explicit BufferInfo(String name,
-			ContextTypeFlags usageContexts,
-			BufferSemantics bufferSemantics,
-			Type elementType,
-			cl_GLuint numElements,
-			GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
-			ContextType mappedToCPUContext = NO_CONTEXT_TYPE);
-
-
-
-	BufferInfo(const BufferInfo& rhs);
-
-	virtual ~BufferInfo();
-	bool operator==(const BufferInfo& rhs) const;
-	const BufferInfo& operator=(const BufferInfo& rhs);
-
-
-	//add lean contructor for the cases where the concrete values must be computed later, but things
-	//like the name etc must already be known; useful for TextureInfo
-	explicit BufferInfo(String name,
-				ContextTypeFlags usageContexts,
-				BufferSemantics bufferSemantics);
-
-};
-
-
 enum GPU_DataType
 {
 	GPU_DATA_TYPE_FLOAT,
@@ -204,7 +155,7 @@ enum GPU_DataType
 };
 
 
-struct TexelInfo
+struct BufferElementInfo
 {
 	/*
 	In this framework, it is strongly recommended to specify the desired internal layout:
@@ -231,7 +182,7 @@ struct TexelInfo
 	There is one minor drawback at the moment: CPU data must have the same format as the data which
 	will reside on the GPU;
 
-	Here is a table about the mapping from this TexelInfo struct to real
+	Here is a table about the mapping from this BufferElementInfo struct to real
 	GL "GLint internalFormat"  resp.
 	CL  "cl_channel_type cl_image_format::image_channel_order":
 
@@ -285,13 +236,22 @@ struct TexelInfo
 	//4
 	bool normalizeIntegralValuesFlag;
 
-	//default constructor for internal image loading; doesn't validate hence
-	explicit TexelInfo();
-	explicit TexelInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsPerChannel, bool normalizeIntegralValuesFlag);
-	explicit TexelInfo(const TexelInfo& rhs);
-	virtual ~TexelInfo(){}
-	bool operator==(const TexelInfo& rhs)const;
-	const TexelInfo& operator=(const TexelInfo& rhs);
+	//guard to tell the valiadte() function that this struct is unused
+	//(e.g. for lightsource uniform buffers, generic opencl buffers etc);
+	//is set to true in the default constructor,
+	//copied in the copy constructor and set to false in the value-passing constrctor
+	bool hasNoChanneledElements;
+
+
+	//default constructor for internal image loading or if this struct is unneeded;
+	//set the hasNoChanneledElements explicitely to force the programmer to think about what he is doing;
+	//has to be set always to true with this constrctor, otherwise, validation will fail;
+	explicit BufferElementInfo(bool hasNoChanneledElements);
+	explicit BufferElementInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsPerChannel, bool normalizeIntegralValuesFlag);
+	explicit BufferElementInfo(const BufferElementInfo& rhs);
+	virtual ~BufferElementInfo(){}
+	bool operator==(const BufferElementInfo& rhs)const;
+	const BufferElementInfo& operator=(const BufferElementInfo& rhs);
 	//called by constructor to early detect invalid values and permutations, like 8-bit float or 32bit normalized (u)int
 	void validate()const throw (BufferException);
 };
@@ -308,7 +268,7 @@ struct GLImageFormat
 	// All of this packed in one enum! Plus, this enum must comply with the channelOrder
 	// and the channelDataType below! So much invalid combinations are possible!
 	// Thus, the values of those enums are determined
-	//valid values: see the big table within the comment of TexelInfo: GL_RGBA32F .. GL_R8_SNORM;
+	//valid values: see the big table within the comment of BufferElementInfo: GL_RGBA32F .. GL_R8_SNORM;
 	GLint  	desiredInternalFormat;
 
 
@@ -337,6 +297,67 @@ struct GLImageFormat
 };
 
 
+
+
+/**
+ * some partially redundant information about the buffer;
+ */
+class BufferInfo
+{
+public:
+	String name;
+	ContextTypeFlags usageContexts;
+	BufferSemantics bufferSemantics;
+
+
+	Type elementType; //default TYPE_UNDEF
+	cl_GLuint numElements;
+
+
+	//"clean" user provided info about the texels in the texture, or the components and types in a vertex attribute/index buffer;
+	BufferElementInfo elementInfo;
+	//guard if some buffer is mapped
+
+	GLBufferType glBufferType; //default NO_GL_BUFFER_TYPE; must have other value if the GL-flag is set in usageContexs
+	bool isPingPongBuffer; //default false, set by the appropriate class;
+
+	ContextType mappedToCPUContext; //default NO_CONTEXT_TYPE, valid only the latter and OPEN_CL_CONTEXT_TYPE and OPEN_GL_CONTEXT_TYPE
+
+
+	//value automatically calulated by  numElements * BufferHelper::elementSize(elementType);
+	cl_GLuint bufferSizeInByte;
+
+	//default constructor for non-image buffers
+	explicit BufferInfo(String name,
+			ContextTypeFlags usageContexts,
+			BufferSemantics bufferSemantics,
+			Type elementType,
+			cl_GLuint numElements,
+			const BufferElementInfo& elementInfo,
+			GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
+			ContextType mappedToCPUContext = NO_CONTEXT_TYPE);
+
+
+
+	BufferInfo(const BufferInfo& rhs);
+
+	virtual ~BufferInfo();
+	bool operator==(const BufferInfo& rhs) const;
+	const BufferInfo& operator=(const BufferInfo& rhs);
+
+
+	//add lean contructor for the cases where the concrete values must be computed later, but things
+	//like the name etc must already be known; useful for TextureInfo
+	explicit BufferInfo(String name,
+				ContextTypeFlags usageContexts,
+				BufferSemantics bufferSemantics,
+				const BufferElementInfo& elementInfo);
+
+};
+
+
+
+
 /**
  * container class to contain all relevant GL and CL-specific enums, flags, state etc.
  * so that it can be queried easily by the user;
@@ -353,8 +374,8 @@ public:
 	Vector3Dui dimensionExtends; //must be zero for unused dimensions;
 	///\}
 
-	//"clean" user privided info about the texels in the texture;
-	TexelInfo texelInfo;
+	//"clean" user provided info about the texels in the texture;
+	//BufferElementInfo elementInfo;
 
 	//texture target, automatically determined by the constructors of the concrete Texture classes;
 
@@ -382,7 +403,7 @@ public:
 	//for clImageFormat.image_channel_order: texelInfo.numChannels == 1 --> CL_R, 2 -->	CL_RG, 4 --> CL_RGBA
 	//for clImageFormat.image_channel_data_type	: depending on
 	//		texelInfo.internalGPU_DataType,texelInfo.bitsPerChannel, texelInfo.isNormalizedFlag;
-	//valid values in this framework, see TexelInfo (there are more valid values in OpenCL,
+	//valid values in this framework, see BufferElementInfo (there are more valid values in OpenCL,
 	//but I don't explicitly support them):
 	//	CL_FLOAT		|CL_SIGNED_INT32|CL_UNSIGNED_INT32|--			|--
 	//	CL_HALF_FLOAT	|CL_SIGNED_INT16|CL_UNSIGNED_INT16|CL_UNORM_INT16|CL_SNORM_INT16
@@ -395,7 +416,7 @@ public:
 			const BufferInfo& buffi,
 			cl_GLuint dimensionality,
 			Vector3Dui dimensionExtends,
-			const TexelInfo& texelInfo,
+			//const BufferElementInfo& texelInfo,
 			GLenum textureTarget,
 			bool isDepthTexture = false,
 			bool isMipMapped = false,

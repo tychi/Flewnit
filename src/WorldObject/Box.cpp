@@ -35,6 +35,7 @@ Box::Box(String name, const AmendedTransform& localTransform, const Vector3D& ha
 				POSITION_SEMANTICS,
 				TYPE_VEC4F,
 				24, //because of the normals, the vertices cannot be shared ;(
+				BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false),
 				VERTEX_ATTRIBUTE_BUFFER_TYPE,
 				NO_CONTEXT_TYPE
 		);
@@ -75,6 +76,7 @@ Box::Box(String name, const AmendedTransform& localTransform, const Vector3D& ha
 					INDEX_SEMANTICS,
 					TYPE_UINT32,
 					36,
+					BufferElementInfo(1,GPU_DATA_TYPE_UINT,32,false),
 					VERTEX_INDEX_BUFFER_TYPE,
 					NO_CONTEXT_TYPE
 				)
@@ -170,7 +172,7 @@ Box::Box(String name, const AmendedTransform& localTransform, const Vector3D& ha
 				String("bunnyTex"),
 				DECAL_COLOR_SEMANTICS,
 				Path("./assets/textures/bunny.png"),
-				TexelInfo(4,GPU_DATA_TYPE_UINT,8,true),
+				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
 				true,
 				false,
 				true

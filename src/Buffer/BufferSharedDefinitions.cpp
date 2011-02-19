@@ -15,12 +15,14 @@ namespace Flewnit
 
 BufferInfo::BufferInfo(String name,
 			ContextTypeFlags usageContexts,
-			BufferSemantics bufferSemantics)
+			BufferSemantics bufferSemantics,
+			const BufferElementInfo& elementInfo)
 : name(name),
   usageContexts(usageContexts),
   bufferSemantics(bufferSemantics),
   elementType(TYPE_UNDEF),
   numElements(0),
+  elementInfo(elementInfo),
   glBufferType(NO_GL_BUFFER_TYPE),
   isPingPongBuffer(false),
   mappedToCPUContext(NO_CONTEXT_TYPE),
@@ -34,6 +36,7 @@ BufferInfo::BufferInfo(String name,
 		BufferSemantics bufferSemantics,
 		Type elementType,
 		cl_GLuint numElements,
+		const BufferElementInfo& elementInfo,
 		GLBufferType glBufferType,
 		ContextType mappedToCPUContext)
 	: name(name),
@@ -41,6 +44,7 @@ BufferInfo::BufferInfo(String name,
 	  bufferSemantics(bufferSemantics),
 	  elementType(elementType),
 	  numElements(numElements),
+	  elementInfo(elementInfo),
 	  glBufferType(glBufferType),
 	  isPingPongBuffer(false),
 	  mappedToCPUContext(mappedToCPUContext)
@@ -49,6 +53,7 @@ BufferInfo::BufferInfo(String name,
 }
 
 BufferInfo::BufferInfo(const BufferInfo& rhs)
+: elementInfo(rhs.elementInfo)
 {
 	(*this) = rhs;
 	//in constructor, copy name; we only dont want a name copy in assignment per operator=
@@ -68,6 +73,7 @@ bool BufferInfo::operator==(const BufferInfo& rhs) const
 				usageContexts==rhs.usageContexts &&
 				bufferSemantics==rhs.bufferSemantics &&
 				elementType==rhs.elementType &&
+				elementInfo==rhs.elementInfo &&
 				numElements==rhs.numElements &&
 				glBufferType==rhs.glBufferType &&
 				isPingPongBuffer==rhs.isPingPongBuffer &&
@@ -83,6 +89,7 @@ const BufferInfo& BufferInfo::operator=(const BufferInfo& rhs)
 	usageContexts=rhs.usageContexts;
 	bufferSemantics=rhs.bufferSemantics;
 	elementType=rhs.elementType;
+	elementInfo=rhs.elementInfo;
 	numElements=rhs.numElements;
 	glBufferType=rhs.glBufferType;
 	isPingPongBuffer=rhs.isPingPongBuffer;
@@ -94,57 +101,75 @@ const BufferInfo& BufferInfo::operator=(const BufferInfo& rhs)
 
 //----------------------------------------------------------------
 
-TexelInfo::TexelInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsPerChannel, bool normalizeIntegralValuesFlag)
-: numChannels(numChannels), internalGPU_DataType(internalGPU_DataType),bitsPerChannel(bitsPerChannel), normalizeIntegralValuesFlag(normalizeIntegralValuesFlag)
+BufferElementInfo::BufferElementInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsPerChannel, bool normalizeIntegralValuesFlag)
+: numChannels(numChannels),
+  internalGPU_DataType(internalGPU_DataType),
+  bitsPerChannel(bitsPerChannel),
+  normalizeIntegralValuesFlag(normalizeIntegralValuesFlag),
+  hasNoChanneledElements(false)
 {
 	validate();
 }
 
-TexelInfo::TexelInfo(const TexelInfo& rhs)
+BufferElementInfo::BufferElementInfo(const BufferElementInfo& rhs)
 {
 	*this = rhs;
 	validate();
 }
 
-TexelInfo::TexelInfo()
-: numChannels(0), internalGPU_DataType(GPU_DATA_TYPE_FLOAT),bitsPerChannel(0), normalizeIntegralValuesFlag(false)
-{}
+BufferElementInfo::BufferElementInfo(bool hasNoChanneledElements)
+: numChannels(0),
+  internalGPU_DataType(GPU_DATA_TYPE_FLOAT),
+  bitsPerChannel(0),
+  normalizeIntegralValuesFlag(false),
+  hasNoChanneledElements(hasNoChanneledElements)
+{
+	validate();
+}
 
 
-bool TexelInfo::operator==(const TexelInfo& rhs)const
+bool BufferElementInfo::operator==(const BufferElementInfo& rhs)const
 {
 	return
 		numChannels == rhs.numChannels &&
 		internalGPU_DataType == rhs.internalGPU_DataType &&
 		bitsPerChannel == rhs.bitsPerChannel &&
-		normalizeIntegralValuesFlag == rhs.normalizeIntegralValuesFlag;
+		normalizeIntegralValuesFlag == rhs.normalizeIntegralValuesFlag &&
+		hasNoChanneledElements == rhs.hasNoChanneledElements;
 }
 
-const TexelInfo& TexelInfo::operator=(const TexelInfo& rhs)
+const BufferElementInfo& BufferElementInfo::operator=(const BufferElementInfo& rhs)
 {
 	numChannels = rhs.numChannels;
 	internalGPU_DataType = rhs.internalGPU_DataType;
 	bitsPerChannel = rhs.bitsPerChannel;
 	normalizeIntegralValuesFlag = rhs.normalizeIntegralValuesFlag;
+	hasNoChanneledElements = rhs.hasNoChanneledElements;
 
 	return *this;
 }
 
 //called by constructor to early detect invalid values and permutations, like 8-bit float or 32bit normalized (u)int
-void TexelInfo::validate()const throw (BufferException)
+void BufferElementInfo::validate()const throw (BufferException)
 {
+	if(hasNoChanneledElements)
+	{
+		//nothing to validate, unused
+		return;
+	}
+
 	//check channel number:
 	if(! ( (numChannels == 1) || (numChannels == 2) || (numChannels ==4)  ))
 	{
-		LOG<<ERROR_LOG_LEVEL << "TexelInfo::validate: wrong amount of channels: "<<numChannels<<";\n";
-		throw(BufferException("TexelInfo::validate: numChannels must be 1,2 or 4!"));
+		LOG<<ERROR_LOG_LEVEL << "BufferElementInfo::validate: wrong amount of channels: "<<numChannels<<";\n";
+		throw(BufferException("BufferElementInfo::validate: numChannels must be 1,2 or 4!"));
 	}
 
 	//check bits per channel:
 	if(! ( (bitsPerChannel == 8) || (bitsPerChannel == 16) || (bitsPerChannel ==32)  ))
 	{
-		LOG<<ERROR_LOG_LEVEL << "TexelInfo::validate: bitsPerChannel is not 8,16 or 32, but "<<bitsPerChannel<<";\n";
-		throw(BufferException("TexelInfo::validate: bitsPerChannel must be 8,16 or 32!"));
+		LOG<<ERROR_LOG_LEVEL << "BufferElementInfo::validate: bitsPerChannel is not 8,16 or 32, but "<<bitsPerChannel<<";\n";
+		throw(BufferException("BufferElementInfo::validate: bitsPerChannel must be 8,16 or 32!"));
 	}
 
 	if(internalGPU_DataType == GPU_DATA_TYPE_FLOAT)
@@ -156,7 +181,7 @@ void TexelInfo::validate()const throw (BufferException)
 
 		if(! ( (bitsPerChannel == 16) || (bitsPerChannel ==32)  ))
 		{
-			LOG<<ERROR_LOG_LEVEL << "TexelInfo::validate: float types need 16 or 32 bits per channel and not "<<bitsPerChannel<<";\n";
+			LOG<<ERROR_LOG_LEVEL << "BufferElementInfo::validate: float types need 16 or 32 bits per channel and not "<<bitsPerChannel<<";\n";
 			throw(BufferException("float types need 16 or 32 bits per channel;"));
 		}
 
@@ -164,22 +189,14 @@ void TexelInfo::validate()const throw (BufferException)
 
 	if(normalizeIntegralValuesFlag)
 	{
-		//no check for floating pont anymore, is catched above;
+		//no check for floating point anymore, is catched above;
 
 		//but check that we don't have 32 bit channels
 		if(! ( (bitsPerChannel == 8) || (bitsPerChannel == 16)  ))
 		{
-			LOG<<ERROR_LOG_LEVEL << "TexelInfo::validate: normalized integer types need 8 or 16 bits per channel and not "<<bitsPerChannel<<";\n";
-			throw(BufferException("TexelInfo::validate: normalized integer types need 8 or 16 bits per channel;"));
+			throw(BufferException("BufferElementInfo::validate: normalized integer types need 8 or 16 bits per channel; maybe 32 bit integral values are technically possible, but they don't make sense to me ;("));
 		}
 
-		//TODO
-		if(internalGPU_DataType == GPU_DATA_TYPE_FLOAT)
-		{
-			LOG<<ERROR_LOG_LEVEL << "TexelInfo::validate: only integral values can be normalized;\n";
-			throw(BufferException("TexelInfo::validate: only integral values can be normalized;"));
-
-		}
 	}
 }
 
@@ -230,7 +247,7 @@ TextureInfo::TextureInfo(
 		const BufferInfo& buffi,
 		cl_GLuint dimensionality,
 		Vector3Dui dimensionExtends,
-		const TexelInfo& texelInfo,
+		//const BufferElementInfo& texelInfo,
 		GLenum textureTarget,
 		bool isDepthTexture,
 		bool isMipMapped,
@@ -242,7 +259,7 @@ TextureInfo::TextureInfo(
 :	BufferInfo(buffi),
 		dimensionality(dimensionality),
 		dimensionExtends(dimensionExtends),
-		texelInfo(texelInfo),
+		//elementInfo(texelInfo),
 		textureTarget(textureTarget),
 		isDepthTexture(isDepthTexture),
 		isMipMapped(isMipMapped),
@@ -265,7 +282,7 @@ TextureInfo::TextureInfo(
 //	}
 
 
-	//TexelInfo class checks itself during construction for integrity; so, we can "construct"
+	//BufferElementInfo class checks itself during construction for integrity; so, we can "construct"
 	//our enums without error checking:
 	calculateCLGLImageFormatValues();
 
@@ -273,7 +290,7 @@ TextureInfo::TextureInfo(
 
 bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 {
-	texelInfo.validate();
+	elementInfo.validate();
 
 	glBufferType= NO_GL_BUFFER_TYPE;
 	numElements = dimensionExtends.x * dimensionExtends.y * dimensionExtends.z
@@ -281,16 +298,16 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 
 	if(isDepthTexture)
 	{
-		if( (texelInfo.numChannels != 1 )
+		if( (elementInfo.numChannels != 1 )
 				||
-			(texelInfo.normalizeIntegralValuesFlag)
+			(elementInfo.normalizeIntegralValuesFlag)
 				||
-			(texelInfo.bitsPerChannel != 32 )
+			(elementInfo.bitsPerChannel != 32 )
 				||
-			(texelInfo.internalGPU_DataType != GPU_DATA_TYPE_FLOAT )
+			(elementInfo.internalGPU_DataType != GPU_DATA_TYPE_FLOAT )
 		)
 		{
-			throw(BufferException("TexelInfo is does not indicate a supported depth renderable format!"
+			throw(BufferException("BufferElementInfo is does not indicate a supported depth renderable format!"
 					"Currently, only 32bit float is accepted"));
 		}
 		else
@@ -342,7 +359,7 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 	else //depthtexture
 	{
 		//first, set the most trivial stuff: the number of channels
-			switch(texelInfo.numChannels)
+			switch(elementInfo.numChannels)
 			{
 			case 1:
 				glImageFormat.channelOrder  = GL_RED;
@@ -398,12 +415,12 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 
 			//------------------------------------------------------
 
-			bool normalize =  texelInfo.normalizeIntegralValuesFlag;
+			bool normalize =  elementInfo.normalizeIntegralValuesFlag;
 
-			switch(texelInfo.internalGPU_DataType)
+			switch(elementInfo.internalGPU_DataType)
 			{
 			case GPU_DATA_TYPE_UINT :
-				switch(texelInfo.bitsPerChannel)
+				switch(elementInfo.bitsPerChannel)
 				{
 				case 8:
 					glImageFormat.channelDataType = GL_UNSIGNED_BYTE;
@@ -411,7 +428,7 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 					if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT8;
 					else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT8;
 
-					switch(texelInfo.numChannels)
+					switch(elementInfo.numChannels)
 					{
 					case 1:
 						elementType = TYPE_UINT8;
@@ -438,7 +455,7 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 					if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT16;
 					else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT16;
 
-					switch(texelInfo.numChannels)
+					switch(elementInfo.numChannels)
 					{
 					case 1:
 						elementType = TYPE_UINT16;
@@ -465,7 +482,7 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 
 					clImageFormat.image_channel_data_type = CL_UNSIGNED_INT32;
 
-					switch(texelInfo.numChannels)
+					switch(elementInfo.numChannels)
 					{
 					case 1:
 						elementType = TYPE_UINT32;
@@ -490,14 +507,14 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 				break;
 			//-----------------------------------------------------------------------------------
 			case GPU_DATA_TYPE_INT:
-				switch(texelInfo.bitsPerChannel)
+				switch(elementInfo.bitsPerChannel)
 				{
 				case 8:
 					glImageFormat.channelDataType = GL_BYTE;
 					if(normalize)	clImageFormat.image_channel_data_type = CL_SNORM_INT8;
 					else			clImageFormat.image_channel_data_type = CL_SIGNED_INT8;
 
-					switch(texelInfo.numChannels)
+					switch(elementInfo.numChannels)
 					{
 					case 1:
 						elementType = TYPE_INT8;
@@ -523,7 +540,7 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 					if(normalize)	clImageFormat.image_channel_data_type = CL_SNORM_INT16;
 					else			clImageFormat.image_channel_data_type = CL_SIGNED_INT16;
 
-					switch(texelInfo.numChannels)
+					switch(elementInfo.numChannels)
 					{
 					case 1:
 						elementType = TYPE_INT16;
@@ -549,7 +566,7 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 					glImageFormat.channelDataType = GL_INT;
 					clImageFormat.image_channel_data_type = CL_SIGNED_INT32;
 
-					switch(texelInfo.numChannels)
+					switch(elementInfo.numChannels)
 					{
 					case 1:
 						elementType = TYPE_INT32;
@@ -571,14 +588,14 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 				break;
 			//----------------------------------------------------------------------------------
 			case GPU_DATA_TYPE_FLOAT:
-				switch(texelInfo.bitsPerChannel)
+				switch(elementInfo.bitsPerChannel)
 				{
 				case 16:
 					//no normalization valid here!
 					glImageFormat.channelDataType = GL_HALF_FLOAT;
 					clImageFormat.image_channel_data_type = CL_HALF_FLOAT;
 
-					switch(texelInfo.numChannels)
+					switch(elementInfo.numChannels)
 					{
 					case 1:
 						elementType = TYPE_HALF_FLOAT;
@@ -598,7 +615,7 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 					glImageFormat.channelDataType = GL_FLOAT;
 					clImageFormat.image_channel_data_type = CL_FLOAT;
 
-					switch(texelInfo.numChannels)
+					switch(elementInfo.numChannels)
 					{
 					case 1:
 						elementType = TYPE_FLOAT;
@@ -645,9 +662,9 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 }
 
 TextureInfo::TextureInfo(const TextureInfo& rhs)throw(BufferException)
-//init as the is no default contructor for texelInfo
-: 		BufferInfo(rhs),
-		texelInfo(rhs.texelInfo)
+: 		BufferInfo(rhs)
+		//,
+		//elementInfo(rhs.elementInfo)
 {
 	(*this) = rhs;
 }
@@ -662,7 +679,7 @@ bool TextureInfo::operator==(const TextureInfo& rhs) const
 
 			dimensionality == rhs.dimensionality &&
 			glm::all(glm::equal(dimensionExtends, rhs.dimensionExtends)) &&
-			texelInfo == rhs.texelInfo &&
+			//elementInfo == rhs.elementInfo &&
 			textureTarget == rhs.textureTarget &&
 			textureType == rhs.textureType &&
 
@@ -701,7 +718,7 @@ const TextureInfo& TextureInfo::operator=(const TextureInfo& rhs)
 
 	dimensionality = rhs.dimensionality;
 	dimensionExtends = rhs.dimensionExtends;
-	texelInfo = rhs.texelInfo;
+	//elementInfo = rhs.elementInfo;
 	textureTarget = rhs.textureTarget;
 	textureType = rhs.textureType;
 

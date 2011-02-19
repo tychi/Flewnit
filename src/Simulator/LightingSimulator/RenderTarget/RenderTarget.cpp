@@ -29,7 +29,7 @@ RenderTarget::RenderTarget(
 		//the texture type of which will be the requested created/stored color/depth textures
 		TextureType textureType,
 		DepthBufferFlags dbf,
-		const TexelInfo& defaultTexelLayout,
+		const BufferElementInfo& defaultTexelLayout,
 		int numMultisamples,
 		int numArrayLayers
 )
@@ -590,7 +590,7 @@ void RenderTarget::requestCreateAndStoreColorTexture(BufferSemantics which)throw
 		return;
 	}
 
-	TexelInfo texeli(mDefaultTexelLayout);
+	BufferElementInfo texeli(mDefaultTexelLayout);
 
 	switch(which)
 	{

@@ -14,7 +14,7 @@
 namespace Flewnit
 {
 Texture2D::Texture2D(String name, BufferSemantics bufferSemantics,
-		int width, int height, const TexelInfo& texeli,
+		int width, int height, const BufferElementInfo& texeli,
 		bool allocHostMemory, bool clInterOp,
 		bool makeRectangleTex, const void* data,  bool genMipmaps)
 :
@@ -27,11 +27,12 @@ Texture	(
 					| OPEN_GL_CONTEXT_TYPE_FLAG
 					| (clInterOp ? OPEN_CL_CONTEXT_TYPE_FLAG : NO_CONTEXT_TYPE_FLAG )
 			),
-			bufferSemantics
+			bufferSemantics,
+			texeli
 		),
 		2,
 		Vector3Dui(width,height,1),
-		texeli,
+		//texeli,
 		makeRectangleTex ? GL_TEXTURE_RECTANGLE : GL_TEXTURE_2D,
 		false,
 		makeRectangleTex ? false : genMipmaps,
@@ -67,11 +68,12 @@ Texture2D:: Texture2D(String name,
 						| OPEN_GL_CONTEXT_TYPE_FLAG
 						| (clInterOp ? OPEN_CL_CONTEXT_TYPE_FLAG : NO_CONTEXT_TYPE_FLAG )
 				),
-				SHADOW_MAP_SEMANTICS
+				SHADOW_MAP_SEMANTICS,
+				BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false)
 			),
 			2,
 			Vector3Dui(width,height,1),
-			TexelInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
+			//BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
 			rectangle ? GL_TEXTURE_RECTANGLE :GL_TEXTURE_2D,
 			true, //yes, is depth tex
 			false,
@@ -220,7 +222,7 @@ void Texture2D::writeGL(const void* data)throw(BufferException)
 //-----------------------------------------------------------------------
 
 Texture2DCube::Texture2DCube(String name,
-		int quadraticSize, const TexelInfo& texeli,
+		int quadraticSize, const BufferElementInfo& texeli,
 		 bool allocHostMemory,
 		//an array containing all six images in the following order:
 		// +x,-x,+y,-y,+z,-z
@@ -235,11 +237,12 @@ Texture2DCube::Texture2DCube(String name,
 						(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
 						| OPEN_GL_CONTEXT_TYPE_FLAG
 				),
-				ENVMAP_SEMANTICS
+				ENVMAP_SEMANTICS,
+				texeli
 			),
 			2,
 			Vector3Dui(quadraticSize,quadraticSize,1),
-			texeli,
+			//texeli,
 			GL_TEXTURE_CUBE_MAP,
 			false, //no depth tex
 			genMipmaps,
@@ -271,11 +274,12 @@ Texture2DCube::Texture2DCube(String name,	int quadraticSize, bool allocHostMemor
 						(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
 						| OPEN_GL_CONTEXT_TYPE_FLAG
 				),
-				SHADOW_MAP_SEMANTICS
+				SHADOW_MAP_SEMANTICS,
+				BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false)
 			),
 			2,
 			Vector3Dui(quadraticSize,quadraticSize,1),
-			TexelInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
+			//BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
 			GL_TEXTURE_CUBE_MAP,
 			true, //yes, is depth tex
 			false, //no mipmap for depth textures
@@ -537,7 +541,7 @@ void Texture2DDepth::allocGL()throw(BufferException)
 //--------------------------------------------------------------------------
 
 Texture2DArray::Texture2DArray(String name, BufferSemantics bufferSemantics,
-	int width, int height, int numLayers,  const TexelInfo& texeli,
+	int width, int height, int numLayers,  const BufferElementInfo& texeli,
 	bool allocHostMemory, const void* data,  bool genMipmaps)
 :
 Texture3D	(
@@ -548,11 +552,12 @@ Texture3D	(
 					(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
 					| OPEN_GL_CONTEXT_TYPE_FLAG
 			),
-			bufferSemantics
+			bufferSemantics,
+			texeli
 		),
 		3,
 		Vector3Dui(width,height,1),
-		texeli,
+		//texeli,
 		GL_TEXTURE_2D_ARRAY,
 		false, //not depth tex
 		genMipmaps,
@@ -581,11 +586,12 @@ Texture2DArray::Texture2DArray(String name,
 						(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
 						| OPEN_GL_CONTEXT_TYPE_FLAG
 				),
-				SHADOW_MAP_SEMANTICS
+				SHADOW_MAP_SEMANTICS,
+				BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false)
 			),
 			2,
 			Vector3Dui(width,height,1),
-			TexelInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
+			//BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
 			GL_TEXTURE_2D_ARRAY,
 			true, //is depth tex
 			false,
@@ -715,18 +721,19 @@ void Texture2DDepthArray::allocGL()throw(BufferException)
 
 //------------------------------------------------------------------------------
 Texture2DMultiSample::Texture2DMultiSample(String name, BufferSemantics bufferSemantics,
-		int width, int height, int numMultiSamples,  const TexelInfo& texeli)
+		int width, int height, int numMultiSamples,  const BufferElementInfo& texeli)
 : Texture
   (
 	TextureInfo(
 		BufferInfo(
 			name,
 			ContextTypeFlags(OPEN_GL_CONTEXT_TYPE_FLAG	),
-			bufferSemantics
+			bufferSemantics,
+			texeli
 		),
 		2,
 		Vector3Dui(width,height,1),
-		texeli,
+		//texeli,
 		GL_TEXTURE_2D_MULTISAMPLE,
 		false, //no depth tex
 		false,
@@ -775,18 +782,19 @@ void Texture2DMultiSample::allocGL()throw(BufferException)
 
 //------------------------------------------------------------------------------
 Texture2DArrayMultiSample::Texture2DArrayMultiSample(String name, BufferSemantics bufferSemantics,
-		int width, int height, int numLayers, int numMultiSamples,  const TexelInfo& texeli)
+		int width, int height, int numLayers, int numMultiSamples,  const BufferElementInfo& texeli)
 : Texture
   (
 	TextureInfo(
 		BufferInfo(
 			name,
 			ContextTypeFlags(OPEN_GL_CONTEXT_TYPE_FLAG	),
-			bufferSemantics
+			bufferSemantics,
+			texeli
 		),
 		2,
 		Vector3Dui(width,height,1),
-		texeli,
+		//texeli,
 		GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
 		false, //no depth tex
 		false,
@@ -822,7 +830,7 @@ bool Texture2DArrayMultiSample::operator==(const BufferInterface& rhs) const
 void Texture2DArrayMultiSample::allocGL()throw(BufferException)
 {
 	glTexImage3DMultisample(
-			GL_TEXTURE_2D_MULTISAMPLE,
+			mTextureInfoCastPtr->textureTarget, //GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
 			mTextureInfoCastPtr->numMultiSamples,
 			mTextureInfoCastPtr->glImageFormat.desiredInternalFormat,
 			mTextureInfoCastPtr->dimensionExtends.x,

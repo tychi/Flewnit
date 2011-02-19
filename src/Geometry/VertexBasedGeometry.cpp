@@ -53,38 +53,73 @@ void VertexBasedGeometry::setAttributeBuffer(BufferInterface* buffi) throw(Buffe
 
 	buffi->bind(OPEN_GL_CONTEXT_TYPE);
 
-	GLenum elementTypeGL;
-	if(buffi->getBufferInfo().elementType == TYPE_VEC4F)
-	{
-		elementTypeGL = GL_FLOAT;
 
+	//Convention for the BufferElementInfo of a Buffer designated to be an attribute buffer:
+		//if internal GPU data type is int or uint, it will always be handled as integer attributes,
+		//unless the normalization flag is set; Note especcially that non-normalized int-to-float
+		//conversions aren't supported this way; This is on purpose, as
+		//	1.: I don't see any advantage in reading unnormalized integer values and convert
+		//		them to float;
+		//	2.: Control flow and usage flags to be tracked are less complex;
+		//if one wants save memory, then the GL_HALF data type shall be used
+		//(though I didn't test it in the glm library)
+	GLenum elementTypeGL= GL_FLOAT;
+	if(buffi->getBufferInfo().elementInfo.internalGPU_DataType != GPU_DATA_TYPE_FLOAT){
+		if(buffi->getBufferInfo().elementInfo.internalGPU_DataType == GPU_DATA_TYPE_UINT){
+			switch(buffi->getBufferInfo().elementInfo.bitsPerChannel)
+			{
+			case 8:  elementTypeGL= GL_UNSIGNED_BYTE; 	break;
+			case 16: elementTypeGL= GL_UNSIGNED_SHORT;	break;
+			case 32: elementTypeGL= GL_UNSIGNED_INT;	break;
+			default: throw(BufferException("bad bits per channel")); break;
+			}
+		}else{ //must be signed int
+			switch(buffi->getBufferInfo().elementInfo.bitsPerChannel)
+			{
+			case 8:  elementTypeGL= GL_BYTE; 	break;
+			case 16: elementTypeGL= GL_SHORT;	break;
+			case 32: elementTypeGL= GL_INT;		break;
+			default: throw(BufferException("bad bits per channel")); break;
+			}
+		}
+	} else //end "not float"
+	{
+		switch(buffi->getBufferInfo().elementInfo.bitsPerChannel)
+		{
+		case 8:  throw(BufferException("there is no 8 bit floating point type"));  	break;
+		case 16: elementTypeGL= GL_HALF_FLOAT;	break;
+		case 32: elementTypeGL= GL_FLOAT;		break;
+		case 64: throw(BufferException("double precision floating point not supported (yet);"));		break;
+		default: throw(BufferException("bad bits per channel")); break;
+		}
+	}
+
+
+
+	if(
+		(buffi->getBufferInfo().elementInfo.internalGPU_DataType==GPU_DATA_TYPE_FLOAT)
+		||
+		(buffi->getBufferInfo().elementInfo.normalizeIntegralValuesFlag)
+	)
+	{
 		GUARD(
 			glVertexAttribPointer(
 				static_cast<GLuint> (buffi->getBufferInfo().bufferSemantics),
-				4, //design error ;( bad hardcode
-				elementTypeGL, //design error ;( bad hardcode
-				false, //design error ;( bad hardcode
+				buffi->getBufferInfo().elementInfo.numChannels,
+				elementTypeGL,
+				buffi->getBufferInfo().elementInfo.normalizeIntegralValuesFlag,
 				0,
 				0
 			)
 		);
 	}
-	else
+	else //"real" integer stuff, both concerning storage and lookup
 	{
-		if(buffi->getBufferInfo().elementType == TYPE_VEC4UI32)
-		{
-			elementTypeGL = GL_INT;
-		}
-		else
-		{
-			elementTypeGL = GL_UNSIGNED_INT;
-		}
-
 		GUARD(
 			glVertexAttribIPointer(
 				static_cast<GLuint> (buffi->getBufferInfo().bufferSemantics),
-				4, //design error ;( bad hardcode
-				elementTypeGL, //design error ;( bad hardcode
+				buffi->getBufferInfo().elementInfo.numChannels,
+				elementTypeGL,
 				0,
 				0
 			)

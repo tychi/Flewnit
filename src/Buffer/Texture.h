@@ -181,7 +181,7 @@ class Texture1D: public Texture
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	explicit Texture1D(String name, BufferSemantics bufferSemantics,
-			int width, const TexelInfo& texeli,
+			int width, const BufferElementInfo& texeli,
 			 bool allocHostMemory, const void* data =0,  bool genMipmaps = false);
 
 	virtual ~Texture1D();
@@ -212,7 +212,7 @@ class Texture2D: public Texture
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	explicit Texture2D(String name, BufferSemantics bufferSemantics,
-			int width, int height, const TexelInfo& texeli,
+			int width, int height, const BufferElementInfo& texeli,
 			bool allocHostMemory, bool clInterOp,
 			bool makeRectangleTex=false, const void* data =0,  bool genMipmaps = false);
 
@@ -282,7 +282,7 @@ class Texture3D: public Texture
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	explicit Texture3D(String name, BufferSemantics bufferSemantics,
-			int width, int height, int depth, const TexelInfo& texeli,
+			int width, int height, int depth, const BufferElementInfo& texeli,
 			 bool allocHostMemory, bool clInterOp, const void* data =0,  bool genMipmaps = false);
 	//explicit Texture3D(Path fileName, bool clInterOp, bool genMipmaps = false);
 	virtual ~Texture3D();
@@ -324,7 +324,7 @@ class Texture2DCube: public Texture
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	explicit Texture2DCube(String name,
-			int quadraticSize, const TexelInfo& texeli,
+			int quadraticSize, const BufferElementInfo& texeli,
 			 bool allocHostMemory,
 			//an array containing all six images in the following order:
 			// +x,-x,+y,-y,+z,-z
@@ -398,7 +398,7 @@ class Texture1DArray: public Texture2D
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	explicit Texture1DArray(String name, BufferSemantics bufferSemantics,
-			int width, int numLayers,  const TexelInfo& texeli,
+			int width, int numLayers,  const BufferElementInfo& texeli,
 			 bool allocHostMemory, const void* data =0,  bool genMipmaps = false);
 
 	virtual ~Texture1DArray();
@@ -425,7 +425,7 @@ class Texture2DArray: public Texture3D
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	explicit Texture2DArray(String name, BufferSemantics bufferSemantics,
-			int width, int height, int numLayers,  const TexelInfo& texeli,
+			int width, int height, int numLayers,  const BufferElementInfo& texeli,
 			 bool allocHostMemory, const void* data =0,  bool genMipmaps = false);
 
 	virtual ~Texture2DArray();
@@ -489,7 +489,7 @@ class Texture2DMultiSample
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	explicit Texture2DMultiSample(String name, BufferSemantics bufferSemantics,
-			int width, int height, int numMultiSamples,  const TexelInfo& texeli);
+			int width, int height, int numMultiSamples,  const BufferElementInfo& texeli);
 
 	virtual ~Texture2DMultiSample();
 
@@ -539,7 +539,7 @@ class Texture2DArrayMultiSample: public Texture
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	explicit Texture2DArrayMultiSample(String name, BufferSemantics bufferSemantics,
-			int width, int height, int numLayers, int numMultiSamples,  const TexelInfo& texeli);
+			int width, int height, int numLayers, int numMultiSamples,  const BufferElementInfo& texeli);
 
 	virtual ~Texture2DArrayMultiSample();
 

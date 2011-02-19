@@ -98,7 +98,7 @@ void  addAlphaChannelToVec3FImage(const Vector3D* vec3Image, Vector4D* newVec4Im
 }
 
 Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path fileName,
-		const TexelInfo& texelPreferredLayout,
+		const BufferElementInfo& texelPreferredLayout,
 		bool allocHostMemory, bool shareWithOpenCL,  bool genMipmaps
 ) throw(BufferException)
 {
@@ -118,7 +118,7 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 	 //as it's only a temorary buffer
 	 void* buffer = malloc( sizeof(Vector4D) * image->getWidth()*image->getHeight());
 
-	 TexelInfo newTexeli(texelPreferredLayout);
+	 BufferElementInfo newTexeli(texelPreferredLayout);
 	 //fill buffer according to a rater sophisticated conversion:
 	 transformPixelData(bufferSemantics,buffer,newTexeli,image);
 
@@ -174,7 +174,7 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 
 Texture2DCube* Loader::loadCubeTexture(
 		String name,  BufferSemantics bufferSemantics, Path fileName, String fileEndingWithoutDot,
-					TexelInfo texelPreferredLayout,
+					BufferElementInfo texelPreferredLayout,
 					bool allocHostMemory,  bool genMipmaps
 )throw(BufferException)//may be changed by the loading routine!
 {
@@ -264,7 +264,7 @@ Texture2DCube* Loader::loadCubeTexture(
 
 void Loader::transformPixelData(BufferSemantics bufferSemantics,
 		//inout buffers
-		void* buffer, TexelInfo& texelLayout, fipImage* image)
+		void* buffer, BufferElementInfo& texelLayout, fipImage* image)
 {
 	texelLayout.validate();
 
@@ -291,12 +291,12 @@ void Loader::transformPixelData(BufferSemantics bufferSemantics,
 						 << "This is experimental; in case of bugs, check  Loader::loadTexture()";
 				  //normalmapping adoption :)
 				  shiftUnsignedByteToSignedByteForNormalMapping(image->accessPixels(), image->getImageSize());
-				  texelLayout = TexelInfo(4,GPU_DATA_TYPE_INT,8,true);
+				  texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_INT,8,true);
 			  }
 			  else
 			  {
 				  //override to default as i don't have time for sophisticated adoption atm
-				  texelLayout = TexelInfo(4,GPU_DATA_TYPE_UINT,8,true);
+				  texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true);
 			  }
 
 			  //copy altered image contents to the designated buffer
@@ -307,7 +307,7 @@ void Loader::transformPixelData(BufferSemantics bufferSemantics,
 		  }
 		  break;
 	  case FIT_RGBAF:
-		  texelLayout = TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
+		  texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
 
 		  //copy altered image contents to the designated buffer
 		  memcpy( buffer,
@@ -327,7 +327,7 @@ void Loader::transformPixelData(BufferSemantics bufferSemantics,
 		  			reinterpret_cast<Vector4D*> (buffer),
 		  			image->getWidth()*image->getHeight());
 
-		  	  texelLayout = TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
+		  	  texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
 
 			  //copy altered image contents to the designated buffer
 			  memcpy( buffer,

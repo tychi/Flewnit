@@ -29,6 +29,15 @@ public:
 	//the semantics of the buffer is readable from its bufferInfo
 	//non-pure virtual, as it must be overridden by VertexBasedGeometry to register
 	//to the VBO
+	//Convention for the BufferElementInfo of a Buffer designated to be an attribute buffer:
+	//if internal GPU data type is int or uint, it will always be handled as integer attributes,
+	//unless the normalization flag is set; Note especcially that non-normalized int-to-float
+	//conversions aren't supported this way; This is on purpose, as
+	//	1.: I don't see any advantage in reading unnormalized integer values and convert
+	//		them to float;
+	//	2.: Control flow and usage flags to be tracked are less complex;
+	//if one wants save memory, then the GL_HALF data type shall be used
+	//(though I didn't test it in the glm library)
 	virtual void setAttributeBuffer(BufferInterface* buffi) throw(BufferException);
 
 	void setIndexBuffer(BufferInterface* buffi) throw(BufferException);

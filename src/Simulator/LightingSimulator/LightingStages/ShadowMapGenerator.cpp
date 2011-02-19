@@ -73,7 +73,7 @@ void ShadowMapGenerator::initStage()throw(SimulatorException)
 				Vector2Dui(mShadowMapResolution,mShadowMapResolution),
 				texType,
 				DEPTH_TEXTURE,
-				TexelInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
+				BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
 				1,
 				ShaderManager::getInstance().getGlobalShaderFeatures().numMaxShadowCasters
 				);

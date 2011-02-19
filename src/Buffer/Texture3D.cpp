@@ -12,7 +12,7 @@
 namespace Flewnit
 {
 Texture3D::Texture3D(String name, BufferSemantics bufferSemantics,
-		int width, int height, int depth, const TexelInfo& texeli,
+		int width, int height, int depth, const BufferElementInfo& texeli,
 		bool allocHostMemory, bool clInterOp, const void* data,  bool genMipmaps)
 
 :
@@ -25,11 +25,12 @@ Texture	(
 					| OPEN_GL_CONTEXT_TYPE_FLAG
 					| (clInterOp ? OPEN_CL_CONTEXT_TYPE_FLAG : NO_CONTEXT_TYPE_FLAG )
 			),
-			bufferSemantics
+			bufferSemantics,
+			texeli
 		),
 		3,
 		Vector3Dui(width,height,depth),
-		texeli,
+		//texeli,
 		GL_TEXTURE_3D,
 		false, //no depth tex
 		genMipmaps,

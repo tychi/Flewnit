@@ -59,7 +59,7 @@ public:
 			//the texture type of which will be the requested created/stored color/depth textures
 			TextureType textureType,
 			DepthBufferFlags dbf = DEPTH_RENDER_BUFFER,
-			const TexelInfo& defaultTexelLayout = TexelInfo(4,GPU_DATA_TYPE_FLOAT,32,false),
+			const BufferElementInfo& defaultTexelLayout = BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false),
 			int numMultisamples = 1,
 			int numArrayLayers = 1
 	);
@@ -174,7 +174,7 @@ private:
 	GLuint mFBO;
 	TextureType mTextureType;
 	Vector2Dui mFrameBufferResolution;
-	TexelInfo mDefaultTexelLayout;
+	BufferElementInfo mDefaultTexelLayout;
 	int mNumArrayLayers;
 	int mNumMultisamples;
 	//for copying between textures, one can use glBlitFrameBuffers();

@@ -312,7 +312,7 @@ void LightingSimulator::testStuff()
 //
 //	Texture2D* testTex = new Texture2D("FUtestTex", CUSTOM_SEMANTICS,
 //			WindowManager::getInstance().getWindowResolution().x,
-//			WindowManager::getInstance().getWindowResolution().y, TexelInfo(4,
+//			WindowManager::getInstance().getWindowResolution().y, BufferElementInfo(4,
 //					GPU_DATA_TYPE_FLOAT, 32, false), true,
 //			//clinterop
 //			true, false, myTestData, false);

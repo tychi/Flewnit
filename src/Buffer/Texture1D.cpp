@@ -12,7 +12,7 @@ namespace Flewnit
 {
 
 Texture1D::Texture1D(String name, BufferSemantics bufferSemantics,
-		int width, const TexelInfo& texeli,
+		int width, const BufferElementInfo& texeli,
 		bool allocHostMemory, const void* data,  bool genMipmaps)
 :
 Texture	(
@@ -20,11 +20,12 @@ Texture	(
 		BufferInfo(
 			name,
 			ContextTypeFlags( (allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG ) | OPEN_GL_CONTEXT_TYPE_FLAG ),
-			bufferSemantics
+			bufferSemantics,
+			texeli
 		),
 		1,
 		Vector3Dui(width,1,1),
-		texeli,
+		//texeli,
 		GL_TEXTURE_1D,
 		false, //no depth tex
 		genMipmaps,
@@ -59,7 +60,7 @@ Texture	(
 //				//default invalid
 //				Vector3Dui(0,0,0),
 //				//default invalid
-//				TexelInfo(),
+//				BufferElementInfo(),
 //				GL_TEXTURE_1D,
 //				genMipmaps,
 //				false,
@@ -154,7 +155,7 @@ void Texture1D::writeGL(const void* data)throw(BufferException)
 //------------------------------------------------------------------------------------
 
 Texture1DArray::Texture1DArray(String name, BufferSemantics bufferSemantics,
-		int width, int numLayers,  const TexelInfo& texeli,
+		int width, int numLayers,  const BufferElementInfo& texeli,
 		 bool allocHostMemory, const void* data,  bool genMipmaps)
 :
 	Texture2D	(
@@ -165,11 +166,12 @@ Texture1DArray::Texture1DArray(String name, BufferSemantics bufferSemantics,
 						(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
 						| OPEN_GL_CONTEXT_TYPE_FLAG
 				),
-				bufferSemantics
+				bufferSemantics,
+				texeli
 			),
 			1,
 			Vector3Dui(width,1,1),
-			texeli,
+			//texeli,
 			GL_TEXTURE_1D_ARRAY,
 			false,
 			genMipmaps,

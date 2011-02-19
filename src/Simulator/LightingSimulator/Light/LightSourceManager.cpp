@@ -47,6 +47,7 @@ LightSourceManager::LightSourceManager()
 				ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources *
 					//number of floats inside a LightSourceShaderStruct
 					sizeof(LightSourceShaderStruct) / BufferHelper::elementSize(TYPE_FLOAT),
+				BufferElementInfo(true),
 				UNIFORM_BUFFER_TYPE,
 				NO_CONTEXT_TYPE
 			),
@@ -69,6 +70,7 @@ LightSourceManager::LightSourceManager()
 				TRANSFORMATION_MATRICES_SEMANTICS,
 				TYPE_MATRIX44F,
 				ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources,
+				BufferElementInfo(true),
 				UNIFORM_BUFFER_TYPE,
 				NO_CONTEXT_TYPE
 			),
