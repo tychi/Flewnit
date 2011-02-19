@@ -94,6 +94,12 @@ public:
 	inline const TextureInfo& getTextureInfo()const{return *mTextureInfoCastPtr;}
 	//shortcut acessor:
 	inline TextureType getTextureType()const{return mTextureInfoCastPtr->textureType;}
+
+
+	//called initially by he concrete constructors (in super constructor, the relevant CL/GL state
+	//is not available, hence the boiler plate calls);
+	//for special purposes, use a self-created sampler object or set the gl params unwrapped
+	virtual void setupDefaultSamplerParameters()=0;
 protected:
 
 	//this is not a "new" container member for mBufferInfo, but a pointer to mBuffferInfo, so that on does't have to cast every time ;(
@@ -157,7 +163,7 @@ protected:
 	virtual void freeCL()throw(BufferException){}
 
 	//internal function to set the compare func etc;
-	void setupDepthTextureParameters();
+	//void setupDepthTextureParameters();
 
 };
 
@@ -179,8 +185,10 @@ public:
 			 bool allocHostMemory, const void* data =0,  bool genMipmaps = false);
 
 	virtual ~Texture1D();
-public:
+
 	virtual bool operator==(const BufferInterface& rhs) const;
+
+	virtual void setupDefaultSamplerParameters();
 protected:
 
 #include "TextureNonCLInteropImplementations.h"
@@ -209,8 +217,10 @@ public:
 			bool makeRectangleTex=false, const void* data =0,  bool genMipmaps = false);
 
 	virtual ~Texture2D();
-public:
+
 	virtual bool operator==(const BufferInterface& rhs) const;
+
+	virtual void setupDefaultSamplerParameters();
 protected:
 
 
@@ -245,6 +255,8 @@ public:
 				bool allocHostMemory, bool clInterOp);
 	virtual ~Texture2DDepth();
 
+	virtual void setupDefaultSamplerParameters();
+
 	virtual bool operator==(const BufferInterface& rhs) const;
 
 	//override to set compare func etc; Probably it's possible to be  bypassed via sampler objects, but for now..
@@ -274,7 +286,9 @@ public:
 			 bool allocHostMemory, bool clInterOp, const void* data =0,  bool genMipmaps = false);
 	//explicit Texture3D(Path fileName, bool clInterOp, bool genMipmaps = false);
 	virtual ~Texture3D();
-public:
+
+	virtual void setupDefaultSamplerParameters();
+
 	virtual bool operator==(const BufferInterface& rhs) const;
 protected:
 //#	include "BufferVirtualSignatures.h"
@@ -318,8 +332,10 @@ public:
 			bool genMipmaps = false);
 
 	virtual ~Texture2DCube();
-public:
+
 	virtual bool operator==(const BufferInterface& rhs) const;
+
+	virtual void setupDefaultSamplerParameters();
 protected:
 
 
@@ -359,6 +375,8 @@ public:
 	virtual ~Texture2DDepthCube();
 
 	virtual bool operator==(const BufferInterface& rhs) const;
+
+	virtual void setupDefaultSamplerParameters();
 
 	//override to set compare func etc; Probably it's possible to be  bypassed via sampler objects, but for now..
 	virtual void allocGL()throw(BufferException);
@@ -411,7 +429,9 @@ public:
 			 bool allocHostMemory, const void* data =0,  bool genMipmaps = false);
 
 	virtual ~Texture2DArray();
-public:
+
+	virtual void setupDefaultSamplerParameters();
+
 	virtual bool operator==(const BufferInterface& rhs) const;
 protected:
 
@@ -440,6 +460,8 @@ public:
 	virtual ~Texture2DDepthArray();
 
 	virtual bool operator==(const BufferInterface& rhs) const;
+
+	virtual void setupDefaultSamplerParameters();
 
 	//override to set compare func etc; Probably it's possible to be  bypassed via sampler objects, but for now..
 	virtual void allocGL()throw(BufferException);
@@ -470,7 +492,9 @@ public:
 			int width, int height, int numMultiSamples,  const TexelInfo& texeli);
 
 	virtual ~Texture2DMultiSample();
-public:
+
+	virtual void setupDefaultSamplerParameters();
+
 	virtual bool operator==(const BufferInterface& rhs) const;
 
 protected:
@@ -518,7 +542,9 @@ public:
 			int width, int height, int numLayers, int numMultiSamples,  const TexelInfo& texeli);
 
 	virtual ~Texture2DArrayMultiSample();
-public:
+
+	virtual void setupDefaultSamplerParameters();
+
 	virtual bool operator==(const BufferInterface& rhs) const;
 
 protected:

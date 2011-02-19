@@ -48,6 +48,8 @@ Texture	(
 	{
 		setData(data,mBufferInfo->usageContexts);
 	}
+
+	setupDefaultSamplerParameters();
 }
 
 //protected constructor to be called by Texture2DDepth:
@@ -103,6 +105,8 @@ Texture2D::Texture2D(const TextureInfo& texi, const void* data)
 	{
 		setData(data,mBufferInfo->usageContexts);
 	}
+
+	setupDefaultSamplerParameters();
 }
 
 
@@ -110,6 +114,49 @@ Texture2D::~Texture2D()
 {
 	//nothing to do, base classes do the rest ;)
 }
+
+
+void Texture2D::setupDefaultSamplerParameters()
+{
+	GUARD(bindGL());
+
+	if(! mTextureInfoCastPtr->isRectangleTex)
+	{
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_S,
+				GL_REPEAT));
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_T,
+				GL_REPEAT));
+	}
+	else
+	{
+		//to border instead ogf edge in order to have a defined value outside the domain (usually black)
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_S,
+				GL_CLAMP_TO_BORDER));
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_T,
+				GL_CLAMP_TO_BORDER));
+	}
+
+
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_R,
+			GL_CLAMP_TO_EDGE));
+
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MAG_FILTER,
+			GL_LINEAR));
+	if(mTextureInfoCastPtr->isMipMapped)
+	{
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER,
+			GL_LINEAR_MIPMAP_LINEAR));
+	}
+	else
+	{
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER,
+			GL_LINEAR));
+	}
+
+	GUARD(glTexParameterfv(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_BORDER_COLOR,
+			& Vector4D(0.0f,0.0f,0.0f,0.0f)[0]));
+}
+
 
 bool Texture2D::operator==(const BufferInterface& rhs) const
 {
@@ -209,6 +256,8 @@ Texture2DCube::Texture2DCube(String name,
 	{
 		setData(data,mBufferInfo->usageContexts);
 	}
+
+	setupDefaultSamplerParameters();
 }
 
 //protected constructor to be called by Texture2DDepth:
@@ -256,6 +305,40 @@ Texture2DCube::~Texture2DCube()
 {
 	//do nothing
 }
+
+
+void Texture2DCube::setupDefaultSamplerParameters()
+{
+	GUARD(bindGL());
+
+	//TODO try seamless cubemapping stuff
+
+	//don't know any useful domain setup for cubemaps... but i fear more problems when no
+	//params are set than when dumb params are set ;(
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_S,
+			GL_CLAMP_TO_BORDER));
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_T,
+			GL_CLAMP_TO_BORDER));
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_R,
+			GL_CLAMP_TO_EDGE));
+
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MAG_FILTER,
+			GL_LINEAR));
+	if(mTextureInfoCastPtr->isMipMapped)
+	{
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER,
+			GL_LINEAR_MIPMAP_LINEAR));
+	}
+	else
+	{
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER,
+			GL_LINEAR));
+	}
+
+	GUARD(glTexParameterfv(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_BORDER_COLOR,
+			& Vector4D(0.0f,0.0f,0.0f,0.0f)[0]));
+}
+
 
 bool Texture2DCube::operator==(const BufferInterface& rhs) const
 {
@@ -346,11 +429,36 @@ Texture2DDepthCube::Texture2DDepthCube(String name,
 : Texture2DCube(name, quadraticSize, allocHostMemory)
 {
 	LOG<<INFO_LOG_LEVEL << "Creating 2D CUBE DEPTH texture named "<< name <<";\n";
+
+	setupDefaultSamplerParameters();
 }
 
 Texture2DDepthCube::~Texture2DDepthCube()
 {
 	//do nothing, base classes do the rest ;(
+}
+
+
+void Texture2DDepthCube::setupDefaultSamplerParameters()
+{
+	GUARD(bindGL());
+	//TODO try seamless cubemapping stuff
+
+	//TODO handle this more professionally via sampler objects within material/shader...
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE));
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL));
+
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+
+    float fourZeros[] = {0.0f,0.0f,0.0f,0.0f};
+    GUARD(glTexParameterfv(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_BORDER_COLOR, fourZeros));
+    //TODO try 	& Vector4D(0.0f,0.0f,0.0f,0.0f)[0];
+
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    assert("depth textures have no mip maps" && ! mTextureInfoCastPtr->isMipMapped);
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 }
 
 bool Texture2DDepthCube::operator==(const BufferInterface& rhs) const
@@ -365,7 +473,7 @@ bool Texture2DDepthCube::operator==(const BufferInterface& rhs) const
 void Texture2DDepthCube::allocGL()throw(BufferException)
 {
 	Texture2DCube::allocGL();
-	setupDepthTextureParameters();
+	//setupDepthTextureParameters();
 }
 //-----------------------------------------------------------------------
 
@@ -378,11 +486,35 @@ Texture2DDepth::Texture2DDepth(String name,
 : Texture2D(name,width,height,rectangle, allocHostMemory,clInterOp)
 {
 	LOG<<INFO_LOG_LEVEL << "Creating 2D depth texture named "<< name <<";\n";
+
+	setupDefaultSamplerParameters();
 }
 
 Texture2DDepth::~Texture2DDepth()
 {
 	//nothing to do, base classes do the rest ;)
+}
+
+void Texture2DDepth::setupDefaultSamplerParameters()
+{
+	GUARD(bindGL());
+	//TODO try seamless cubemapping stuff
+
+	//TODO handle this more professionally via sampler objects within material/shader...
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE));
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL));
+
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+
+    float fourZeros[] = {0.0f,0.0f,0.0f,0.0f};
+    GUARD(glTexParameterfv(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_BORDER_COLOR, fourZeros));
+    //TODO try 	& Vector4D(0.0f,0.0f,0.0f,0.0f)[0];
+
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    assert("depth textures have no mip maps" && ! mTextureInfoCastPtr->isMipMapped);
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 }
 
 bool Texture2DDepth::operator==(const BufferInterface& rhs) const
@@ -396,7 +528,7 @@ bool Texture2DDepth::operator==(const BufferInterface& rhs) const
 void Texture2DDepth::allocGL()throw(BufferException)
 {
 	Texture2D::allocGL();
-	setupDepthTextureParameters();
+	//setupDepthTextureParameters();
 }
 //------------------------------------------------------------------------
 
@@ -432,7 +564,7 @@ Texture3D	(
 	data
 )
 {
-
+	setupDefaultSamplerParameters();
 }
 
 
@@ -478,6 +610,36 @@ Texture2DArray::~Texture2DArray()
 	//do nothing
 }
 
+
+void Texture2DArray::setupDefaultSamplerParameters()
+{
+	GUARD(bindGL());
+
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_S,
+			GL_REPEAT));
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_T,
+			GL_REPEAT));
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_R,
+			GL_CLAMP_TO_EDGE));
+
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MAG_FILTER,
+			GL_LINEAR));
+
+	if(mTextureInfoCastPtr->isMipMapped)
+	{
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER,
+			GL_LINEAR_MIPMAP_LINEAR));
+	}
+	else
+	{
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER,
+			GL_LINEAR));
+	}
+
+	GUARD(glTexParameterfv(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_BORDER_COLOR,
+			& Vector4D(0.0f,0.0f,0.0f,0.0f)[0]));
+}
+
 bool Texture2DArray::operator==(const BufferInterface& rhs) const
 {
 	const Texture2DArray* rhsTexPtr = dynamic_cast<const Texture2DArray*>(&rhs);
@@ -497,12 +659,39 @@ Texture2DDepthArray::Texture2DDepthArray(String name,
 		 allocHostMemory)
 {
 	LOG<<INFO_LOG_LEVEL << "Creating 2D DEPTH ARRAY texture named "<< name <<";\n";
+
+	setupDefaultSamplerParameters();
 }
 
 Texture2DDepthArray::~Texture2DDepthArray()
 {
 	//do nothing, base classes do the rest
 }
+
+
+void Texture2DDepthArray::setupDefaultSamplerParameters()
+{
+	GUARD(bindGL());
+	//TODO try seamless cubemapping stuff
+
+	//TODO handle this more professionally via sampler objects within material/shader...
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE));
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL));
+
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+
+    float fourZeros[] = {0.0f,0.0f,0.0f,0.0f};
+    GUARD(glTexParameterfv(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_BORDER_COLOR, fourZeros));
+    //TODO try 	& Vector4D(0.0f,0.0f,0.0f,0.0f)[0]);
+
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    assert("depth textures have no mip maps" && ! mTextureInfoCastPtr->isMipMapped);
+    GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+}
+
+
 
 bool Texture2DDepthArray::operator==(const BufferInterface& rhs) const
 {
@@ -519,7 +708,7 @@ bool Texture2DDepthArray::operator==(const BufferInterface& rhs) const
 void Texture2DDepthArray::allocGL()throw(BufferException)
 {
 	Texture3D::allocGL();
-	setupDepthTextureParameters();
+	//setupDepthTextureParameters();
 }
 
 
@@ -549,13 +738,19 @@ Texture2DMultiSample::Texture2DMultiSample(String name, BufferSemantics bufferSe
   )
 
 {
-
+	setupDefaultSamplerParameters();
 }
 
 Texture2DMultiSample::~Texture2DMultiSample()
 {
 	//nothing
 }
+
+void Texture2DMultiSample::setupDefaultSamplerParameters()
+{
+	//do nothing for MS textures, as you can do only texel fetches anyway
+}
+
 
 bool Texture2DMultiSample::operator==(const BufferInterface& rhs) const
 {
@@ -603,12 +798,17 @@ Texture2DArrayMultiSample::Texture2DArrayMultiSample(String name, BufferSemantic
   )
 
 {
-
+	setupDefaultSamplerParameters();
 }
 
 Texture2DArrayMultiSample::~Texture2DArrayMultiSample()
 {
 	//nothing
+}
+
+void Texture2DArrayMultiSample::setupDefaultSamplerParameters()
+{
+	//do nothing for MS textures, as you can do only texel fetches anyway
 }
 
 bool Texture2DArrayMultiSample::operator==(const BufferInterface& rhs) const

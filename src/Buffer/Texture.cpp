@@ -42,22 +42,22 @@ Texture::~Texture()
 
 
 //internal function to set the compare func etc;
-void Texture::setupDepthTextureParameters()
-{
-	//TODO handle this more professionally via sampler objects within material/shader...
-    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-
-    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    float fourZeros[] = {0.0f,0.0f,0.0f,0.0f};
-    glTexParameterfv(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_BORDER_COLOR, fourZeros);
-
-    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-}
+//void Texture::setupDepthTextureParameters()
+//{
+//	//TODO handle this more professionally via sampler objects within material/shader...
+//    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+//    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+//
+//    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+//    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+//    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+//
+//    float fourZeros[] = {0.0f,0.0f,0.0f,0.0f};
+//    glTexParameterfv(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_BORDER_COLOR, fourZeros);
+//
+//    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//    glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//}
 
 
 //not pure, as all the same for every texture;

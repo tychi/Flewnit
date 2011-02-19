@@ -46,7 +46,11 @@ Texture	(
 	{
 		setData(data,mBufferInfo->usageContexts);
 	}
+
+	setupDefaultSamplerParameters();
 }
+
+
 
 Texture3D::Texture3D(const TextureInfo& texi, const void* data)
 :Texture(texi)
@@ -64,6 +68,38 @@ Texture3D::Texture3D(const TextureInfo& texi, const void* data)
 Texture3D::~Texture3D()
 {
 	//nothing to do, base classes do the rest ;)
+}
+
+void Texture3D::setupDefaultSamplerParameters()
+{
+	GUARD(bindGL());
+
+
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_S,
+			GL_REPEAT));
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_T,
+			GL_REPEAT));
+
+
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_R,
+			GL_CLAMP_TO_EDGE));
+
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MAG_FILTER,
+			GL_LINEAR));
+
+	if(mTextureInfoCastPtr->isMipMapped)
+	{
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER,
+			GL_LINEAR_MIPMAP_LINEAR));
+	}
+	else
+	{
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER,
+			GL_LINEAR));
+	}
+
+	GUARD(glTexParameterfv(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_BORDER_COLOR,
+			& Vector4D(0.0f,0.0f,0.0f,0.0f)[0]));
 }
 
 bool Texture3D::operator==(const BufferInterface& rhs) const

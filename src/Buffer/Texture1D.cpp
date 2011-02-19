@@ -6,6 +6,7 @@
  */
 
 #include "Texture.h"
+#include "Simulator/OpenCL_Manager.h"
 
 namespace Flewnit
 {
@@ -40,6 +41,8 @@ Texture	(
 	{
 		setData(data,mBufferInfo->usageContexts);
 	}
+
+	setupDefaultSamplerParameters();
 }
 
 //Texture1D::Texture1D(String name, BufferSemantics bufferSemantics, bool allocHostMemory,
@@ -82,6 +85,35 @@ bool Texture1D::operator==(const BufferInterface& rhs) const
 	else {return false;}
 }
 
+
+void Texture1D::setupDefaultSamplerParameters()
+{
+	GUARD(bindGL());
+
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_S,
+			GL_REPEAT));
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_T,
+			GL_CLAMP_TO_EDGE));
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_WRAP_R,
+			GL_CLAMP_TO_EDGE));
+
+	GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MAG_FILTER,
+			GL_LINEAR));
+
+	if(mTextureInfoCastPtr->isMipMapped)
+	{
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER,
+			GL_LINEAR_MIPMAP_LINEAR));
+	}
+	else
+	{
+		GUARD(glTexParameteri(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_MIN_FILTER,
+			GL_LINEAR));
+	}
+
+	GUARD(glTexParameterfv(mTextureInfoCastPtr->textureTarget, GL_TEXTURE_BORDER_COLOR,
+			& Vector4D(0.0f,0.0f,0.0f,0.0f)[0]));
+}
 
 
 void Texture1D::allocGL()throw(BufferException)

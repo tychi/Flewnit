@@ -32,9 +32,9 @@ namespace Flewnit
 enum ShaderStageType
 {
 	VERTEX_SHADER_STAGE,
-	GEOMETRY_SHADER_STAGE,
 	TESSELATION_CONTROL_SHADER_STAGE,
 	TESSELATION_EVALUATE_SHADER_STAGE,
+	GEOMETRY_SHADER_STAGE,
 	FRAGMENT_SHADER_STAGE,
 	__NUM_SHADER_STAGES__
 };
@@ -42,9 +42,9 @@ enum ShaderStageType
 const String ShaderStageFileEndings[] =
 {
 	"vert",
-	"geom",
 	"tessCtrl",
 	"tessEval",
+	"geom",
 	"frag"
 };
 
