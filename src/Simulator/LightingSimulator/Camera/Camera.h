@@ -24,7 +24,7 @@ public:
 	Camera(String name, const AmendedTransform& localTransform = AmendedTransform(),
 			float verticalFOVAngle = 45.0f,
 			float nearClipPlane = 0.1f,
-			float farClipPlane = 100.0f);
+			float farClipPlane = 1000.0f);
 
 	virtual ~Camera();
 

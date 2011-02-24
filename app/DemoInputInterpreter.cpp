@@ -31,6 +31,7 @@
 
 #ifdef FLEWNIT_USE_GLFW
 #	include <GL/glfw.h>
+#include "Simulator/OpenCL_Manager.h"
 #else
 
 #endif
@@ -148,7 +149,22 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 		}
 	}
 
+	//----------------------------------------------------------------------------
+	if(keyboard->getRecentKey() == GLFW_KEY_F2)
+	{
+		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_POINT));
+	}
+	if(keyboard->getRecentKey() == GLFW_KEY_F3)
+	{
+		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+	}
+	if(keyboard->getRecentKey() == GLFW_KEY_F4)
+	{
+		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+	}
 
+
+	//--------------------------------------------------------------------
 
 
 	if(keyboard->getRecentKey() == GLFW_KEY_ESC)
@@ -169,21 +185,21 @@ void DemoInputInterpreter::interpretInput(Mouse* mouse)
 	{
 		if(mouse->getRecentButton() == GLFW_MOUSE_BUTTON_LEFT )
 		{
-			if(mouse->getRecentButtonStatus() == GLFW_PRESS)
-			{
-				LOG<<DEBUG_LOG_LEVEL<<"left mouse button pressed;\n";
-			}
-			else
-			{
-				LOG<<DEBUG_LOG_LEVEL<<"left mouse button released;\n";
-			}
+//			if(mouse->getRecentButtonStatus() == GLFW_PRESS)
+//			{
+//				LOG<<DEBUG_LOG_LEVEL<<"left mouse button pressed;\n";
+//			}
+//			else
+//			{
+//				LOG<<DEBUG_LOG_LEVEL<<"left mouse button released;\n";
+//			}
 		}
 
 		if(mouse->getRecentButton() == GLFW_MOUSE_BUTTON_RIGHT )
 		{
 			if(mouse->getRecentButtonStatus() == GLFW_PRESS)
 			{
-				LOG<<DEBUG_LOG_LEVEL<<"right mouse button pressed; toggling mouse hide status;\n";
+				//LOG<<DEBUG_LOG_LEVEL<<"right mouse button pressed; toggling mouse hide status;\n";
 				hideMouse = !hideMouse;
 				mouse->setHidden(hideMouse);
 			}
@@ -198,16 +214,16 @@ void DemoInputInterpreter::interpretInput(Mouse* mouse)
 	{
 		if(mouse->getRecentEvent() == Mouse::MOUSE_EVENT_POSITION_CHANGED)
 		{
-			LOG<<DEBUG_LOG_LEVEL<<"mouse moved from ("
-					<<mouse->getLastPosition().x
-					<<","
-					<<mouse->getLastPosition().y
-					<<") to ("
-					<<mouse->getRecentPosition().x
-					<<","
-					<<mouse->getRecentPosition().y
-					<<");\n"
-					;
+//			LOG<<DEBUG_LOG_LEVEL<<"mouse moved from ("
+//					<<mouse->getLastPosition().x
+//					<<","
+//					<<mouse->getLastPosition().y
+//					<<") to ("
+//					<<mouse->getRecentPosition().x
+//					<<","
+//					<<mouse->getRecentPosition().y
+//					<<");\n"
+//					;
 
 			Camera* mainCamera = //SimulationResourceManager::getInstance().getMainCamera();
 					URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
