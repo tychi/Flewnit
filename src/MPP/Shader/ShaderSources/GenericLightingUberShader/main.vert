@@ -95,10 +95,10 @@ layout(location = {{ CUSTOM_SEMANTICS }}      ) 	in vec4 inVCustomAttribute;
 
 
 //---- shader output -------------------
+out InterfaceData
+{
   {% include  "09_Generic_InterfaceData.glsl" %}
-  out InterfaceData interfaceData; //output to following stages;
-  
-  out vec4 myAss;
+} output;
   
 //--------------------------------------
 
@@ -122,44 +122,44 @@ void main()
             
           //WORLD space transform, as view/viewproj transform is done for every layer in the geom shader
             gl_Position =  modelMatrix * inVPosition; 
-            interfaceData.position = gl_Position 	; //don't know if necessary; TODO check for optimization when stable
+            output.position = gl_Position 	; //don't know if necessary; TODO check for optimization when stable
            
-            interfaceData.normal = 		modelMatrix * inVNormal;    
+            output.normal = 		modelMatrix * inVNormal;    
             {% if SHADING_FEATURE_NORMAL_MAPPING %}
-              interfaceData.tangent = 	modelMatrix * inVTangent;
+              output.tangent = 	modelMatrix * inVTangent;
             {% endif %}   
             
             {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
               {%comment%} later TODO test this optimaziation for one shadowmap; this would save one multiplication 
                      of the fragment world position with the biased sm-MVP matrix in the fragment shader         {%endcomment%}
-                interfaceData.shadowCoord = worldToShadowMapMatrixFROMWORLDSPACE *  interfaceData.position;
+                output.shadowCoord = worldToShadowMapMatrixFROMWORLDSPACE *  output.position;
             {% endif %}         
              
       {% else %}  
       
           //default view space transform
             gl_Position =  modelViewProjectionMatrix  * inVPosition; //default MVP transform;
-            interfaceData.position =  	modelViewMatrix * inVPosition;
+            output.position =  	modelViewMatrix * inVPosition;
             
-            myAss = transpose(inverse( modelViewMatrix)) * inVNormal;   
-            interfaceData.normal = 		transpose(inverse( modelViewMatrix)) * inVNormal;  
+            //myAss = transpose(inverse( modelViewMatrix)) * inVNormal;   
+            output.normal = 		transpose(inverse( modelViewMatrix)) * inVNormal;  
             
               
             {% if SHADING_FEATURE_NORMAL_MAPPING %}
-              interfaceData.tangent = 	modelViewMatrix * inVTangent;
+              output.tangent = 	modelViewMatrix * inVTangent;
             {% endif %} 
 
             {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
               {%comment%} later TODO test this optimaziation for one shadowmap; this would save one multiplication 
                      of the fragment world position with the biased sm-MVP matrix in the fragment shader         {%endcomment%}
-                interfaceData.shadowCoord = worldToShadowMapMatrix *  interfaceData.position;
+                output.shadowCoord = worldToShadowMapMatrix *  output.position;
             {% endif %}
 
 
       {%endif%}
       
       {% if SHADING_FEATURE_DECAL_TEXTURING or SHADING_FEATURE_DETAIL_TEXTURING	%}
-         interfaceData.texCoords = inVTexCoord;
+         output.texCoords = inVTexCoord;
       {%endif%}    
       
 
@@ -175,7 +175,7 @@ void main()
        {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT or LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS %}
        
           //WORLD space transform, as view/viewproj transform is done for every layer in the geom shader
-            interfaceData. positionViewSpaceUNSCALED = modelMatrix * inVPosition; //TODO is obsolete in vertex shader! remove when stable
+            output. positionViewSpaceUNSCALED = modelMatrix * inVPosition; //TODO is obsolete in vertex shader! remove when stable
             gl_Position = modelMatrix * inVPosition;
        
        {% else %} {% comment %} can only be LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT {% endcomment  %}
@@ -188,23 +188,23 @@ void main()
     {% else %}{% if RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %}
     
           //VIEW space transform
-            //interfaceData.depthViewSpaceNORMALIZED = vec4(modelViewMatrix * inVPosition).z * invCameraFarClipPlane;
-            //interfaceData.depthViewSpaceUNSCALED = vec4(modelViewMatrix * inVPosition).z;
-            //interfaceData.positionViewSpaceNORMALIZED = (modelViewMatrix * inVPosition) * invCameraFarClipPlane;
-            interfaceData.positionViewSpaceUNSCALED = modelViewMatrix * inVPosition; //TODO check the optimized data pass variants when stable;
+            //output.depthViewSpaceNORMALIZED = vec4(modelViewMatrix * inVPosition).z * invCameraFarClipPlane;
+            //output.depthViewSpaceUNSCALED = vec4(modelViewMatrix * inVPosition).z;
+            //output.positionViewSpaceNORMALIZED = (modelViewMatrix * inVPosition) * invCameraFarClipPlane;
+            output.positionViewSpaceUNSCALED = modelViewMatrix * inVPosition; //TODO check the optimized data pass variants when stable;
             gl_Position = modelViewProjectionMatrix * inVPosition;
                 
     {% else %}{% if RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION %}
        //default view space transform, same as for the default shading case ;(
-            interfaceData.position =  	modelViewMatrix * inVPosition;
-            gl_Position =       modelViewProjectionMatrix * interfaceData.position; //default MVP transform;
+            output.position =  	modelViewMatrix * inVPosition;
+            gl_Position =       modelViewProjectionMatrix * output.position; //default MVP transform;
     {% endif %}{% endif %}{% endif %}
    
   {% endif %}
   
   {%comment%} ################################# following ID inputs ##############################################################{%endcomment%}
   {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION %}
-    interfaceData.genericIndices= ivec4(0,0,gl_InstanceID,23); //some funny value in w to check if it is passed anything
+    output.genericIndices= ivec4(0,0,gl_InstanceID,23); //some funny value in w to check if it is passed anything
   {% endif %}
 
 }

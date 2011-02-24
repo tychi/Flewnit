@@ -246,6 +246,14 @@ Vector2Dui GLFWWindowManager::getWindowResolution()
 	return Vector2Dui(actualResX,actualResY);
 }
 
+Vector2Di GLFWWindowManager::getAvailableOpenGLVersion()
+{
+	Vector2Di versionVec;
+	glGetIntegerv(GL_MAJOR_VERSION, &versionVec[0]);
+	glGetIntegerv(GL_MINOR_VERSION, &versionVec[1]);
+	return versionVec;
+}
+
 
 void GLFWWindowManager::printInfo()
 {

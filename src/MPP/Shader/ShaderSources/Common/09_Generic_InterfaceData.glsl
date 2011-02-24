@@ -4,8 +4,8 @@
   
   
   
-struct InterfaceData
-{  
+//struct InterfaceData
+//{  
   
 {%comment%} ################################# following "coloring" inputs ################################################################### {%endcomment%}
 {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}
@@ -59,4 +59,4 @@ struct InterfaceData
   ivec4 genericIndices;
 {% endif %}
  
- }; //end InterfacerData
+// }; //end InterfacerData

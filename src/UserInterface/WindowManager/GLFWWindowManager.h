@@ -47,7 +47,7 @@ public:
 
 	static void windowChangeCallback(int newResX, int newResY);
 
-
+	virtual Vector2Di getAvailableOpenGLVersion();
 
 
 protected:

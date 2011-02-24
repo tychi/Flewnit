@@ -19,7 +19,8 @@ class BoxGeometry
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	BoxGeometry();
+	BoxGeometry(String name, bool enableTesselation= false, bool tesselateBicubicBezierSurface=false);
+
 	virtual ~BoxGeometry();
 };
 

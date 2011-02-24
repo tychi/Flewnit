@@ -49,6 +49,8 @@ public:
 
 	virtual void setWindowPosition(Vector2Di newPos) =0;
 
+	virtual Vector2Di getAvailableOpenGLVersion()=0;
+
 
 protected:
 

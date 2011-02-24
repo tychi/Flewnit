@@ -8,6 +8,7 @@
 #include "VertexBasedGeometry.h"
 #include "Simulator/OpenCL_Manager.h"
 #include "Buffer/BufferInterface.h"
+#include "UserInterface/WindowManager/WindowManager.h"
 
 namespace Flewnit
 {
@@ -24,6 +25,13 @@ VertexBasedGeometry::VertexBasedGeometry(String name, GeometryRepresentation geo
 VertexBasedGeometry::VertexBasedGeometry(String name, GLint verticesPerPatch)
 : BufferBasedGeometry(name, VERTEX_BASED_PATCHES), mIndexBuffer(0), mNumVerticesPerPatch(verticesPerPatch)
 {
+	if(WindowManager::getInstance().getAvailableOpenGLVersion().x < 4)
+	{
+		//TODO
+		assert(0 && "sorry, your opengl version is smaller than 4.0, and a fallback implemetation for "
+				"tesselation geometry is not yet implemented; coming soon ;(");
+	}
+
 	GUARD( glGenVertexArrays(1, &mGLVBO));
 	bind();
 
