@@ -272,7 +272,10 @@ bool LightingSimulator::stepSimulation()  throw(SimulatorException)
 				Vector2Di(WindowManager::getInstance().getWindowResolution())
 	);
 
-	//update the uniform buffers
+	//update the uniform buffers of the light sources and the shadow map matrices
+	mLightSourceManager->updateLightSourcesUniformBuffer(mMainCamera);
+	mLightSourceManager->updateShadowMapMatricesUniformBuffer(mMainCamera);
+
 
 
 	for(unsigned int i=0; i< mSimStages.size(); i++)

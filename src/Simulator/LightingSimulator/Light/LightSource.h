@@ -118,7 +118,7 @@ public:
 	//Projective part is constructed like this;
 	// 	opening angle from outerSpotCutOff_Radians,
 	//	aspect ratio = 1/1
-	//a squared septh texture is recommended;
+	//a squared depth texture is recommended;
 	Matrix4x4 getViewProjectionMatrix();
 	//matrix for shadowmap lookup; scale is configuarable in case one wants to use rectangle texture for whatever reason...
 	Matrix4x4 getBiasedViewProjectionMatrix(

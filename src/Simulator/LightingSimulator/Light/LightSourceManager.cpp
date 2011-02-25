@@ -7,15 +7,21 @@
 
 #include "LightSourceManager.h"
 
-#include "Buffer/Buffer.h"
 
 #include "Buffer/BufferHelperUtils.h"
+#include "Buffer/Buffer.h"
+
+#include "LightSource.h"
+
 #include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
 
-#include <boost/foreach.hpp>
 #include "MPP/Shader/ShaderManager.h"
 
+#include <boost/foreach.hpp>
 #include <sstream>
+
+
+
 
 namespace Flewnit
 {
@@ -146,6 +152,8 @@ PointLight* LightSourceManager::createPointLight(
 				true,
 				LightSourceShaderStruct(
 					position,diffuseColor,specularColor,
+					//some ought-to be unused (besides their function as indicator that ist NOT a spot light)
+					//default values
 					Vector3D(0.0f,0.0f,-1.0f),0.0f,0.0f,0.0f,0.0f)
 		)
 	);
@@ -216,6 +224,9 @@ SpotLight* LightSourceManager::createSpotLight(
 					glm::radians(innerSpotCutOff_Degrees),
 					glm::radians(outerSpotCutOff_Degrees),
 					spotExponent,
+					//the layer is not fixed but dependent on the number of currently active shadow casters
+					//on a per-frame basis;
+					//but again, non-initialized members make the coder shit into his pants ;)
 					static_cast<float>(getNumTotalShadowingLightSources())
 				)
 		)
@@ -259,9 +270,68 @@ int LightSourceManager::getNumTotalShadowingLightSources()const
 //fill buffers with recent values
 void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 {
-	return;
-	//TODO
-	assert(0&&"//TODO");
+	if(mLightSourcesUniformBuffer)
+	{
+//		unsigned int numTotalFloatValuesInBuffer =
+//				ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources *
+//				//number of floats inside a LightSourceShaderStruct
+//				sizeof(LightSourceShaderStruct) / BufferHelper::elementSize(TYPE_FLOAT);
+
+		unsigned int numFloatsPerLightSource = sizeof(LightSourceShaderStruct) / BufferHelper::elementSize(TYPE_FLOAT);
+
+
+		unsigned int currentLightSourceUniformBufferIndex=0;
+		unsigned int currentFloatOffset=0;
+		//unsigned int lightSourceMemoryFootprint = sizeof(LightSourceShaderStruct);
+
+		//assuming that there is a CPU component ;(
+
+		//NOTE: maybe on coud just acces the std::vector data and transfer it to the gpu;
+		//but i'm concerne about stuff like alignment, this-pointer and other c++-meta data
+		//which could corrupt a tigtly-packed assumption;
+		//so, at least for the beginning, let's fill the buffer float-by-float
+
+		float* bufferToFill = reinterpret_cast<float*>(mLightSourcesUniformBuffer->getCPUBufferHandle());
+
+		for(unsigned int currentLightSourceHostIndex =0; currentLightSourceHostIndex < mLightSources.size(); currentLightSourceHostIndex++ )
+		{
+
+			if(mLightSources[currentLightSourceHostIndex]->isEnabled())
+			{
+				currentFloatOffset = 0;
+				const LightSourceShaderStruct lsss = mLightSources[currentLightSourceHostIndex]->getdata();
+#define CURRENT_FLOAT_VALUE	bufferToFill[currentLightSourceUniformBufferIndex * numFloatsPerLightSource + currentFloatOffset++]
+
+				CURRENT_FLOAT_VALUE   =  lsss.position.x;
+				CURRENT_FLOAT_VALUE   =  lsss.position.y;
+				CURRENT_FLOAT_VALUE   =  lsss.position.z;
+
+				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.x;
+				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.y;
+				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.z;
+
+				CURRENT_FLOAT_VALUE   =  lsss.specularColor.x;
+				CURRENT_FLOAT_VALUE   =  lsss.specularColor.y;
+				CURRENT_FLOAT_VALUE   =  lsss.specularColor.z;
+
+				CURRENT_FLOAT_VALUE   =  lsss.direction.x;
+				CURRENT_FLOAT_VALUE   =  lsss.direction.y;
+				CURRENT_FLOAT_VALUE   =  lsss.direction.z;
+
+				CURRENT_FLOAT_VALUE   =  lsss.innerSpotCutOff_Radians;
+				CURRENT_FLOAT_VALUE   =  lsss.outerSpotCutOff_Radians;
+				CURRENT_FLOAT_VALUE   =  lsss.spotExponent;
+
+				CURRENT_FLOAT_VALUE   =  lsss.shadowMapLayer;
+
+#undef CURRENT_FLOAT_VALUE
+				currentLightSourceUniformBufferIndex++;
+			}
+		} //endfor
+
+		mLightSourcesUniformBuffer->copyFromHostToGPU();
+
+	}
 }
 
 void LightSourceManager::updateShadowMapMatricesUniformBuffer(Camera *mainCam)
