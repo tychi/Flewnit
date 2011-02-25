@@ -54,13 +54,18 @@ void Loader::createHardCodedSceneStuff()
 	//create the first rendering, to see anything and to test the camera, the buffers, the shares and to overall architectural frame:
 	//TODO
 	SimulationResourceManager::getInstance().getScene()->root().addChild(
-		new Box("MyBox",AmendedTransform(Vector3D(0,0,-30)),Vector3D(10.0f,7.0f,15.0f))
+		new Box("MyBox",AmendedTransform(Vector3D(0,-10,-30), Vector3D(0.0,0.1,-1.0)),Vector3D(30.0f,7.0f,150.0f))
 	);
 
 
 
 
-	LightSourceManager::getInstance().createPointLight(Vector3D(13,15,10),false,Vector3D(1.0,0.5,0.1),Vector3D(0.1f,0.1f,1.0f));
+	LightSourceManager::getInstance().createPointLight(
+			Vector4D(50.0f,15.0f,10.0f,1.0f),
+			false,
+			Vector4D(1.0f,0.5f,0.1f,1.0f),
+			Vector4D(1.1f,0.1f,0.0f,1.0f
+	));
 
 
 	if(
@@ -72,7 +77,27 @@ void Loader::createHardCodedSceneStuff()
 			 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
 	)
 	{
-		LightSourceManager::getInstance().createPointLight(Vector3D(-13,5,0),false,Vector3D(0.0f,1.0f,0.0f),Vector3D(0.0f,0.0f,1.0f));
+		LightSourceManager::getInstance().createPointLight(
+				//Vector4D(-13.0f,5.0f,0.0f,1.0f),
+				Vector4D(-50.0f,15.0f,10.0f,1.0f),
+				false,
+				Vector4D(0.0f,0.0f,1.0f,1.0f),
+				Vector4D(0.0f,0.0f,1.0f,1.0f)
+		);
+
+		//two lights already created, hence the -2
+		int numTotalLightSourcesToCreate = ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources -2;
+
+		for(int i = 1; i <= numTotalLightSourcesToCreate; i++)
+		{
+			float fraction = (float)(i)/(float)(numTotalLightSourcesToCreate);
+			LightSourceManager::getInstance().createPointLight(
+				Vector4D(0.0f,15.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
+				false,
+				Vector4D(0.0f,0.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
+				Vector4D((1.0f-fraction)*50,0.5f, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
+			);
+		}
 	}
 
 

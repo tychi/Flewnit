@@ -93,9 +93,9 @@ void main()
                        {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
                          //there was once a bug in the driver preventing variable lenght-loops; TODO check out if it works now after the rest has been veryfied:
                          //{############### begin inner lighting loop #######################################################
-                         //for(int lightIndex = 0; lightIndex < numCurrentlyActiveLightSources ;lightIndex++)
-                         for(int lightIndex = 0; lightIndex < NUM_LIGHTSOURCES ;lightIndex++) //<-- hard coded, precompiled loop termination condition variable
-                          {
+                         for(int lightIndex = 0; lightIndex < numCurrentlyActiveLightSources ;lightIndex++)
+                         //for(int lightIndex = 0; lightIndex < {{ numMaxLightSources }} ;lightIndex++) //<-- hard coded, precompiled loop termination condition variable
+                         {
                               //lets hope that there will be a component wise copy and NOT some C++-f***up about non-existing operator=() ;)
                                LightSource lightSource = lightSources[lightIndex]; //copy from uniform buffer to shared memory and name this variable like the uniform variable in the one-lightsource- context
                       {% endif %}

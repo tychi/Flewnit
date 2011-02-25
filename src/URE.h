@@ -82,6 +82,7 @@ public:
     inline WindowManager* getWindowManager()const{return mWindowManager;}
     inline SimulationResourceManager* getSimulationResourceManager()const{return mSimulationResourceManager;}
     inline int getNumSimulators()const{return mSimulators.size();}
+    inline const FPSCounter* getFPSCounter()const{return mFPSCounter;}
 
     SimulatorInterface* getSimulator(SimulationDomain sd)const throw(SimulatorException);
 

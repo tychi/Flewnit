@@ -79,6 +79,7 @@ bool InputManager::processInput()
 	// keyboard and mouse handle themselves due to tthe callback deleagation;
 	// Wiimote has no functionality yet, but for the lulz, lets' "pull" some stuff, even if only stubs are invoked;
 	mWiiMote->pullStatus();
+	glfwPollEvents();
 
 	mInputInterpreter->perFrameCallback();
 

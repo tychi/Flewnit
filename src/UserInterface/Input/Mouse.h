@@ -10,6 +10,7 @@
 #include "InputDevice.h"
 
 #include "Common/Math.h"
+#include "Mouse.h"
 
 namespace Flewnit
 {

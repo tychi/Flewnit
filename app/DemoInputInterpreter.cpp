@@ -32,6 +32,7 @@
 #ifdef FLEWNIT_USE_GLFW
 #	include <GL/glfw.h>
 #include "Simulator/OpenCL_Manager.h"
+#include "Util/Time/FPSCounter.h"
 #else
 
 #endif
@@ -62,10 +63,15 @@ void DemoInputInterpreter::perFrameCallback()
 
 	URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->
 		getMainCamera()->getGlobalTransform().moveRelativeToDirection(
-			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_FRONT_BACK]) 	- 1.0f) * -1.0f *mMovementSpeed,
-			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_RIGHT_LEFT]) 	- 1.0f) * -1.0f * mMovementSpeed,
-			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_UP_DOWN])  	- 1.0f)	*mMovementSpeed
-	);
+			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_FRONT_BACK]) 	- 1.0f)
+			* -1.0f *mMovementSpeed * URE_INSTANCE->getFPSCounter()->getLastFrameDuration(),
+			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_RIGHT_LEFT]) 	- 1.0f)
+			* -1.0f * mMovementSpeed * URE_INSTANCE->getFPSCounter()->getLastFrameDuration(),
+			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_UP_DOWN])  	- 1.0f)
+			*mMovementSpeed * URE_INSTANCE->getFPSCounter()->getLastFrameDuration()
+	)
+
+	;
 
 
 	//---------------------------------------------------------

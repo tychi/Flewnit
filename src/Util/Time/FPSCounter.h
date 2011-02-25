@@ -41,8 +41,8 @@ public:
 	void frameEnded();
 
 	double getFPS(bool averaged = false);
-	double getLastFrameDuration();
-	int getTotalRenderedFrames();
+	double getLastFrameDuration()const;
+	int getTotalRenderedFrames()const;
 };
 
 }

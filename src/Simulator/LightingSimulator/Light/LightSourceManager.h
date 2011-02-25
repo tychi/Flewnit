@@ -51,10 +51,10 @@ public:
 	//and the compatible value is set, i.e. there is o guarantee that the user's
 	//wish is fulfilled
 	PointLight* createPointLight(
-			const Vector3D& position,
+			const Vector4D& position,
 			bool castsShadows,
-			const Vector3D& diffuseColor = Vector3D(1.0f, 1.0f, 1.0f),
-			const Vector3D& specularColor = Vector3D(1.0f, 1.0f, 1.0f)
+			const Vector4D& diffuseColor = Vector4D(1.0f, 1.0f, 1.0f,1.0f),
+			const Vector4D& specularColor = Vector4D(1.0f, 1.0f, 1.0f,1.0f)
 	) throw(SimulatorException);
 
 	//throws exception if mNumMaxLightSources lightsources already exists or if the
@@ -63,14 +63,14 @@ public:
 	//and the compatible value is set, i.e. there is o guarantee that the user's
 	//wish is fulfilled
 	SpotLight* createSpotLight(
-			const Vector3D& position,
-			const Vector3D& direction,
+			const Vector4D& position,
+			const Vector4D& direction,
 			bool castsShadows,
 			float innerSpotCutOff_Degrees = 30.0f,
 			float outerSpotCutOff_Degrees= 45.0f,
 			float spotExponent = 10.0f,
-			const Vector3D& diffuseColor = Vector3D(1.0f, 1.0f, 1.0f),
-			const Vector3D& specularColor = Vector3D(1.0f, 1.0f, 1.0f)
+			const Vector4D& diffuseColor = Vector4D(1.0f, 1.0f, 1.0f, 1.0f),
+			const Vector4D& specularColor = Vector4D(1.0f, 1.0f, 1.0f, 1.0f)
 	) throw(SimulatorException);
 
 

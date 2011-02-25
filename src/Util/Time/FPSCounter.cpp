@@ -98,12 +98,12 @@ double FPSCounter::getFPS(bool averaged)
 	}
 }
 
-double FPSCounter::getLastFrameDuration()
+double FPSCounter::getLastFrameDuration()const
 {
 	return mLastFrameDurations.back();
 }
 
-int FPSCounter::getTotalRenderedFrames()
+int FPSCounter::getTotalRenderedFrames()const
 {
 	return mNumTotalFrames;
 }

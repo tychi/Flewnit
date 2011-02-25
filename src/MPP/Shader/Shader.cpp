@@ -517,7 +517,25 @@ void Shader::setupLightSourceUniforms(Camera *mainCam)
 {
 	const ShaderFeaturesGlobal& sfg = ShaderManager::getInstance().getGlobalShaderFeatures();
 
+
+
 	if(sfg.lightSourcesLightingFeature == LIGHT_SOURCES_LIGHTING_FEATURE_NONE){return;}
+
+
+	GUARD(
+		glUniform1i(
+			glGetUniformLocation(mGLProgramHandle,"numCurrentlyActiveLightSources"),
+			LightSourceManager::getInstance().getNumCurrentlyActiveLightingLightSources()
+		)
+	);
+	GUARD(
+		glUniform1f(
+			glGetUniformLocation(mGLProgramHandle,"invNumCurrentlyActiveLightSources"),
+			1.0f / static_cast<float>( LightSourceManager::getInstance().getNumCurrentlyActiveLightingLightSources())
+		)
+	);
+
+	//-----------------------------------------------------------------------------------
 
 	if( (sfg.lightSourcesLightingFeature == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT)
 	 ||	(sfg.lightSourcesLightingFeature == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT)
@@ -535,28 +553,28 @@ void Shader::setupLightSourceUniforms(Camera *mainCam)
 			   //* Vector4D(lsStruct.direction, 0.0f);
 
 	    GUARD(
-			glUniform3fv(
+			glUniform4fv(
 				glGetUniformLocation(mGLProgramHandle,"lightSource.position"),
 				1,
 				&( lightPosViewSpace[0])
 			)
 		);
 	    GUARD(
-			glUniform3fv(
+			glUniform4fv(
 				glGetUniformLocation(mGLProgramHandle,"lightSource.diffuseColor"),
 				1,
 				&(lsStruct.diffuseColor[0])
 			)
 		);
 	    GUARD(
-	    		glUniform3fv(
+	    		glUniform4fv(
 					glGetUniformLocation(mGLProgramHandle,"lightSource.specularColor"),
 					1,
 					&(lsStruct.specularColor[0])
 				)
 		);
 	   GUARD(
-				glUniform3fv(
+				glUniform4fv(
 					glGetUniformLocation(mGLProgramHandle,"lightSource.direction"),
 					1,
 					&(lightDirViewSpace[0])

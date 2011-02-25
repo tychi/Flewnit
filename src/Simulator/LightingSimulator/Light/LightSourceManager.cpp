@@ -117,10 +117,10 @@ LightSourceManager::~LightSourceManager()
 //and the compatible value is set, i.e. there is o guarantee that the user's
 //wish is fulfilled
 PointLight* LightSourceManager::createPointLight(
-		const Vector3D& position,
+		const Vector4D& position,
 		bool castsShadows,
-		const Vector3D& diffuseColor,
-		const Vector3D& specularColor
+		const Vector4D& diffuseColor,
+		const Vector4D& specularColor
 ) throw(SimulatorException)
 {
 	LightSourcesLightingFeature lslf = ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature;
@@ -156,7 +156,7 @@ PointLight* LightSourceManager::createPointLight(
 					position,diffuseColor,specularColor,
 					//some ought-to be unused (besides their function as indicator that ist NOT a spot light)
 					//default values
-					Vector3D(0.0f,0.0f,-1.0f),0.0f,0.0f,0.0f,0.0f)
+					Vector4D(0.0f,0.0f,-1.0f,0.0f),0.0f,0.0f,0.0f,0.0f)
 		)
 	);
 
@@ -170,14 +170,14 @@ PointLight* LightSourceManager::createPointLight(
 //and the compatible value is set, i.e. there is o guarantee that the user's
 //wish is fulfilled
 SpotLight* LightSourceManager::createSpotLight(
-		const Vector3D& position,
-		const Vector3D& direction,
+		const Vector4D& position,
+		const Vector4D& direction,
 		bool castsShadows,
 		float innerSpotCutOff_Degrees,
 		float outerSpotCutOff_Degrees,
 		float spotExponent,
-		const Vector3D& diffuseColor,
-		const Vector3D& specularColor
+		const Vector4D& diffuseColor,
+		const Vector4D& specularColor
 ) throw(SimulatorException)
 {
 	LightSourcesLightingFeature lslf = ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature;
@@ -295,6 +295,9 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 
 		float* bufferToFill = reinterpret_cast<float*>(mLightSourcesUniformBuffer->getCPUBufferHandle());
 
+		//set everythin to zero in order to omit wrong rendering in hardcoeded for-loops
+		memset(bufferToFill,mLightSourcesUniformBuffer->getBufferInfo().bufferSizeInByte,0);
+
 		for(unsigned int currentLightSourceHostIndex =0; currentLightSourceHostIndex < mLightSources.size(); currentLightSourceHostIndex++ )
 		{
 
@@ -310,25 +313,30 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 			    		//* Vector4D(lsss.position, 1.0f);
 			    Vector4D lightDirViewSpace =
 			    		mainCam->getGlobalTransform().getLookAtMatrix()
-			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getDirection(), 1.0f);
+			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getDirection(), 0.0f);
 			    		//* Vector4D(lsss.direction, 0.0f);
 
 
 				CURRENT_FLOAT_VALUE   =  lightPosViewSpace.x;
 				CURRENT_FLOAT_VALUE   =  lightPosViewSpace.y;
 				CURRENT_FLOAT_VALUE   =  lightPosViewSpace.z;
+				CURRENT_FLOAT_VALUE   =  lightPosViewSpace.w;
 
 				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.x;
 				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.y;
 				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.z;
+				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.w;
 
 				CURRENT_FLOAT_VALUE   =  lsss.specularColor.x;
 				CURRENT_FLOAT_VALUE   =  lsss.specularColor.y;
 				CURRENT_FLOAT_VALUE   =  lsss.specularColor.z;
+				CURRENT_FLOAT_VALUE   =  lsss.specularColor.w;
 
 				CURRENT_FLOAT_VALUE   =  lightDirViewSpace.x;
 				CURRENT_FLOAT_VALUE   =  lightDirViewSpace.y;
 				CURRENT_FLOAT_VALUE   =  lightDirViewSpace.z;
+				CURRENT_FLOAT_VALUE   =  lightDirViewSpace.w;
+
 
 				CURRENT_FLOAT_VALUE   =  lsss.innerSpotCutOff_Radians;
 				CURRENT_FLOAT_VALUE   =  lsss.outerSpotCutOff_Radians;

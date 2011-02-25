@@ -15,13 +15,14 @@ struct LightSourceShaderStruct
 struct LightSource
 #endif
 {
-	NAMESPACE_PREFIX vec3 position;
-	NAMESPACE_PREFIX vec3 diffuseColor;
+	NAMESPACE_PREFIX vec4 position;
+	NAMESPACE_PREFIX vec4 diffuseColor;
 	//a dedicated specular color to produce unrealistic but nice effects;	
-	NAMESPACE_PREFIX vec3 specularColor;
+	NAMESPACE_PREFIX vec4 specularColor;
 	//------------------------------------------------------------------------------------------------
 	//following spotlight stuff, but set it anyway for alignment reasons, even if it won't be used in the shader!
-	NAMESPACE_PREFIX vec3 direction; //for a pointlight, this is (0,0,-1)
+	NAMESPACE_PREFIX vec4 direction; //for a pointlight, this is (0,0,-1)
+	
 	//to indicate a point light, the following values are all zero
 	//value beyond with will be no lighting, to produce a nice light circle and to 
 	//hide the rectangular shape of the shadowmap ;)
@@ -31,9 +32,14 @@ struct LightSource
 
 	//if is negative, it's an indicator that this source doesn't cast shadows ---------------------------
 	float shadowMapLayer;
-	//aligned to 64 bytes;
+	
+	//aligned to
+	//    4 components * 4 byte * 4 member vectors =  64 bytes 
+	//  + 1 component  * 4 byte * 4 member scalars =  16 Bytes
+	//________________________________________________________
+	// total alignment                             =  80 Bytes
 	//{%comment%} //tagged as comment for grantlee, so that this c++- specific section is not included in the shader code
-		LightSourceShaderStruct(Vector3D position, Vector3D diffuseColor, Vector3D specularColor, Vector3D direction,
+		LightSourceShaderStruct(Vector4D position, Vector4D diffuseColor, Vector4D specularColor, Vector4D direction,
 			float innerSpotCutOff_Radians, float outerSpotCutOff_Radians , float spotExponent, float shadowMapLayer)
 		:
 		position(position),diffuseColor(diffuseColor),specularColor(specularColor), direction(specularColor),

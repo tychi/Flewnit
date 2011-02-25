@@ -61,17 +61,17 @@ LightSource::LightSource(String name, LightSourceType type, bool castsShadows,  
 	name,
 	LIGHT_NODE,
 	AmendedTransform(
-			data.position,
+			Vector3D(data.position),
 			//set the direction:
 			(type == LIGHT_SOURCE_TYPE_SPOT_LIGHT)
-				? glm::normalize(data.direction)
+				? glm::normalize(Vector3D(data.direction))
 				: Vector3D(0.0f,0.0f,-1.0f),
 			//set the up vector:
 			(type == LIGHT_SOURCE_TYPE_SPOT_LIGHT)
 				//is direction and y-axis collinear (dot product of normalized vecs ==1)?
 				? ( (	std::fabs(
 							glm::dot(
-								glm::normalize(data.direction),Vector3D(0.0f,1.0f,0.0f)
+								glm::normalize(Vector3D(data.direction)),Vector3D(0.0f,1.0f,0.0f)
 							)
 						) > 0.98f
 					//if collinear (spotlight looks up or down), then take x-axis as upvector, else the default y-axis^^
@@ -103,8 +103,9 @@ void LightSource::setEnable(bool val)
 
 void LightSource::validateData() throw(SimulatorException)
 {
-	assert("color vals are positive" && glm::all(glm::greaterThan(mLightSourceShaderStruct.diffuseColor, Vector3D(0.0f,0.0f,0.0f))));
-	assert("color vals are non-negative" && glm::all(glm::greaterThanEqual(mLightSourceShaderStruct.specularColor, Vector3D(0.0f,0.0f,0.0f))));
+	assert("at least one diffuse color channel has positive value, else it would be waste of computations" && glm::any(glm::greaterThan(mLightSourceShaderStruct.diffuseColor, Vector4D(0.0f,0.0f,0.0f,0.0f))));
+	assert("color vals are non-negative" && glm::all(glm::greaterThanEqual(mLightSourceShaderStruct.diffuseColor, Vector4D(0.0f,0.0f,0.0f,0.0f))));
+	assert("color vals are non-negative" && glm::all(glm::greaterThanEqual(mLightSourceShaderStruct.specularColor, Vector4D(0.0f,0.0f,0.0f,0.0f))));
 
 
 	switch(mType)
