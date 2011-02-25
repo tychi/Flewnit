@@ -23,6 +23,7 @@
 #include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 #include "Buffer/BufferSharedDefinitions.h"
 #include "Util/Loader/Loader.h"
+#include "MPP/Shader/ShaderManager.h"
 
 
 
@@ -61,6 +62,18 @@ void Loader::createHardCodedSceneStuff()
 
 	LightSourceManager::getInstance().createPointLight(Vector3D(13,15,10),false,Vector3D(1.0,0.5,0.1),Vector3D(0.1f,0.1f,1.0f));
 
+
+	if(
+		(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
+				== LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS )
+	 ||	(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
+			 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS )
+	 ||	(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
+			 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
+	)
+	{
+		LightSourceManager::getInstance().createPointLight(Vector3D(-13,5,0),false,Vector3D(0.0f,1.0f,0.0f),Vector3D(0.0f,0.0f,1.0f));
+	}
 
 
 }

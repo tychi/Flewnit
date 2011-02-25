@@ -525,7 +525,15 @@ void Shader::setupLightSourceUniforms(Camera *mainCam)
 	{
 		const LightSourceShaderStruct & lsStruct = LightSourceManager::getInstance().getLightSource(0)->getdata();
 
-	    Vector4D lightPosViewSpace = mainCam->getGlobalTransform().getLookAtMatrix() * LightSourceManager::getInstance().getLightSource(0)->getGlobalTransform().getTotalTransform() * Vector4D(lsStruct.position, 1.0f);
+	    Vector4D lightPosViewSpace =
+	    		mainCam->getGlobalTransform().getLookAtMatrix()
+	    		* Vector4D( LightSourceManager::getInstance().getLightSource(0)->getGlobalTransform().getPosition(),1.0f) ;
+	    		//* Vector4D(lsStruct.position, 1.0f);
+	   Vector4D lightDirViewSpace =
+			   mainCam->getGlobalTransform().getLookAtMatrix()
+			   * Vector4D( LightSourceManager::getInstance().getLightSource(0)->getGlobalTransform().getDirection(), 0.0f );
+			   //* Vector4D(lsStruct.direction, 0.0f);
+
 	    GUARD(
 			glUniform3fv(
 				glGetUniformLocation(mGLProgramHandle,"lightSource.position"),
@@ -547,7 +555,6 @@ void Shader::setupLightSourceUniforms(Camera *mainCam)
 					&(lsStruct.specularColor[0])
 				)
 		);
-	   Vector4D lightDirViewSpace = mainCam->getGlobalTransform().getLookAtMatrix() * Vector4D(lsStruct.direction, 0.0f);
 	   GUARD(
 				glUniform3fv(
 					glGetUniformLocation(mGLProgramHandle,"lightSource.direction"),

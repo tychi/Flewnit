@@ -12,6 +12,7 @@
 #include "Buffer/Buffer.h"
 
 #include "LightSource.h"
+#include "Simulator/LightingSimulator/Camera/Camera.h"
 
 #include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
 
@@ -19,6 +20,7 @@
 
 #include <boost/foreach.hpp>
 #include <sstream>
+
 
 
 
@@ -302,9 +304,19 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 				const LightSourceShaderStruct lsss = mLightSources[currentLightSourceHostIndex]->getdata();
 #define CURRENT_FLOAT_VALUE	bufferToFill[currentLightSourceUniformBufferIndex * numFloatsPerLightSource + currentFloatOffset++]
 
-				CURRENT_FLOAT_VALUE   =  lsss.position.x;
-				CURRENT_FLOAT_VALUE   =  lsss.position.y;
-				CURRENT_FLOAT_VALUE   =  lsss.position.z;
+			    Vector4D lightPosViewSpace =
+			    		mainCam->getGlobalTransform().getLookAtMatrix()
+			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getPosition(), 1.0f);
+			    		//* Vector4D(lsss.position, 1.0f);
+			    Vector4D lightDirViewSpace =
+			    		mainCam->getGlobalTransform().getLookAtMatrix()
+			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getDirection(), 1.0f);
+			    		//* Vector4D(lsss.direction, 0.0f);
+
+
+				CURRENT_FLOAT_VALUE   =  lightPosViewSpace.x;
+				CURRENT_FLOAT_VALUE   =  lightPosViewSpace.y;
+				CURRENT_FLOAT_VALUE   =  lightPosViewSpace.z;
 
 				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.x;
 				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.y;
@@ -314,9 +326,9 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 				CURRENT_FLOAT_VALUE   =  lsss.specularColor.y;
 				CURRENT_FLOAT_VALUE   =  lsss.specularColor.z;
 
-				CURRENT_FLOAT_VALUE   =  lsss.direction.x;
-				CURRENT_FLOAT_VALUE   =  lsss.direction.y;
-				CURRENT_FLOAT_VALUE   =  lsss.direction.z;
+				CURRENT_FLOAT_VALUE   =  lightDirViewSpace.x;
+				CURRENT_FLOAT_VALUE   =  lightDirViewSpace.y;
+				CURRENT_FLOAT_VALUE   =  lightDirViewSpace.z;
 
 				CURRENT_FLOAT_VALUE   =  lsss.innerSpotCutOff_Radians;
 				CURRENT_FLOAT_VALUE   =  lsss.outerSpotCutOff_Radians;
