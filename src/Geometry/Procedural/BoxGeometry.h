@@ -19,9 +19,17 @@ class BoxGeometry
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	BoxGeometry(String name, bool enableTesselation= false, bool tesselateBicubicBezierSurface=false);
+	BoxGeometry(
+			String name,
+			const Vector3D& halfextends,
+			bool addTangents,
+			//set default draw mode to patches (for tesselation) instead of triangles
+			bool patchRepresentation = false);
 
 	virtual ~BoxGeometry();
+
+private:
+
 };
 
 }

@@ -63,7 +63,7 @@ public:
 				//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
 				unsigned int numInstances,
 				GeometryRepresentation desiredGeomRep);
-private:
+protected:
 	//compare buffers for sizees, types, number of elements etc;
 	virtual void validateBufferIntegrity()throw(BufferException);
 };
@@ -94,7 +94,7 @@ public:
 				//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
 				unsigned int numInstances,
 				GeometryRepresentation desiredGeomRep);
-private:
+protected:
 	//compare buffers for sizees, types, number of elements etc;
 	virtual void validateBufferIntegrity()throw(BufferException);
 };

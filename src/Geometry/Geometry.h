@@ -75,15 +75,6 @@ class Geometry
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
-	GeometryRepresentation mGeometryRepresentation;
-
-	//folowing became obsolte:
-	//if the Geometry is shared by several sim. domains, is has several Subobjects to backtrack:
-	//geometry can be coupled that hard to a subobject, as if one wants to use a VBO for several
-	//draws per frame, one will use instancing :D.
-	//SubObject* mOwningSubObjects[__NUM_SIM_DOMAINS__];
-	//friend class SubObject;
-	//void setOwningSubObject(SimulationDomain sd, SubObject* so){mOwningSubObjects[sd]= so;}
 
 public:
 
@@ -109,6 +100,16 @@ public:
 			unsigned int numInstances=1,
 			GeometryRepresentation desiredGeomRep = DEFAULT_GEOMETRY_REPRESENTATION) =0;
 
+protected:
+	GeometryRepresentation mGeometryRepresentation;
+
+	//following became obsolte:
+	//if the Geometry is shared by several sim. domains, is has several Subobjects to backtrack:
+	//geometry can be coupled that hard to a subobject, as if one wants to use a VBO for several
+	//draws per frame, one will use instancing :D.
+	//SubObject* mOwningSubObjects[__NUM_SIM_DOMAINS__];
+	//friend class SubObject;
+	//void setOwningSubObject(SimulationDomain sd, SubObject* so){mOwningSubObjects[sd]= so;}
 
 };
 

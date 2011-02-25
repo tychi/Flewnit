@@ -54,6 +54,13 @@ public:
 	//returns zero if geometry is not "patch driven"
 	inline GLint getNumVerticesPerPatch()const {return mNumVerticesPerPatch;}
 
+protected:
+
+	//compare buffers for sizees, types, number of elements etc;
+	virtual void validateBufferIntegrity()throw(BufferException);
+
+	void setUpPatchRepresentationState();
+
 private:
 
 	//handle to the OpenGL Vertex Buffer Object;
@@ -62,9 +69,6 @@ private:
 	BufferInterface* mIndexBuffer;
 
 	GLint mNumVerticesPerPatch;
-
-	//compare buffers for sizees, types, number of elements etc;
-	virtual void validateBufferIntegrity()throw(BufferException);
 
 	void bind();
 	void unbind();

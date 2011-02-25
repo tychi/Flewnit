@@ -25,6 +25,13 @@ VertexBasedGeometry::VertexBasedGeometry(String name, GeometryRepresentation geo
 VertexBasedGeometry::VertexBasedGeometry(String name, GLint verticesPerPatch)
 : BufferBasedGeometry(name, VERTEX_BASED_PATCHES), mIndexBuffer(0), mNumVerticesPerPatch(verticesPerPatch)
 {
+	GUARD( glGenVertexArrays(1, &mGLVBO));
+
+	setUpPatchRepresentationState();
+}
+
+void VertexBasedGeometry::setUpPatchRepresentationState()
+{
 	if(WindowManager::getInstance().getAvailableOpenGLVersion().x < 4)
 	{
 		//TODO
@@ -32,11 +39,27 @@ VertexBasedGeometry::VertexBasedGeometry(String name, GLint verticesPerPatch)
 				"tesselation geometry is not yet implemented; coming soon ;(");
 	}
 
-	GUARD( glGenVertexArrays(1, &mGLVBO));
 	bind();
 
+
+	switch(getGeometryRepresentation())
+	{
+	case VERTEX_BASED_PATCHES:
+	break;
+	case VERTEX_BASED_LINES:
+		mNumVerticesPerPatch = 2;
+	break;
+	case VERTEX_BASED_TRIANGLES:
+		mNumVerticesPerPatch = 3;
+	break;
+	default:
+		assert(0&&"optional patch drawing only possible with triangles and lines as original representation");
+	break;
+	}
+
+	mGeometryRepresentation = VERTEX_BASED_PATCHES;
 	validateBufferIntegrity();
-	GUARD(glPatchParameteri(GL_PATCH_VERTICES, verticesPerPatch));
+	GUARD(glPatchParameteri(GL_PATCH_VERTICES, mNumVerticesPerPatch));
 }
 
 
@@ -207,6 +230,22 @@ void VertexBasedGeometry::draw(
 	break;
 	case VERTEX_BASED_PATCHES:
 		drawType = GL_PATCHES;
+		//check for comaptibility with "base" representation and set patch vertices
+		switch(getGeometryRepresentation())
+		{
+		case VERTEX_BASED_PATCHES:
+		break;
+		case VERTEX_BASED_LINES:
+			GUARD(glPatchParameteri(GL_PATCH_VERTICES, 2));
+		break;
+		case VERTEX_BASED_TRIANGLES:
+			GUARD(glPatchParameteri(GL_PATCH_VERTICES, 3));
+		break;
+		default:
+			assert(0&&"optional patch drawing only possible with triangles and lines as original representation");
+		break;
+		}
+		break;
 	default:
 		drawType = GL_POINTS;
 		assert(0 && "incompatible vertex based geometry draw type");

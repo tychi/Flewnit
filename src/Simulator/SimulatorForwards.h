@@ -192,6 +192,10 @@ class 	VoxelGridGeometry;
 //to a Texture or Vice versa, we have to implement two seperate classes :(.
 //The 3D Texture Voxel representation is great for gas Simulation AND its rendering;
 class		Texture3DVoxelGridGeometry;
+
+//procedural types:
+class BoxGeometry;
+
 /*
 The Generic Buffer is needed as a storage for a Uniform Grid acceleration structure
 storing
