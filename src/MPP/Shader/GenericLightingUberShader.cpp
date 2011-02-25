@@ -128,6 +128,17 @@ void GenericLightingUberShader::fillOwnMatrixStructure(float* toFill, const Matr
 			)
 		);
 
+//        GUARD(
+//			glUniformMatrix3fv(
+//				glGetUniformLocation(mGLProgramHandle,"inverseViewRotationMatrix"),
+//				1,
+//				GL_FALSE,
+//				&(   [0][0])
+//			)
+//		);
+
+
+
 
     //----------------------------------------------------------
 

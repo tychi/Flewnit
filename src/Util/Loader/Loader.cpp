@@ -57,11 +57,15 @@ void Loader::createHardCodedSceneStuff()
 		new Box("MyBox",AmendedTransform(Vector3D(0,-10,-30), Vector3D(0.0,0.1,-1.0)),Vector3D(30.0f,7.0f,150.0f))
 	);
 
+	SimulationResourceManager::getInstance().getScene()->root().addChild(
+		new Box("MyBox2",AmendedTransform(Vector3D(-40,-10,0), Vector3D(0,1,1)),Vector3D(10.0f,20.0f,5.0f))
+	);
+
 
 
 
 	LightSourceManager::getInstance().createPointLight(
-			Vector4D(50.0f,15.0f,10.0f,1.0f),
+			Vector4D(70.0f,15.0f,10.0f,1.0f),
 			false,
 			Vector4D(1.0f,0.5f,0.1f,1.0f),
 			Vector4D(1.1f,0.1f,0.0f,1.0f
@@ -79,7 +83,7 @@ void Loader::createHardCodedSceneStuff()
 	{
 		LightSourceManager::getInstance().createPointLight(
 				//Vector4D(-13.0f,5.0f,0.0f,1.0f),
-				Vector4D(-50.0f,15.0f,10.0f,1.0f),
+				Vector4D(-70.0f,15.0f,10.0f,1.0f),
 				false,
 				Vector4D(0.0f,0.0f,1.0f,1.0f),
 				Vector4D(0.0f,0.0f,1.0f,1.0f)

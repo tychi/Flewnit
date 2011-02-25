@@ -14,7 +14,8 @@ namespace Flewnit
 
 SceneNode::SceneNode(String name, SceneNodeTypeFlags typeflags,
 		const AmendedTransform& localTransform)
-: mIsCurrentlyUpdating(false), mTypeFlags(typeflags),
+: mName(name),
+  mIsCurrentlyUpdating(false), mTypeFlags(typeflags),
   	  	  	  	  	  	  	  	  //set global equal to local as long there is no parent
   mLocalTransform(localTransform), mGlobalTransform(localTransform),
   mGlobalAABBisValidFlag(true), mParent(0)
@@ -210,7 +211,8 @@ SceneNode& SceneNode::operator[](String name)
 
 SceneNode* SceneNode::addChild(SceneNode* child)
 {
-	assert("child doesn't exist yet;" && mChildren.find(child->getName()) == mChildren.end());
+	assert("child doesn't exist yet;" &&
+			(mChildren.find(child->getName()) == mChildren.end()));
 	mChildren[child->getName()] = child;
 	child -> setParent( this );
 

@@ -131,7 +131,15 @@ void main()
       {% if SHADING_FEATURE_CUBE_MAPPING and RENDERING_TECHNIQUE_DEFAULT_LIGHTING %} 
         //lerp between actual color and cubemap color; only possible for default lighting; for deferred lighting, the fact that it is a cube map material
         //cannot be handled in a clean way without wasting much memory; hence, like transparent materials, cube mapped geometry may no be rendered deferred
-        fragmentColor = mix(   outFFinalLuminance, texture(cubeMap, normalVN), cubeMapReflectivity        );
+        fragmentColor = 
+          mix(    outFFinalLuminance, 
+                  texture(
+                    cubeMap, 
+                    //transform form viewlspace back to worldspace:
+                    transpose(mat3(viewMatrix)) * reflect( position.xyz , normalVN ) //fragment position is view space correspands to unnormalized direction :)
+                  ),
+                  cubeMapReflectivity        
+          );
       {% endif %}
    
     

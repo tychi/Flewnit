@@ -8,7 +8,6 @@
 	uniform float invCameraFarClipPlane = {{ invCameraFarClipPlane }};
 
 {% if not SHADING_FEATURE_NONE %}
-  uniform vec4 eyePositionW; //world space eye position, needed e.g. for skydome rendering
   
   {% if SHADING_FEATURE_AMBIENT_OCCLUSION %}
     uniform float AOinfluenceRadius;
@@ -35,7 +34,11 @@
   {% endif %}
   //factor of attenuation outside the outer light cone
   uniform float spotLightAmbientFactor = 0.1;
+  
+  uniform vec4 eyePositionW; //world space eye position, needed e.g. for skydome rendering
+  //uniform mat3 inverseViewRotationMatrix; //needed to transform "envmap lookup vector" from view space back to world space
   uniform float cubeMapReflectivity = 0.33;
+
 
   //clamp the attenuation due to shadowmapping to [minimalshadowAttenuation, 1.0]
   uniform float minimalshadowAttenuation = 0.2;

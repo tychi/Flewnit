@@ -24,7 +24,7 @@ BoxGeometry::BoxGeometry(
 	}
 
 	BufferInfo bufferi(
-			"BoxGeometryPositionBuffer",
+			name + String("BoxGeometryPositionBuffer"),
 			ContextTypeFlags(HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG),
 			POSITION_SEMANTICS,
 			TYPE_VEC4F,
@@ -36,23 +36,25 @@ BoxGeometry::BoxGeometry(
 
 	setAttributeBuffer(new Buffer(bufferi,false,0));
 
-	bufferi.name = "BoxGeometryNormalBuffer";	bufferi.bufferSemantics = NORMAL_SEMANTICS;
+	bufferi.name = name + String("BoxGeometryNormalBuffer");
+	bufferi.bufferSemantics = NORMAL_SEMANTICS;
 	setAttributeBuffer(new Buffer(bufferi,false,0));
 
 	if(addTangents)
 	{
-		bufferi.name = "BoxGeometryTangentBuffer";	bufferi.bufferSemantics = TANGENT_SEMANTICS;
+		bufferi.name = name + String("BoxGeometryTangentBuffer");
+		bufferi.bufferSemantics = TANGENT_SEMANTICS;
 		setAttributeBuffer( new Buffer( bufferi, false, 0 )	);
 	}
 
-	bufferi.name = "BoxGeometryTexCoordBuffer";
+	bufferi.name = name + String( "BoxGeometryTexCoordBuffer");
 	bufferi.bufferSemantics = TEXCOORD_SEMANTICS;
 	setAttributeBuffer(new Buffer(bufferi,false,0));
 
 	setIndexBuffer(
 		new Buffer(
 			BufferInfo(
-				"BoxGeometryIndexBuffer",
+				name + String("BoxGeometryIndexBuffer"),
 				ContextTypeFlags(HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG),
 				INDEX_SEMANTICS,
 				TYPE_UINT32,
