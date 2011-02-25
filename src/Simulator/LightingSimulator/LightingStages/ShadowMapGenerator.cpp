@@ -17,7 +17,7 @@ namespace Flewnit
 {
 
 ShadowMapGenerator::ShadowMapGenerator(ConfigStructNode* simConfigNode)
-: LightingSimStageBase("ShadowMapGenerationStage",
+: LightingSimStageBase("ShadowMapGenerator",
 		RENDERING_TECHNIQUE_SHADOWMAP_GENERATION,
 		//mask every material not castnig shadows:
 		VisualMaterialFlags(true,false,false,false,false),
@@ -69,7 +69,7 @@ void ShadowMapGenerator::initStage()throw(SimulatorException)
 		}
 
 		mUsedRenderTarget= new RenderTarget(
-				String("ShadowMapGenerationStageRT"),
+				String("ShadowMapGeneratorRT"),
 				Vector2Dui(mShadowMapResolution,mShadowMapResolution),
 				texType,
 				DEPTH_TEXTURE,

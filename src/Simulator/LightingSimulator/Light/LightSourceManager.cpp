@@ -28,7 +28,7 @@ LightSourceManager::LightSourceManager()
 	mLightSourceProjectionMatrixNearClipPlane = 0.1f;
 	mLightSourceProjectionMatrixFarClipPlane  = 100.0f;
 
-	mLightSourceUniformBuffer = 0;
+	mLightSourcesUniformBuffer = 0;
 	if(
 		(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
 				== LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS )
@@ -38,7 +38,7 @@ LightSourceManager::LightSourceManager()
 			 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
 	)
 	{
-		mLightSourceUniformBuffer = new Buffer(
+		mLightSourcesUniformBuffer = new Buffer(
 			BufferInfo(
 				String("LightSourceUniformBuffer"),
 				ContextTypeFlags(HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG),
@@ -257,14 +257,16 @@ int LightSourceManager::getNumTotalShadowingLightSources()const
 
 
 //fill buffers with recent values
-void LightSourceManager::setupBuffersForShading(float maxDistanceToMainCam)
+void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 {
+	return;
 	//TODO
 	assert(0&&"//TODO");
 }
 
-void LightSourceManager::setupBuffersForShadowMapGeneration(float maxDistanceToMainCam)
+void LightSourceManager::updateShadowMapMatricesUniformBuffer(Camera *mainCam)
 {
+	return;
 	//TODO
 	assert(0&&"//TODO");
 }

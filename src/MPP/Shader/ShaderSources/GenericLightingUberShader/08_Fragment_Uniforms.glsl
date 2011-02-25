@@ -8,7 +8,7 @@
 	uniform float invCameraFarClipPlane = {{ invCameraFarClipPlane }};
 
 {% if not SHADING_FEATURE_NONE %}
-  //uniform vec4 eyePosition_WS; <-- legacy;
+  uniform vec4 eyePositionW; //world space eye position, needed e.g. for skydome rendering
   
   {% if SHADING_FEATURE_AMBIENT_OCCLUSION %}
     uniform float AOinfluenceRadius;
@@ -17,8 +17,8 @@
 	             this is just a conceptional stub for AO                                                             {%endcomment%} 	
 	{%endif%}
 
-  //following some non-dependently generated material relevant uniforms; even if they aren'T used by some shader permutations,
-  //masking them according to shader features would be overkill; defined ansd unsued may is better than undefined and written to 
+  //following some non-dependently generated material relevant uniforms; even if they aren't used by some shader permutations,
+  //masking them according to shader features would be overkill; defined and unsued may is better than undefined and written to 
   //by the app
   //{
   uniform int numCurrentlyActiveLightSources =  {{ numMaxLightSources }} ;
@@ -88,4 +88,4 @@
     //end shadowmap matrix stuff
   {% endif %}
   //-----end lightsource/shadowmap interface -----------------------------------
-{% endif %}
+{% endif %} {%comment%} end if !SHADING_FEATURE_NONE {%endcomment%}

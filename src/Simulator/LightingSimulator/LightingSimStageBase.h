@@ -40,7 +40,7 @@ public:
 	//to draw and which not
 	//void drawAllCompliantGeometry(const VisualMaterialFlags& materialFlagMask);
 
-	//NON-null virtual here, because many lighting stages don't need any special implementation;
+	//NON-pure virtual here, because many lighting stages don't need any special implementation;
 	//usually, a scene node is tested if it is a world object an if true, its "visual domain" subobjects are
 	//checked for compatibility with the current material type mask, and if the check passed,
 	//their material is activated and their geometry drawn;

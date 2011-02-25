@@ -20,7 +20,7 @@ namespace Flewnit {
 
 DefaultLightingStage::DefaultLightingStage(ConfigStructNode* simConfigNode)
 : LightingSimStageBase(
-		"ShadowMapGenerationStage",
+		"DefaultLightingStage",
 		RENDERING_TECHNIQUE_DEFAULT_LIGHTING,
 		//mask for shadable materials
 		VisualMaterialFlags(false,false,true,false,false,false),

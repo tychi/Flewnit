@@ -262,21 +262,17 @@ bool LightingSimulator::validatePipeLine()  throw(SimulatorException)
 
 bool LightingSimulator::stepSimulation()  throw(SimulatorException)
 {
-	// TODO Auto-generated destructor stub
-	//LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
-
-
-    //glEnable(GL_TEXTURE_2D);
-
 	//render to and clear screen
 	RenderTarget::renderToScreen();
 	GUARD(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 
-
-	URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera()->setGLViewPort(
-		Vector2Di(0,0), Vector2Di(WindowManager::getInstance().getWindowResolution())
+	URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera()
+		->setGLViewPort(
+				Vector2Di(0,0),
+				Vector2Di(WindowManager::getInstance().getWindowResolution())
 	);
 
+	//update the uniform buffers
 
 
 	for(unsigned int i=0; i< mSimStages.size(); i++)

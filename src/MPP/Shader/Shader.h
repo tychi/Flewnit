@@ -48,6 +48,15 @@ const String ShaderStageFileEndings[] =
 	"frag"
 };
 
+//define binding points for the several potentially used uniform buffers;
+//this way, every buffer has its own index and we don't need to track
+enum UniformBufferBindingPoints
+{
+	INSTANCE_TRANSFORMATION_MATRICES_BUFFER_BINDING_POINT =0,
+	LIGHT_SOURCES_BUFFER_BINDING_POINT =1,
+	SHADOW_MAP_LOOKUP_MATRICES_BUFFER_BINDING_POINT = 2
+};
+
 
 //enum ShaderCodeSectionID
 //{
@@ -172,6 +181,13 @@ protected:
 
 	void attachCompiledStage(ShaderStageType which);
 	void detachCompiledStage(ShaderStageType which);
+
+
+	//------- uniform setter routines, to be called by derived concrete shaders when appropriate
+	void setupLightSourceUniforms(Camera *mainCam);
+
+	//---------------------------------------------------------------------------------------
+
 
 	Path mCodeDirectory;
 	Path mShaderName;

@@ -81,7 +81,7 @@ public:
 
 	inline LightSource* getLightSource(unsigned int index)const{assert(index<mLightSources.size()); return mLightSources[index];}
 	inline Buffer* getShadowMapMatricesUniformBuffer()const{return mShadowMapMatricesUniformBuffer;}
-	inline Buffer* getLightSourceUniformBuffer()const{return mLightSourceUniformBuffer;}
+	inline Buffer* getLightSourceUniformBuffer()const{return mLightSourcesUniformBuffer;}
 	//inline Texture* getShadowMapDepthTexture()const{return mShadowMapDepthTexture;}
 	//dictates the clip planes for all lightsource projection matrices;
 	inline float getLightSourceProjectionMatrixNearClipPlane()const{return mLightSourceProjectionMatrixNearClipPlane;}
@@ -90,8 +90,8 @@ public:
 
 
 	//fill buffers with recent values
-	void setupBuffersForShading(float maxDistanceToMainCam = 1000.0f);
-	void setupBuffersForShadowMapGeneration(float maxDistanceToMainCam = 1000.0f);
+	void updateLightSourcesUniformBuffer(Camera *mainCam);
+	void updateShadowMapMatricesUniformBuffer(Camera *mainCam);
 
 
 private:
@@ -117,7 +117,7 @@ private:
 	 *  as uniform buffers are expected to slower and hence only amortize when a big amount
 	 *  of data is needed ;).
 	 */
-	Buffer* mLightSourceUniformBuffer;
+	Buffer* mLightSourcesUniformBuffer;
 
 
 	/*

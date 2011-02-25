@@ -144,12 +144,12 @@ bool operator==(ShaderFeaturesLocal const& lhs, ShaderFeaturesLocal const& rhs);
 
 /*
  * Shader feature values globally defined on Engine initialization;
- * a shader will be generated on the base of both an per-stage/per-material customizable
+ * a shader will be generated on the base of both a per-simulation-stage/per-material customizable
  * ShaderFeaturesLocal and the ShaderFeaturesGlobal struct;
  * We need some values to be globally and uniquely defined in order to assure rendering
  * consistency; e.g. a shadowmap should be generated and sampled by every shader in the same way;
  *
- * This struct is stored in and queriable from LightingSimulator
+ * This struct is stored in and queriable from ShaderManager
  */
 struct ShaderFeaturesGlobal
 {

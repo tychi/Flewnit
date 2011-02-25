@@ -22,6 +22,7 @@
 
 #include <grantlee/engine.h>
 #include "Buffer/BufferHelperUtils.h"
+#include "Buffer/Buffer.h"
 
 //#include "GrantleeShaderFeaturesContext.h"
 
@@ -510,18 +511,82 @@ void ShaderStage::validate()throw(BufferException)
 	fileStream.close();
 }
 
+//============ uniform variables logic to come ==========================================================================
 
-////throw exception if file for code does not exist or if the section does not apply
-////to the shader type (e.g. customizable #defines cannot be loaded but only generated on the fly)
-//void ShaderStage::loadCodeSection(ShaderCodeSectionID which )throw(SimulatorException)
-//{
-//
-//}
-//
-//
-//void ShaderStage::propagateLoadedSourceToGL()
-//{
-//
-//}
+void Shader::setupLightSourceUniforms(Camera *mainCam)
+{
+	const ShaderFeaturesGlobal& sfg = ShaderManager::getInstance().getGlobalShaderFeatures();
+
+	if(sfg.lightSourcesLightingFeature == LIGHT_SOURCES_LIGHTING_FEATURE_NONE){return;}
+
+	if( (sfg.lightSourcesLightingFeature == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT)
+	 ||	(sfg.lightSourcesLightingFeature == LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT)
+	)
+	{
+		const LightSourceShaderStruct & lsStruct = LightSourceManager::getInstance().getLightSource(0)->getdata();
+
+	    Vector4D lightPosViewSpace = mainCam->getGlobalTransform().getLookAtMatrix() * LightSourceManager::getInstance().getLightSource(0)->getGlobalTransform().getTotalTransform() * Vector4D(lsStruct.position, 1.0f);
+	    GUARD(
+			glUniform3fv(
+				glGetUniformLocation(mGLProgramHandle,"lightSource.position"),
+				1,
+				&( lightPosViewSpace[0])
+			)
+		);
+	    GUARD(
+			glUniform3fv(
+				glGetUniformLocation(mGLProgramHandle,"lightSource.diffuseColor"),
+				1,
+				&(lsStruct.diffuseColor[0])
+			)
+		);
+	    GUARD(
+	    		glUniform3fv(
+					glGetUniformLocation(mGLProgramHandle,"lightSource.specularColor"),
+					1,
+					&(lsStruct.specularColor[0])
+				)
+		);
+	   Vector4D lightDirViewSpace = mainCam->getGlobalTransform().getLookAtMatrix() * Vector4D(lsStruct.direction, 0.0f);
+	   GUARD(
+				glUniform3fv(
+					glGetUniformLocation(mGLProgramHandle,"lightSource.direction"),
+					1,
+					&(lightDirViewSpace[0])
+				)
+		);
+	   GUARD(	glUniform1f(	glGetUniformLocation(mGLProgramHandle,"lightSource.innerSpotCutOff_Radians"),
+								lsStruct.innerSpotCutOff_Radians	)											);
+	   GUARD(	glUniform1f(	glGetUniformLocation(mGLProgramHandle,"lightSource.outerSpotCutOff_Radians"),
+								lsStruct.outerSpotCutOff_Radians	)											);
+	   GUARD(	glUniform1f(	glGetUniformLocation(mGLProgramHandle,"lightSource.spotExponent"),
+								lsStruct.spotExponent	)											);
+	   GUARD(	glUniform1f(	glGetUniformLocation(mGLProgramHandle,"lightSource.shadowMapLayer"),
+								lsStruct.shadowMapLayer	)								);
+	} //endif "only one light source for lighting"
+	else
+	{
+		//setup the uniform buffer as we have several lightsources
+
+
+		GUARD(glBindBufferBase(GL_UNIFORM_BUFFER,
+				static_cast<GLuint>(LIGHT_SOURCES_BUFFER_BINDING_POINT),
+				LightSourceManager::getInstance().getLightSourceUniformBuffer()->getGraphicsBufferHandle());
+		);
+		GUARD (GLuint uniformBlockIndex =  glGetUniformBlockIndex(mGLProgramHandle, "lightSourceBuffer"));
+		GUARD(glUniformBlockBinding(
+				mGLProgramHandle,
+				uniformBlockIndex,
+				static_cast<GLuint>(LIGHT_SOURCES_BUFFER_BINDING_POINT)
+				)
+		);
+
+		//TODO continue implementation
+		//assert(0 && "multiple lighting lightsources aren't yet supported, sorry; coming soon!");
+	}
+
+
+}
+
 
 }
