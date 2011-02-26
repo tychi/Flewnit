@@ -108,7 +108,7 @@ void  ShaderManager::assignShader(VisualMaterial* mat)
 
 Shader* ShaderManager::getShader(const ShaderFeaturesLocal& sfl)
 {
-	if(mShaderMap.find(sfl) == mShaderMap.end())
+	if(mShaderMap.find(sfl) != mShaderMap.end())
 	{
 		return mShaderMap[sfl];
 	}
@@ -118,13 +118,41 @@ Shader* ShaderManager::getShader(const ShaderFeaturesLocal& sfl)
 	}
 }
 
+/*
+ *	Shall return a shader where offsets of members in
+ *	lightsource buffer and shadowmap matrix buffer,
+ *	if the global shader features indicate their possible usage;
+ *
+ *	note: an instance transform uniform block is not necessary, as every instance manager
+ *	has its "own" shader to query from; only the other two uniform blocks have a "global" character
+ */
+Shader* ShaderManager::getUniformBufferOffsetQueryShader()
+{
+	//shaderfeatures to request from the shadermanager a minimalistic shader containing the
+	//uniform buffer declaration, so that offsets can be queried
+	static ShaderFeaturesLocal sfl =
+		ShaderFeaturesLocal(
+				RENDERING_TECHNIQUE_DEFAULT_LIGHTING, //lighting, for the creation of the lightsource uniform block
+				TEXTURE_TYPE_2D_RECT, //play no role, dummy..
+				VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING, //lighting, for the creation of the lightsource uniform block
+				ShadingFeatures(
+						SHADING_FEATURE_DIRECT_LIGHTING //lighting, for the creation of the lightsource uniform block
+						//TODO add shadowing when the rest is stable
+				),
+				false //no global instance buffer query needed
+	);
+	return getShader(sfl);
+}
+
+
+
 Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 {
 	//assert(0 && "have to finish shader implementation first");
 
 	//TODO continue implementation
 
-	assert(mShaderMap.find(sfl) == mShaderMap.end());
+	assert( ( mShaderMap.find(sfl) == mShaderMap.end() ) );
 
 	Shader* newShader = 0;
 

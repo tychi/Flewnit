@@ -88,6 +88,16 @@ public:
 	//needed for creation of/access to specialshaders like the primitive id-renderer:
 	Shader* getShader(const ShaderFeaturesLocal& sfl);
 
+	/*
+	 * 	Shall return a shader where offsets of members in
+	 *	lightsource buffer and shadowmap matrix buffer,
+	 *	if the global shader features indicate their possible usage;
+	 *
+	 *	note: an instance transform uniform block is not necessary, as every instance manager
+	 *	has its "own" shader to query from; only the other two uniform blocks have a "global" character
+	 */
+	Shader* getUniformBufferOffsetQueryShader();
+
 private:
 
 

@@ -253,8 +253,8 @@ void VertexBasedGeometry::draw(
 	}
 
 	//TODO set to instanced when rendering works
-	//GUARD( glDrawElementsInstanced(drawType,mIndexBuffer->getBufferInfo().numElements,GL_UNSIGNED_INT,0,numInstances) );
-	GUARD( glDrawElements(drawType,mIndexBuffer->getBufferInfo().numElements,GL_UNSIGNED_INT,0) );
+	GUARD( glDrawElementsInstanced(drawType,mIndexBuffer->getBufferInfo().numElements,GL_UNSIGNED_INT,0,numInstances) );
+	//GUARD( glDrawElements(drawType,mIndexBuffer->getBufferInfo().numElements,GL_UNSIGNED_INT,0) );
 
 	unbind();
 }

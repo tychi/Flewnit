@@ -20,6 +20,7 @@
 
 #include <boost/foreach.hpp>
 #include <sstream>
+#include "MPP/Shader/Shader.h"
 
 
 
@@ -34,7 +35,7 @@ LightSourceManager::LightSourceManager()
 {
 
 	mLightSourceProjectionMatrixNearClipPlane = 0.1f;
-	mLightSourceProjectionMatrixFarClipPlane  = 100.0f;
+	mLightSourceProjectionMatrixFarClipPlane  = 1000.0f;
 
 	mLightSourcesUniformBuffer = 0;
 	if(
@@ -46,15 +47,44 @@ LightSourceManager::LightSourceManager()
 			 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
 	)
 	{
+		//to know exactly the rquired buffer size, we would need all the compiled and linked shaders
+		//using the buffer to query the buffer size; due to alignment and rearrangement
+		//for memory access optimization we have to assume that the buffer object
+		//consumes more memory than it would do if it were tightly packed;
+		//n.b.: on the development laptop with a Geforce GT 435M with the 270.18 linux beta driver,
+		//the buffer elements ARE tighly packed light in the std140 manner, but we cannot rely on
+		//this for any machine and driver release;
+		//at this moment, we just have to guess a size and throw an exception if the actual
+		//shader requirement exceed the allocated amount;
+		//Why not allocation the biggest amount posibly needed? Think about the current worst case,
+		//that every single value is alinge to 16 byte for the fermi architecture;
+		//for later releases, this padding for alignment might get even worse, hence there
+		//is never a guarantee that the buffer is big enough; we just have to guess
+		//if we don't want to precompile any possible shader permutation;
+		//we assume a 128 byte alignment of array elements in the buffer, as fermi maximum coalesced reads
+		//from global memory are of that size
+		const cl_GLuint expectedBiggestAlignment = 128;
+		cl_GLuint maxExpectedAlignedBufferElementSize =
+				//integer rounding to next lower multiple of expectedBiggestAlignment:
+				( sizeof(LightSourceShaderStruct) / expectedBiggestAlignment) * expectedBiggestAlignment;
+		//add one expectedBiggestAlignment if the structure is not initially a multiple
+		if( (sizeof(LightSourceShaderStruct) % expectedBiggestAlignment) > 0 )
+		{
+			//if structure size does not correspond to expected alignment stride,
+			//add one stride
+			maxExpectedAlignedBufferElementSize += expectedBiggestAlignment;
+		}
+
 		mLightSourcesUniformBuffer = new Buffer(
 			BufferInfo(
 				String("LightSourceUniformBuffer"),
 				ContextTypeFlags(HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG),
 				LIGHT_SOURCE_BUFFER_SEMANTICS,
 				TYPE_FLOAT,
-				ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources *
-					//number of floats inside a LightSourceShaderStruct
-					sizeof(LightSourceShaderStruct) / BufferHelper::elementSize(TYPE_FLOAT),
+				ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources
+				//max. expected number of floats inside a LightSourceShaderStruct:
+					* maxExpectedAlignedBufferElementSize
+					/ BufferHelper::elementSize(TYPE_FLOAT),
 				BufferElementInfo(true),
 				UNIFORM_BUFFER_TYPE,
 				NO_CONTEXT_TYPE
@@ -71,13 +101,24 @@ LightSourceManager::LightSourceManager()
 	if(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
 		 == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)
 	{
+		const cl_GLuint expectedBiggestAlignment = 128;
+		//how many mat4's fit into the alignemt stride?
+		//(we know that 128/(4bytePerFloat*4ElementsPerVec*4columnsPerMatrix)=2), but lets keep it general,
+		//in case we wanna use ather than 32 bit base types once:
+		assert(sizeof(Matrix4x4) <= expectedBiggestAlignment);
+		int matricesPerAlignmentStride = expectedBiggestAlignment / sizeof(Matrix4x4);
+
+
 		mShadowMapMatricesUniformBuffer = new Buffer(
 			BufferInfo(
 				String("ShadowMapMatricesUniformBuffer"),
 				ContextTypeFlags( HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG),
 				TRANSFORMATION_MATRICES_SEMANTICS,
 				TYPE_MATRIX44F,
-				ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources,
+				ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources
+					//design decision: array elements must be possible to be aligned to expectedBiggestAlignment;
+					//better alloc double size than provoke buffer overflow and undefined shader behaviour
+					* matricesPerAlignmentStride ,
 				BufferElementInfo(true),
 				UNIFORM_BUFFER_TYPE,
 				NO_CONTEXT_TYPE
@@ -274,13 +315,11 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 {
 	if(mLightSourcesUniformBuffer)
 	{
-//		unsigned int numTotalFloatValuesInBuffer =
-//				ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources *
-//				//number of floats inside a LightSourceShaderStruct
-//				sizeof(LightSourceShaderStruct) / BufferHelper::elementSize(TYPE_FLOAT);
+		Shader* queryShader = ShaderManager::getInstance().getUniformBufferOffsetQueryShader();
+		//glGetActiveUniformsiv();GL_UNIFORM_OFFSET;
+
 
 		unsigned int numFloatsPerLightSource = sizeof(LightSourceShaderStruct) / BufferHelper::elementSize(TYPE_FLOAT);
-
 
 		unsigned int currentLightSourceUniformBufferIndex=0;
 		unsigned int currentFloatOffset=0;
@@ -297,6 +336,7 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 
 		//set everythin to zero in order to omit wrong rendering in hardcoeded for-loops
 		memset(bufferToFill,mLightSourcesUniformBuffer->getBufferInfo().bufferSizeInByte,0);
+
 
 		for(unsigned int currentLightSourceHostIndex =0; currentLightSourceHostIndex < mLightSources.size(); currentLightSourceHostIndex++ )
 		{
