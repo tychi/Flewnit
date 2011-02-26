@@ -79,8 +79,8 @@ void DemoInputInterpreter::perFrameCallback()
 
 void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 {
-	Camera* mainCamera =
-		URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
+//	Camera* mainCamera =
+//		URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
 
 	if(keyboard->getRecentKey() == GLFW_KEY_ENTER)
 	{

@@ -81,26 +81,6 @@ public:
 	SceneNode* addChild(SceneNode* child);
 	SceneNode* removeChild(String name);
 
-	//----------------------------------------------------
-//
-//	void setPosition(const Vector3D& pos);
-//	void setDirection(const Vector3D& dir);
-//	void setUpVector(const Vector3D& up);
-//	void setScale(float amount);
-//
-//
-//	Vector3D getPosition()const;
-//	Vector3D getDirection()const;
-//	Vector3D getUpVector()const;
-//	float getScale()const;
-//
-//
-//	const AmendedTransform& lookAt(const Vector3D& pos, const Vector3D& dir,
-//			const Vector3D& up = Vector3D(0.0f,1.0f,0.0f));
-//	//glm::gtx::transform2::lookAt()
-//
-//	AmendedTransform getViewMatrix()const;
-
 protected:
 
 
@@ -122,12 +102,11 @@ private:
 	friend class AmendedTransform;
 	//callback if AmendedTransform is manipulated directly so that the owning node can update itself;
 	void transformChanged(bool global);
-	//guard to omit endless recursions of transformChanged();
-	bool mIsCurrentlyUpdating;
+
+	String mName;
 
 	//needed by SimPipelinestages to check if a node is interesting
 	SceneNodeTypeFlags mTypeFlags;
-	String mName;
 
 	typedef std::map<String, SceneNode* > Nodemap;
 	Nodemap mChildren;
@@ -141,6 +120,9 @@ private:
 	bool mGlobalAABBisValidFlag;
 
 	SceneNode* mParent;
+
+	//guard to omit endless recursions of transformChanged();
+	bool mIsCurrentlyUpdating;
 };
 
 

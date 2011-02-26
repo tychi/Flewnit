@@ -17,13 +17,17 @@
 
 #include <boost/lexical_cast.hpp>
 #include "Buffer/BufferHelperUtils.h"
-#include "WorldObject/Box.h"
+//#include "WorldObject/Box.h"
 #include "Simulator/SimulationResourceManager.h"
 #include "Scene/Scene.h"
 #include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 #include "Buffer/BufferSharedDefinitions.h"
 #include "Util/Loader/Loader.h"
 #include "MPP/Shader/ShaderManager.h"
+#include "WorldObject/PureVisualObject.h"
+#include "WorldObject/SubObject.h"
+#include "URE.h"
+#include "Geometry/Procedural/BoxGeometry.h"
 
 
 
@@ -51,18 +55,104 @@ void Loader::loadScene()
 //DEBUG stuff:
 void Loader::createHardCodedSceneStuff()
 {
+	SceneNode& rootNode = SimulationResourceManager::getInstance().getScene()->root();
 	//create the first rendering, to see anything and to test the camera, the buffers, the shares and to overall architectural frame:
 	//TODO
-	SimulationResourceManager::getInstance().getScene()->root().addChild(
-		new Box("MyBox",AmendedTransform(Vector3D(0,-10,-30), Vector3D(0.0,0.1,-1.0)),Vector3D(30.0f,7.0f,150.0f))
+	rootNode.addChild(
+		new PureVisualObject("MyBox1",AmendedTransform(Vector3D(0,-10,-30), Vector3D(0.0,0.1,-1.0)))
+	);
+	rootNode.addChild(
+		new PureVisualObject("MyBox2",AmendedTransform(Vector3D(-40,-10,0), Vector3D(0,1,1)))
 	);
 
-	SimulationResourceManager::getInstance().getScene()->root().addChild(
-		new Box("MyBox2",AmendedTransform(Vector3D(-40,-10,0), Vector3D(0,1,1)),Vector3D(10.0f,20.0f,5.0f))
+
+	Geometry* geo1 = SimulationResourceManager::getInstance().getGeometry("MyBox1");
+	if(! geo1)
+	{
+		geo1 = new BoxGeometry("MyBox1",Vector3D(30.0f,7.0f,150.0f),true,
+				//patch stuff only for GL versions 4.0 or higher
+				false
+				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
+		);
+	}
+	Geometry* geo2 = SimulationResourceManager::getInstance().getGeometry("MyBox2");
+	if(! geo2)
+	{
+		geo2 = new BoxGeometry("MyBox2",Vector3D(10.0f,20.0f,5.0f),true,
+				//patch stuff only for GL versions 4.0 or higher
+				false
+				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
+		);
+	}
+
+
+
+	Material* mat1 = SimulationResourceManager::getInstance().getMaterial("BunnyDecalMaterial");
+	if(! mat1)
+	{
+		Texture* tex= URE_INSTANCE->getLoader()->loadTexture(
+				String("bunnyDecalTex"),
+				DECAL_COLOR_SEMANTICS,
+				Path("./assets/textures/bunny.png"),
+				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+				true,
+				false,
+				true
+		);
+		std::map<BufferSemantics,Texture*> myMap;
+		myMap[DECAL_COLOR_SEMANTICS] = tex;
+		mat1 = new VisualMaterial("BunnyDecalMaterial",
+			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+			ShadingFeatures( SHADING_FEATURE_DIRECT_LIGHTING | SHADING_FEATURE_DECAL_TEXTURING),
+			myMap,
+			//SHADING_FEATURE_DIRECT_LIGHTING,
+			//std::map<BufferSemantics,Texture*>(),
+			VisualMaterialFlags(true,false,true,true,false,false));
+	}//endif !mat1
+	Material* mat2 = SimulationResourceManager::getInstance().getMaterial("StoneBumpMaterial");
+	if(! mat2)
+	{
+		Texture* tex= URE_INSTANCE->getLoader()->loadTexture(
+				String("stoneBumpDecalTex"),
+				DECAL_COLOR_SEMANTICS,
+				Path("./assets/textures/rockbump.jpg"),
+				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+				true,
+				false,
+				true
+		);
+		std::map<BufferSemantics,Texture*> myMap;
+		myMap[DECAL_COLOR_SEMANTICS] = tex;
+		mat2 = new VisualMaterial("StoneBumpMaterial",
+			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+			ShadingFeatures( SHADING_FEATURE_DIRECT_LIGHTING | SHADING_FEATURE_DECAL_TEXTURING),
+			myMap,
+			//SHADING_FEATURE_DIRECT_LIGHTING,
+			//std::map<BufferSemantics,Texture*>(),
+			VisualMaterialFlags(true,false,true,true,false,false));
+	}//endif !mat2
+
+	dynamic_cast<WorldObject*>(rootNode.getChild("MyBox1"))->addSubObject(
+		new SubObject(
+			"BoxSubObject1",
+			VISUAL_SIM_DOMAIN,
+			geo1,
+			mat1
+		)
+	);
+	dynamic_cast<WorldObject*>(rootNode.getChild("MyBox2"))->addSubObject(
+		new SubObject(
+			"BoxSubObject2",
+			VISUAL_SIM_DOMAIN,
+			geo2,
+			mat2
+		)
 	);
 
 
-
+	//---------------------- begin light sources -----------------------------------
 
 	LightSourceManager::getInstance().createPointLight(
 			Vector4D(70.0f,15.0f,10.0f,1.0f),

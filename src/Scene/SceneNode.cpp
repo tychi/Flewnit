@@ -15,10 +15,12 @@ namespace Flewnit
 SceneNode::SceneNode(String name, SceneNodeTypeFlags typeflags,
 		const AmendedTransform& localTransform)
 : mName(name),
-  mIsCurrentlyUpdating(false), mTypeFlags(typeflags),
-  	  	  	  	  	  	  	  	  //set global equal to local as long there is no parent
-  mLocalTransform(localTransform), mGlobalTransform(localTransform),
-  mGlobalAABBisValidFlag(true), mParent(0)
+  mTypeFlags(typeflags),
+  mLocalTransform(localTransform),
+  mGlobalTransform(localTransform), //set global equal to local as long there is no parent
+  mGlobalAABBisValidFlag(true),
+  mParent(0),
+  mIsCurrentlyUpdating(false)
 {
 	mLocalTransform.setOwningSceneNode(this,false);
 	mGlobalTransform.setOwningSceneNode(this,true);
