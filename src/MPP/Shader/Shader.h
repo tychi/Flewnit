@@ -184,8 +184,17 @@ protected:
 
 
 	//------- uniform setter routines, to be called by derived concrete shaders when appropriate
-	void setupLightSourceUniforms(Camera *mainCam);
 
+	//Calculates and sets all needed permutations of model/view/projection/lookAt/shadowMapLookup matrices
+	//handles, if appropriate, buffer binding of:
+	// 	- shadowmapmatrices buffer
+	//	- instance-transformation-matrices buffer
+	void setupMatrixUniforms(Camera *mainCam, SubObject* so);
+	//either binds the lightsoure uniform buffer or sets the non-buffer-single-lightsource uniforms directly
+	void setupLightSourceUniforms(Camera *mainCam);
+//public:	//public for InstanceManager:
+//	void bindInstanceTransformationInfoUniformBuffer(Buffer* uniformBuffer);
+//protected:
 	//---------------------------------------------------------------------------------------
 
 

@@ -13,6 +13,7 @@
 
 #include <boost/foreach.hpp>
 #include "Simulator/LightingSimulator/LightingStages/ShadowMapGenerator.h"
+#include "WorldObject/InstanceManager.h"
 
 
 namespace Flewnit
@@ -152,16 +153,33 @@ void VisualMaterial::activate(
 			SubObject* currentUsingSuboject) throw(SimulatorException)
 {
 	//assert("is lighting stage" && dynamic_cast<LightingSimStageBase*>(currentStage));
-	dynamic_cast<ShadowMapGenerator*>(currentStage);
+	//dynamic_cast<ShadowMapGenerator*>(currentStage);
 
 	LightingSimStageBase* castedStage= reinterpret_cast<LightingSimStageBase*>(currentStage);
+	assert(castedStage);
+
+	//TODO delete those assertions when doing relevant stuff, because VisualMaterial class has
+	//evolved to an omnipotent class
 	assert(castedStage->getRenderingTechnique() != RENDERING_TECHNIQUE_DEFERRED_LIGHTING);
 	if( castedStage->getRenderingTechnique() == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION )
 		{assert(castsShadows());}
 	if( castedStage->getRenderingTechnique() == RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL )
 		{assert(! isTransparent());}
 
-	mCurrentlyUsedShader->use(currentUsingSuboject);
+	if(isInstanced())
+	{
+		//activate shader only if we are in a real draw call issued by an InstanceManager;
+		if(InstanceManager::instancedRenderingIsCurrentlyActive())
+		{
+			//we have a "real" geometry bound, i.e. there shall be drawn something
+			mCurrentlyUsedShader->use(currentUsingSuboject);
+		}
+	}
+	else
+	{
+		mCurrentlyUsedShader->use(currentUsingSuboject);
+	}
+
 }
 
 void VisualMaterial::deactivate(
@@ -266,8 +284,50 @@ void VisualMaterial::validateShader()throw(SimulatorException)
 	assert( (mCurrentlyUsedShader->getLocalShaderFeatures().instancedRendering )
 			== isInstanced() );
 
-	//TODO further validdation when needed
+	//TODO further validation when needed
 }
+
+
+//-------------------------------------------------------------------------------------------
+
+//InstancedVisualMaterial::InstancedVisualMaterial(String name)
+//: VisualMaterial(
+//		name,
+//		VISUAL_MATERIAL_TYPE_INSTANCED,
+//		SHADING_FEATURE_NONE,
+//		std::map<BufferSemantics, Texture*>(),
+//		VisualMaterialFlags(true,false,false,false,true,true)
+//		)
+//{
+//
+//}
+//
+//InstancedVisualMaterial::~InstancedVisualMaterial()
+//{
+//	//nothing to do
+//}
+//
+//bool InstancedVisualMaterial::operator==(const Material& rhs) const
+//{
+//	//as this material is kind of a dummy material, just the type is aapropriate to assure equality
+//	return (dynamic_cast<const InstancedVisualMaterial*>(&rhs) != 0 );
+//}
+//
+//void InstancedVisualMaterial::activate(
+//		SimulationPipelineStage* currentStage,
+//		SubObject* currentUsingSuboject) throw(SimulatorException)
+//{
+//	InstancedGeometry* instancedGeo = dynamic_cast<InstancedGeometry*>(currentUsingSuboject->getGeometry());
+//	assert(instancedGeo && "to an InstancedVisualMaterial MUST be associated an InstancedGeometry!");
+//
+//	instancedGeo->getInstanceManager()->registerInstanceForNextDrawing(instancedGeo->get)
+//}
+//
+//void InstancedVisualMaterial::deactivate(SimulationPipelineStage* currentStage,
+//		SubObject* currentUsingSuboject) throw(SimulatorException)
+//{
+//	//do nothing
+//}
 
 
 }

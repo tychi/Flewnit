@@ -4,6 +4,9 @@
  *
  *  Created on: Jan 26, 2011
  *      Author: tychi
+ *
+ *  Class designed to handle "adaptive" instanced rendering, i.e. every instenced is explicitely
+ *  registered for drawing every rendering pass; this enables masking/culling of unneeded/unwanted instances;
  */
 
 #pragma once
@@ -24,38 +27,44 @@ class InstanceManager
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	InstanceManager(String name, GLuint numMaxInstances,
-			Material* associatedMaterial, Geometry* nonInstancedGeometryToDraw );
+			Material* associatedNonInstancedMaterial, Geometry* nonInstancedGeometryToDraw );
 
 	virtual ~InstanceManager();
 
+	//needed by  VisualMaterial::activate() to see if it is an actual draw call or just a request to register
+	//an instance at the manager for later batched drawing
+	static inline bool instancedRenderingIsCurrentlyActive(){return sInstancedRenderingIsCurrentlyActive;}
+
+	//creates a new SubObject, containing a new InstancedGeometry and a re-used InstancedMaterial object
+	//throws exception if
+	SubObject* createInstance()throw(SimulatorException);
+
+	//called by InstancedVisualMaterial::activate();
+	//SubObject must own an InstacedGeometry;
+	void registerInstanceForNextDrawing(InstancedGeometry* instancedGeo);
 
 	void drawRegisteredInstances();
 
-	//SubObject must own an InstacedGeometry;
-	void registerInstanceForNextDrawing(SubObject* so);
-
 private:
-	String mName;
 
-	Material* mAssociatedMaterial;
+	//called at the end of drawRegisteredInstances() to reset registration state;
+	void resetDrawQueue();
 
-	//Uniform buffer containing the world transforms of the currently registered geometry instances
-	Buffer* mModelMatricesUniformBuffer;
-	//optional: if different material parameters are desired, so that every geo. instance
-	//needs unique and reproducable identification in a shader, we ne a "map-buffer" holding the
-	//"application logic-instance ID"; The dynamic registry of instances and the runtime-variable
-	//length of the "instance buffer" for the sake  of stuff like dynamic instance adding/removal
-	//and culling makes this necessary;
-	//contains one GLuint per
-	//Buffer* mInstanceIDUniformBuffer;
-
-	GLuint  mMaxManagedInstances;
-
+	GLuint mMaxManagedInstances;
+	GLuint mCreatedManagedInstances;
 	GLuint mNumCurrentlyRegisteredInstancesForNextDrawing;
 
-	//the "real" geometry which will be renderer
+
+	//Uniform buffer containing the model,modelView,modelViewProjection transforms of the currently
+	//registered geometry instances, plus the instance ID
+	Buffer* mInstanceTransformationInfoUniformBuffer;
+
+	//the "real" material holding the shading information
+	Material* mAssociatedNonInstancedMaterial;
+	//the "real" geometry which will be rendered
 	Geometry* mNonInstancedGeometryToDraw;
 
+	static bool sInstancedRenderingIsCurrentlyActive;
 };
 
 }

@@ -55,12 +55,16 @@ layout(triangles) in;
 	uniform float invCameraFarClipPlane = {{ invCameraFarClipPlane }};
 
 //---- shader interface ----------------------
+//input from vertex/tessEval shader
+in InterfaceData
+{
   {% include  "09_Generic_InterfaceData.glsl" %}
-//input from vertex shader -------------------
-  in InterfaceData input; //input from vertex shader;
-//output to fragment shader -----------------
-  out InterfaceData output; //output to following stages;
-  
+} input;
+//output to fragment shader
+out InterfaceData
+{
+  {% include  "09_Generic_InterfaceData.glsl" %}
+} output;
   
 void main()
 {

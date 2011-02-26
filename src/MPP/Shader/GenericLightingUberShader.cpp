@@ -74,11 +74,18 @@ void GenericLightingUberShader::fillOwnMatrixStructure(float* toFill, const Matr
         //FOR FULL COMPLIANCE TO THE TEMPLATE, THERE MUST MUCH MORE LOGIC BE PUT INTO THIS ROUTINE,
         //AND SOME STUFF LIKE INSTANCEMANAGER AND LIGHTSOURCE;AMANAGER MUST IMPLEMENT THERI BUFFFER FILLINGS
         // TODO TODO TODO
-        Camera* mainCam = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
-        Matrix4x4 viewProjMatrix = mainCam->getProjectionMatrix() * mainCam->getGlobalTransform().getLookAtMatrix();
+
 
         GUARD(glUseProgram(mGLProgramHandle));
 
+        Camera* mainCam = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
+
+        setupMatrixUniforms(mainCam,so);
+
+        Matrix4x4 viewProjMatrix = mainCam->getProjectionMatrix() * mainCam->getGlobalTransform().getLookAtMatrix();
+        const Matrix4x4 & modelMatrix = so->getOwningWorldObject()->getGlobalTransform().getTotalTransform();
+        Matrix4x4 modelViewMatrix = mainCam->getGlobalTransform().getLookAtMatrix() * modelMatrix;
+        Matrix4x4 modelViewProjMatrix = mainCam->getProjectionMatrix() * modelViewMatrix;
 
         GUARD(
         	glUniformMatrix4fv(
@@ -97,11 +104,7 @@ void GenericLightingUberShader::fillOwnMatrixStructure(float* toFill, const Matr
         	)
         );
         //----------------------------------------------
-        const Matrix4x4 & modelMatrix = so->getOwningWorldObject()->getGlobalTransform().getTotalTransform();
-        Matrix4x4 modelViewMatrix = mainCam->getGlobalTransform().getLookAtMatrix() * modelMatrix;
-        Matrix4x4 modelViewProjMatrix = mainCam->getProjectionMatrix() * modelViewMatrix;
-        //fillOwnMatrixStructure(ownmat,hardCodeModelMat);
-        //ownmat
+
         GUARD(
 			glUniformMatrix4fv(
 				glGetUniformLocation(mGLProgramHandle,"modelMatrix"),

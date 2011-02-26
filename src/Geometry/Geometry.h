@@ -29,6 +29,7 @@ enum GeometryRepresentation
 {
 	//used as default parameter for the render() function
 	DEFAULT_GEOMETRY_REPRESENTATION,
+	INSTANCED_GEOMETRY_REPESENTATION, //indicator that its just a reference to "real" geometry
 
 	//--------------------------------------
 	//following "good buffer-representable" representations:

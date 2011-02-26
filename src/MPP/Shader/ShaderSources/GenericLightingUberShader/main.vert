@@ -28,18 +28,28 @@
   {% if not RENDERING_TECHNIQUE_SHADOWMAP_GENERATION  or not  LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS  %}
     uniform mat4 viewMatrix;
     uniform mat4 viewProjectionMatrix;
+    //uniform int uniqueInstanceID = 0; //default zero
   {% endif %}
 {% endif %}
 
 //a bit overkill of matrix permutations, but removing unnecessary ones later is easyier than adding missing ones; those matrices makeing no sense in a certein rendering environment will be ignored;
 {% if instancedRendering %}
+
+  struct InstanceTransformInfo
+  {
+    mat4 modelMatrix;  //needed for layered rendering to be combined with the several lightsource matrices
+    mat4 modelViewMatrix; //needed in a non-layered context for calculation of view-space values for lighting calculations
+    mat4 modelViewProjectionMatrix; //needed in a non-layered context for gl_Position calculation
+    
+    int uniqueInstanceID; //it is not guearnteed that for each "logic" instance, the gl_InstanceID steys the same for every draw call
+                          //e.g. because of culling of "previous" instances, the own gl_InstanceID will get smaller 
+    
+    //no padding, because the offsets will be queried via GetActiveUniformsiv(...)
+  };
+
   layout(shared) uniform InstanceMatrixBuffer
   {
-	  mat4 modelMatrices [ {{numMaxInstancesRenderable}} ];     //needed for layered rendering to be combined with the several lightsource matrices
-    mat4 modelViewMatrices [ {{numMaxInstancesRenderable}} ]; //in a non-layered context for calculation of view-space values for lighting calculations
-    mat4 modelViewProjectionMatrices[ {{numMaxInstancesRenderable}} ]; //in a non-layered context for gl_Position calculation
-  
-  	//mat4 normalMatrices[ {{numMaxInstancesRenderable}} ];	    //only precomputable without layered rendering,i.e. less than one view matrix
+    InstanceTransformInfo instanceTransformInfo[  {{numMaxInstancesRenderable}} ];
   };
 {% else  %}
   uniform mat4 modelMatrix;
@@ -108,10 +118,12 @@ void main()
 {
   {% if SHADER_FEATURE_INSTANCING %}
     //grab the relevant matrices from the buffer
-    mat4 modelMatrix =                 modelMatrices[gl_InstanceID];
-    mat4 modelViewMatrix=              modelViewMatrices[gl_InstanceID];
-    mat4 modelViewProjectionMatrix =   modelViewProjectionMatrices[gl_InstanceID];
+    mat4 modelMatrix =                 instanceTransformInfo[gl_InstanceID].modelMatrix;
+    mat4 modelViewMatrix=              instanceTransformInfo[gl_InstanceID].modelViewMatrix;
+    mat4 modelViewProjectionMatrix =   instanceTransformInfo[gl_InstanceID].modelViewProjectionMatrix;
     //mat4 normalMatrix =                normalMatrices[gl_InstanceID];
+    
+    int uniqueInstanceID =             instanceTransformInfo[gl_InstanceID].uniqueInstanceID;
   {% endif %}	
 	
 	
@@ -162,7 +174,9 @@ void main()
          output.texCoords = inVTexCoord;
       {%endif%}    
       
-
+      {% if instancedRendering %}
+        output.uniqueInstanceID= uniqueInstanceID; 
+      {% endif %}
 
     
   {% endif %}  {%comment%} end of "coloring" inputs {%endcomment%}
@@ -208,3 +222,24 @@ void main()
   {% endif %}
 
 }
+
+
+
+{%comment%} //-----------------------------------------------------------------
+    //lecacy instancing uniform buffer content stuff; has been redesigned, see above; TODO delete this when instancing works
+  
+	  mat4 modelMatrices [ {{numMaxInstancesRenderable}} ];     //needed for layered rendering to be combined with the several lightsource matrices
+    mat4 modelViewMatrices [ {{numMaxInstancesRenderable}} ]; //in a non-layered context for calculation of view-space values for lighting calculations
+    mat4 modelViewProjectionMatrices[ {{numMaxInstancesRenderable}} ]; //in a non-layered context for gl_Position calculation
+    
+    int uniqueInstanceID;
+    
+    //following alignemt stuff, because 
+    float pad1;
+    float pad2;
+    float pad3;
+    
+  
+  	//mat4 normalMatrices[ {{numMaxInstancesRenderable}} ];	    //only precomputable without layered rendering,i.e. less than one view matrix
+
+{%endcomment%}

@@ -54,6 +54,10 @@
   {%comment%} for default spotlight shadowmap generation, there is no fragment shader necessary at all, hence no input variable {%endcomment%}
 {% endif %}
 
+{% if instancedRendering %}
+   flat int uniqueInstanceID; //no interpolation of integer stuff; value needed for potential shading deviations beween instances
+{% endif %}
+
 {%comment%} ################################# following ID inputs ##############################################################{%endcomment%}
 {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION %}
   ivec4 genericIndices;

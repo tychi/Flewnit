@@ -23,6 +23,8 @@
 #include <grantlee/engine.h>
 #include "Buffer/BufferHelperUtils.h"
 #include "Buffer/Buffer.h"
+#include "WorldObject/SubObject.h"
+#include "Geometry/InstancedGeometry.h"
 
 //#include "GrantleeShaderFeaturesContext.h"
 
@@ -512,6 +514,37 @@ void ShaderStage::validate()throw(BufferException)
 }
 
 //============ uniform variables logic to come ==========================================================================
+
+
+
+//Calculates and sets all needed permutations of model/view/projection/lookAt/shadowMapLookup matrices
+//handles, if appropriate, buffer binding of:
+// 	- shadowmapmatrices buffer
+//	- instance-transformation-matrices buffer
+void Shader::setupMatrixUniforms(Camera *mainCam, SubObject* so)
+{
+	VisualMaterial* visMat = dynamic_cast<VisualMaterial*>(so->getMaterial());
+	assert(visMat);
+
+	//first distinction: instanced rendering or not?
+	if( visMat->isInstanced())
+	{
+		assert(mLocalShaderFeatures.instancedRendering);
+		InstancedGeometry* instancedGeo = dynamic_cast<InstancedGeometry*>(so->getGeometry());
+		assert(instancedGeo);
+
+
+
+	}
+	else
+	{
+		//setup default transform uniforms
+	}
+
+
+}
+
+
 
 void Shader::setupLightSourceUniforms(Camera *mainCam)
 {

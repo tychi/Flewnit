@@ -167,6 +167,9 @@ String ShaderFeaturesLocal::stringify()const
 		case VISUAL_MATERIAL_TYPE_LIQUID_RENDERING:
 			returnString.append("_MatLiquid");
 			break;
+		case VISUAL_MATERIAL_TYPE_INSTANCED:
+			returnString.append("_MatInstanced");
+			break;
 		default:
 			break;
 	}
@@ -236,7 +239,7 @@ std::size_t hash_value(ShaderFeaturesLocal const& sfl)
     		   ( static_cast<int>(sfl.renderingTechnique) <<28 ) |
     		   //bit 27..20 (8bits) for number in [0..14]=4 bits --> fits
     		   ( static_cast<int>(sfl.renderTargetTextureType) <<20 ) |
-    		   //bit 19..16 (4bits) for number in [0..5]=3 bits --> fits
+    		   //bit 19..16 (4bits) for number in [0..7]=3 bits --> fits
     		   ( static_cast<int>(sfl.visualMaterialType) <<16 ) |
     		   //bit 15..1 (15 bits) for 9-bit bitfield --> fits
     		   ( static_cast<int>(sfl.shadingFeatures) << 1 ) |

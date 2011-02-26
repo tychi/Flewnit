@@ -19,12 +19,22 @@ class InstancedGeometry
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
 	InstanceManager* mInstanceManager;
-	// is FLEWNIT_INVALID_ID if subobject is not instanced
+	//the InstancedGeometry class is the only class with a backtrack to a Subobject;
+	//"real" Geomatry can have many users, hence a backtrack would be sensless, but this
+	//kind of proxy geometry is strongly associated to one single SubObject and hence worldObject
+	//(where we get the transformation matrices from^^)
+	SubObject* mOwningSubObject;
 	ID mInstanceID;
 
+	friend class InstanceManager;
+	//only InstanceManager may create objects of this type;
+	InstancedGeometry(String name,InstanceManager* instanceManager, SubObject* owningSubObject, ID instanceID);
+
 public:
-	InstancedGeometry(String name, GeometryRepresentation geoRep,InstanceManager* instanceManager, ID instanceID);
 	virtual ~InstancedGeometry();
+
+	inline InstanceManager* getInstanceManager()const{return mInstanceManager;}
+	//inline ID getInstanceID()const{return mInstanceID;}
 
 	virtual void draw(
 				//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,

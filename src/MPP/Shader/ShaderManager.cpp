@@ -165,6 +165,10 @@ Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 			//newShader = new LiquidShader (mShaderCodeDirectory,sfl);
 			assert(0&&"liquid rendering comes later");
 			break;
+		case VISUAL_MATERIAL_TYPE_INSTANCED:
+			//create nothing, as an instancedMaterial needs no shader;
+			return 0;
+			break;
 		default:
 			assert(0&&" unknown visual material type");
 			break;
