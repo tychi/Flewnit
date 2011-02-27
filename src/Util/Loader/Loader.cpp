@@ -62,7 +62,10 @@ void Loader::createHardCodedSceneStuff()
 		new PureVisualObject("MyBox1",AmendedTransform(Vector3D(0,-10,-30), Vector3D(0.0,0.1,-1.0)))
 	);
 	rootNode.addChild(
-		new PureVisualObject("MyBox2",AmendedTransform(Vector3D(-40,-10,0), Vector3D(0,1,1)))
+		new PureVisualObject("MyBox2",AmendedTransform(Vector3D(40,-10,0), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
+	);
+	rootNode.addChild(
+		new PureVisualObject("MyBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1)))
 	);
 
 
@@ -84,13 +87,22 @@ void Loader::createHardCodedSceneStuff()
 				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
 		);
 	}
+	Geometry* geo3 = SimulationResourceManager::getInstance().getGeometry("MyBoxAsPlane");
+	if(! geo3)
+	{
+		geo3 = new BoxGeometry("MyBoxAsPlane",Vector3D(300.0f,2.0f,300.0f),true,
+				//patch stuff only for GL versions 4.0 or higher
+				false
+				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
+		);
+	}
 
 
 
 	Material* mat1 = SimulationResourceManager::getInstance().getMaterial("BunnyDecalMaterial");
 	if(! mat1)
 	{
-		Texture* tex= URE_INSTANCE->getLoader()->loadTexture(
+		Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
 				String("bunnyDecalTex"),
 				DECAL_COLOR_SEMANTICS,
 				Path("./assets/textures/bunny.png"),
@@ -99,12 +111,17 @@ void Loader::createHardCodedSceneStuff()
 				false,
 				true
 		);
+
 		std::map<BufferSemantics,Texture*> myMap;
-		myMap[DECAL_COLOR_SEMANTICS] = tex;
+		myMap[DECAL_COLOR_SEMANTICS] = decalTex;
+
 		mat1 = new VisualMaterial("BunnyDecalMaterial",
 			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
 			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
-			ShadingFeatures( SHADING_FEATURE_DIRECT_LIGHTING | SHADING_FEATURE_DECAL_TEXTURING),
+			ShadingFeatures(
+					SHADING_FEATURE_DIRECT_LIGHTING
+					| SHADING_FEATURE_DECAL_TEXTURING
+			),
 			myMap,
 			//SHADING_FEATURE_DIRECT_LIGHTING,
 			//std::map<BufferSemantics,Texture*>(),
@@ -113,7 +130,7 @@ void Loader::createHardCodedSceneStuff()
 	Material* mat2 = SimulationResourceManager::getInstance().getMaterial("StoneBumpMaterial");
 	if(! mat2)
 	{
-		Texture* tex= URE_INSTANCE->getLoader()->loadTexture(
+		Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
 				String("stoneBumpDecalTex"),
 				DECAL_COLOR_SEMANTICS,
 				Path("./assets/textures/rockbump.jpg"),
@@ -122,12 +139,28 @@ void Loader::createHardCodedSceneStuff()
 				false,
 				true
 		);
+		Texture* normalMap= URE_INSTANCE->getLoader()->loadTexture(
+				String("stoneBumpNormalTex"),
+				//DECAL_COLOR_SEMANTICS,
+				NORMAL_SEMANTICS,
+				Path("./assets/textures/rockbump.png"),
+				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+				true,
+				false,
+				true
+		);
 		std::map<BufferSemantics,Texture*> myMap;
-		myMap[DECAL_COLOR_SEMANTICS] = tex;
+		myMap[DECAL_COLOR_SEMANTICS] = decalTex;
+		myMap[NORMAL_SEMANTICS] = normalMap;
+		//myMap[DECAL_COLOR_SEMANTICS] = normalMap;
 		mat2 = new VisualMaterial("StoneBumpMaterial",
 			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
 			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
-			ShadingFeatures( SHADING_FEATURE_DIRECT_LIGHTING | SHADING_FEATURE_DECAL_TEXTURING),
+			ShadingFeatures(
+					SHADING_FEATURE_DIRECT_LIGHTING
+					| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_NORMAL_MAPPING
+			),
 			myMap,
 			//SHADING_FEATURE_DIRECT_LIGHTING,
 			//std::map<BufferSemantics,Texture*>(),
@@ -150,16 +183,27 @@ void Loader::createHardCodedSceneStuff()
 			mat2
 		)
 	);
+	dynamic_cast<WorldObject*>(rootNode.getChild("MyBoxAsPlane"))->addSubObject(
+		new SubObject(
+			"MyBoxAsPlaneSubObject1",
+			VISUAL_SIM_DOMAIN,
+			geo3,
+			mat2
+		)
+	);
+
 
 
 	//---------------------- begin light sources -----------------------------------
 
 	LightSourceManager::getInstance().createPointLight(
-			Vector4D(70.0f,15.0f,10.0f,1.0f),
+			Vector4D(70.0f,45.0f,10.0f,1.0f),
 			false,
-			Vector4D(1.0f,0.5f,0.1f,1.0f),
-			Vector4D(1.1f,0.1f,0.0f,1.0f
-	));
+			Vector4D(1.0f,1.0f,1.0f,1.0f),
+			Vector4D(1.0f,1.0f,1.0f,1.0f)
+			//Vector4D(1.0f,0.5f,0.1f,1.0f),
+			//Vector4D(1.1f,0.1f,0.0f,1.0f)
+	);
 
 
 	if(
@@ -171,13 +215,16 @@ void Loader::createHardCodedSceneStuff()
 			 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
 	)
 	{
-		LightSourceManager::getInstance().createPointLight(
-				//Vector4D(-13.0f,5.0f,0.0f,1.0f),
-				Vector4D(-70.0f,15.0f,10.0f,1.0f),
-				false,
-				Vector4D(0.0f,0.0f,1.0f,1.0f),
-				Vector4D(0.0f,0.0f,1.0f,1.0f)
-		);
+		if(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources >= 2)
+		{
+			LightSourceManager::getInstance().createPointLight(
+					//Vector4D(-13.0f,5.0f,0.0f,1.0f),
+					Vector4D(-70.0f,25.0f,10.0f,1.0f),
+					false,
+					Vector4D(0.0f,0.0f,1.0f,1.0f),
+					Vector4D(0.0f,0.0f,1.0f,1.0f)
+			);
+		}
 
 		//two lights already created, hence the -2
 		int numTotalLightSourcesToCreate = ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources -2;
@@ -402,73 +449,72 @@ void Loader::transformPixelData(BufferSemantics bufferSemantics,
 		void* buffer, BufferElementInfo& texelLayout, fipImage* image)
 {
 	texelLayout.validate();
+	assert(sizeof(Vector4D) == 4* sizeof(float) && "Vector types must be tightly packed");
 
-	  //Vector4D* buffer = 0;
-	  //assert(sizeof(Vector4D) == 4* sizeof(float) && "Vector types must be tightly packed");
+	switch(image->getImageType())
+	{
+	case FIT_BITMAP:
+		if(image->getBitsPerPixel() != 32)
+		{
+			if ( ! (image->convertTo32Bits()) )
+			{
+				throw(BufferException("conversion of image to 32 bit per texel failed"));
+			}
+		}
 
-	  switch(image->getImageType())
-	  {
-	  case FIT_BITMAP:
-
-		  if(image->getBitsPerPixel() != 32)
-		  {
-			  if ( ! (image->convertTo32Bits()) )
-			  {
-				  throw(BufferException("conversion of image to 32 bit per texel failed"));
-			  }
 #if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR
-			  convertBGRAtoRGBA(image->accessPixels(), image->getWidth()*image->getHeight());
+		convertBGRAtoRGBA(image->accessPixels(), image->getWidth()*image->getHeight());
 #endif
 
-			  if(bufferSemantics == DISPLACEMENT_SEMANTICS)
-			  {
-				  LOG<<WARNING_LOG_LEVEL<<"Trying the shiftUnsignedByteToSignedByteForNormalMapping; "
-						 << "This is experimental; in case of bugs, check  Loader::loadTexture()";
-				  //normalmapping adoption :)
-				  shiftUnsignedByteToSignedByteForNormalMapping(image->accessPixels(), image->getImageSize());
-				  texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_INT,8,true);
-			  }
-			  else
-			  {
-				  //override to default as i don't have time for sophisticated adoption atm
-				  texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true);
-			  }
+//		if(bufferSemantics == DISPLACEMENT_SEMANTICS)
+//		{
+//			LOG<<WARNING_LOG_LEVEL<<"Trying the shiftUnsignedByteToSignedByteForNormalMapping; "
+//				<< "This is experimental; in case of bugs, check  Loader::loadTexture()";
+//			//normalmapping adoption :)
+//			shiftUnsignedByteToSignedByteForNormalMapping(image->accessPixels(), image->getImageSize());
+//			texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_INT,8,true);
+//		}
+//		else
+		{
+			//override to default as i don't have time for sophisticated adoption atm
+			texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true);
+		}
 
-			  //copy altered image contents to the designated buffer
-			  memcpy( buffer,
-					  reinterpret_cast<void*>(image->accessPixels()),
-					  texelLayout.numChannels * sizeof(BYTE) * image->getWidth()* image->getHeight()
-			  );
-		  }
+		  //copy altered image contents to the designated buffer
+		  memcpy( buffer,
+				  reinterpret_cast<void*>(image->accessPixels()),
+				  texelLayout.numChannels * sizeof(BYTE) * image->getWidth()* image->getHeight()
+		  );
+
 		  break;
 	  case FIT_RGBAF:
 		  texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
 
 		  //copy altered image contents to the designated buffer
 		  memcpy( buffer,
-					  reinterpret_cast<void*>(image->accessPixels()),
-					  texelLayout.numChannels * sizeof(float) * image->getWidth()* image->getHeight()
+				  reinterpret_cast<void*>(image->accessPixels()),
+				  texelLayout.numChannels * sizeof(float) * image->getWidth()* image->getHeight()
 		  );
 		  break;
 	  case FIT_RGBF:
-		  	  //add alpha channel for alignment purposes; freeimange doesn't support this conversion,
-		  	  //so let's hack it for ourselves:
-		  	  //buffer	= new Vector4D[image->getWidth()*image->getHeight()];
+		  //add alpha channel for alignment purposes; freeimange doesn't support this conversion,
+		  //so let's hack it for ourselves:
+		  //buffer	= new Vector4D[image->getWidth()*image->getHeight()];
 
-		  	  assert((image->getBitsPerPixel()==96) && "it is really 32bit three component image" );
+		  assert((image->getBitsPerPixel()==96) && "it is really 32bit three component image" );
 
-		  	  addAlphaChannelToVec3FImage(
-		  			reinterpret_cast<Vector3D*>(image->accessPixels()),
-		  			reinterpret_cast<Vector4D*> (buffer),
-		  			image->getWidth()*image->getHeight());
+		  addAlphaChannelToVec3FImage(
+				reinterpret_cast<Vector3D*>(image->accessPixels()),
+		  		reinterpret_cast<Vector4D*> (buffer),
+		  		image->getWidth()*image->getHeight());
 
-		  	  texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
+		  texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
 
-			  //copy altered image contents to the designated buffer
-			  memcpy( buffer,
-						  reinterpret_cast<void*>(image->accessPixels()),
-						  texelLayout.numChannels * sizeof(float) * image->getWidth()* image->getHeight()
-			  );
+		  //copy altered image contents to the designated buffer
+		  memcpy( buffer,
+				  reinterpret_cast<void*>(image->accessPixels()),
+				  texelLayout.numChannels * sizeof(float) * image->getWidth()* image->getHeight()
+			);
 		  break;
 	  default:
 		  throw(BufferException("sorry, there is no other image type but "

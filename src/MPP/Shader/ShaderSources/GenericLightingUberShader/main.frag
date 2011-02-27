@@ -115,6 +115,7 @@ void main()
                     // if(length(clamp(outFFinalLuminance.xyz,vec3(0.0),vec3(1.0) ))< 0.01 ){outFFinalLuminance += 0.05* vec4(lightSource.specularColor, 1.0);}
                      
                      //outFFinalLuminance= vec4(input.texCoords.xy,0,0); 
+                     //outFFinalLuminance= vec4(normalVN, 1.0); //normal debug
                      //outFFinalLuminance= texture(decalTexture,input.texCoords.xy);
                       
                   {% endif %} {%comment%} end distinction between if lighting the samples or not {%endcomment%}
@@ -135,7 +136,7 @@ void main()
           mix(    outFFinalLuminance, 
                   texture(
                     cubeMap, 
-                    //transform form viewlspace back to worldspace:
+                    //transform from viewspace back to worldspace via inverse rotational part of the view matrix:
                     transpose(mat3(viewMatrix)) * reflect( position.xyz , normalVN ) //fragment position is view space correspands to unnormalized direction :)
                   ),
                   cubeMapReflectivity        

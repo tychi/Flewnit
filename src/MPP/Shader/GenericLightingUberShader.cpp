@@ -97,7 +97,7 @@ void GenericLightingUberShader::use(SubObject *so) throw (SimulatorException)
    VisualMaterial * visMat =  dynamic_cast<VisualMaterial*>(so->getMaterial());
    assert(visMat);
    setupMaterialUniforms(visMat);
-//---------- uncategrorized uniforms to come ------------------------------------------------
+//---------- uncategorized uniforms to come ------------------------------------------------
 	bindVector3D("eyePositionW",mainCam->getGlobalTransform().getPosition());
 
 }

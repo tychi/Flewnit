@@ -175,37 +175,46 @@ String ShaderFeaturesLocal::stringify()const
 	}
 
 
-
-	switch (shadingFeatures) {
-		case SHADING_FEATURE_NONE:
-			returnString.append("_ShadeNone");
-			break;
-		case SHADING_FEATURE_DIRECT_LIGHTING:
-			returnString.append("_ShadeDirectLighting");
-			break;
-		case SHADING_FEATURE_GLOBAL_LIGHTING:
-			returnString.append("_ShadeGlobalLighting");
-			break;
-		case SHADING_FEATURE_DECAL_TEXTURING:
-			returnString.append("_ShadeDecal");
-			break;
-		case SHADING_FEATURE_DETAIL_TEXTURING:
-			returnString.append("_ShadeDetail");
-			break;
-		case SHADING_FEATURE_NORMAL_MAPPING:
-			returnString.append("_ShadeNormalMapping");
-			break;
-		case SHADING_FEATURE_CUBE_MAPPING:
-			returnString.append("_ShadeCubelMapping");
-			break;
-		case SHADING_FEATURE_AMBIENT_OCCLUSION:
-			returnString.append("_ShadeAO");
-			break;
-		case SHADING_FEATURE_TESSELATION:
-			returnString.append("_ShadeTesselation");
-			break;
-		default:
-			break;
+	for(int  currentShadingFeatureBitPosition = 0;
+			currentShadingFeatureBitPosition < __NUM_SHADING_FEATURES__;
+			currentShadingFeatureBitPosition ++)
+	{
+		ShadingFeatures currentShadingFeatureToTest =
+				ShadingFeatures(
+						shadingFeatures &
+						(ShadingFeatures(1<<currentShadingFeatureBitPosition))
+				);
+		switch (currentShadingFeatureToTest) {
+			case SHADING_FEATURE_NONE:
+				returnString.append("_ShadeNone");
+				break;
+			case SHADING_FEATURE_DIRECT_LIGHTING:
+				returnString.append("_ShadeDirectLighting");
+				break;
+			case SHADING_FEATURE_GLOBAL_LIGHTING:
+				returnString.append("_ShadeGlobalLighting");
+				break;
+			case SHADING_FEATURE_DECAL_TEXTURING:
+				returnString.append("_ShadeDecal");
+				break;
+			case SHADING_FEATURE_DETAIL_TEXTURING:
+				returnString.append("_ShadeDetail");
+				break;
+			case SHADING_FEATURE_NORMAL_MAPPING:
+				returnString.append("_ShadeNormalMapping");
+				break;
+			case SHADING_FEATURE_CUBE_MAPPING:
+				returnString.append("_ShadeCubelMapping");
+				break;
+			case SHADING_FEATURE_AMBIENT_OCCLUSION:
+				returnString.append("_ShadeAO");
+				break;
+			case SHADING_FEATURE_TESSELATION:
+				returnString.append("_ShadeTesselation");
+				break;
+			default:
+				break;
+		}
 	}
 
 	if(instancedRendering)

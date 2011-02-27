@@ -720,6 +720,34 @@ void Shader::setupMaterialUniforms(VisualMaterial* visMat)
 		visMat->getTexture(DECAL_COLOR_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
 		bindInt("decalTexture",DECAL_COLOR_SEMANTICS);
 	}
+	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DETAIL_TEXTURING ) !=0 ))
+	{
+		glActiveTexture(GL_TEXTURE0 + DETAIL_TEXTURE_SEMANTICS);
+		visMat->getTexture(DETAIL_TEXTURE_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+		bindInt("detailTexture",DETAIL_TEXTURE_SEMANTICS);
+	}
+	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_NORMAL_MAPPING) !=0 ))
+	{
+		glActiveTexture(GL_TEXTURE0 + NORMAL_SEMANTICS);
+		visMat->getTexture(NORMAL_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+		bindInt("normalMap",NORMAL_SEMANTICS);
+	}
+	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_CUBE_MAPPING ) !=0 ))
+	{
+		glActiveTexture(GL_TEXTURE0 + ENVMAP_SEMANTICS);
+		visMat->getTexture(ENVMAP_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+		bindInt("cubeMap",ENVMAP_SEMANTICS);
+	}
+
+	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_AMBIENT_OCCLUSION ) !=0 ))
+	{
+		//note: bind DEPTH_BUFFER_SEMANTICS instead of AMBIENT_OCCLUSION_SEMANTICS, as AMBIENT_OCCLUSION_SEMANTICS
+		//contains the AO result and not the raw image for computation
+		assert(0&& "sry AO not implemented yet"); //TODO
+		glActiveTexture(GL_TEXTURE0 + DEPTH_BUFFER_SEMANTICS);
+		visMat->getTexture(DEPTH_BUFFER_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+		bindInt("depthBufferForAO",DEPTH_BUFFER_SEMANTICS);
+	}
 }
 
 

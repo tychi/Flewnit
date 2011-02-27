@@ -9,7 +9,7 @@
 	{% if SHADING_FEATURE_CUBE_MAPPING	 		%}uniform sampler2D cubeMap;				{%endif%}
 	{% if SHADING_FEATURE_AMBIENT_OCCLUSION %}
 	  uniform sampler2D depthBufferForAO; //when doing deferred lighting, we can use the positiontexture directly
-	  {%comment%} TODO if really doing AO, we have to determine the texture type, the coordinate system etc. pp.; 
-	  this is just a conceptional stub                                                                            {%endcomment%} 	
+	  {%comment%} TODO if really doing AO, there is a lot of work to be done;
+	              This is just a conceptional stub                                          {%endcomment%} 	
 	{%endif%}
 {% endif %}
