@@ -22,6 +22,7 @@
 #include "Material/VisualMaterial.h"
 #include "Buffer/BufferInterface.h"
 #include "Buffer/Texture.h"
+#include "MPP/Shader/ShaderManager.h"
 
 namespace Flewnit {
 
@@ -82,19 +83,21 @@ void GenericLightingUberShader::use(SubObject *so) throw (SimulatorException)
    //---------------------------------------------------------
    setupMatrixUniforms(mainCam,so);
    //----------------------------------------------------------
-   setupLightSourceUniforms(mainCam);
+   if( (mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_DIRECT_LIGHTING) !=0)
+   {
+	   setupLightSourceUniforms(mainCam);
+   }
+//   //----------------------------------------------------------
+//   if( ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+//		   != LIGHT_SOURCES_SHADOW_FEATURE_NONE )
+//   {
+//	   setupShadowUniforms(mainCam);
+//   }
    //----------------------------------------------------------
-
    VisualMaterial * visMat =  dynamic_cast<VisualMaterial*>(so->getMaterial());
-	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DECAL_TEXTURING ) !=0 ))
-	{
-		glActiveTexture(GL_TEXTURE0 + DECAL_COLOR_SEMANTICS);
-		visMat->getTexture(DECAL_COLOR_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
-		bindInt("decalTexture",DECAL_COLOR_SEMANTICS);
-	}
-
-
-	//---------- uncategrorized uniforms to come ------------------------------------------------
+   assert(visMat);
+   setupMaterialUniforms(visMat);
+//---------- uncategrorized uniforms to come ------------------------------------------------
 	bindVector3D("eyePositionW",mainCam->getGlobalTransform().getPosition());
 
 }

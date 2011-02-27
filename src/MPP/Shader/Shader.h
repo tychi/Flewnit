@@ -195,6 +195,8 @@ protected:
 	void setupMatrixUniforms(Camera *mainCam, SubObject* so);
 	//either binds the lightsoure uniform buffer or sets the non-buffer-single-lightsource uniforms directly
 	void setupLightSourceUniforms(Camera *mainCam);
+	//void setupShadowUniforms(Camera *mainCam);
+	void setupMaterialUniforms(VisualMaterial* visMat);
 
 	void bindMatrix4x4(String uniformName, const Matrix4x4& mat);
 	void bindVector4D(String uniformName, const Vector4D& vec);

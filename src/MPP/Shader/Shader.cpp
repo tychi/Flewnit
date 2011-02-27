@@ -20,14 +20,16 @@
 #include "Util/Log/Log.h"
 
 
-#include <grantlee/engine.h>
 #include "Buffer/BufferHelperUtils.h"
 #include "Buffer/Buffer.h"
+#include "Buffer/Texture.h"
+
+#include "WorldObject/InstanceManager.h"
 #include "WorldObject/SubObject.h"
 #include "Geometry/InstancedGeometry.h"
-#include "WorldObject/InstanceManager.h"
 
-//#include "GrantleeShaderFeaturesContext.h"
+
+#include <grantlee/engine.h>
 
 typedef QVariantHash TemplateContextMap;
 
@@ -584,6 +586,11 @@ void Shader::setupMatrixUniforms(Camera *mainCam, SubObject* so)
 	VisualMaterial* visMat = dynamic_cast<VisualMaterial*>(so->getMaterial());
 	assert(visMat);
 
+	/*
+	    if( ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+		   != LIGHT_SOURCES_SHADOW_FEATURE_NONE )
+	 * */
+
 	Matrix4x4 viewMatrix = mainCam->getGlobalTransform().getLookAtMatrix();
 	Matrix4x4 viewProjMatrix = mainCam->getProjectionMatrix() * viewMatrix;
 
@@ -604,6 +611,10 @@ void Shader::setupMatrixUniforms(Camera *mainCam, SubObject* so)
 	{
 		bindMatrix4x4("viewMatrix",viewMatrix);
 		bindMatrix4x4("viewProjectionMatrix",viewProjMatrix);
+	}
+	else
+	{
+
 	}
 
 
@@ -697,8 +708,18 @@ void Shader::setupLightSourceUniforms(Camera *mainCam)
 				)
 		);
 	}
+}
 
 
+
+void Shader::setupMaterialUniforms(VisualMaterial* visMat)
+{
+	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DECAL_TEXTURING ) !=0 ))
+	{
+		glActiveTexture(GL_TEXTURE0 + DECAL_COLOR_SEMANTICS);
+		visMat->getTexture(DECAL_COLOR_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+		bindInt("decalTexture",DECAL_COLOR_SEMANTICS);
+	}
 }
 
 
