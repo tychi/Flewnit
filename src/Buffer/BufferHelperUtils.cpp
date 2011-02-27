@@ -99,7 +99,7 @@ UniformBufferMetaInfo::UniformBufferMetaInfo( GLint numMaxArrayElements, String 
 	//mArrayName(arrayName),
 	mMemberStrings(memberStrings),
 	mRequiredBufferSize(0),
-	mNumMemberElements(memberStrings.size()),
+	mNumMemberElements(memberStrings.size() == 0 ? 1 : memberStrings.size() ),
 	mBufferOffsets(0)
 {
 	GLuint shaderGLProgramHandle = queryShader->getGLProgramHandle();
@@ -133,15 +133,26 @@ UniformBufferMetaInfo::UniformBufferMetaInfo( GLint numMaxArrayElements, String 
 			arrayName +
 			String("[")
 				+ HelperFunctions::toString(arrayElementRunner)
-			+ String("].") ;
+			+ String("]") ;
 
 
 			mBufferOffsets[arrayElementRunner]= new GLint[mNumMemberElements];
-			for(int memberRunner=0; memberRunner< mNumMemberElements; memberRunner++)
+			if(memberStrings.size() != 0)
 			{
-				indexQueryStringArray[memberRunner]= String(baseString+memberStrings[memberRunner]);
-				indexQuery_C_StringArray[memberRunner]= indexQueryStringArray[memberRunner].c_str();
+				//we have a structure as array elements; construct the GL referencation strings:
+				for(int memberRunner=0; memberRunner< mNumMemberElements; memberRunner++)
+				{
+					indexQueryStringArray[memberRunner]= String(baseString+ String(".") + memberStrings[memberRunner]);
+					indexQuery_C_StringArray[memberRunner]= indexQueryStringArray[memberRunner].c_str();
+				}
 			}
+			else
+			{
+				//the array element constist of a single built-in type, i.e. the GL referencation strings
+				//are a single string, beeing the base string:
+				indexQuery_C_StringArray[0]= baseString.c_str();
+			}
+
 			//first, get indices of current lightsource members:
 			GUARD(
 				glGetUniformIndices(
@@ -169,6 +180,8 @@ UniformBufferMetaInfo::UniformBufferMetaInfo( GLint numMaxArrayElements, String 
 				LOG<<DEBUG_LOG_LEVEL << String(indexQuery_C_StringArray[memberRunner])<<" ;\n";
 				LOG<<DEBUG_LOG_LEVEL <<"uniform index: "<<  currentUniformIndices[memberRunner] <<" ;\n";
 				LOG<<DEBUG_LOG_LEVEL <<"uniform offset: "<<  mBufferOffsets[arrayElementRunner][memberRunner] <<" ;\n";
+				assert( "member should be active in shader, otherwise uniform buffer filling would turn out even more complicated :@"
+						&&  ( currentUniformIndices[memberRunner] != GL_INVALID_INDEX) );
 			}
 	} //endfor
 	delete[] indexQuery_C_StringArray;

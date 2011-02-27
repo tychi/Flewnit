@@ -30,6 +30,9 @@ public:
 
 
 
+	//shortcut to global transform:
+	Matrix4x4 getViewMatrix();
+
 	const Matrix4x4& perspective(	float verticalFOVAngle,
 									float aspectRatioXtoY,
 									float nearClipPlane = 0.1f,

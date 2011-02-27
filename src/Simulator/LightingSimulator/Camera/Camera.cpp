@@ -43,6 +43,11 @@ Camera::~Camera()
 }
 
 
+Matrix4x4 Camera::getViewMatrix()
+{
+	return getGlobalTransform().getLookAtMatrix();
+}
+
 const Matrix4x4& Camera::perspective(	float verticalFOVAngle,
 								float aspectRatioXtoY,
 								float nearClipPlane,

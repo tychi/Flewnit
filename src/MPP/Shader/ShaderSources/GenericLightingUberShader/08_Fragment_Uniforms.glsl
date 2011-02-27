@@ -65,10 +65,12 @@
                   (assert also that multiple-lightsource-LIGHTING is enabled)                  {% endcomment %}
     {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
         //multiple light source shadow map lookup parameters
-        layout(shared) uniform worldToShadowMapMatrixBuffer
+        layout(shared) uniform WorldToShadowMapMatrixBuffer
         {
-          mat4 worldToShadowMapMatrices[  {{ numMaxShadowCasters }} ]; //bias*perspLight*viewLight                for light calcs in world space and
-                                                                       //bias*perspLight*viewLight * (camView)⁻1  for light calcs in view space
+          //bias*perspLight*viewLight                  for light calcs in world space and
+          //bias*perspLight*viewLight * (camView)⁻1    for light calcs in view space <-- THIS IS WHAT I TOOK!
+          mat4 worldToShadowMapMatrices[  {{ numMaxShadowCasters }} ]; 
+                                                                      
         };
     {% endif %}    
     {% else %}//single light source shadow map lookup parameters following:

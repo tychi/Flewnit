@@ -54,7 +54,15 @@ public:
 	//accum: translationMatrix* Mat4(normalMatrix)* scaleMatrix;
 	Matrix4x4 getTotalTransform()const;
 
+	//convenience functions:
+	Matrix4x4 getScaleMatrix()const;
+	Matrix4x4 getInverseScaleMatrix()const;
+	static bool matricesAreEqual(const Matrix4x4& lhs, const Matrix4x4& rhs);
+
 	AmendedTransform getInverse()const;
+
+
+
 
 	void setPosition(const Vector3D& pos);
 	void setDirection(const Vector3D& dir);
@@ -98,15 +106,9 @@ protected:
 	//this constructor will vaklidate the passed transformation matrix nevertheless;
 	friend class Loader;
 //FOR DEBUG ONLY public: TODO remove when tested;
-public:
+//public:
 	//parent is set by addScenenode-function automatically
 	AmendedTransform(const Matrix4x4& transform);
-
-public:
-	//convenience functions:
-	Matrix4x4 getScaleMatrix()const;
-	Matrix4x4 getInverseScaleMatrix()const;
-	static bool matricesAreEqual(const Matrix4x4& lhs, const Matrix4x4& rhs);
 
 };
 

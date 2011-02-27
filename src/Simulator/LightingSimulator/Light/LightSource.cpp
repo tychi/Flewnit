@@ -8,6 +8,7 @@
 #include "LightSource.h"
 
 #include "LightSourceManager.h"
+#include "Simulator/LightingSimulator/Camera/Camera.h"
 
 namespace Flewnit
 {
@@ -214,13 +215,13 @@ Matrix4x4 SpotLight::getViewMatrix()
 //Projective part is constructed like this;
 // 	opening angle from outerSpotCutOff_Radians,
 //	aspect ratio = 1/1
-//a squared septh texture is recommended;
+//a squared septh texture is strongly recommended;
 Matrix4x4 SpotLight::getViewProjectionMatrix()
 {
 	return
 		glm::gtc::matrix_projection::perspective(
 				glm::degrees( getdata().outerSpotCutOff_Radians ),
-				1.0f,
+				1.0f, //assum square shadow map
 				LightSourceManager::getInstance().getLightSourceProjectionMatrixNearClipPlane(),
 				LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane()
 		)
@@ -235,9 +236,22 @@ Matrix4x4 SpotLight::getBiasedViewProjectionMatrix(float scale, float translatio
 			glm::scaleBias(scale,translation)
 			*
 			getViewProjectionMatrix();
-
-
 }
+
+
+//matrix for shadowmap lookup in VIEW space: bias*perspLight*viewLight * (camView)⁻1 ;
+//returns getBiasedViewProjectionMatrix(scale,translation) * spectatorCam->getViewMatrix().inverse();
+//scale is configurable in case one wants to use rectangle texture for whatever reason...
+Matrix4x4 SpotLight::getViewSpaceShadowMapLookupMatrix( Camera* spectatorCam,
+		float scale, float translation)
+{
+	//this could be greatly optimized, the matrixes can be stored instead of recalculated every time;
+	//plus, all those inverser for sure break down to a simple wolrdm amitrx without any inverses ;)
+	//TODO in faar future ;)
+	return getBiasedViewProjectionMatrix(scale,translation) * glm::inverse(spectatorCam->getViewMatrix());
+}
+
+
 
 
 }

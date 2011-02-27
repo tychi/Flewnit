@@ -98,26 +98,23 @@ void LightSourceManager::init()
 	if(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
 		 == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)
 	{
-		//TODO refactor the same way as lightSource uniform buffer;
+		std::vector<String> memberStrings;//empty on purpose, as the LS uniform buffer has no struct as array elements!
 
-		const cl_GLuint expectedBiggestAlignment = 128;
-		//how many mat4's fit into the alignemt stride?
-		//(we know that 128/(4bytePerFloat*4ElementsPerVec*4columnsPerMatrix)=2), but lets keep it general,
-		//in case we wanna use ather than 32 bit base types once:
-		assert(sizeof(Matrix4x4) <= expectedBiggestAlignment);
-		int matricesPerAlignmentStride = expectedBiggestAlignment / sizeof(Matrix4x4);
+		mShadowMapMatrixBufferMetaInfo = new UniformBufferMetaInfo(
+			mNumMaxLightSources,
+			String("WorldToShadowMapMatrixBuffer"), String("worldToShadowMapMatrices"),
+			memberStrings,
+			ShaderManager::getInstance().getUniformBufferOffsetQueryShader());
 
-
+		assert( (mShadowMapMatrixBufferMetaInfo->mRequiredBufferSize  % BufferHelper::elementSize(TYPE_MATRIX44F))== 0);
 		mShadowMapMatricesUniformBuffer = new Buffer(
 			BufferInfo(
 				String("ShadowMapMatricesUniformBuffer"),
 				ContextTypeFlags( HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG),
 				TRANSFORMATION_MATRICES_SEMANTICS,
 				TYPE_MATRIX44F,
-				ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources
-					//design decision: array elements must be possible to be aligned to expectedBiggestAlignment;
-					//better alloc double size than provoke buffer overflow and undefined shader behaviour
-					* matricesPerAlignmentStride ,
+				mShadowMapMatrixBufferMetaInfo->mRequiredBufferSize
+				/ BufferHelper::elementSize(TYPE_MATRIX44F),
 				BufferElementInfo(true),
 				UNIFORM_BUFFER_TYPE,
 				NO_CONTEXT_TYPE
@@ -146,94 +143,124 @@ LightSourceManager::~LightSourceManager()
 		delete tmp;
 	}
 
-//	if(mLightSourceBufferOffsets)
-//	{
-//		for(int lightSourceRunner=0; lightSourceRunner< mNumMaxLightSources; lightSourceRunner++)
-//		{
-//			delete[] mLightSourceBufferOffsets[lightSourceRunner];
-//		}
-//		delete[] mLightSourceBufferOffsets;
-//	}
-
 	if(mLightSourceBufferMetaInfo) delete mLightSourceBufferMetaInfo;
 	if(mShadowMapMatrixBufferMetaInfo) delete mShadowMapMatrixBufferMetaInfo;
 
 }
 
-
-
-void LightSourceManager::queryLightSourceBufferSizeAndOffsets()
+//fill buffers with recent values
+void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 {
-//	GLuint shaderGLProgramHandle = ShaderManager::getInstance().getUniformBufferOffsetQueryShader()->getGLProgramHandle();
-//	GLuint lsUniBlockIndex = GUARD( glGetUniformBlockIndex(shaderGLProgramHandle, "LightSourceBuffer") );
-//	//query needed buffer size
-//	GUARD(
-//		glGetActiveUniformBlockiv(
-//			shaderGLProgramHandle,
-//			lsUniBlockIndex,
-//			GL_UNIFORM_BLOCK_DATA_SIZE,
-//			& mRequiredLightSourceBufferSize
-//		)
-//	);
-//
-//	//--------------------------------------------------------------------------------
-//
-//	mLightSourceBufferOffsets = new GLint*[mNumMaxLightSources];
-//
-//	const String memberStrings[] =
-//		{
-//		  "position","diffuseColor","specularColor","direction",
-//		  "innerSpotCutOff_Radians","outerSpotCutOff_Radians","spotExponent","shadowMapLayer"
-//		};
-//
-//	const char* indexQuery_C_StringArray[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
-//	String indexQueryStringArray[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
-//	GLuint currentUniformIndices[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
-//	for(int lightSourceRunner=0; lightSourceRunner< mNumMaxLightSources; lightSourceRunner++)
-//	{
-//		String baseString =
-//			//String("LightSourceBuffer.lightSources[")
-//			String("lightSources[")
-//			+ HelperFunctions::toString(lightSourceRunner)
-//			+ String("].") ;
-//
-//
-//			mLightSourceBufferOffsets[lightSourceRunner]= new GLint[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
-//			for(int memberRunner=0; memberRunner< FLEWNIT_NUM_LIGHTSOURCE_MEMBERS; memberRunner++)
-//			{
-//				indexQueryStringArray[memberRunner]= String(baseString+memberStrings[memberRunner]);
-//				indexQuery_C_StringArray[memberRunner]= indexQueryStringArray[memberRunner].c_str();
-//			}
-//			//first, get indices of current lightsource members:
-//			GUARD(
-//				glGetUniformIndices(
-//					shaderGLProgramHandle,
-//					FLEWNIT_NUM_LIGHTSOURCE_MEMBERS,
-//					indexQuery_C_StringArray,
-//					currentUniformIndices
-//				)
-//			);
-//
-//			//second, get offset in buffer for those members, indentified by the queried indices:
-//			GUARD(
-//				glGetActiveUniformsiv(
-//					shaderGLProgramHandle,
-//					FLEWNIT_NUM_LIGHTSOURCE_MEMBERS,
-//					currentUniformIndices,
-//					GL_UNIFORM_OFFSET,
-//					mLightSourceBufferOffsets[lightSourceRunner]
-//				)
-//			);
-//
-//
-//			for(int memberRunner=0; memberRunner< FLEWNIT_NUM_LIGHTSOURCE_MEMBERS; memberRunner++)
-//			{
-//				LOG<<DEBUG_LOG_LEVEL << String(indexQuery_C_StringArray[memberRunner])<<" ;\n";
-//				LOG<<DEBUG_LOG_LEVEL <<"uniform index: "<<  currentUniformIndices[memberRunner] <<" ;\n";
-//				LOG<<DEBUG_LOG_LEVEL <<"uniform offset: "<<  mLightSourceBufferOffsets[lightSourceRunner][memberRunner] <<" ;\n";
-//			}
-//	}
+	if(mLightSourcesUniformBuffer)
+	{
+		//assuming that there is a CPU component!
+		//NOTE: maybe on could just access the std::vector data and transfer it to the gpu;
+		//but i'm concerned about stuff like alignment, this-pointer and other c++-meta data
+		//which could corrupt a tightly-packed assumption; EDIT: yes, my concern was legitimate ;(
+		unsigned char* bufferToFill = reinterpret_cast<unsigned char*>(mLightSourcesUniformBuffer->getCPUBufferHandle());
+		//set everything to zero in order to omit wrong rendering in hardcoeded for-loops
+		memset(bufferToFill,mLightSourcesUniformBuffer->getBufferInfo().bufferSizeInByte,0);
 
+		unsigned int currentLightSourceUniformBufferIndex=0;
+		for(unsigned int currentLightSourceHostIndex =0; currentLightSourceHostIndex < mLightSources.size(); currentLightSourceHostIndex++ )
+		{
+			if(mLightSources[currentLightSourceHostIndex]->isEnabled())
+			{
+				const LightSourceShaderStruct& lsss = mLightSources[currentLightSourceHostIndex]->getdata();
+
+			    Vector4D lightPosViewSpace =
+			    		mainCam->getGlobalTransform().getLookAtMatrix()
+			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getPosition(), 1.0f);
+			    Vector4D lightDirViewSpace =
+			    		mainCam->getGlobalTransform().getLookAtMatrix()
+			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getDirection(), 0.0f);
+
+
+#define CURRENT_VEC4_VALUE(index) \
+		reinterpret_cast<Vector4D&>( \
+				bufferToFill[ \
+				     mLightSourceBufferMetaInfo->mBufferOffsets[currentLightSourceUniformBufferIndex][index] \
+				] \
+		)
+#define CURRENT_FLOAT_VALUE(index) \
+		reinterpret_cast<float&>( \
+				bufferToFill[ \
+				     mLightSourceBufferMetaInfo->mBufferOffsets[currentLightSourceUniformBufferIndex][index] \
+				] \
+		)
+
+			    CURRENT_VEC4_VALUE(0) = lightPosViewSpace;
+			    CURRENT_VEC4_VALUE(1) = lsss.diffuseColor;
+			    CURRENT_VEC4_VALUE(2) = lsss.specularColor;
+			    CURRENT_VEC4_VALUE(3) = lightDirViewSpace;
+
+			    CURRENT_FLOAT_VALUE(4)   =  lsss.innerSpotCutOff_Radians;
+			    CURRENT_FLOAT_VALUE(5)   =  lsss.outerSpotCutOff_Radians;
+			    CURRENT_FLOAT_VALUE(6)   =  lsss.spotExponent;
+			    CURRENT_FLOAT_VALUE(7)   =  lsss.shadowMapLayer;
+
+#undef CURRENT_FLOAT_VALUE
+#undef CURRENT_VEC4_VALUE
+
+				currentLightSourceUniformBufferIndex++;
+			}
+		} //endfor
+
+		mLightSourcesUniformBuffer->copyFromHostToGPU();
+
+	}
+}
+
+void LightSourceManager::updateShadowMapMatricesUniformBuffer(Camera *mainCam)
+{
+	if(mShadowMapMatricesUniformBuffer)
+		{
+			//assuming that there is a CPU component!
+			//NOTE: maybe on could just access the std::vector data and transfer it to the gpu;
+			//but i'm concerned about stuff like alignment, this-pointer and other c++-meta data
+			//which could corrupt a tightly-packed assumption; EDIT: yes, my concern was legitimate ;(
+			unsigned char* bufferToFill = reinterpret_cast<unsigned char*>(mShadowMapMatricesUniformBuffer->getCPUBufferHandle());
+			//set everything to zero in order to omit wrong rendering in hardcoeded for-loops
+			memset(bufferToFill,mShadowMapMatricesUniformBuffer->getBufferInfo().bufferSizeInByte,0);
+
+#define MAT4_VALUE(index) \
+	reinterpret_cast<Matrix4x4&>( \
+		bufferToFill[ \
+		    mLightSourceBufferMetaInfo->mBufferOffsets[ index ][0] \
+		] \
+	)
+
+			for(unsigned int currentLightSourceHostIndex =0; currentLightSourceHostIndex < mLightSources.size(); currentLightSourceHostIndex++ )
+			{
+				//first, set everything to identity; this wont omit bugs when invalid matrices are acessed, but maybe it will be useful for debugging once
+				MAT4_VALUE(currentLightSourceHostIndex) = Matrix4x4();
+			}
+
+
+			for(unsigned int currentLightSourceHostIndex =0; currentLightSourceHostIndex < mLightSources.size(); currentLightSourceHostIndex++ )
+			{
+				if(
+					mLightSources[currentLightSourceHostIndex]->isEnabled() &&
+					mLightSources[currentLightSourceHostIndex]->castsShadows()
+				)
+				{
+					SpotLight* spot = dynamic_cast<SpotLight*> (mLightSources[currentLightSourceHostIndex]);
+					assert("in this scenario, a shadow caster must be a spotlight" && spot);
+					int currentSMlayer = static_cast<int> (
+							spot->getdata().shadowMapLayer + 0.5f );
+					assert("shadow map layer must be valid for active shadow casters " &&
+							(currentSMlayer >= 0) && (currentSMlayer < mNumMaxLightSources ) );
+
+
+					MAT4_VALUE(currentSMlayer) = spot->getViewSpaceShadowMapLookupMatrix(mainCam);
+
+				}
+			} //endfor
+#undef MAT4_VALUE
+
+			mLightSourcesUniformBuffer->copyFromHostToGPU();
+
+		}
 }
 
 
@@ -242,6 +269,7 @@ void LightSourceManager::queryLightSourceBufferSizeAndOffsets()
 
 
 
+//------------------------------------------------------------------
 
 
 //throws exception if mNumMaxLightSources lightsources already exists or if the
@@ -398,78 +426,6 @@ int LightSourceManager::getNumTotalShadowingLightSources()const
 		if( ls->castsShadows() ){cnt++;}
 	}
 	return cnt;
-}
-
-
-
-//fill buffers with recent values
-void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
-{
-	if(mLightSourcesUniformBuffer)
-	{
-		//assuming that there is a CPU component!
-		//NOTE: maybe on could just access the std::vector data and transfer it to the gpu;
-		//but i'm concerned about stuff like alignment, this-pointer and other c++-meta data
-		//which could corrupt a tightly-packed assumption; EDIT: yes, my concern was legitimate ;(
-		unsigned char* bufferToFill = reinterpret_cast<unsigned char*>(mLightSourcesUniformBuffer->getCPUBufferHandle());
-		//set everything to zero in order to omit wrong rendering in hardcoeded for-loops
-		memset(bufferToFill,mLightSourcesUniformBuffer->getBufferInfo().bufferSizeInByte,0);
-
-		unsigned int currentLightSourceUniformBufferIndex=0;
-		for(unsigned int currentLightSourceHostIndex =0; currentLightSourceHostIndex < mLightSources.size(); currentLightSourceHostIndex++ )
-		{
-			if(mLightSources[currentLightSourceHostIndex]->isEnabled())
-			{
-				const LightSourceShaderStruct& lsss = mLightSources[currentLightSourceHostIndex]->getdata();
-
-			    Vector4D lightPosViewSpace =
-			    		mainCam->getGlobalTransform().getLookAtMatrix()
-			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getPosition(), 1.0f);
-			    Vector4D lightDirViewSpace =
-			    		mainCam->getGlobalTransform().getLookAtMatrix()
-			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getDirection(), 0.0f);
-
-
-#define CURRENT_VEC4_VALUE(index) \
-		reinterpret_cast<Vector4D&>( \
-				bufferToFill[ \
-				     mLightSourceBufferMetaInfo->mBufferOffsets[currentLightSourceUniformBufferIndex][index] \
-				] \
-		)
-#define CURRENT_FLOAT_VALUE(index) \
-		reinterpret_cast<float&>( \
-				bufferToFill[ \
-				     mLightSourceBufferMetaInfo->mBufferOffsets[currentLightSourceUniformBufferIndex][index] \
-				] \
-		)
-
-			    CURRENT_VEC4_VALUE(0) = lightPosViewSpace;
-			    CURRENT_VEC4_VALUE(1) = lsss.diffuseColor;
-			    CURRENT_VEC4_VALUE(2) = lsss.specularColor;
-			    CURRENT_VEC4_VALUE(3) = lightDirViewSpace;
-
-			    CURRENT_FLOAT_VALUE(4)   =  lsss.innerSpotCutOff_Radians;
-			    CURRENT_FLOAT_VALUE(5)   =  lsss.outerSpotCutOff_Radians;
-			    CURRENT_FLOAT_VALUE(6)   =  lsss.spotExponent;
-			    CURRENT_FLOAT_VALUE(7)   =  lsss.shadowMapLayer;
-
-#undef CURRENT_FLOAT_VALUE
-#undef CURRENT_VEC4_VALUE
-
-				currentLightSourceUniformBufferIndex++;
-			}
-		} //endfor
-
-		mLightSourcesUniformBuffer->copyFromHostToGPU();
-
-	}
-}
-
-void LightSourceManager::updateShadowMapMatricesUniformBuffer(Camera *mainCam)
-{
-	return;
-	//TODO
-	assert(0&&"//TODO");
 }
 
 

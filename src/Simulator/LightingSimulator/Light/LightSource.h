@@ -120,8 +120,15 @@ public:
 	//	aspect ratio = 1/1
 	//a squared depth texture is recommended;
 	Matrix4x4 getViewProjectionMatrix();
-	//matrix for shadowmap lookup; scale is configuarable in case one wants to use rectangle texture for whatever reason...
+	//matrix for shadowmap lookup in WORLD space: bias*perspLight*viewLight;
+	//scale is configurable in case one wants to use rectangle texture for whatever reason...
 	Matrix4x4 getBiasedViewProjectionMatrix(
+			float scale= 0.5f, float translation= 0.5f);
+
+	//matrix for shadowmap lookup in VIEW space: bias*perspLight*viewLight * (camView)⁻1 ;
+	//returns getBiasedViewProjectionMatrix(scale,translation) * spectatorCam->getViewMatrix().inverse();
+	//scale is configurable in case one wants to use rectangle texture for whatever reason...
+	Matrix4x4 getViewSpaceShadowMapLookupMatrix( Camera* spectatorCam,
 			float scale= 0.5f, float translation= 0.5f);
 
 private:

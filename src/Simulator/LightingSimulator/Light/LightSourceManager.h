@@ -136,13 +136,15 @@ private:
 
 
 	GLint	mNumMaxLightSources; //store this value to be independent of ShaderManager deletion (critical when engine shuts down)
+
+//legacy :
 //	GLint** mLightSourceBufferOffsets;
 //	GLint 	mRequiredLightSourceBufferSize;
 
-	//WARNING: 	keep this implementation in synch with the LightSourceShaderStruct definition!!1
-	//			I've found no way yet to automize synch in a realible way; And I'm doing all this
-	//			querying for reliability!
-	void queryLightSourceBufferSizeAndOffsets();
+//	//WARNING: 	keep this implementation in synch with the LightSourceShaderStruct definition!!1
+//	//			I've found no way yet to automize synch in a realible way; And I'm doing all this
+//	//			querying for reliability!
+//	void queryLightSourceBufferSizeAndOffsets();
 
 
 };
