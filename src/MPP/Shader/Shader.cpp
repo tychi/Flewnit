@@ -631,7 +631,7 @@ void Shader::setupLightSourceUniforms(Camera *mainCam)
 				static_cast<GLuint>(LIGHT_SOURCES_BUFFER_BINDING_POINT),
 				LightSourceManager::getInstance().getLightSourceUniformBuffer()->getGraphicsBufferHandle());
 		);
-		GUARD (GLuint uniformBlockIndex =  glGetUniformBlockIndex(mGLProgramHandle, "lightSourceBuffer"));
+		GUARD (GLuint uniformBlockIndex =  glGetUniformBlockIndex(mGLProgramHandle, "LightSourceBuffer"));
 		GUARD(glUniformBlockBinding(
 				mGLProgramHandle,
 				uniformBlockIndex,

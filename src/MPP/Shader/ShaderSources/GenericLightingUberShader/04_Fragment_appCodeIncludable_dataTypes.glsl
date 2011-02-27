@@ -10,6 +10,8 @@
 #endif
 
 #ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+//update this value when adding/removing members from the structure! we need it for offset queries!
+#define FLEWNIT_NUM_LIGHTSOURCE_MEMBERS 8
 struct LightSourceShaderStruct
 #else
 struct LightSource

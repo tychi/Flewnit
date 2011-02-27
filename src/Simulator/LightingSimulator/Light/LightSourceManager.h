@@ -45,6 +45,9 @@ public:
 
 	virtual ~LightSourceManager();
 
+	//to be called by LightingSimulator::init();
+	void init();
+
 	//throws exception if mNumMaxLightSources lightsources already exists or if the
 	//lighting feature contradicts pointlights;
 	//if castsShadows contradicts the shadowing feature, a warning is issues,
@@ -128,6 +131,15 @@ private:
 	 */
 	Buffer* mShadowMapMatricesUniformBuffer;
 	///\}
+
+	GLint** mLightSourceBufferOffsets;
+	GLint	mNumMaxLightSources; //store this value to be independent of ShaderManager deletion (critical when engine shuts down)
+	GLint 	mRequiredBufferSize;
+
+	//WARNING: 	keep this implementation in synch with the LightSourceShaderStruct definition!!1
+	//			I've found no way yet to automize synch in a realible way; And I'm doing all this
+	//			querying for reliability!
+	void queryLightSourceBufferSizeAndOffsets();
 
 
 };

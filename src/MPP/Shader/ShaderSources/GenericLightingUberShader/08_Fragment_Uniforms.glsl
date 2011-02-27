@@ -50,7 +50,7 @@
     uniform LightSource lightSource;
   {% else %}
     {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or  LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
-      layout(shared) uniform lightSourceBuffer
+      layout(shared) uniform LightSourceBuffer
       {
         LightSource lightSources[ {{ numMaxLightSources }} ];
       };

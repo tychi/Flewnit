@@ -157,6 +157,9 @@ public:
 
 	inline const ShaderFeaturesLocal& getLocalShaderFeatures()const{return mLocalShaderFeatures;}
 
+	//acessor for LightSourceManager to use the handle directly for its queries
+	inline GLuint getGLProgramHandle()const{return mGLProgramHandle;}
+
 
 protected:
 

@@ -200,6 +200,8 @@ Camera*  LightingSimulator::getMainCamera()const
 //build pipeline according to config;
 bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 {
+	mLightSourceManager->init();
+
 	unsigned int numStages = mSimConfigNode->get("SimulationPipelineStage").size();
 
 	for(unsigned int i =0 ; i < numStages; i++)
