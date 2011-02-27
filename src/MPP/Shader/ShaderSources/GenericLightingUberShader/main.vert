@@ -47,7 +47,7 @@
     //no padding, because the offsets will be queried via GetActiveUniformsiv(...)
   };
 
-  layout(shared) uniform InstanceMatrixBuffer
+  layout(shared) uniform InstanceTransformInfoBuffer
   {
     InstanceTransformInfo instanceTransformInfo[  {{numMaxInstancesRenderable}} ];
   };

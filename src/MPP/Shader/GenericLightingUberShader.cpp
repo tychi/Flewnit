@@ -54,123 +54,48 @@ GenericLightingUberShader::~GenericLightingUberShader()
 
 
 
-void GenericLightingUberShader::fillOwnMatrixStructure(float* toFill, const Matrix4x4& in)
+//void GenericLightingUberShader::fillOwnMatrixStructure(float* toFill, const Matrix4x4& in)
+//{
+//	for(unsigned int column=0; column<4; column++)
+//	{
+//		for(unsigned int element=0; element<4; element++)
+//		{
+//			toFill[(4*column) + element] = in[column][element];
+//		}
+//	}
+//}
+
+
+
+//virtual bool operator==(const Shader& rhs)const;
+void GenericLightingUberShader::use(SubObject *so) throw (SimulatorException)
 {
-	for(unsigned int column=0; column<4; column++)
-	{
-		for(unsigned int element=0; element<4; element++)
-		{
-			toFill[(4*column) + element] = in[column][element];
-		}
-	}
-}
+    //IMPORTANT: THIS USE FUNKTION IS A QUICK HACK TO TEST THE FIRST RENDERING;
+    //FOR FULL COMPLIANCE TO THE TEMPLATE, THERE MUST MUCH MORE LOGIC BE PUT INTO THIS ROUTINE,
+    //AND SOME STUFF LIKE INSTANCEMANAGER AND LIGHTSOURCE;AMANAGER MUST IMPLEMENT THERI BUFFFER FILLINGS
+    // TODO TODO TODO
 
+   GUARD(glUseProgram(mGLProgramHandle));
 
+   Camera* mainCam = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
 
-   	//virtual bool operator==(const Shader& rhs)const;
-    void GenericLightingUberShader::use(SubObject *so) throw (SimulatorException)
-    {
-        //IMPORTANT: THIS USE FUNKTION IS A QUICK HACK TO TEST THE FIRST RENDERING;
-        //FOR FULL COMPLIANCE TO THE TEMPLATE, THERE MUST MUCH MORE LOGIC BE PUT INTO THIS ROUTINE,
-        //AND SOME STUFF LIKE INSTANCEMANAGER AND LIGHTSOURCE;AMANAGER MUST IMPLEMENT THERI BUFFFER FILLINGS
-        // TODO TODO TODO
-
-
-        GUARD(glUseProgram(mGLProgramHandle));
-
-        Camera* mainCam = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
-
-        setupMatrixUniforms(mainCam,so);
-
-        Matrix4x4 viewProjMatrix = mainCam->getProjectionMatrix() * mainCam->getGlobalTransform().getLookAtMatrix();
-        const Matrix4x4 & modelMatrix = so->getOwningWorldObject()->getGlobalTransform().getTotalTransform();
-        Matrix4x4 modelViewMatrix = mainCam->getGlobalTransform().getLookAtMatrix() * modelMatrix;
-        Matrix4x4 modelViewProjMatrix = mainCam->getProjectionMatrix() * modelViewMatrix;
-
-        GUARD(
-        	glUniformMatrix4fv(
-        		glGetUniformLocation(mGLProgramHandle,"viewMatrix"),
-        		1,
-        		GL_FALSE,
-        		&(mainCam->getGlobalTransform().getLookAtMatrix()[0][0])
-        	)
-        );
-        GUARD(
-        	glUniformMatrix4fv(
-        		glGetUniformLocation(mGLProgramHandle,"viewProjectionMatrix"),
-        		1,
-        		GL_FALSE,
-        		&(viewProjMatrix[0][0])
-        	)
-        );
-        //----------------------------------------------
-
-        GUARD(
-			glUniformMatrix4fv(
-				glGetUniformLocation(mGLProgramHandle,"modelMatrix"),
-				1,
-				GL_FALSE,
-				&(modelMatrix[0][0])
-				//ownmat
-			)
-        );
-        GUARD(
-			glUniformMatrix4fv(
-				glGetUniformLocation(mGLProgramHandle,"modelViewMatrix"),
-				1,
-				GL_FALSE,
-				&(modelViewMatrix[0][0])
-			)
-		);
-        GUARD(
-			glUniformMatrix4fv(
-				glGetUniformLocation(mGLProgramHandle,"modelViewProjectionMatrix"),
-				1,
-				GL_FALSE,
-				&(modelViewProjMatrix[0][0])
-			)
-		);
-
-//        GUARD(
-//			glUniformMatrix3fv(
-//				glGetUniformLocation(mGLProgramHandle,"inverseViewRotationMatrix"),
-//				1,
-//				GL_FALSE,
-//				&(   [0][0])
-//			)
-//		);
-
-
-
-
-    //----------------------------------------------------------
-
-     setupLightSourceUniforms(mainCam);
-
-    //----------------------------------------------------------
+   //---------------------------------------------------------
+   setupMatrixUniforms(mainCam,so);
+   //----------------------------------------------------------
+   setupLightSourceUniforms(mainCam);
+   //----------------------------------------------------------
 
    VisualMaterial * visMat =  dynamic_cast<VisualMaterial*>(so->getMaterial());
 	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DECAL_TEXTURING ) !=0 ))
 	{
-		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0 + DECAL_COLOR_SEMANTICS);
 		visMat->getTexture(DECAL_COLOR_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
-
-
-		GUARD(	glUniform1i(glGetUniformLocation(mGLProgramHandle,"decalTexture"),
-					0	)
-		);
+		bindInt("decalTexture",DECAL_COLOR_SEMANTICS);
 	}
 
 
-	//---------- uncategrorize uniforms to come ------------------------------------------------
-
-	GUARD(
-		glUniform3fv(
-			glGetUniformLocation(mGLProgramHandle,"eyePositionW"),
-			1,
-			&(mainCam->getGlobalTransform().getPosition()[0])
-		)
-	);
+	//---------- uncategrorized uniforms to come ------------------------------------------------
+	bindVector3D("eyePositionW",mainCam->getGlobalTransform().getPosition());
 
 }
 

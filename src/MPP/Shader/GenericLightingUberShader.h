@@ -22,7 +22,7 @@ public:
     GenericLightingUberShader(Path codeDirectory, const ShaderFeaturesLocal & localShaderFeatures);
     virtual ~GenericLightingUberShader();
     virtual void use(SubObject *so) throw (SimulatorException);
-    void fillOwnMatrixStructure(float *toFill, const Matrix4x4 & in);
+    //void fillOwnMatrixStructure(float *toFill, const Matrix4x4 & in);
 protected:
     virtual void bindFragDataLocations(RenderTarget *rt) throw (BufferException);
 };

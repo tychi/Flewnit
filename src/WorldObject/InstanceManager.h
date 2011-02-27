@@ -45,6 +45,8 @@ public:
 
 	void drawRegisteredInstances();
 
+	inline Buffer* getInstanceTransformationInfoUniformBuffer()const{return mInstanceTransformationInfoUniformBuffer;}
+
 private:
 
 	//called at the end of drawRegisteredInstances() to reset registration state;

@@ -152,20 +152,17 @@ void VisualMaterial::activate(
 			SimulationPipelineStage* currentStage,
 			SubObject* currentUsingSuboject) throw(SimulatorException)
 {
-	//assert("is lighting stage" && dynamic_cast<LightingSimStageBase*>(currentStage));
-	//dynamic_cast<ShadowMapGenerator*>(currentStage);
-
-	LightingSimStageBase* castedStage= reinterpret_cast<LightingSimStageBase*>(currentStage);
-	assert(castedStage);
-
 	//TODO delete those assertions when doing relevant stuff, because VisualMaterial class has
 	//evolved to an omnipotent class
+	LightingSimStageBase* castedStage= reinterpret_cast<LightingSimStageBase*>(currentStage);
+	assert(castedStage);
 	assert(castedStage->getRenderingTechnique() != RENDERING_TECHNIQUE_DEFERRED_LIGHTING);
 	if( castedStage->getRenderingTechnique() == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION )
 		{assert(castsShadows());}
 	if( castedStage->getRenderingTechnique() == RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL )
 		{assert(! isTransparent());}
 
+	// starting real functionality from here on:
 	if(isInstanced())
 	{
 		//activate shader only if we are in a real draw call issued by an InstanceManager;

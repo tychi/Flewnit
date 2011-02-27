@@ -25,6 +25,7 @@
 #include "Buffer/Buffer.h"
 #include "WorldObject/SubObject.h"
 #include "Geometry/InstancedGeometry.h"
+#include "WorldObject/InstanceManager.h"
 
 //#include "GrantleeShaderFeaturesContext.h"
 
@@ -516,6 +517,63 @@ void ShaderStage::validate()throw(BufferException)
 //============ uniform variables logic to come ==========================================================================
 
 
+void Shader::bindMatrix4x4(String uniformName, const Matrix4x4& mat)
+{
+    GUARD(
+    	glUniformMatrix4fv(
+    		glGetUniformLocation(mGLProgramHandle,uniformName.c_str()),
+	    	1,
+	    	GL_FALSE,
+	    	&(mat[0][0])
+	    )
+	);
+}
+
+
+void Shader::bindVector4D(String uniformName, const Vector4D& vec)
+{
+    GUARD(
+		glUniform4fv(
+			glGetUniformLocation(mGLProgramHandle,uniformName.c_str()),
+			1,
+			&( vec[0])
+		)
+	);
+}
+
+void Shader::bindVector3D(String uniformName, const Vector3D& vec)
+{
+	GUARD(
+		glUniform3fv(
+			glGetUniformLocation(mGLProgramHandle,uniformName.c_str()),
+			1,
+			&( vec[0])
+		)
+	);
+}
+
+void Shader::bindFloat(String uniformName, float val)
+{
+	GUARD(
+		glUniform1f(
+			glGetUniformLocation(mGLProgramHandle,uniformName.c_str()),
+			val
+		)
+	);
+}
+
+void Shader::bindInt(String uniformName, int val)
+{
+	GUARD(
+		glUniform1i(
+			glGetUniformLocation(mGLProgramHandle,uniformName.c_str()),
+			val
+		)
+	);
+
+}
+
+//--------------------------------------------------
 
 //Calculates and sets all needed permutations of model/view/projection/lookAt/shadowMapLookup matrices
 //handles, if appropriate, buffer binding of:
@@ -526,22 +584,65 @@ void Shader::setupMatrixUniforms(Camera *mainCam, SubObject* so)
 	VisualMaterial* visMat = dynamic_cast<VisualMaterial*>(so->getMaterial());
 	assert(visMat);
 
-	//first distinction: instanced rendering or not?
+	Matrix4x4 viewMatrix = mainCam->getGlobalTransform().getLookAtMatrix();
+	Matrix4x4 viewProjMatrix = mainCam->getProjectionMatrix() * viewMatrix;
+
+	//check if we render to a special render target which will make geometry shader delegation
+	//necessary and hence the main cam's view matrix obsolete
+	//EDIT: afaik, trying to set a non existing uniform is no tragic thing;
+	//maybe I should "bruteforce" try to set everything..? TODO checkout when stable
+	if(
+		! (
+			//dyn. envmap rendering?
+			  (mLocalShaderFeatures.renderTargetTextureType == TEXTURE_TYPE_2D_CUBE)
+			//pointlight shadow map gen?
+			||(mLocalShaderFeatures.renderTargetTextureType == TEXTURE_TYPE_2D_CUBE_DEPTH)
+			//multiple spotlight shadow map gen?
+			||(mLocalShaderFeatures.renderTargetTextureType == TEXTURE_TYPE_2D_ARRAY_DEPTH)
+		)
+	)
+	{
+		bindMatrix4x4("viewMatrix",viewMatrix);
+		bindMatrix4x4("viewProjectionMatrix",viewProjMatrix);
+	}
+
+
+	//instanced rendering or not?
 	if( visMat->isInstanced())
 	{
 		assert(mLocalShaderFeatures.instancedRendering);
 		InstancedGeometry* instancedGeo = dynamic_cast<InstancedGeometry*>(so->getGeometry());
 		assert(instancedGeo);
 
-
-
+		//setup the instance uniform buffer
+		GUARD(
+			glBindBufferBase(GL_UNIFORM_BUFFER,
+				static_cast<GLuint>(INSTANCE_TRANSFORMATION_MATRICES_BUFFER_BINDING_POINT),
+				instancedGeo->getInstanceManager()->getInstanceTransformationInfoUniformBuffer()->getGraphicsBufferHandle());
+		);
+		GUARD (GLuint uniformBlockIndex =  glGetUniformBlockIndex(mGLProgramHandle, "InstanceTransformInfoBuffer"));
+		assert(uniformBlockIndex != GL_INVALID_INDEX);
+		GUARD(glUniformBlockBinding(
+				mGLProgramHandle,
+				uniformBlockIndex,
+				static_cast<GLuint>(INSTANCE_TRANSFORMATION_MATRICES_BUFFER_BINDING_POINT)
+				)
+		);
 	}
 	else
 	{
-		//setup default transform uniforms
+		//note: when rendering to tex array or cube map, MV and MVP are unused;
+		//but it doesn't matter to set them anyway; keep business logic as simple as possible ;(
+
+		//setup default "model" related transform uniforms
+		Matrix4x4 modelMatrix = so->getOwningWorldObject()->getGlobalTransform().getTotalTransform();
+	    Matrix4x4 modelViewMatrix = viewMatrix * modelMatrix;
+	    Matrix4x4 modelViewProjMatrix = mainCam->getProjectionMatrix() * modelViewMatrix;
+
+	    bindMatrix4x4("modelMatrix",modelMatrix);
+	    bindMatrix4x4("modelViewMatrix",modelViewMatrix);
+	    bindMatrix4x4("modelViewProjectionMatrix",modelViewProjMatrix);
 	}
-
-
 }
 
 
@@ -550,23 +651,10 @@ void Shader::setupLightSourceUniforms(Camera *mainCam)
 {
 	const ShaderFeaturesGlobal& sfg = ShaderManager::getInstance().getGlobalShaderFeatures();
 
-
-
 	if(sfg.lightSourcesLightingFeature == LIGHT_SOURCES_LIGHTING_FEATURE_NONE){return;}
 
-
-	GUARD(
-		glUniform1i(
-			glGetUniformLocation(mGLProgramHandle,"numCurrentlyActiveLightSources"),
-			LightSourceManager::getInstance().getNumCurrentlyActiveLightingLightSources()
-		)
-	);
-	GUARD(
-		glUniform1f(
-			glGetUniformLocation(mGLProgramHandle,"invNumCurrentlyActiveLightSources"),
-			1.0f / static_cast<float>( LightSourceManager::getInstance().getNumCurrentlyActiveLightingLightSources())
-		)
-	);
+	bindInt("numCurrentlyActiveLightSources",LightSourceManager::getInstance().getNumCurrentlyActiveLightingLightSources());
+	bindFloat("invNumCurrentlyActiveLightSources",1.0f / static_cast<float>( LightSourceManager::getInstance().getNumCurrentlyActiveLightingLightSources()));
 
 	//-----------------------------------------------------------------------------------
 
@@ -579,68 +667,35 @@ void Shader::setupLightSourceUniforms(Camera *mainCam)
 	    Vector4D lightPosViewSpace =
 	    		mainCam->getGlobalTransform().getLookAtMatrix()
 	    		* Vector4D( LightSourceManager::getInstance().getLightSource(0)->getGlobalTransform().getPosition(),1.0f) ;
-	    		//* Vector4D(lsStruct.position, 1.0f);
 	   Vector4D lightDirViewSpace =
 			   mainCam->getGlobalTransform().getLookAtMatrix()
 			   * Vector4D( LightSourceManager::getInstance().getLightSource(0)->getGlobalTransform().getDirection(), 0.0f );
-			   //* Vector4D(lsStruct.direction, 0.0f);
 
-	    GUARD(
-			glUniform4fv(
-				glGetUniformLocation(mGLProgramHandle,"lightSource.position"),
-				1,
-				&( lightPosViewSpace[0])
-			)
-		);
-	    GUARD(
-			glUniform4fv(
-				glGetUniformLocation(mGLProgramHandle,"lightSource.diffuseColor"),
-				1,
-				&(lsStruct.diffuseColor[0])
-			)
-		);
-	    GUARD(
-	    		glUniform4fv(
-					glGetUniformLocation(mGLProgramHandle,"lightSource.specularColor"),
-					1,
-					&(lsStruct.specularColor[0])
-				)
-		);
-	   GUARD(
-				glUniform4fv(
-					glGetUniformLocation(mGLProgramHandle,"lightSource.direction"),
-					1,
-					&(lightDirViewSpace[0])
-				)
-		);
-	   GUARD(	glUniform1f(	glGetUniformLocation(mGLProgramHandle,"lightSource.innerSpotCutOff_Radians"),
-								lsStruct.innerSpotCutOff_Radians	)											);
-	   GUARD(	glUniform1f(	glGetUniformLocation(mGLProgramHandle,"lightSource.outerSpotCutOff_Radians"),
-								lsStruct.outerSpotCutOff_Radians	)											);
-	   GUARD(	glUniform1f(	glGetUniformLocation(mGLProgramHandle,"lightSource.spotExponent"),
-								lsStruct.spotExponent	)											);
-	   GUARD(	glUniform1f(	glGetUniformLocation(mGLProgramHandle,"lightSource.shadowMapLayer"),
-								lsStruct.shadowMapLayer	)								);
+	   bindVector4D("lightSource.position",lightPosViewSpace);
+	   bindVector4D("lightSource.diffuseColor",lsStruct.diffuseColor);
+	   bindVector4D("lightSource.specularColor",lsStruct.specularColor);
+	   bindVector4D("lightSource.direction",lightDirViewSpace);
+
+	   bindFloat("lightSource.innerSpotCutOff_Radians",lsStruct.innerSpotCutOff_Radians);
+	   bindFloat("lightSource.outerSpotCutOff_Radians",lsStruct.outerSpotCutOff_Radians);
+	   bindFloat("lightSource.spotExponent",lsStruct.spotExponent);
+	   bindFloat("lightSource.shadowMapLayer",lsStruct.shadowMapLayer);
 	} //endif "only one light source for lighting"
 	else
 	{
-		//setup the uniform buffer as we have several lightsources
-
-
+		//setup the uniform buffer as we have several light sources
 		GUARD(glBindBufferBase(GL_UNIFORM_BUFFER,
 				static_cast<GLuint>(LIGHT_SOURCES_BUFFER_BINDING_POINT),
 				LightSourceManager::getInstance().getLightSourceUniformBuffer()->getGraphicsBufferHandle());
 		);
 		GUARD (GLuint uniformBlockIndex =  glGetUniformBlockIndex(mGLProgramHandle, "LightSourceBuffer"));
+		assert(uniformBlockIndex != GL_INVALID_INDEX);
 		GUARD(glUniformBlockBinding(
 				mGLProgramHandle,
 				uniformBlockIndex,
 				static_cast<GLuint>(LIGHT_SOURCES_BUFFER_BINDING_POINT)
 				)
 		);
-
-		//TODO continue implementation
-		//assert(0 && "multiple lighting lightsources aren't yet supported, sorry; coming soon!");
 	}
 
 
