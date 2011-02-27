@@ -42,14 +42,13 @@ LightSourceManager::LightSourceManager()
  mShadowMapMatricesUniformBuffer(0),
  mLightSourceBufferOffsets(0),
  mNumMaxLightSources(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources),
- mRequiredBufferSize(0)
+ mRequiredLightSourceBufferSize(0)
 {
 	//all creation stuff done in init();
 }
 
 void LightSourceManager::init()
 {
-
 	if(
 		(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
 				== LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS )
@@ -61,45 +60,14 @@ void LightSourceManager::init()
 	{
 		queryLightSourceBufferSizeAndOffsets();
 
-
-		//to know exactly the rquired buffer size, we would need all the compiled and linked shaders
-		//using the buffer to query the buffer size; due to alignment and rearrangement
-		//for memory access optimization we have to assume that the buffer object
-		//consumes more memory than it would do if it were tightly packed;
-		//n.b.: on the development laptop with a Geforce GT 435M with the 270.18 linux beta driver,
-		//the buffer elements ARE tighly packed light in the std140 manner, but we cannot rely on
-		//this for any machine and driver release;
-		//at this moment, we just have to guess a size and throw an exception if the actual
-		//shader requirement exceed the allocated amount;
-		//Why not allocation the biggest amount posibly needed? Think about the current worst case,
-		//that every single value is alinge to 16 byte for the fermi architecture;
-		//for later releases, this padding for alignment might get even worse, hence there
-		//is never a guarantee that the buffer is big enough; we just have to guess
-		//if we don't want to precompile any possible shader permutation;
-		//we assume a 128 byte alignment of array elements in the buffer, as fermi maximum coalesced reads
-		//from global memory are of that size
-		const cl_GLuint expectedBiggestAlignment = 128;
-		cl_GLuint maxExpectedAlignedBufferElementSize =
-				//integer rounding to next lower multiple of expectedBiggestAlignment:
-				( sizeof(LightSourceShaderStruct) / expectedBiggestAlignment) * expectedBiggestAlignment;
-		//add one expectedBiggestAlignment if the structure is not initially a multiple
-		if( (sizeof(LightSourceShaderStruct) % expectedBiggestAlignment) > 0 )
-		{
-			//if structure size does not correspond to expected alignment stride,
-			//add one stride
-			maxExpectedAlignedBufferElementSize += expectedBiggestAlignment;
-		}
-
+		assert( (mRequiredLightSourceBufferSize % BufferHelper::elementSize(TYPE_FLOAT))== 0);
 		mLightSourcesUniformBuffer = new Buffer(
 			BufferInfo(
 				String("LightSourceUniformBuffer"),
 				ContextTypeFlags(HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG),
 				LIGHT_SOURCE_BUFFER_SEMANTICS,
 				TYPE_FLOAT,
-				mNumMaxLightSources
-				//max. expected number of floats inside a LightSourceShaderStruct:
-					* maxExpectedAlignedBufferElementSize
-					/ BufferHelper::elementSize(TYPE_FLOAT),
+				mRequiredLightSourceBufferSize / BufferHelper::elementSize(TYPE_FLOAT),
 				BufferElementInfo(true),
 				UNIFORM_BUFFER_TYPE,
 				NO_CONTEXT_TYPE
@@ -116,6 +84,8 @@ void LightSourceManager::init()
 	if(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
 		 == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)
 	{
+		//TODO refactor the same way as lightSource uniform buffer;
+
 		const cl_GLuint expectedBiggestAlignment = 128;
 		//how many mat4's fit into the alignemt stride?
 		//(we know that 128/(4bytePerFloat*4ElementsPerVec*4columnsPerMatrix)=2), but lets keep it general,
@@ -185,7 +155,7 @@ void LightSourceManager::queryLightSourceBufferSizeAndOffsets()
 			shaderGLProgramHandle,
 			lsUniBlockIndex,
 			GL_UNIFORM_BLOCK_DATA_SIZE,
-			& mRequiredBufferSize
+			& mRequiredLightSourceBufferSize
 		)
 	);
 
@@ -442,74 +412,54 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 {
 	if(mLightSourcesUniformBuffer)
 	{
-
-
-		unsigned int numFloatsPerLightSource = sizeof(LightSourceShaderStruct) / BufferHelper::elementSize(TYPE_FLOAT);
-
-		unsigned int currentLightSourceUniformBufferIndex=0;
-		unsigned int currentFloatOffset=0;
-		//unsigned int lightSourceMemoryFootprint = sizeof(LightSourceShaderStruct);
-
-		//assuming that there is a CPU component ;(
-
-		//NOTE: maybe on coud just acces the std::vector data and transfer it to the gpu;
-		//but i'm concerne about stuff like alignment, this-pointer and other c++-meta data
-		//which could corrupt a tigtly-packed assumption;
-		//so, at least for the beginning, let's fill the buffer float-by-float
-
-		float* bufferToFill = reinterpret_cast<float*>(mLightSourcesUniformBuffer->getCPUBufferHandle());
-
-		//set everythin to zero in order to omit wrong rendering in hardcoeded for-loops
+		//assuming that there is a CPU component!
+		//NOTE: maybe on could just access the std::vector data and transfer it to the gpu;
+		//but i'm concerned about stuff like alignment, this-pointer and other c++-meta data
+		//which could corrupt a tightly-packed assumption; EDIT: yes, my concern was legitimate ;(
+		unsigned char* bufferToFill = reinterpret_cast<unsigned char*>(mLightSourcesUniformBuffer->getCPUBufferHandle());
+		//set everything to zero in order to omit wrong rendering in hardcoeded for-loops
 		memset(bufferToFill,mLightSourcesUniformBuffer->getBufferInfo().bufferSizeInByte,0);
 
-
+		unsigned int currentLightSourceUniformBufferIndex=0;
 		for(unsigned int currentLightSourceHostIndex =0; currentLightSourceHostIndex < mLightSources.size(); currentLightSourceHostIndex++ )
 		{
-
 			if(mLightSources[currentLightSourceHostIndex]->isEnabled())
 			{
-				currentFloatOffset = 0;
-				const LightSourceShaderStruct lsss = mLightSources[currentLightSourceHostIndex]->getdata();
-#define CURRENT_FLOAT_VALUE	bufferToFill[currentLightSourceUniformBufferIndex * numFloatsPerLightSource + currentFloatOffset++]
+				const LightSourceShaderStruct& lsss = mLightSources[currentLightSourceHostIndex]->getdata();
 
 			    Vector4D lightPosViewSpace =
 			    		mainCam->getGlobalTransform().getLookAtMatrix()
 			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getPosition(), 1.0f);
-			    		//* Vector4D(lsss.position, 1.0f);
 			    Vector4D lightDirViewSpace =
 			    		mainCam->getGlobalTransform().getLookAtMatrix()
 			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getDirection(), 0.0f);
-			    		//* Vector4D(lsss.direction, 0.0f);
 
+#define CURRENT_VEC4_VALUE(index) \
+		reinterpret_cast<Vector4D&>( \
+				bufferToFill[ \
+				  mLightSourceBufferOffsets[currentLightSourceUniformBufferIndex][index] \
+				] \
+		)
+#define CURRENT_FLOAT_VALUE(index) \
+		reinterpret_cast<float&>( \
+				bufferToFill[ \
+				  mLightSourceBufferOffsets[currentLightSourceUniformBufferIndex][index] \
+				] \
+		)
 
-				CURRENT_FLOAT_VALUE   =  lightPosViewSpace.x;
-				CURRENT_FLOAT_VALUE   =  lightPosViewSpace.y;
-				CURRENT_FLOAT_VALUE   =  lightPosViewSpace.z;
-				CURRENT_FLOAT_VALUE   =  lightPosViewSpace.w;
+			    CURRENT_VEC4_VALUE(0) = lightPosViewSpace;
+			    CURRENT_VEC4_VALUE(1) = lsss.diffuseColor;
+			    CURRENT_VEC4_VALUE(2) = lsss.specularColor;
+			    CURRENT_VEC4_VALUE(3) = lightDirViewSpace;
 
-				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.x;
-				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.y;
-				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.z;
-				CURRENT_FLOAT_VALUE   =  lsss.diffuseColor.w;
-
-				CURRENT_FLOAT_VALUE   =  lsss.specularColor.x;
-				CURRENT_FLOAT_VALUE   =  lsss.specularColor.y;
-				CURRENT_FLOAT_VALUE   =  lsss.specularColor.z;
-				CURRENT_FLOAT_VALUE   =  lsss.specularColor.w;
-
-				CURRENT_FLOAT_VALUE   =  lightDirViewSpace.x;
-				CURRENT_FLOAT_VALUE   =  lightDirViewSpace.y;
-				CURRENT_FLOAT_VALUE   =  lightDirViewSpace.z;
-				CURRENT_FLOAT_VALUE   =  lightDirViewSpace.w;
-
-
-				CURRENT_FLOAT_VALUE   =  lsss.innerSpotCutOff_Radians;
-				CURRENT_FLOAT_VALUE   =  lsss.outerSpotCutOff_Radians;
-				CURRENT_FLOAT_VALUE   =  lsss.spotExponent;
-
-				CURRENT_FLOAT_VALUE   =  lsss.shadowMapLayer;
+			    CURRENT_FLOAT_VALUE(4)   =  lsss.innerSpotCutOff_Radians;
+			    CURRENT_FLOAT_VALUE(5)   =  lsss.outerSpotCutOff_Radians;
+			    CURRENT_FLOAT_VALUE(6)   =  lsss.spotExponent;
+			    CURRENT_FLOAT_VALUE(7)   =  lsss.shadowMapLayer;
 
 #undef CURRENT_FLOAT_VALUE
+#undef CURRENT_VEC4_VALUE
+
 				currentLightSourceUniformBufferIndex++;
 			}
 		} //endfor
@@ -547,5 +497,44 @@ void LightSourceManager::unregisterLightSource(LightSource* ls)
 }
 
 
-
 }
+
+
+/*
+
+  lecacy stuff in init: not deleted for doc purposes:
+
+  		//to know exactly the rquired buffer size, we would need all the compiled and linked shaders
+		//using the buffer to query the buffer size; due to alignment and rearrangement
+		//for memory access optimization we have to assume that the buffer object
+		//consumes more memory than it would do if it were tightly packed;
+		//n.b.: on the development laptop with a Geforce GT 435M with the 270.18 linux beta driver,
+		//the buffer elements ARE tighly packed light in the std140 manner, but we cannot rely on
+		//this for any machine and driver release;
+		//at this moment, we just have to guess a size and throw an exception if the actual
+		//shader requirement exceed the allocated amount;
+		//Why not allocation the biggest amount posibly needed? Think about the current worst case,
+		//that every single value is alinge to 16 byte for the fermi architecture;
+		//for later releases, this padding for alignment might get even worse, hence there
+		//is never a guarantee that the buffer is big enough; we just have to guess
+		//if we don't want to precompile any possible shader permutation;
+		//we assume a 128 byte alignment of array elements in the buffer, as fermi maximum coalesced reads
+		//from global memory are of that size
+//		const cl_GLuint expectedBiggestAlignment = 128;
+//		cl_GLuint maxExpectedAlignedBufferElementSize =
+//				//integer rounding to next lower multiple of expectedBiggestAlignment:
+//				( sizeof(LightSourceShaderStruct) / expectedBiggestAlignment) * expectedBiggestAlignment;
+//		//add one expectedBiggestAlignment if the structure is not initially a multiple
+//		if( (sizeof(LightSourceShaderStruct) % expectedBiggestAlignment) > 0 )
+//		{
+//			//if structure size does not correspond to expected alignment stride,
+//			//add one stride
+//			maxExpectedAlignedBufferElementSize += expectedBiggestAlignment;
+//		}
+
+ //				mNumMaxLightSources
+//				//max. expected number of floats inside a LightSourceShaderStruct:
+//					* maxExpectedAlignedBufferElementSize
+//					/ BufferHelper::elementSize(TYPE_FLOAT),
+ *
+ */
