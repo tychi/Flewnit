@@ -121,7 +121,7 @@ private:
 	 *  of data is needed ;).
 	 */
 	Buffer* mLightSourcesUniformBuffer;
-
+	UniformBufferMetaInfo* mLightSourceBufferMetaInfo;
 
 	/*
 	 * Only used if mLightSourcesShadowFeature == LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS;
@@ -130,11 +130,14 @@ private:
 	 *  the biased viewProjectionMatrices for the fragment shader;
 	 */
 	Buffer* mShadowMapMatricesUniformBuffer;
+	UniformBufferMetaInfo* mShadowMapMatrixBufferMetaInfo;
 	///\}
 
-	GLint** mLightSourceBufferOffsets;
+
+
 	GLint	mNumMaxLightSources; //store this value to be independent of ShaderManager deletion (critical when engine shuts down)
-	GLint 	mRequiredLightSourceBufferSize;
+//	GLint** mLightSourceBufferOffsets;
+//	GLint 	mRequiredLightSourceBufferSize;
 
 	//WARNING: 	keep this implementation in synch with the LightSourceShaderStruct definition!!1
 	//			I've found no way yet to automize synch in a realible way; And I'm doing all this

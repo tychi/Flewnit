@@ -101,6 +101,8 @@ class PingPongBuffer;
 //class for all buffers but textures and render buffers;
 class Buffer;
 
+class UniformBufferMetaInfo;
+
 //abstract base class for the several concrete-dimensioned textures;
 class Texture;
 

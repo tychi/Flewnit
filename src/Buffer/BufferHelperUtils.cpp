@@ -6,6 +6,11 @@
  */
 
 #include "BufferHelperUtils.h"
+#include "MPP/Shader/Shader.h"
+#include "../../include/GL3/gl3.h"
+#include "Util/Log/Log.h"
+#include "Util/HelperFunctions.h"
+#include "Simulator/OpenCL_Manager.h"
 
 namespace Flewnit
 {
@@ -84,5 +89,100 @@ String BufferHelper::BufferSemanticsToString(BufferSemantics bs)
 	return BufferSemanticsStrings[bs];
 }
 
+
+//-----------------------------------------------------------------------------
+
+UniformBufferMetaInfo::UniformBufferMetaInfo( GLint numMaxArrayElements, String bufferName, String arrayName,
+		std::vector<String> memberStrings, Shader* queryShader)
+:
+	mNumArrayElements(numMaxArrayElements),
+	//mArrayName(arrayName),
+	mMemberStrings(memberStrings),
+	mRequiredBufferSize(0),
+	mNumMemberElements(memberStrings.size()),
+	mBufferOffsets(0)
+{
+	GLuint shaderGLProgramHandle = queryShader->getGLProgramHandle();
+	GLuint uniBlockIndex = GUARD( glGetUniformBlockIndex(shaderGLProgramHandle, bufferName.c_str()) );
+	//query needed buffer size
+	GUARD(
+		glGetActiveUniformBlockiv(
+			shaderGLProgramHandle,
+			uniBlockIndex,
+			GL_UNIFORM_BLOCK_DATA_SIZE,
+			& mRequiredBufferSize
+		)
+	);
+
+	//--------------------------------------------------------------------------------
+
+	mBufferOffsets = new GLint*[mNumArrayElements];
+
+//	const String memberStrings[] =
+//		{
+//		  "position","diffuseColor","specularColor","direction",
+//		  "innerSpotCutOff_Radians","outerSpotCutOff_Radians","spotExponent","shadowMapLayer"
+//		};
+
+	const char** indexQuery_C_StringArray= new const char*[mNumMemberElements];
+	String* indexQueryStringArray= new String[mNumMemberElements];
+	GLuint* currentUniformIndices= new GLuint[mNumMemberElements];
+	for(int arrayElementRunner=0; arrayElementRunner< mNumArrayElements; arrayElementRunner++)
+	{
+		String baseString =
+			arrayName +
+			String("[")
+				+ HelperFunctions::toString(arrayElementRunner)
+			+ String("].") ;
+
+
+			mBufferOffsets[arrayElementRunner]= new GLint[mNumMemberElements];
+			for(int memberRunner=0; memberRunner< mNumMemberElements; memberRunner++)
+			{
+				indexQueryStringArray[memberRunner]= String(baseString+memberStrings[memberRunner]);
+				indexQuery_C_StringArray[memberRunner]= indexQueryStringArray[memberRunner].c_str();
+			}
+			//first, get indices of current lightsource members:
+			GUARD(
+				glGetUniformIndices(
+					shaderGLProgramHandle,
+					mNumMemberElements,
+					indexQuery_C_StringArray,
+					currentUniformIndices
+				)
+			);
+
+			//second, get offset in buffer for those members, indentified by the queried indices:
+			GUARD(
+				glGetActiveUniformsiv(
+					shaderGLProgramHandle,
+					mNumMemberElements,
+					currentUniformIndices,
+					GL_UNIFORM_OFFSET,
+					mBufferOffsets[arrayElementRunner]
+				)
+			);
+
+
+			for(int memberRunner=0; memberRunner< mNumMemberElements; memberRunner++)
+			{
+				LOG<<DEBUG_LOG_LEVEL << String(indexQuery_C_StringArray[memberRunner])<<" ;\n";
+				LOG<<DEBUG_LOG_LEVEL <<"uniform index: "<<  currentUniformIndices[memberRunner] <<" ;\n";
+				LOG<<DEBUG_LOG_LEVEL <<"uniform offset: "<<  mBufferOffsets[arrayElementRunner][memberRunner] <<" ;\n";
+			}
+	} //endfor
+	delete[] indexQuery_C_StringArray;
+	delete[] indexQueryStringArray;
+	delete[] currentUniformIndices;
+}
+
+UniformBufferMetaInfo::~UniformBufferMetaInfo()
+{
+	for(int elementRunner=0; elementRunner< mNumArrayElements; elementRunner++)
+	{
+		delete[] mBufferOffsets[elementRunner];
+	}
+	delete[] mBufferOffsets;
+}
 
 }

@@ -25,7 +25,7 @@
 #include "Simulator/OpenCL_Manager.h"
 #include "Util/Log/Log.h"
 
-
+#include <initializer_list>
 
 
 
@@ -39,10 +39,12 @@ LightSourceManager::LightSourceManager()
  mLightSourceProjectionMatrixNearClipPlane(0.1f),
  mLightSourceProjectionMatrixFarClipPlane(1000.0f),
  mLightSourcesUniformBuffer(0),
+ mLightSourceBufferMetaInfo(0),
  mShadowMapMatricesUniformBuffer(0),
- mLightSourceBufferOffsets(0),
- mNumMaxLightSources(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources),
- mRequiredLightSourceBufferSize(0)
+ mShadowMapMatrixBufferMetaInfo(0),
+ mNumMaxLightSources(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources)
+ //mLightSourceBufferOffsets(0),
+ //mRequiredLightSourceBufferSize(0)
 {
 	//all creation stuff done in init();
 }
@@ -58,16 +60,28 @@ void LightSourceManager::init()
 			 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
 	)
 	{
-		queryLightSourceBufferSizeAndOffsets();
+		std::vector<String> memberStrings=
+			{
+			  "position","diffuseColor","specularColor","direction",
+			  "innerSpotCutOff_Radians","outerSpotCutOff_Radians","spotExponent","shadowMapLayer"
+			};
 
-		assert( (mRequiredLightSourceBufferSize % BufferHelper::elementSize(TYPE_FLOAT))== 0);
+		mLightSourceBufferMetaInfo = new UniformBufferMetaInfo(
+			mNumMaxLightSources,
+			String("LightSourceBuffer"), String("lightSources"),
+			memberStrings,
+			ShaderManager::getInstance().getUniformBufferOffsetQueryShader());
+
+		//queryLightSourceBufferSizeAndOffsets();
+
+		assert( (mLightSourceBufferMetaInfo->mRequiredBufferSize  % BufferHelper::elementSize(TYPE_FLOAT))== 0);
 		mLightSourcesUniformBuffer = new Buffer(
 			BufferInfo(
 				String("LightSourceUniformBuffer"),
 				ContextTypeFlags(HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG),
 				LIGHT_SOURCE_BUFFER_SEMANTICS,
 				TYPE_FLOAT,
-				mRequiredLightSourceBufferSize / BufferHelper::elementSize(TYPE_FLOAT),
+				mLightSourceBufferMetaInfo->mRequiredBufferSize / BufferHelper::elementSize(TYPE_FLOAT),
 				BufferElementInfo(true),
 				UNIFORM_BUFFER_TYPE,
 				NO_CONTEXT_TYPE
@@ -132,14 +146,17 @@ LightSourceManager::~LightSourceManager()
 		delete tmp;
 	}
 
-	if(mLightSourceBufferOffsets)
-	{
-		for(int lightSourceRunner=0; lightSourceRunner< mNumMaxLightSources; lightSourceRunner++)
-		{
-			delete[] mLightSourceBufferOffsets[lightSourceRunner];
-		}
-		delete[] mLightSourceBufferOffsets;
-	}
+//	if(mLightSourceBufferOffsets)
+//	{
+//		for(int lightSourceRunner=0; lightSourceRunner< mNumMaxLightSources; lightSourceRunner++)
+//		{
+//			delete[] mLightSourceBufferOffsets[lightSourceRunner];
+//		}
+//		delete[] mLightSourceBufferOffsets;
+//	}
+
+	if(mLightSourceBufferMetaInfo) delete mLightSourceBufferMetaInfo;
+	if(mShadowMapMatrixBufferMetaInfo) delete mShadowMapMatrixBufferMetaInfo;
 
 }
 
@@ -147,97 +164,75 @@ LightSourceManager::~LightSourceManager()
 
 void LightSourceManager::queryLightSourceBufferSizeAndOffsets()
 {
-	GLuint shaderGLProgramHandle = ShaderManager::getInstance().getUniformBufferOffsetQueryShader()->getGLProgramHandle();
-	GLuint lsUniBlockIndex = GUARD( glGetUniformBlockIndex(shaderGLProgramHandle, "LightSourceBuffer") );
-	//query needed buffer size
-	GUARD(
-		glGetActiveUniformBlockiv(
-			shaderGLProgramHandle,
-			lsUniBlockIndex,
-			GL_UNIFORM_BLOCK_DATA_SIZE,
-			& mRequiredLightSourceBufferSize
-		)
-	);
-
-	//--------------------------------------------------------------------------------
-
-	mLightSourceBufferOffsets = new GLint*[mNumMaxLightSources];
-
-	const String memberStrings[] =
-		{
-		  "position","diffuseColor","specularColor","direction",
-		  "innerSpotCutOff_Radians","outerSpotCutOff_Radians","spotExponent","shadowMapLayer"
-		};
-
-	const char* indexQuery_C_StringArray[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
-	String indexQueryStringArray[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
-	GLuint currentUniformIndices[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
-	for(int lightSourceRunner=0; lightSourceRunner< mNumMaxLightSources; lightSourceRunner++)
-	{
-		String baseString =
-			//String("LightSourceBuffer.lightSources[")
-			String("lightSources[")
-			+ HelperFunctions::toString(lightSourceRunner)
-			+ String("].") ;
-
-
-			mLightSourceBufferOffsets[lightSourceRunner]= new GLint[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
-			for(int memberRunner=0; memberRunner< FLEWNIT_NUM_LIGHTSOURCE_MEMBERS; memberRunner++)
-			{
-				indexQueryStringArray[memberRunner]= String(baseString+memberStrings[memberRunner]);
-				indexQuery_C_StringArray[memberRunner]= indexQueryStringArray[memberRunner].c_str();
-			}
-			//first, get indices of current lightsource members:
-			GUARD(
-				glGetUniformIndices(
-					shaderGLProgramHandle,
-					FLEWNIT_NUM_LIGHTSOURCE_MEMBERS,
-					indexQuery_C_StringArray,
-					currentUniformIndices
-				)
-			);
-
-			//second, get offset in buffer for those members, indentified by the queried indices:
-			GUARD(
-				glGetActiveUniformsiv(
-					shaderGLProgramHandle,
-					FLEWNIT_NUM_LIGHTSOURCE_MEMBERS,
-					currentUniformIndices,
-					GL_UNIFORM_OFFSET,
-					mLightSourceBufferOffsets[lightSourceRunner]
-				)
-			);
-
-
-			for(int memberRunner=0; memberRunner< FLEWNIT_NUM_LIGHTSOURCE_MEMBERS; memberRunner++)
-			{
-				LOG<<DEBUG_LOG_LEVEL << String(indexQuery_C_StringArray[memberRunner])<<" ;\n";
-				LOG<<DEBUG_LOG_LEVEL <<"uniform index: "<<  currentUniformIndices[memberRunner] <<" ;\n";
-				LOG<<DEBUG_LOG_LEVEL <<"uniform offset: "<<  mLightSourceBufferOffsets[lightSourceRunner][memberRunner] <<" ;\n";
-			}
-	}
-
-
-
-//	Shader* queryShader = ShaderManager::getInstance().getUniformBufferOffsetQueryShader();
-//	GLuint shaderGLProgramHandle = queryShader->getGLProgramHandle();
-//	int numMaxLightSources = ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources ;
-//	const int numMembers = 8; //eight members in the LightSourceShaderStruct
-//	GLsizei numUniformsInLightSourceBuffer = numMaxLightSources * numMembers;
-//	char** queryStringArray = new char* [numUniformsInLightSourceBuffer];
+//	GLuint shaderGLProgramHandle = ShaderManager::getInstance().getUniformBufferOffsetQueryShader()->getGLProgramHandle();
+//	GLuint lsUniBlockIndex = GUARD( glGetUniformBlockIndex(shaderGLProgramHandle, "LightSourceBuffer") );
+//	//query needed buffer size
+//	GUARD(
+//		glGetActiveUniformBlockiv(
+//			shaderGLProgramHandle,
+//			lsUniBlockIndex,
+//			GL_UNIFORM_BLOCK_DATA_SIZE,
+//			& mRequiredLightSourceBufferSize
+//		)
+//	);
 //
-//	String("LightSourceBuffer.lightSources[") + String("].") ;
+//	//--------------------------------------------------------------------------------
 //
+//	mLightSourceBufferOffsets = new GLint*[mNumMaxLightSources];
+//
+//	const String memberStrings[] =
+//		{
+//		  "position","diffuseColor","specularColor","direction",
+//		  "innerSpotCutOff_Radians","outerSpotCutOff_Radians","spotExponent","shadowMapLayer"
+//		};
+//
+//	const char* indexQuery_C_StringArray[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
+//	String indexQueryStringArray[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
+//	GLuint currentUniformIndices[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
 //	for(int lightSourceRunner=0; lightSourceRunner< mNumMaxLightSources; lightSourceRunner++)
 //	{
 //		String baseString =
-//				String("LightSourceBuffer.lightSources[") + HelperFunctions::toString(lightSourceRunner)   + String("].") ;
-//		queryStringArray[lightSourceRunner * numMembers + 0]=
-//				String(baseString + String("position"));
-//	}
+//			//String("LightSourceBuffer.lightSources[")
+//			String("lightSources[")
+//			+ HelperFunctions::toString(lightSourceRunner)
+//			+ String("].") ;
 //
-//	glGetUniformIndices(shaderGLProgramHandle,
-//	//glGetActiveUniformsiv(0,);GL_UNIFORM_OFFSET;
+//
+//			mLightSourceBufferOffsets[lightSourceRunner]= new GLint[FLEWNIT_NUM_LIGHTSOURCE_MEMBERS];
+//			for(int memberRunner=0; memberRunner< FLEWNIT_NUM_LIGHTSOURCE_MEMBERS; memberRunner++)
+//			{
+//				indexQueryStringArray[memberRunner]= String(baseString+memberStrings[memberRunner]);
+//				indexQuery_C_StringArray[memberRunner]= indexQueryStringArray[memberRunner].c_str();
+//			}
+//			//first, get indices of current lightsource members:
+//			GUARD(
+//				glGetUniformIndices(
+//					shaderGLProgramHandle,
+//					FLEWNIT_NUM_LIGHTSOURCE_MEMBERS,
+//					indexQuery_C_StringArray,
+//					currentUniformIndices
+//				)
+//			);
+//
+//			//second, get offset in buffer for those members, indentified by the queried indices:
+//			GUARD(
+//				glGetActiveUniformsiv(
+//					shaderGLProgramHandle,
+//					FLEWNIT_NUM_LIGHTSOURCE_MEMBERS,
+//					currentUniformIndices,
+//					GL_UNIFORM_OFFSET,
+//					mLightSourceBufferOffsets[lightSourceRunner]
+//				)
+//			);
+//
+//
+//			for(int memberRunner=0; memberRunner< FLEWNIT_NUM_LIGHTSOURCE_MEMBERS; memberRunner++)
+//			{
+//				LOG<<DEBUG_LOG_LEVEL << String(indexQuery_C_StringArray[memberRunner])<<" ;\n";
+//				LOG<<DEBUG_LOG_LEVEL <<"uniform index: "<<  currentUniformIndices[memberRunner] <<" ;\n";
+//				LOG<<DEBUG_LOG_LEVEL <<"uniform offset: "<<  mLightSourceBufferOffsets[lightSourceRunner][memberRunner] <<" ;\n";
+//			}
+//	}
 
 }
 
@@ -434,16 +429,17 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 			    		mainCam->getGlobalTransform().getLookAtMatrix()
 			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getDirection(), 0.0f);
 
+
 #define CURRENT_VEC4_VALUE(index) \
 		reinterpret_cast<Vector4D&>( \
 				bufferToFill[ \
-				  mLightSourceBufferOffsets[currentLightSourceUniformBufferIndex][index] \
+				     mLightSourceBufferMetaInfo->mBufferOffsets[currentLightSourceUniformBufferIndex][index] \
 				] \
 		)
 #define CURRENT_FLOAT_VALUE(index) \
 		reinterpret_cast<float&>( \
 				bufferToFill[ \
-				  mLightSourceBufferOffsets[currentLightSourceUniformBufferIndex][index] \
+				     mLightSourceBufferMetaInfo->mBufferOffsets[currentLightSourceUniformBufferIndex][index] \
 				] \
 		)
 

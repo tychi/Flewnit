@@ -11,10 +11,13 @@
 #include "Buffer/BufferSharedDefinitions.h"
 
 #include <typeinfo>
+#include "Common/BasicObject.h"
 
 
 namespace Flewnit
 {
+
+
 
 
 class BufferHelper
@@ -133,6 +136,25 @@ public:
 		return 0;
 	}
 };
+
+
+class UniformBufferMetaInfo
+:public BasicObject
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	UniformBufferMetaInfo(	GLint numMaxArrayElements, String bufferName, String arrayName, std::vector<String> memberStrings, Shader* queryShader);
+	virtual ~UniformBufferMetaInfo();
+
+	GLint	mNumArrayElements; //store this value to be independent of ShaderManager deletion (critical when engine shuts down)
+	//String 	mArrayName;
+	std::vector<String> mMemberStrings;
+
+	GLint 	mRequiredBufferSize;
+	GLint	mNumMemberElements;
+	GLint** mBufferOffsets;
+};
+
 
 }
 
