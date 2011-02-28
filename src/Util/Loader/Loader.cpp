@@ -133,7 +133,7 @@ void Loader::createHardCodedSceneStuff()
 	if(! mat2)
 	{
 		Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
-				String("stoneBumpDecalTex"),
+				String("rockbumpDecal"),
 				DECAL_COLOR_SEMANTICS,
 				Path("./assets/textures/rockbumpDecal.jpg"),
 				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
@@ -142,7 +142,7 @@ void Loader::createHardCodedSceneStuff()
 				true
 		);
 		Texture* normalMap= URE_INSTANCE->getLoader()->loadTexture(
-				String("stoneBumpNormalTex"),
+				String("rockbumpNormalDisp"),
 				//DECAL_COLOR_SEMANTICS,
 				NORMAL_SEMANTICS,
 				Path("./assets/textures/rockbumpNormalDisp.png"),
@@ -173,7 +173,7 @@ void Loader::createHardCodedSceneStuff()
 	Material* matEnvMap = SimulationResourceManager::getInstance().getMaterial("EnvMapCloudyNoonMaterial");
 	if(! matEnvMap)
 	{
-		Texture* decalTex= URE_INSTANCE->getLoader()->loadCubeTexture(
+		Texture* envMapTex= URE_INSTANCE->getLoader()->loadCubeTexture(
 				String("cloudyNoonEnvMap"),
 				ENVMAP_SEMANTICS,
 				Path("./assets/textures/cubeMaps/cloudy_noon"),
@@ -183,15 +183,38 @@ void Loader::createHardCodedSceneStuff()
 				false
 		);
 
+//		Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
+//				String("rockwallDecal"),
+//				DECAL_COLOR_SEMANTICS,
+//				Path("./assets/textures/rockwallDecal.jpg"),
+//				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+//				true,
+//				false,
+//				true
+//		);
+//		Texture* normalMap= URE_INSTANCE->getLoader()->loadTexture(
+//				String("rockwallNormalDisp"),
+//				//DECAL_COLOR_SEMANTICS,
+//				NORMAL_SEMANTICS,
+//				Path("./assets/textures/rockwallNormalDisp.png"),
+//				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+//				true,
+//				false,
+//				true
+//		);
+
 		std::map<BufferSemantics,Texture*> myMap;
-		myMap[ENVMAP_SEMANTICS] = decalTex;
+		myMap[ENVMAP_SEMANTICS] = envMapTex;
+		myMap[DECAL_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpDecal");
+		myMap[NORMAL_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpNormalDisp");
 
 		matEnvMap = new VisualMaterial("EnvMapCloudyNoonMaterial",
 			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
 			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
 			ShadingFeatures(
 					SHADING_FEATURE_DIRECT_LIGHTING
-					//| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_NORMAL_MAPPING
 					| SHADING_FEATURE_CUBE_MAPPING
 			),
 			myMap,
