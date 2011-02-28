@@ -54,7 +54,7 @@
                                   {% if SHADING_FEATURE_AMBIENT_OCCLUSION %} getAOAttenuation() * {% endif %}
                                   (
                                     ( vec4(lightSource.diffuseColor.xyz,1.0) *  diffuseFactor ) +
-                                    ( vec4(lightSource.specularColor.xyz,1.0) *  specularFactor )
+                                    ( vec4(lightSource.specularColor.xyz,1.0) *  specularFactor * reflectivity )
                                   );
         
                               } //endif is fragment facing to the light (cosFragToLight_Normal > 0)  

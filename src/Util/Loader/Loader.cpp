@@ -65,7 +65,7 @@ void Loader::createHardCodedSceneStuff()
 		new PureVisualObject("MyBox2",AmendedTransform(Vector3D(40,-10,0), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
 	);
 	rootNode.addChild(
-		new PureVisualObject("MyBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1)))
+		new PureVisualObject("MyBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),0.3))
 	);
 
 
@@ -143,7 +143,7 @@ void Loader::createHardCodedSceneStuff()
 				String("stoneBumpNormalTex"),
 				//DECAL_COLOR_SEMANTICS,
 				NORMAL_SEMANTICS,
-				Path("./assets/textures/rockbump.png"),
+				Path("./assets/textures/rockbump.tga"),
 				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
 				true,
 				false,
@@ -153,6 +153,7 @@ void Loader::createHardCodedSceneStuff()
 		myMap[DECAL_COLOR_SEMANTICS] = decalTex;
 		myMap[NORMAL_SEMANTICS] = normalMap;
 		//myMap[DECAL_COLOR_SEMANTICS] = normalMap;
+		//myMap[DECAL_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("bunnyDecalTex");
 		mat2 = new VisualMaterial("StoneBumpMaterial",
 			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
 			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
@@ -236,7 +237,7 @@ void Loader::createHardCodedSceneStuff()
 				Vector4D(0.0f,15.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
 				false,
 				Vector4D(0.0f,0.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
-				Vector4D((1.0f-fraction)*50,0.5f, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
+				Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
 			);
 		}
 	}

@@ -76,6 +76,8 @@ public:
 			//must contain at least the textures used in the shader as samplers
 			const std::map<BufferSemantics, Texture*>& textures,
 			const VisualMaterialFlags& visualMaterialFlags
+//			float shininess = 100.0f,
+//			float reflectivity = 0.25f
 			);
 
 	virtual ~VisualMaterial();

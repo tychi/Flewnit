@@ -29,6 +29,7 @@
 
   {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING  %}  
   uniform float shininess = 100.0; 
+  uniform float reflectivity = 0.33;
   {%comment%} in the deferred case, it is coded into the decal textures' alpha channel; We have to mask this uniform, because the name will
               be re-used in the deferred case {%endcomment%}
   {% endif %}
@@ -38,7 +39,6 @@
   uniform vec4 eyePositionW; //world space eye position, needed e.g. for skydome rendering
   uniform mat4 viewMatrix; //the transpose (=inverse) of its rotational component is needed to transform "envmap lookup vector" from view space back to world space
   //uniform mat3 inverseViewRotationMatrix; //needed to transform "envmap lookup vector" from view space back to world space
-  uniform float cubeMapReflectivity = 0.33;
 
 
   //clamp the attenuation due to shadowmapping to [minimalshadowAttenuation, 1.0]

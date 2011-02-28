@@ -139,7 +139,7 @@ void main()
                     //transform from viewspace back to worldspace via inverse rotational part of the view matrix:
                     transpose(mat3(viewMatrix)) * reflect( position.xyz , normalVN ) //fragment position is view space correspands to unnormalized direction :)
                   ),
-                  cubeMapReflectivity        
+                  reflectivity        
           );
       {% endif %}
    
