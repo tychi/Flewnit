@@ -44,7 +44,7 @@ struct LightSource
 		LightSourceShaderStruct(Vector4D position, Vector4D diffuseColor, Vector4D specularColor, Vector4D direction,
 			float innerSpotCutOff_Radians, float outerSpotCutOff_Radians , float spotExponent, float shadowMapLayer)
 		:
-		position(position),diffuseColor(diffuseColor),specularColor(specularColor), direction(specularColor),
+		position(position),diffuseColor(diffuseColor),specularColor(specularColor), direction(direction),
 		innerSpotCutOff_Radians(innerSpotCutOff_Radians), outerSpotCutOff_Radians(outerSpotCutOff_Radians),
 		spotExponent(spotExponent), shadowMapLayer(shadowMapLayer)
 		{}

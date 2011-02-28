@@ -112,7 +112,7 @@ void LightSource::validateData() throw(SimulatorException)
 	switch(mType)
 	{
 	case LIGHT_SOURCE_TYPE_SPOT_LIGHT:
-		assert( "direction is normalized" && std::fabs( glm::length(mLightSourceShaderStruct.direction)) -1.0f < 0.01 );
+		assert( "direction is normalized" && std::fabs( glm::length(mLightSourceShaderStruct.direction) -1.0f )  < 0.01 );
 		assert("opening angle not too big" && mLightSourceShaderStruct.outerSpotCutOff_Radians <= glm::radians(75.0f));
 		assert("inner angle not bigger than outer" && mLightSourceShaderStruct.innerSpotCutOff_Radians <= mLightSourceShaderStruct.outerSpotCutOff_Radians);
 		assert("opening angles positive" && (mLightSourceShaderStruct.innerSpotCutOff_Radians >0.0f) && (mLightSourceShaderStruct.outerSpotCutOff_Radians >0.0f));

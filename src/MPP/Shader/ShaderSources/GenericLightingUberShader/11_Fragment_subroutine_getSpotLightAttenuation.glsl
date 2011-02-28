@@ -8,35 +8,38 @@ float getSpotLightAttenuation(
   vec3  lightSourceDirection,   
   float lightSourceSpotExponent, 
   float lightSourceInnerSpotCutOff_Radians, 
-  float lightSourceOuterSpotCutOff_Radians_Radians, 
+  float lightSourceOuterSpotCutOff_Radians, 
   vec3  lightToFragWN
 )
 {   
   float spotLightConeAttenuation = 1.0;
-  float cosLightDir_lightToFragW = dot( lightSourceDirection , lightToFragWN );
-  float angleLightDir_lightToFragW_Radians = acos(cosLightDir_lightToFragW); 
+  float cosLightDir_lightToFrag = dot( lightSourceDirection , lightToFragWN );
+  float angleLightDir_lightToFrag_Radians = acos(cosLightDir_lightToFrag); 
 
   //is fragment within light cone?
-  if (angleLightDir_lightToFragW_Radians <= lightSourceOuterSpotCutOff_Radians_Radians)
+  if (angleLightDir_lightToFrag_Radians <= lightSourceOuterSpotCutOff_Radians)
   {
-   spotLightConeAttenuation = pow(cosLightDir_lightToFragW, lightSourceSpotExponent );
+   //spotLightConeAttenuation = pow(cosLightDir_lightToFrag, lightSourceSpotExponent );
+   spotLightConeAttenuation = clamp( pow(cosLightDir_lightToFrag, lightSourceSpotExponent ), spotLightAmbientFactor , 1.0 );
 
    //Does the fragment lie within the border region of the cone?
    //Then smooth out the lights' contribution by linear interpolating between spotLightAmbientFactor and 1, 
    //and multiplicate this to spotLightConeAttenuation
-   if (angleLightDir_lightToFragW_Radians > lightSourceInnerSpotCutOff_Radians)
+   if (angleLightDir_lightToFrag_Radians > lightSourceInnerSpotCutOff_Radians)
    {
     float fractionWithinBorder =  
-     (angleLightDir_lightToFragW_Radians - lightSourceInnerSpotCutOff_Radians) 
+     (angleLightDir_lightToFrag_Radians - lightSourceInnerSpotCutOff_Radians) 
      / 
-     (lightSourceOuterSpotCutOff_Radians_Radians - lightSourceInnerSpotCutOff_Radians);
+     (lightSourceOuterSpotCutOff_Radians - lightSourceInnerSpotCutOff_Radians);
 
-    spotLightConeAttenuation *= mix(1.0, spotLightAmbientFactor, fractionWithinBorder);
+    //spotLightConeAttenuation *= mix(1.0, spotLightAmbientFactor, fractionWithinBorder);
+    spotLightConeAttenuation = mix(spotLightConeAttenuation, spotLightAmbientFactor, fractionWithinBorder);
    }
   }
   else
   {
-   spotLightConeAttenuation = spotLightAmbientFactor;
+    spotLightConeAttenuation = spotLightAmbientFactor;
+    //spotLightConeAttenuation = spotLightAmbientFactor*  pow(cos(lightSourceOuterSpotCutOff_Radians), lightSourceSpotExponent );
   }
 
   return spotLightConeAttenuation;

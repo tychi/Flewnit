@@ -262,23 +262,51 @@ void Loader::createHardCodedSceneStuff()
 
 	//---------------------- begin light sources -----------------------------------
 
-	LightSourceManager::getInstance().createPointLight(
-			Vector4D(70.0f,45.0f,10.0f,1.0f),
-			false,
-			Vector4D(1.0f,1.0f,1.0f,1.0f),
-			Vector4D(1.0f,1.0f,1.0f,1.0f)
-			//Vector4D(1.0f,0.5f,0.1f,1.0f),
-			//Vector4D(1.1f,0.1f,0.0f,1.0f)
-	);
+	if(
+		(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
+				== LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT )
+		||
+		(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
+				== LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS )
+	)
+	{
+		LightSourceManager::getInstance().createPointLight(
+				Vector4D(70.0f,45.0f,10.0f,1.0f),
+				false,
+				Vector4D(1.0f,1.0f,1.0f,1.0f),
+				Vector4D(1.0f,1.0f,1.0f,1.0f)
+				//Vector4D(1.0f,0.5f,0.1f,1.0f),
+				//Vector4D(1.1f,0.1f,0.0f,1.0f)
+		);
+	}
+
+	if(
+		(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
+				== LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT )
+		||
+		(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
+				== LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS )
+	)
+	{
+		LightSourceManager::getInstance().createSpotLight(
+				Vector4D(70.0f,45.0f,10.0f,1.0f),
+				Vector4D(0.0f,-1.0f,-0.2f,0.0f),
+				false,
+				45.0f,
+				47.5f,
+				1.0f,
+				Vector4D(1.0f,1.0f,1.0f,1.0f),
+				Vector4D(1.0f,1.0f,1.0f,1.0f)
+				//Vector4D(1.0f,0.5f,0.1f,1.0f),
+				//Vector4D(1.1f,0.1f,0.0f,1.0f)
+		);
+	}
+
 
 
 	if(
 		(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
 				== LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS )
-	 ||	(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
-			 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS )
-	 ||	(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
-			 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
 	)
 	{
 		if(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources >= 2)
@@ -305,6 +333,24 @@ void Loader::createHardCodedSceneStuff()
 				Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
 			);
 		}
+	}
+
+
+	//TODO
+	if(
+			(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
+					 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS )
+	)
+	{
+
+	}
+
+	if(
+			(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
+								 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
+	)
+	{
+
 	}
 
 

@@ -142,10 +142,10 @@
 				</Camera>
 				
 				<GlobalShadingFeatures>
-					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS"/>
+					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT"/>
 					<lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_NONE"/>
 					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_NONE"/>
-					<numMaxLightSources type="INT" value="10"/>
+					<numMaxLightSources type="INT" value="1"/>
 					<numMaxShadowCasters type="INT" value="1"/>
 					<numMaxInstancesRenderable type="INT" value="16"/>
 					<GBufferType type="STRING" value="TEXTURE_TYPE_2D_RECT"/>	
