@@ -137,7 +137,7 @@ private:
 //	> mGeneratedShaders;
 
 	friend VisualMaterial::VisualMaterial(String,VisualMaterialType,ShadingFeatures,const std::map<BufferSemantics, Texture*>&,
-			const VisualMaterialFlags&); //registerToShaderManager();
+			const VisualMaterialFlags&, float, float); //registerToShaderManager();
 	friend VisualMaterial::~VisualMaterial();//unregisterFromShaderManager();
 	void registerVisualMaterial(VisualMaterial* mat);
 	void unregisterVisualMaterial(VisualMaterial* mat);

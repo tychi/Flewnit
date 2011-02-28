@@ -77,14 +77,18 @@ VisualMaterial::VisualMaterial(
 			ShadingFeatures shadingFeatures,
 			//must contain at least the textures used in the shader as samplers
 			const std::map<BufferSemantics, Texture*>& textures,
-			const VisualMaterialFlags& visualMaterialFlags
+			const VisualMaterialFlags& visualMaterialFlags,
+			float shininess,
+			float reflectivity
 			)
 : 	Material(name, VISUAL_SIM_DOMAIN),
 	mType(type),
 	mShadingFeatures(shadingFeatures),
 	mVisMatFlags(visualMaterialFlags),
 
-	mCurrentlyUsedShader(0)
+	mCurrentlyUsedShader(0),
+	mShininess(shininess),
+	mReflectivity(reflectivity)
 {
 	mTextures = textures;
 

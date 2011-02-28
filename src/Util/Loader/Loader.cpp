@@ -127,7 +127,10 @@ void Loader::createHardCodedSceneStuff()
 			myMap,
 			//SHADING_FEATURE_DIRECT_LIGHTING,
 			//std::map<BufferSemantics,Texture*>(),
-			VisualMaterialFlags(true,false,true,true,false,false));
+			VisualMaterialFlags(true,false,true,true,false,false),
+			1000.0f,
+			0.1f
+		);
 	}//endif !mat1
 	Material* mat2 = SimulationResourceManager::getInstance().getMaterial("StoneBumpMaterial");
 	if(! mat2)
@@ -167,7 +170,10 @@ void Loader::createHardCodedSceneStuff()
 			myMap,
 			//SHADING_FEATURE_DIRECT_LIGHTING,
 			//std::map<BufferSemantics,Texture*>(),
-			VisualMaterialFlags(true,false,true,true,false,false));
+			VisualMaterialFlags(true,false,true,true,false,false),
+			5.0f,
+			0.1f
+		);
 	}//endif !mat2
 
 	Material* matEnvMap = SimulationResourceManager::getInstance().getMaterial("EnvMapCloudyNoonMaterial");
@@ -275,9 +281,36 @@ void Loader::createHardCodedSceneStuff()
 				false,
 				Vector4D(1.0f,1.0f,1.0f,1.0f),
 				Vector4D(1.0f,1.0f,1.0f,1.0f)
-				//Vector4D(1.0f,0.5f,0.1f,1.0f),
-				//Vector4D(1.1f,0.1f,0.0f,1.0f)
 		);
+
+		if(
+			(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
+					== LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS )
+		)
+		{
+			if(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources >= 2)
+			{
+				LightSourceManager::getInstance().createPointLight(
+					Vector4D(-70.0f,25.0f,10.0f,1.0f),
+					false,
+					Vector4D(0.0f,0.0f,1.0f,1.0f),
+					Vector4D(0.0f,0.0f,1.0f,1.0f)
+				);
+			}
+
+			//two lights already created, hence the -2
+			int numTotalLightSourcesToCreate = ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources -2;
+			for(int i = 1; i <= numTotalLightSourcesToCreate; i++)
+			{
+				float fraction = (float)(i)/(float)(numTotalLightSourcesToCreate);
+				LightSourceManager::getInstance().createPointLight(
+					Vector4D(0.0f,15.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
+					false,
+					Vector4D(0.0f,0.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
+					Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
+				);
+			}
+		}
 	}
 
 	if(
@@ -297,90 +330,100 @@ void Loader::createHardCodedSceneStuff()
 				50.0f,
 				Vector4D(1.0f,1.0f,1.0f,1.0f),
 				Vector4D(1.0f,1.0f,1.0f,1.0f)
-				//Vector4D(1.0f,0.5f,0.1f,1.0f),
-				//Vector4D(1.1f,0.1f,0.0f,1.0f)
 		);
-	}
 
-
-
-	if(
-		(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
-				== LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS )
-	)
-	{
-		if(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources >= 2)
-		{
-			LightSourceManager::getInstance().createPointLight(
-					//Vector4D(-13.0f,5.0f,0.0f,1.0f),
-					Vector4D(-70.0f,25.0f,10.0f,1.0f),
-					false,
-					Vector4D(0.0f,0.0f,1.0f,1.0f),
-					Vector4D(0.0f,0.0f,1.0f,1.0f)
-			);
-		}
-
-		//two lights already created, hence the -2
-		int numTotalLightSourcesToCreate = ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources -2;
-
-		for(int i = 1; i <= numTotalLightSourcesToCreate; i++)
-		{
-			float fraction = (float)(i)/(float)(numTotalLightSourcesToCreate);
-			LightSourceManager::getInstance().createPointLight(
-				Vector4D(0.0f,15.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
-				false,
-				Vector4D(0.0f,0.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
-				Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
-			);
-		}
-	}
-
-
-	//TODO
-	if(
+		if(
 			(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
-					 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS )
-	)
-	{
-		if(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources >= 2)
+				 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS )
+		)
 		{
-			LightSourceManager::getInstance().createSpotLight(
-					Vector4D(-70.0f,25.0f,10.0f,1.0f),
-					Vector4D(1.0f,-1.0f,-1.0f,0.0f),
+			if(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources >= 2)
+			{
+				LightSourceManager::getInstance().createSpotLight(
+						Vector4D(-70.0f,25.0f,10.0f,1.0f),
+						Vector4D(1.0f,-1.0f,-1.0f,0.0f),
+						false,
+						45.0f,
+						60.5f,
+						10.0f,
+						Vector4D(0.0f,0.0f,1.0f,1.0f),
+						Vector4D(0.0f,0.0f,1.0f,1.0f)
+				);
+			}
+
+			//two lights already created, hence the -2
+			int numTotalLightSourcesToCreate = ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources -2;
+			for(int i = 1; i <= numTotalLightSourcesToCreate; i++)
+			{
+				float fraction = (float)(i)/(float)(numTotalLightSourcesToCreate);
+				LightSourceManager::getInstance().createSpotLight(
+					Vector4D(0.0f,15.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
+					Vector4D(0.0f,-1.0f,0.0f,0.0f),
 					false,
 					45.0f,
-					60.5f,
+					47.5f,
 					10.0f,
-					Vector4D(0.0f,0.0f,1.0f,1.0f),
-					Vector4D(0.0f,0.0f,1.0f,1.0f)
-			);
-		}
-
-		//two lights already created, hence the -2
-		int numTotalLightSourcesToCreate = ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources -2;
-
-		for(int i = 1; i <= numTotalLightSourcesToCreate; i++)
-		{
-			float fraction = (float)(i)/(float)(numTotalLightSourcesToCreate);
-			LightSourceManager::getInstance().createSpotLight(
-				Vector4D(0.0f,15.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
-				Vector4D(0.0f,-1.0f,0.0f,0.0f),
-				false,
-				45.0f,
-				47.5f,
-				10.0f,
-				Vector4D(0.0f,0.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
-				Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
-			);
+					Vector4D(0.0f,0.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
+					Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
+				);
+			}
 		}
 	}
+
+
+
 
 	if(
 			(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesLightingFeature
 								 == LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS )
 	)
 	{
+		LightSourceManager::getInstance().createPointLight(
+				Vector4D(70.0f,90.0f,10.0f,1.0f),
+				false,
+				Vector4D(1.0f,1.0f,1.0f,1.0f)*0.25,
+				Vector4D(1.0f,1.0f,1.0f,1.0f)*0.25
+		);
+		LightSourceManager::getInstance().createSpotLight(
+				Vector4D(-70.0f,25.0f,10.0f,1.0f),
+				Vector4D(1.0f,-1.0f,-1.0f,0.0f),
+				false,
+				45.0f,
+				60.5f,
+				10.0f,
+				Vector4D(0.0f,0.0f,1.0f,1.0f),
+				Vector4D(0.0f,0.0f,1.0f,1.0f)
+		);
 
+		//two lights already created, hence the -2
+		int numTotalLightSourcesToCreate = ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources -2;
+		for(int i = 1; i <= numTotalLightSourcesToCreate; i++)
+		{
+			float fraction = (float)(i)/(float)(numTotalLightSourcesToCreate);
+			if(i%2)
+			{
+				LightSourceManager::getInstance().createPointLight(
+					Vector4D(0.0f,30.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
+					false,
+					Vector4D(1.0f,1.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
+					Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
+				);
+			}
+			else
+			{
+				LightSourceManager::getInstance().createSpotLight(
+						Vector4D(0.0f,30.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
+						Vector4D(0.0f,-1.0f,0.0f,0.0f),
+						false,
+						15.0f,
+						25.5f,
+						10.0f,
+						Vector4D(1.0f,1.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
+						Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
+					);
+			}
+
+		}
 	}
 
 

@@ -714,6 +714,9 @@ void Shader::setupLightSourceUniforms(Camera *mainCam)
 
 void Shader::setupMaterialUniforms(VisualMaterial* visMat)
 {
+	bindFloat("shininess",visMat->getShininess());
+	bindFloat("reflectivity",visMat->getReflectivity());
+
 	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DECAL_TEXTURING ) !=0 ))
 	{
 		glActiveTexture(GL_TEXTURE0 + DECAL_COLOR_SEMANTICS);

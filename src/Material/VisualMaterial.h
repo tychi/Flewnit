@@ -75,9 +75,9 @@ public:
 			ShadingFeatures shadingFeatures,
 			//must contain at least the textures used in the shader as samplers
 			const std::map<BufferSemantics, Texture*>& textures,
-			const VisualMaterialFlags& visualMaterialFlags
-//			float shininess = 100.0f,
-//			float reflectivity = 0.25f
+			const VisualMaterialFlags& visualMaterialFlags,
+			float shininess = 100.0f,
+			float reflectivity = 0.25f
 			);
 
 	virtual ~VisualMaterial();
@@ -115,6 +115,9 @@ public:
 	//returns NULL if doesn't exist;
 	Texture* getTexture(BufferSemantics bs)const;
 
+	inline float getShininess()const{return mShininess;}
+	inline float getReflectivity()const{return mReflectivity;}
+
 private:
 
 	friend class ShaderManager;
@@ -139,9 +142,8 @@ private:
 	typedef std::map<BufferSemantics, Texture*> SemanticsToTextureMap;
 	SemanticsToTextureMap mTextures;
 
-	//friend class ShaderManager;
-	//friend void ShaderManager::setRenderingScenario(RenderingTechnique rendTech,TextureType renderTargetTextureType, RenderTarget* rt);
-
+	float mShininess;
+	float mReflectivity;
 };
 
 

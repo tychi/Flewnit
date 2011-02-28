@@ -40,7 +40,8 @@
                                   {% if LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
                                     {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
                                       //is the lightsource a spotlight?
-                                      (lightSource.innerSpotCutOff_Radians <= 0.0) //if cutoff <=0.0, it will be interpreted as point light
+                                      (
+                                        (lightSource.innerSpotCutOff_Radians <= 0.0) //if cutoff <=0.0, it will be interpreted as point light
                                         ? 1.0 
                                         : 
                                     {% endif %}
@@ -48,7 +49,10 @@
                                             lightSource.spotExponent, 
                                             lightSource.innerSpotCutOff_Radians, 
                                             lightSource.outerSpotCutOff_Radians, 
-                                            lightToFragVN        ) 
+                                            lightToFragVN        )
+                                       {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}     
+                                       )
+                                       {% endif %} 
                                     *
                                   {% endif %}
                                   {% if SHADING_FEATURE_AMBIENT_OCCLUSION %} getAOAttenuation() * {% endif %}

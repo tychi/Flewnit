@@ -2,7 +2,7 @@
   GLSL Shader Template: spot light attenuation calculations:
   applicable to following stages: fragment                      {%endcomment%} 
 
-{% if LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS %}
+{% if LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
     
 float getSpotLightAttenuation(    
   vec3  lightSourceDirection,   
