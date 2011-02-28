@@ -238,6 +238,8 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 	GUARD(glEnable(GL_DEPTH_TEST));
 	GUARD(glDepthFunc(GL_LESS));
 
+	GUARD(glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS));
+
 	//GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_POINT));
 	GUARD(glPointSize(10.0f));
 

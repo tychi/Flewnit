@@ -128,6 +128,17 @@ BufferElementInfo::BufferElementInfo(bool hasNoChanneledElements)
 }
 
 
+//const BufferElementInfo& BufferElementInfo::operator=(const BufferElementInfo& rhs)
+//{
+//	numChannels = rhs.numChannels;
+//	internalGPU_DataType = rhs.internalGPU_DataType;
+//	bitsPerChannel = rhs.bitsPerChannel;
+//	normalizeIntegralValuesFlag = rhs.normalizeIntegralValuesFlag;
+//	hasNoChanneledElements = rhs.hasNoChanneledElements;
+//
+//	return *this;
+//}
+
 bool BufferElementInfo::operator==(const BufferElementInfo& rhs)const
 {
 	return

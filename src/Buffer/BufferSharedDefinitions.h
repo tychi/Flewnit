@@ -250,6 +250,7 @@ struct BufferElementInfo
 	explicit BufferElementInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsPerChannel, bool normalizeIntegralValuesFlag);
 	explicit BufferElementInfo(const BufferElementInfo& rhs);
 	virtual ~BufferElementInfo(){}
+	//const BufferElementInfo& operator=(const BufferElementInfo& rhs);
 	bool operator==(const BufferElementInfo& rhs)const;
 	const BufferElementInfo& operator=(const BufferElementInfo& rhs);
 	//called by constructor to early detect invalid values and permutations, like 8-bit float or 32bit normalized (u)int

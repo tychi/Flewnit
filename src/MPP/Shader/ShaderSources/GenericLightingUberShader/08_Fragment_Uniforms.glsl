@@ -29,7 +29,7 @@
 
   {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING  %}  
   uniform float shininess = 100.0; 
-  uniform float reflectivity = 0.33;
+  uniform float reflectivity = 0.66;
   {%comment%} in the deferred case, it is coded into the decal textures' alpha channel; We have to mask this uniform, because the name will
               be re-used in the deferred case {%endcomment%}
   {% endif %}

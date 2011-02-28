@@ -154,8 +154,8 @@ void main()
             output.position =  	modelViewMatrix * inVPosition;
             
             //myAss = transpose(inverse( modelViewMatrix)) * inVNormal;   
-            output.normal = 		transpose(inverse( modelViewMatrix)) * inVNormal;  
-            
+            //output.normal = 		transpose(inverse( modelViewMatrix)) * inVNormal;  
+            output.normal = 		modelViewMatrix * inVNormal;    
               
             {% if SHADING_FEATURE_NORMAL_MAPPING %}
               output.tangent = 	modelViewMatrix * inVTangent;

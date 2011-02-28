@@ -67,7 +67,9 @@ void Loader::createHardCodedSceneStuff()
 	rootNode.addChild(
 		new PureVisualObject("MyBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),0.3))
 	);
-
+	rootNode.addChild(
+		new PureVisualObject("MyEnvmapBox",AmendedTransform(Vector3D(60,-10,-50) )) //, Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
+	);
 
 	Geometry* geo1 = SimulationResourceManager::getInstance().getGeometry("MyBox1");
 	if(! geo1)
@@ -133,7 +135,7 @@ void Loader::createHardCodedSceneStuff()
 		Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
 				String("stoneBumpDecalTex"),
 				DECAL_COLOR_SEMANTICS,
-				Path("./assets/textures/rockbump.jpg"),
+				Path("./assets/textures/rockbumpDecal.jpg"),
 				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
 				true,
 				false,
@@ -143,7 +145,7 @@ void Loader::createHardCodedSceneStuff()
 				String("stoneBumpNormalTex"),
 				//DECAL_COLOR_SEMANTICS,
 				NORMAL_SEMANTICS,
-				Path("./assets/textures/rockbump.tga"),
+				Path("./assets/textures/rockbumpNormalDisp.png"),
 				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
 				true,
 				false,
@@ -167,6 +169,37 @@ void Loader::createHardCodedSceneStuff()
 			//std::map<BufferSemantics,Texture*>(),
 			VisualMaterialFlags(true,false,true,true,false,false));
 	}//endif !mat2
+
+	Material* matEnvMap = SimulationResourceManager::getInstance().getMaterial("EnvMapCloudyNoonMaterial");
+	if(! matEnvMap)
+	{
+		Texture* decalTex= URE_INSTANCE->getLoader()->loadCubeTexture(
+				String("cloudyNoonEnvMap"),
+				ENVMAP_SEMANTICS,
+				Path("./assets/textures/cubeMaps/cloudy_noon"),
+				String("jpg"),
+				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+				true,
+				false
+		);
+
+		std::map<BufferSemantics,Texture*> myMap;
+		myMap[ENVMAP_SEMANTICS] = decalTex;
+
+		matEnvMap = new VisualMaterial("EnvMapCloudyNoonMaterial",
+			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+			ShadingFeatures(
+					SHADING_FEATURE_DIRECT_LIGHTING
+					//| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_CUBE_MAPPING
+			),
+			myMap,
+			//not dyn. cubemap renderable
+			VisualMaterialFlags(true,false,true,false,false,false));
+	}//endif !matEnvMap
+
+
 
 	dynamic_cast<WorldObject*>(rootNode.getChild("MyBox1"))->addSubObject(
 		new SubObject(
@@ -192,6 +225,15 @@ void Loader::createHardCodedSceneStuff()
 			mat2
 		)
 	);
+	dynamic_cast<WorldObject*>(rootNode.getChild("MyEnvmapBox"))->addSubObject(
+		new SubObject(
+			"MyEnvmapBoxSubObject1",
+			VISUAL_SIM_DOMAIN,
+			geo2,
+			matEnvMap
+		)
+	);
+
 
 
 
@@ -315,7 +357,7 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 				  name,
 				  bufferSemantics,
 				  image->getWidth(),
-				  texelPreferredLayout,
+				  newTexeli, //texelPreferredLayout,
 				  allocHostMemory,
 				  buffer,
 				  	// buffer
@@ -331,7 +373,7 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 				  bufferSemantics,
 				  image->getWidth(),
 				  image->getHeight(),
-				  texelPreferredLayout,
+				  newTexeli,//texelPreferredLayout,
 				  allocHostMemory,
 				  shareWithOpenCL,
 				  //dont't make rectangle; Rectangle is good for deferred rendering, not for decal textureing
@@ -357,23 +399,27 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 
 Texture2DCube* Loader::loadCubeTexture(
 		String name,  BufferSemantics bufferSemantics, Path fileName, String fileEndingWithoutDot,
-					BufferElementInfo texelPreferredLayout,
+					const BufferElementInfo& texelPreferredLayout,
 					bool allocHostMemory,  bool genMipmaps
 )throw(BufferException)//may be changed by the loading routine!
 {
+	//sequence.. maybe  becaus of left handed system and wtf... ;(
 	const String suffixes[] = {"_RT", "_LF", "_DN", "_UP", "_FR", "_BK"};
+	//const String suffixes[] = {"_LF", "_RT", "_UP", "_DN", "_BK", "_FR"};
+	//const String suffixes[] = {"_RT", "_LF", "_UP", "_DN", "_FR", "_BK"};
 
+	BufferElementInfo newTexeli(texelPreferredLayout);
 
 	fipImage * image = new fipImage();
 
 
-	assert(sizeof(Vector4D) == 4* sizeof(float) && "Vector types must be tightly packed");
+	assert( (sizeof(Vector4D) == 4* sizeof(float)) && "Vector types must be tightly packed");
 	//alloc buffer of maximum size; maybe only a fourth will be needed, but that does'nt matter,
 	//as it's only a temorary buffer
 	void* buffer = 0;
 
 
-	unsigned int oldDimensions;
+	unsigned int dimensions;
 	for(int runner=0;runner<6;runner++)
 	{
 		String currentFileName = fileName.string();
@@ -395,16 +441,16 @@ Texture2DCube* Loader::loadCubeTexture(
 		{
 			buffer = malloc( 6*  sizeof(Vector4D) * image->getWidth()*image->getHeight());
 			bufferOffset =0;
-			oldDimensions = image->getHeight();
+			dimensions = image->getHeight();
 		}
 		else
 		{
-			//texelPreferredLayoutis only valid unti transformPixelData() has been called once;
+			//newTexeli is only valid until transformPixelData() has been called once;
 			//luckily, its values aren't needed before
 			bufferOffset =
 					runner *
-					texelPreferredLayout.bitsPerChannel / sizeof(BYTE) *
-					texelPreferredLayout.numChannels *
+					(newTexeli.bitsPerChannel/ 8) / sizeof(BYTE) *
+					newTexeli.numChannels *
 					image->getWidth()*image->getHeight();
 		}
 
@@ -413,17 +459,18 @@ Texture2DCube* Loader::loadCubeTexture(
 		transformPixelData(bufferSemantics,
 				//get adress of buffer at the current offset
 				&(reinterpret_cast<BYTE*>(buffer)[bufferOffset]),
-				texelPreferredLayout,image);
+				newTexeli,
+				image);
 
 		if(runner==0)
-		{oldDimensions = image->getHeight();}
+		{dimensions = image->getHeight();}
 
 
 		if(
 			(image->getHeight() != image->getWidth())
 			||
 			! BufferHelper::isPowerOfTwo(image->getHeight())
-			|| (image->getHeight() != oldDimensions)
+			|| (image->getHeight() != dimensions)
 		)
 		{
 			throw(BufferException("cubetex should be power of two,squared and all images should have the same size!"));
@@ -433,7 +480,7 @@ Texture2DCube* Loader::loadCubeTexture(
 
 	Texture2DCube* returnTex =
 			new Texture2DCube(
-					name, image->getHeight(), texelPreferredLayout,allocHostMemory,
+					name, dimensions, newTexeli,allocHostMemory,
 					buffer,genMipmaps
 			);
 
