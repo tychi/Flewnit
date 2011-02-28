@@ -245,6 +245,7 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 
 	//GUARD(glPolygonMode(GL_FRONT, GL_FILL));
     GUARD(glEnable(GL_CULL_FACE));
+    //glCullFace(GL_FRONT); <-- good for skydome rendering
 
 
 	// TODO Auto-generated destructor stub
