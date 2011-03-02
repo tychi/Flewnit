@@ -277,7 +277,6 @@ void LightSourceManager::setupShadowCamMatricesUniformBuffer(bool lookupMatrices
 							assert(cam);
 							MAT4_VALUE(currentSMlayer) = spot->getViewSpaceShadowMapLookupMatrix(cam);
 						}
-
 					}
 				}
 			} //endfor

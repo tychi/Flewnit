@@ -81,7 +81,7 @@ void GenericLightingUberShader::use(SubObject *so) throw (SimulatorException)
    Camera* mainCam = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
 
    //---------------------------------------------------------
-   setupMatrixUniforms(mainCam,so);
+   setupTransformationUniforms(mainCam,so);
    //----------------------------------------------------------
    if( (mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_DIRECT_LIGHTING) !=0)
    {

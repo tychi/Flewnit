@@ -30,6 +30,7 @@
 
 
 #include <grantlee/engine.h>
+#include "UserInterface/WindowManager/WindowManager.h"
 
 typedef QVariantHash TemplateContextMap;
 
@@ -97,9 +98,7 @@ void Shader::build()
 {
 	GUARD( mGLProgramHandle = glCreateProgram() );
 
-
     Grantlee::Engine *templateEngine = new Grantlee::Engine();
-
     Grantlee::FileSystemTemplateLoader::Ptr loader = Grantlee::FileSystemTemplateLoader::Ptr( new Grantlee::FileSystemTemplateLoader() );
     String shaderDirectory=	(mCodeDirectory / mShaderName).string() ;
     String commonCodeSnippetsDirectory = (mCodeDirectory / Path("Common")).string();
@@ -108,83 +107,48 @@ void Shader::build()
 
     //setup the context to delegate template rendering according to the shaderFeatures (both local and global):
     TemplateContextMap contextMap;
-
     setupTemplateContext(contextMap);
 
-
-
-    Grantlee::Context shaderTemplateContext(contextMap);
-    String shaderSourceCode;
-
     //--------------------------------------------------------------------
 
-    //generate vertex shader source code:
+    generateShaderStage(VERTEX_SHADER_STAGE,templateEngine,contextMap);
 
-    Grantlee::Template vertexShaderTemplate = templateEngine->loadByName( "main.vert" );
-    shaderSourceCode = vertexShaderTemplate->render(&shaderTemplateContext).toStdString();
-
-    LOG<< DEBUG_LOG_LEVEL << "VERTEX SHADER CODE:\n"<<  shaderSourceCode;
-    writeToDisk(shaderSourceCode, VERTEX_SHADER_STAGE);
-
-    //assert(0 && "inspecting shader code, therefore stop ;) ");
-
-    //create the vertex shader:
-    mShaderStages[VERTEX_SHADER_STAGE] =
-    	new ShaderStage(VERTEX_SHADER_STAGE,shaderSourceCode,
-   					mCodeDirectory, mShaderName,this);
-    attachCompiledStage(VERTEX_SHADER_STAGE);
-
-
-    //--------------------------------------------------------------------
-    //TODO derive a condition where we need a geometry shader:
-	//when do we need a geometry shader?
-	//if we need to trender to a cubemap, an array texture or if wee need to render primitive IDs
-    if(false)
+    if((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_TESSELATION ) != 0 )
     {
-        //generate geom shader source code:
-
-        contextMap["geom2fragInterfaceSpecifier"] ="out";
-        shaderTemplateContext = Grantlee::Context(contextMap);
-    	Grantlee::Template geomShaderTemplate = templateEngine->loadByName( "main.geom" );
-        shaderSourceCode = geomShaderTemplate->render(&shaderTemplateContext).toStdString();
-
-        LOG<< DEBUG_LOG_LEVEL << "GEOMETRY SHADER CODE:\n"<<  shaderSourceCode;
-        writeToDisk(shaderSourceCode, GEOMETRY_SHADER_STAGE);
-        //assert(0 && "inspecting shader code, therefore stop ;) ");
-
-        //create the geometry shader:
-        mShaderStages[GEOMETRY_SHADER_STAGE] =
-        	new ShaderStage(GEOMETRY_SHADER_STAGE, shaderSourceCode,
-        					mCodeDirectory, mShaderName,this);
-        attachCompiledStage(GEOMETRY_SHADER_STAGE);
+    	assert(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4);
+    	generateShaderStage(TESSELATION_CONTROL_SHADER_STAGE,templateEngine,contextMap);
+    	generateShaderStage(TESSELATION_EVALUATION_SHADER_STAGE,templateEngine,contextMap);
     }
 
+    if(ShaderManager::getInstance().currentRenderingScenarioNeedsGeometryShader())
+    {
+		//when do we need a geometry shader?
+		//if we need to trender to a cubemap, an array texture or if wee need to render primitive IDs
+    	generateShaderStage(GEOMETRY_SHADER_STAGE,templateEngine,contextMap);
+    }
 
-    //--------------------------------------------------------------------
+    generateShaderStage(FRAGMENT_SHADER_STAGE,templateEngine,contextMap);
 
-    //generate fragment shader source code:
-
-    contextMap["geom2fragInterfaceSpecifier"] ="in";
-    shaderTemplateContext = Grantlee::Context(contextMap);
-
-	Grantlee::Template fragmentShaderTemplate = templateEngine->loadByName( "main.frag" );
-    shaderSourceCode = fragmentShaderTemplate->render(&shaderTemplateContext).toStdString();
-
-    LOG<< DEBUG_LOG_LEVEL << "FRAGMENT SHADER CODE:\n"<<  shaderSourceCode;
-	writeToDisk(shaderSourceCode, FRAGMENT_SHADER_STAGE);
-    //create the fragment shader:
-    mShaderStages[FRAGMENT_SHADER_STAGE] =
-    		new ShaderStage(FRAGMENT_SHADER_STAGE, shaderSourceCode,
-    						mCodeDirectory, mShaderName,this);
-    attachCompiledStage(FRAGMENT_SHADER_STAGE);
-
-    //assert(0 && "inspecting shader code, therefore stop ;) ");
-
-    //--------------------------------------------------------------------
 
     link();
 
 
+}
+
+void Shader::generateShaderStage(ShaderStageType shaderStageType,  Grantlee::Engine* templateEngine, const TemplateContextMap& contextMap)
+{
+    //generate shader stage source code:
+	Grantlee::Template shaderTemplate = templateEngine->loadByName(
+			String(String("main.") + shaderStageFileEndings[shaderStageType]).c_str()
+	);
+	Grantlee::Context shaderTemplateContext(contextMap);
+    String shaderSourceCode = shaderTemplate->render(&shaderTemplateContext).toStdString();
+	writeToDisk(shaderSourceCode, shaderStageType);
+
+    //create the fragment shader:
+    mShaderStages[shaderStageType] = new ShaderStage(
+    		shaderStageType, shaderSourceCode, mCodeDirectory, mShaderName,this);
+    attachCompiledStage(shaderStageType);
 }
 
 
@@ -193,7 +157,7 @@ void Shader::writeToDisk(String sourceCode, ShaderStageType type)
 {
 	String shaderDirectory=
 		(	mCodeDirectory  / Path("__generated") /
-			  Path( mShaderName.string()+ mLocalShaderFeatures.stringify() + String(".")+  ShaderStageFileEndings[type] )
+			  Path( mShaderName.string()+ mLocalShaderFeatures.stringify() + String(".")+  shaderStageFileEndings[type] )
 		).string() ;
 	std::fstream fileStream;
 	fileStream.open(shaderDirectory.c_str(), std::ios::out);
@@ -257,6 +221,8 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 
 	//END DEBUG
 
+	contextMap.insert("GL_MAYOR_VERSION", WindowManager::getInstance().getAvailableOpenGLVersion().x);
+	contextMap.insert("GL_MINOR_VERSION", WindowManager::getInstance().getAvailableOpenGLVersion().y);
 
 	for(unsigned int i = 0; i < __NUM_TOTAL_SEMANTICS__;i++)
 	{
@@ -514,7 +480,7 @@ void ShaderStage::validate()throw(BufferException)
 				mShaderName.string() +
 				mOwningShader->getLocalShaderFeatures().stringify() +
 				String(".")+
-				ShaderStageFileEndings[mType]+
+				shaderStageFileEndings[mType]+
 				String("_LOG_STAGE")+
 				String(".txt");
 
@@ -593,18 +559,32 @@ void Shader::bindInt(String uniformName, int val)
 //handles, if appropriate, buffer binding of:
 // 	- shadowmapmatrices buffer
 //	- instance-transformation-matrices buffer
-void Shader::setupMatrixUniforms(Camera *mainCam, SubObject* so)
+void Shader::setupTransformationUniforms(Camera *cam, SubObject* so)
 {
 	VisualMaterial* visMat = dynamic_cast<VisualMaterial*>(so->getMaterial());
 	assert(visMat);
 
 	/*
-	    if( ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
-		   != LIGHT_SOURCES_SHADOW_FEATURE_NONE )
-	 * */
+					if(! lookupMatrices)
+					{
+						MAT4_VALUE(currentSMlayer) = spot->getViewProjectionMatrix();
+					}
+					else
+					{
+						if ( ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
+						{
+							MAT4_VALUE(currentSMlayer) = spot->getBiasedViewProjectionMatrix();
+						}
+						else
+						{
+							assert(cam);
+							MAT4_VALUE(currentSMlayer) = spot->getViewSpaceShadowMapLookupMatrix(cam);
+						}
+					}
+	 */
 
-	Matrix4x4 viewMatrix = mainCam->getGlobalTransform().getLookAtMatrix();
-	Matrix4x4 viewProjMatrix = mainCam->getProjectionMatrix() * viewMatrix;
+	Matrix4x4 viewMatrix = cam->getGlobalTransform().getLookAtMatrix();
+	Matrix4x4 viewProjMatrix = cam->getProjectionMatrix() * viewMatrix;
 
 	//check if we render to a special render target which will make geometry shader delegation
 	//necessary and hence the main cam's view matrix obsolete
@@ -660,7 +640,7 @@ void Shader::setupMatrixUniforms(Camera *mainCam, SubObject* so)
 		//setup default "model" related transform uniforms
 		Matrix4x4 modelMatrix = so->getOwningWorldObject()->getGlobalTransform().getTotalTransform();
 	    Matrix4x4 modelViewMatrix = viewMatrix * modelMatrix;
-	    Matrix4x4 modelViewProjMatrix = mainCam->getProjectionMatrix() * modelViewMatrix;
+	    Matrix4x4 modelViewProjMatrix = cam->getProjectionMatrix() * modelViewMatrix;
 
 	    bindMatrix4x4("modelMatrix",modelMatrix);
 	    bindMatrix4x4("modelViewMatrix",modelViewMatrix);
@@ -670,7 +650,7 @@ void Shader::setupMatrixUniforms(Camera *mainCam, SubObject* so)
 
 
 
-void Shader::setupLightSourceUniforms(Camera *mainCam)
+void Shader::setupLightSourceUniforms(Camera *cam)
 {
 	const ShaderFeaturesGlobal& sfg = ShaderManager::getInstance().getGlobalShaderFeatures();
 
@@ -687,17 +667,22 @@ void Shader::setupLightSourceUniforms(Camera *mainCam)
 	{
 		const LightSourceShaderStruct & lsStruct = LightSourceManager::getInstance().getLightSource(0)->getdata();
 
-	    Vector4D lightPosViewSpace =
-	    		mainCam->getGlobalTransform().getLookAtMatrix()
-	    		* Vector4D( LightSourceManager::getInstance().getLightSource(0)->getGlobalTransform().getPosition(),1.0f) ;
-	   Vector4D lightDirViewSpace =
-			   mainCam->getGlobalTransform().getLookAtMatrix()
-			   * Vector4D( LightSourceManager::getInstance().getLightSource(0)->getGlobalTransform().getDirection(), 0.0f );
 
-	   bindVector4D("lightSource.position",lightPosViewSpace);
+	    Vector4D lightPos = Vector4D( LightSourceManager::getInstance().getLightSource(0)
+	    		->getGlobalTransform().getPosition(),1.0f) ;
+	    Vector4D lightDir = Vector4D( LightSourceManager::getInstance().getLightSource(0)
+	    		->getGlobalTransform().getDirection(), 0.0f );
+		if ( ! ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
+		{
+			//transform to view space
+			lightPos =	cam->getGlobalTransform().getLookAtMatrix()	* lightPos;
+			lightDir =	cam->getGlobalTransform().getLookAtMatrix()	* lightDir;
+		}
+
+	   bindVector4D("lightSource.position",lightPos);
 	   bindVector4D("lightSource.diffuseColor",lsStruct.diffuseColor);
 	   bindVector4D("lightSource.specularColor",lsStruct.specularColor);
-	   bindVector4D("lightSource.direction",lightDirViewSpace);
+	   bindVector4D("lightSource.direction",lightDir);
 
 	   bindFloat("lightSource.innerSpotCutOff_Radians",lsStruct.innerSpotCutOff_Radians);
 	   bindFloat("lightSource.outerSpotCutOff_Radians",lsStruct.outerSpotCutOff_Radians);

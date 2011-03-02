@@ -103,6 +103,7 @@ public:
 	//note: in this case pure viewspace-dependent stuff like AO calculatins can
 	//only be done without costly per-pixel back-transformations if some conditions are satified
 	bool currentRenderingScenarioNeedsWorldSpaceTransform()const;
+	bool currentRenderingScenarioNeedsGeometryShader()const;
 
 private:
 

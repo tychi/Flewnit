@@ -68,6 +68,19 @@ bool ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform()const
 		;
 }
 
+
+bool ShaderManager::currentRenderingScenarioNeedsGeometryShader()const
+{
+	//when do we need a geometry shader?
+	//if we need to render to a cubemap, an array texture or if wee need to render primitive IDs
+	return
+		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_CUBE) ||
+		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_CUBE_DEPTH) ||
+		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_ARRAY_DEPTH) ||
+		(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION )
+		;
+}
+
 //iterates all visual materials and assigns them shaders fitting the current scenario;
 //the shaders might need to be generated first (done automatically);
 //the attachment status of the rendertaget is validated to fit the material's needs and the shader's
@@ -159,8 +172,6 @@ Shader* ShaderManager::getUniformBufferOffsetQueryShader()
 
 Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 {
-	//assert(0 && "have to finish shader implementation first");
-
 	//TODO continue implementation
 
 	assert( ( mShaderMap.find(sfl) == mShaderMap.end() ) );

@@ -19,6 +19,10 @@ class QVariant;
 template <class Key, class T>class QHash;
 typedef QHash<QString, QVariant> QVariantHash;
 typedef QVariantHash TemplateContextMap;
+namespace Grantlee
+{
+	class Engine;
+}
 
 
 //class GrantleeShaderFeaturesContext;
@@ -33,13 +37,13 @@ enum ShaderStageType
 {
 	VERTEX_SHADER_STAGE,
 	TESSELATION_CONTROL_SHADER_STAGE,
-	TESSELATION_EVALUATE_SHADER_STAGE,
+	TESSELATION_EVALUATION_SHADER_STAGE,
 	GEOMETRY_SHADER_STAGE,
 	FRAGMENT_SHADER_STAGE,
 	__NUM_SHADER_STAGES__
 };
 
-const String ShaderStageFileEndings[] =
+const String shaderStageFileEndings[] =
 {
 	"vert",
 	"tessCtrl",
@@ -172,6 +176,7 @@ protected:
 	void build();
 	//setup the context for template rendering:
 	void setupTemplateContext(TemplateContextMap& contextMap);
+	void generateShaderStage(ShaderStageType shaderStageType, Grantlee::Engine* templateEngine, const TemplateContextMap& contextMap);
 	//for later debugging of the final code of a stage:
 	void writeToDisk(String sourceCode, ShaderStageType type);
 
@@ -194,9 +199,9 @@ protected:
 	//handles, if appropriate, buffer binding of:
 	// 	- shadowmapmatrices buffer
 	//	- instance-transformation-matrices buffer
-	void setupMatrixUniforms(Camera *mainCam, SubObject* so);
+	void setupTransformationUniforms(Camera *cam, SubObject* so);
 	//either binds the lightsoure uniform buffer or sets the non-buffer-single-lightsource uniforms directly
-	void setupLightSourceUniforms(Camera *mainCam);
+	void setupLightSourceUniforms(Camera *cam);
 	//void setupShadowUniforms(Camera *mainCam);
 	void setupMaterialUniforms(VisualMaterial* visMat);
 

@@ -37,8 +37,8 @@
   uniform float spotLightAmbientFactor = 0.03;
   
   uniform vec4 eyePositionW; //world space eye position, needed e.g. for skydome rendering
-  uniform mat4 viewMatrix; //the transpose (=inverse) of its rotational component is needed to transform "envmap lookup vector" from view space back to world space
-  //uniform mat3 inverseViewRotationMatrix; //needed to transform "envmap lookup vector" from view space back to world space
+  uniform mat4 viewMatrix; //the transpose (=inverse) of the rotational component of the view matrix is needed to transform "envmap lookup vector" from view space back to world space
+
 
 
   //clamp the attenuation due to shadowmapping to [minimalshadowAttenuation, 1.0]
