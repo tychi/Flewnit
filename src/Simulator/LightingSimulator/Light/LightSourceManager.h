@@ -93,9 +93,17 @@ public:
 
 
 	//fill buffers with recent values
-	void updateLightSourcesUniformBuffer(Camera *mainCam);
-	void updateShadowMapMatricesUniformBuffer(Camera *mainCam);
-
+	//{
+	//if ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform(),
+	//	then the light source pos and dir will be set in worldspace coords
+	void updateLightSourcesUniformBuffer(Camera *cam);
+	//cam param only needed for lookup in view space; if viewspace or not
+	//is queried via ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform();
+	//!lookup: shadowCamProjection * shadowCamView
+	//lookup && worldspace: hadowCamBias * shadowCamProjection * shadowCamView
+	//lookup && !worldspace: hadowCamBias * shadowCamProjection * shadowCamView * (camView)⁻1
+	void setupShadowCamMatricesUniformBuffer(bool lookupMatrices, Camera* cam = 0);
+	//}
 
 private:
 	friend LightSource::~LightSource();

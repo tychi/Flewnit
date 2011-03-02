@@ -13,6 +13,10 @@
 #include "Scene/Scene.h"
 
 #include "Util/Log/Log.h"
+#include "Simulator/LightingSimulator/Light/LightSourceManager.h"
+#include "URE.h"
+#include "Simulator/SimulatorInterface.h"
+#include "Simulator/LightingSimulator/LightingSimulator.h"
 
 
 
@@ -38,6 +42,10 @@ DefaultLightingStage::~DefaultLightingStage()
 bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
 {
 	//LOG<<DEBUG_LOG_LEVEL<<"DefaultLightingStage generator in action! ;(;\n";
+
+	//update the uniform buffers of the light sources and the shadow map matrices
+	LightSourceManager::getInstance().updateLightSourcesUniformBuffer(
+		URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera());
 
 	SimulationResourceManager::getInstance().getScene()->traverse(this);
 

@@ -57,6 +57,17 @@ ShaderManager::~ShaderManager()
 	//do nothing, every object is "owned" by the sim resource manager
 }
 
+//returns true if doing layered rendering or other stuff involving multiple view/projection cameras
+//which would currupt view space transformed data;
+bool ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform()const
+{
+	return
+		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_CUBE) ||
+		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_CUBE_DEPTH) ||
+		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_ARRAY_DEPTH)
+		;
+}
+
 //iterates all visual materials and assigns them shaders fitting the current scenario;
 //the shaders might need to be generated first (done automatically);
 //the attachment status of the rendertaget is validated to fit the material's needs and the shader's

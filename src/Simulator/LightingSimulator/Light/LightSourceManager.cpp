@@ -149,7 +149,7 @@ LightSourceManager::~LightSourceManager()
 }
 
 //fill buffers with recent values
-void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
+void LightSourceManager::updateLightSourcesUniformBuffer(Camera *cam)
 {
 	if(mLightSourcesUniformBuffer)
 	{
@@ -168,12 +168,17 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 			{
 				const LightSourceShaderStruct& lsss = mLightSources[currentLightSourceHostIndex]->getdata();
 
-			    Vector4D lightPosViewSpace =
-			    		mainCam->getGlobalTransform().getLookAtMatrix()
-			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getPosition(), 1.0f);
-			    Vector4D lightDirViewSpace =
-			    		mainCam->getGlobalTransform().getLookAtMatrix()
-			    		* Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getDirection(), 0.0f);
+			    Vector4D lightPos =
+			    		Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getPosition(), 1.0f);
+			    Vector4D lightDir =
+			    		Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getDirection(), 0.0f);
+				if ( ! ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
+				{
+					//transform to view space
+					lightPos =	cam->getGlobalTransform().getLookAtMatrix()	* lightPos;
+					lightDir =	cam->getGlobalTransform().getLookAtMatrix()	* lightDir;
+				}
+
 
 
 #define CURRENT_VEC4_VALUE(index) \
@@ -189,10 +194,10 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 				] \
 		)
 
-			    CURRENT_VEC4_VALUE(0) = lightPosViewSpace;
+			    CURRENT_VEC4_VALUE(0) = lightPos;
 			    CURRENT_VEC4_VALUE(1) = lsss.diffuseColor;
 			    CURRENT_VEC4_VALUE(2) = lsss.specularColor;
-			    CURRENT_VEC4_VALUE(3) = lightDirViewSpace;
+			    CURRENT_VEC4_VALUE(3) = lightDir;
 
 			    CURRENT_FLOAT_VALUE(4)   =  lsss.innerSpotCutOff_Radians;
 			    CURRENT_FLOAT_VALUE(5)   =  lsss.outerSpotCutOff_Radians;
@@ -211,7 +216,13 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *mainCam)
 	}
 }
 
-void LightSourceManager::updateShadowMapMatricesUniformBuffer(Camera *mainCam)
+
+//cam param only needed for lookup in view space; if viewspace or not
+//is queried via ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform();
+//!lookup: shadowCamProjection * shadowCamView
+//lookup && worldspace: hadowCamBias * shadowCamProjection * shadowCamView
+//lookup && !worldspace: hadowCamBias * shadowCamProjection * shadowCamView * (camView)⁻1
+void LightSourceManager::setupShadowCamMatricesUniformBuffer(bool lookupMatrices, Camera* cam)
 {
 	if(mShadowMapMatricesUniformBuffer)
 		{
@@ -251,9 +262,23 @@ void LightSourceManager::updateShadowMapMatricesUniformBuffer(Camera *mainCam)
 					assert("shadow map layer must be valid for active shadow casters " &&
 							(currentSMlayer >= 0) && (currentSMlayer < mNumMaxLightSources ) );
 
+					if(! lookupMatrices)
+					{
+						MAT4_VALUE(currentSMlayer) = spot->getViewProjectionMatrix();
+					}
+					else
+					{
+						if ( ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
+						{
+							MAT4_VALUE(currentSMlayer) = spot->getBiasedViewProjectionMatrix();
+						}
+						else
+						{
+							assert(cam);
+							MAT4_VALUE(currentSMlayer) = spot->getViewSpaceShadowMapLookupMatrix(cam);
+						}
 
-					MAT4_VALUE(currentSMlayer) = spot->getViewSpaceShadowMapLookupMatrix(mainCam);
-
+					}
 				}
 			} //endfor
 #undef MAT4_VALUE

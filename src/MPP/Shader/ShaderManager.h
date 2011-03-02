@@ -98,6 +98,12 @@ public:
 	 */
 	Shader* getUniformBufferOffsetQueryShader();
 
+	//returns true if doing layered rendering or other stuff involving multiple view/projection cameras
+	//which would currupt view space transformed data;
+	//note: in this case pure viewspace-dependent stuff like AO calculatins can
+	//only be done without costly per-pixel back-transformations if some conditions are satified
+	bool currentRenderingScenarioNeedsWorldSpaceTransform()const;
+
 private:
 
 
