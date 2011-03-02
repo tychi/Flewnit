@@ -93,7 +93,7 @@ private:
 	friend class Shader;
 
 	ShaderStage(ShaderStageType shaderStageType, String sourceCode,
-				Path codeDirectory, Path shaderName);
+				Path codeDirectory, Path shaderName, Shader* owningShader);
 	~ShaderStage();
 
 	//throw exceptionif the section does not apply to the shader type
@@ -120,6 +120,8 @@ private:
 	Path mShaderName;
 
 	static GLuint mGLShaderStageIdentifiers[__NUM_SHADER_STAGES__];
+
+	Shader* mOwningShader;
 
 };
 

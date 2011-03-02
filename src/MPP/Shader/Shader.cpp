@@ -131,7 +131,7 @@ void Shader::build()
     //create the vertex shader:
     mShaderStages[VERTEX_SHADER_STAGE] =
     	new ShaderStage(VERTEX_SHADER_STAGE,shaderSourceCode,
-   					mCodeDirectory, mShaderName);
+   					mCodeDirectory, mShaderName,this);
     attachCompiledStage(VERTEX_SHADER_STAGE);
 
 
@@ -155,7 +155,7 @@ void Shader::build()
         //create the geometry shader:
         mShaderStages[GEOMETRY_SHADER_STAGE] =
         	new ShaderStage(GEOMETRY_SHADER_STAGE, shaderSourceCode,
-        					mCodeDirectory, mShaderName);
+        					mCodeDirectory, mShaderName,this);
         attachCompiledStage(GEOMETRY_SHADER_STAGE);
     }
 
@@ -175,7 +175,7 @@ void Shader::build()
     //create the fragment shader:
     mShaderStages[FRAGMENT_SHADER_STAGE] =
     		new ShaderStage(FRAGMENT_SHADER_STAGE, shaderSourceCode,
-    						mCodeDirectory, mShaderName);
+    						mCodeDirectory, mShaderName,this);
     attachCompiledStage(FRAGMENT_SHADER_STAGE);
 
     //assert(0 && "inspecting shader code, therefore stop ;) ");
@@ -192,8 +192,8 @@ void Shader::build()
 void Shader::writeToDisk(String sourceCode, ShaderStageType type)
 {
 	String shaderDirectory=
-		(	mCodeDirectory /
-			  Path( mShaderName.string()+ String("_GENERATED.") + ShaderStageFileEndings[type] )
+		(	mCodeDirectory  / Path("__generated") /
+			  Path( mShaderName.string()+ mLocalShaderFeatures.stringify() + String(".")+  ShaderStageFileEndings[type] )
 		).string() ;
 	std::fstream fileStream;
 	fileStream.open(shaderDirectory.c_str(), std::ios::out);
@@ -425,16 +425,20 @@ void Shader::validate()throw(BufferException)
 
 	GUARD(glGetProgramInfoLog(mGLProgramHandle,buffSize,&shaderInfoLogSize,logBuffer));
 
+	if(shaderInfoLogSize >0)
+	{
+		//something went wrong, write info to disk for easier inspection
+		String logFileName=
+				mShaderName.string() + mLocalShaderFeatures.stringify() +
+				String("_LOG_PROGRAM.txt");
 
-	String logFileName=
-			mShaderName.string() +
-			String("_shaderProgramInfoLog.txt");
+		Path logFilePath= mCodeDirectory  / Path("__generated") / Path(logFileName);
+		std::fstream fileStream;
+		fileStream.open(logFilePath.string().c_str(), std::ios::out);
+		fileStream << logBuffer;
+		fileStream.close();
+	}
 
-	Path logFilePath= mCodeDirectory / Path(logFileName);
-	std::fstream fileStream;
-	fileStream.open(logFilePath.string().c_str(), std::ios::out);
-	fileStream << logBuffer;
-	fileStream.close();
 }
 
 
@@ -442,12 +446,15 @@ void Shader::validate()throw(BufferException)
 //----------------------------------------------------------------------------------------------
 
 
-ShaderStage::ShaderStage(ShaderStageType shaderStageType, String sourceCode, Path codeDirectory, Path shaderName)
+ShaderStage::ShaderStage(ShaderStageType shaderStageType,
+		String sourceCode, Path codeDirectory, Path shaderName,
+		Shader* owningShader)
 :
 		mType(shaderStageType),
 		mSourceCode(sourceCode),
 		mCodeDirectory(codeDirectory),
-		mShaderName(shaderName)
+		mShaderName(shaderName),
+		mOwningShader(owningShader)
 {
 	GUARD( mGLShaderStageHandle = glCreateShader(mGLShaderStageIdentifiers[shaderStageType]));
 	setSource(sourceCode);
@@ -500,20 +507,25 @@ void ShaderStage::validate()throw(BufferException)
 	static GLchar logBuffer[buffSize];
 	GUARD(glGetShaderInfoLog(mGLShaderStageHandle,buffSize,&shaderInfoLogSize,logBuffer));
 
+	if(shaderInfoLogSize >0)
+	{
+		//something went wrong, write info to disk for easier inspection
+		String logFileName=
+				mShaderName.string() +
+				mOwningShader->getLocalShaderFeatures().stringify() +
+				String(".")+
+				ShaderStageFileEndings[mType]+
+				String("_LOG_STAGE")+
+				String(".txt");
 
-	String logFileName=
-			mShaderName.string() +
-			String("_GENERATED_")+
-			ShaderStageFileEndings[mType]+
-			String("_shaderStageInfoLog.txt");
-
-	Path logFilePath= mCodeDirectory / Path(logFileName);
+		Path logFilePath= mCodeDirectory / Path("__generated") / Path(logFileName);
 
 
-	std::fstream fileStream;
-	fileStream.open(logFilePath.string().c_str(), std::ios::out);
-	fileStream << logBuffer;
-	fileStream.close();
+		std::fstream fileStream;
+		fileStream.open(logFilePath.string().c_str(), std::ios::out);
+		fileStream << logBuffer;
+		fileStream.close();
+	}
 }
 
 //============ uniform variables logic to come ==========================================================================
