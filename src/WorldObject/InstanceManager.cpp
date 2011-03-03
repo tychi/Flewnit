@@ -51,6 +51,17 @@ SubObject* InstanceManager::createInstance()throw(SimulatorException)
 void InstanceManager::registerInstanceForNextDrawing(InstancedGeometry* instancedGeo)
 {
 	assert(0 && "TODO implement");
+
+}
+
+
+void InstanceManager::updateTransformBuffer()
+{
+	assert(0 && "TODO implement");
+
+	//disinguish transform matrix calc:
+	// - SM gen: view/proj from spotlight
+	// - default lighting: view/proj from main cam
 }
 
 void InstanceManager::drawRegisteredInstances()

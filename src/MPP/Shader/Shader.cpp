@@ -585,27 +585,26 @@ void Shader::setupTransformationUniforms(Camera *cam, SubObject* so)
 	//afaik, trying to set a non existing uniform is no tragic thing;
 	//maybe I should "bruteforce" try to set everything..? TODO checkout when stable
 
-	/*
-					if(! lookupMatrices)
-					{
-						MAT4_VALUE(currentSMlayer) = spot->getViewProjectionMatrix();
-					}
-					else
-					{
-						if ( ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
-						{
-							MAT4_VALUE(currentSMlayer) = spot->getBiasedViewProjectionMatrix();
-						}
-						else
-						{
-							assert(cam);
-							MAT4_VALUE(currentSMlayer) = spot->getViewSpaceShadowMapLookupMatrix(cam);
-						}
-					}
-	 */
-
-	Matrix4x4 viewMatrix = cam->getGlobalTransform().getLookAtMatrix();
-	Matrix4x4 viewProjMatrix = cam->getProjectionMatrix() * viewMatrix;
+	//unused identity matrices if they aren't set below:
+	Matrix4x4 viewMatrix(1.0f);
+	Matrix4x4 viewProjMatrix(1.0f);
+	if (mLocalShaderFeatures.renderingTechnique==RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
+	{
+		if(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature ==
+				LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT)
+		{
+			SpotLight* spot = dynamic_cast<SpotLight*> (LightSourceManager::getInstance().getFirstShadowCaster());
+			assert("in this scenario, a shadow caster must be a spotlight" && spot);
+			viewMatrix = spot->getViewMatrix(); //unneeded, but whatever.. :P
+			viewProjMatrix = spot->getViewProjectionMatrix();
+		}
+	}
+	else
+	{
+		assert(cam && "camera must be passed in non- shadow map generation passes");
+		viewMatrix = cam->getGlobalTransform().getLookAtMatrix();
+		viewProjMatrix = cam->getProjectionMatrix() * viewMatrix;
+	}
 
 
 	//check if we render to a special render target which will make geometry shader delegation
@@ -788,42 +787,55 @@ void Shader::setupLightSourceUniforms(Camera *cam)
 
 void Shader::setupMaterialUniforms(VisualMaterial* visMat)
 {
-	bindFloat("shininess",visMat->getShininess());
-	bindFloat("reflectivity",visMat->getReflectivity());
+	if( (mLocalShaderFeatures.renderingTechnique== RENDERING_TECHNIQUE_DEFAULT_LIGHTING) ||
+		(mLocalShaderFeatures.renderingTechnique== RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL))
+	{
 
-	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DECAL_TEXTURING ) !=0 ))
-	{
-		glActiveTexture(GL_TEXTURE0 + DECAL_COLOR_SEMANTICS);
-		visMat->getTexture(DECAL_COLOR_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
-		bindInt("decalTexture",DECAL_COLOR_SEMANTICS);
-	}
-	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DETAIL_TEXTURING ) !=0 ))
-	{
-		glActiveTexture(GL_TEXTURE0 + DETAIL_TEXTURE_SEMANTICS);
-		visMat->getTexture(DETAIL_TEXTURE_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
-		bindInt("detailTexture",DETAIL_TEXTURE_SEMANTICS);
-	}
-	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_NORMAL_MAPPING) !=0 ))
-	{
-		glActiveTexture(GL_TEXTURE0 + NORMAL_SEMANTICS);
-		visMat->getTexture(NORMAL_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
-		bindInt("normalMap",NORMAL_SEMANTICS);
-	}
-	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_CUBE_MAPPING ) !=0 ))
-	{
-		glActiveTexture(GL_TEXTURE0 + ENVMAP_SEMANTICS);
-		visMat->getTexture(ENVMAP_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
-		bindInt("cubeMap",ENVMAP_SEMANTICS);
-	}
+		bindFloat("shininess",visMat->getShininess());
+		bindFloat("reflectivity",visMat->getReflectivity());
 
-	if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_AMBIENT_OCCLUSION ) !=0 ))
-	{
-		//note: bind DEPTH_BUFFER_SEMANTICS instead of AMBIENT_OCCLUSION_SEMANTICS, as AMBIENT_OCCLUSION_SEMANTICS
-		//contains the AO result and not the raw image for computation
-		assert(0&& "sry AO not implemented yet"); //TODO
-		glActiveTexture(GL_TEXTURE0 + DEPTH_BUFFER_SEMANTICS);
-		visMat->getTexture(DEPTH_BUFFER_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
-		bindInt("depthBufferForAO",DEPTH_BUFFER_SEMANTICS);
+		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DECAL_TEXTURING ) !=0 ))
+		{
+			glActiveTexture(GL_TEXTURE0 + DECAL_COLOR_SEMANTICS);
+			visMat->getTexture(DECAL_COLOR_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+			bindInt("decalTexture",DECAL_COLOR_SEMANTICS);
+		}
+		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DETAIL_TEXTURING ) !=0 ))
+		{
+			glActiveTexture(GL_TEXTURE0 + DETAIL_TEXTURE_SEMANTICS);
+			visMat->getTexture(DETAIL_TEXTURE_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+			bindInt("detailTexture",DETAIL_TEXTURE_SEMANTICS);
+		}
+		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_NORMAL_MAPPING) !=0 ))
+		{
+			glActiveTexture(GL_TEXTURE0 + NORMAL_SEMANTICS);
+			visMat->getTexture(NORMAL_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+			bindInt("normalMap",NORMAL_SEMANTICS);
+		}
+		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_CUBE_MAPPING ) !=0 ))
+		{
+			glActiveTexture(GL_TEXTURE0 + ENVMAP_SEMANTICS);
+			visMat->getTexture(ENVMAP_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+			bindInt("cubeMap",ENVMAP_SEMANTICS);
+		}
+
+		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_AMBIENT_OCCLUSION ) !=0 ))
+		{
+			//note: bind DEPTH_BUFFER_SEMANTICS instead of AMBIENT_OCCLUSION_SEMANTICS, as AMBIENT_OCCLUSION_SEMANTICS
+			//contains the AO result and not the raw image for computation
+			assert(0&& "sry AO not implemented yet"); //TODO
+			glActiveTexture(GL_TEXTURE0 + DEPTH_BUFFER_SEMANTICS);
+			visMat->getTexture(DEPTH_BUFFER_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+			bindInt("depthBufferForAO",DEPTH_BUFFER_SEMANTICS);
+		}
+
+		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_TESSELATION) !=0 ))
+		{
+			assert(0&& "TODO bind a lot of stuff like textures and opening angles, "
+					"texture sizes, desired pixel lenght of subdivided  line etc.."); //TODO
+			//assert also that normal mapping is active... at least at first
+		}
+
 	}
 }
 

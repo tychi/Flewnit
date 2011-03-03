@@ -87,12 +87,6 @@ void GenericLightingUberShader::use(SubObject *so) throw (SimulatorException)
    {
 	   setupLightSourceUniforms(mainCam);
    }
-//   //----------------------------------------------------------
-//   if( ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
-//		   != LIGHT_SOURCES_SHADOW_FEATURE_NONE )
-//   {
-//	   setupShadowUniforms(mainCam);
-//   }
    //----------------------------------------------------------
    VisualMaterial * visMat =  dynamic_cast<VisualMaterial*>(so->getMaterial());
    assert(visMat);

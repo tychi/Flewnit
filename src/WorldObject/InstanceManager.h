@@ -43,6 +43,7 @@ public:
 	//SubObject must own an InstacedGeometry;
 	void registerInstanceForNextDrawing(InstancedGeometry* instancedGeo);
 
+	void updateTransformBuffer();
 	void drawRegisteredInstances();
 
 	inline Buffer* getInstanceTransformationInfoUniformBuffer()const{return mInstanceTransformUniformBuffer;}

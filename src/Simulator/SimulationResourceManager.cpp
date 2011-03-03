@@ -84,6 +84,10 @@ void SimulationResourceManager::executeInstancedRendering()
 	typedef std::map<String, InstanceManager*> InstanceManagerMap;
 	BOOST_FOREACH( InstanceManagerMap::value_type & pair, mInstanceManagers)
 	{
+		pair.second->updateTransformBuffer();
+	}
+	BOOST_FOREACH( InstanceManagerMap::value_type & pair, mInstanceManagers)
+	{
 		pair.second->drawRegisteredInstances();
 	}
 }
