@@ -73,6 +73,7 @@ LightingSimulator::LightingSimulator(ConfigStructNode* simConfigNode)
 			)
 		)
 	),
+	mCurrentlyActiveCamera(mMainCamera),
 	//mShaderManager(new ShaderManager()),
 	mShaderManager(
 		new ShaderManager(
@@ -83,7 +84,7 @@ LightingSimulator::LightingSimulator(ConfigStructNode* simConfigNode)
 	),
 	mLightSourceManager(new LightSourceManager())//TODO
 {
-	// TODO Auto-generated constructor stub
+	//every further init in init() routine :P
 }
 
 ShaderFeaturesGlobal LightingSimulator::parseGlobalShaderFeatureFromConfig()

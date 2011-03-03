@@ -348,14 +348,13 @@ InputInterpreter* URE::getInputInterpreter()const
 	}
 }
 
-
-//bool URE::buildSimulationPipeLine(boost::filesystem::path pathToPipelineConfigFile)
-//{
-//	//TODO
-//	assert(mCorrectlyInitializedGuard);
-//
-//	return false;
-//}
-
+Camera* URE::getCurrentlyActiveCamera()const
+{
+	return getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getCurrentlyActiveCamera();
+}
+void URE::setCurrentlyActiveCamera(Camera* cam)
+{
+	getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->setCurrentlyActiveCamera(cam);
+}
 
 }

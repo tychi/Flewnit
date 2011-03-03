@@ -9,15 +9,16 @@
 
 #include "../SimulatorInterface.h"
 
+
+
 namespace Flewnit
 {
+
 
 class LightingSimulator:
 	public SimulatorInterface
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-
-
 
 public:
 	LightingSimulator(ConfigStructNode* simConfigNode);
@@ -32,7 +33,10 @@ public:
 	ShaderManager* getShaderManager()const;
 	RenderTarget* getGlobalRenderTarget()const;
 	LightSourceManager* getLightSourceManager()const;
+
 	Camera* getMainCamera()const;
+	inline void setCurrentlyActiveCamera(Camera* cam){mCurrentlyActiveCamera=cam;}
+	inline Camera* getCurrentlyActiveCamera()const{return mCurrentlyActiveCamera;}
 
 	//debug
 	void testStuff();
@@ -44,6 +48,7 @@ private:
 
 	RenderTarget* mGlobalRenderTarget;
 	Camera* mMainCamera;
+	Camera* mCurrentlyActiveCamera;
 	ShaderManager* mShaderManager;
 	LightSourceManager* mLightSourceManager;
 

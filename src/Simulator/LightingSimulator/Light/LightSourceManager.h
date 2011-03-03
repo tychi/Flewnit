@@ -100,7 +100,7 @@ public:
 	//{
 	//if ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform(),
 	//	then the light source pos and dir will be set in worldspace coords
-	void updateLightSourcesUniformBuffer(Camera *cam);
+	void updateLightSourcesUniformBuffer();
 	//cam param only needed for lookup in view space; if viewspace or not
 	//is queried via ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform();
 	//!lookup: shadowCamProjection * shadowCamView

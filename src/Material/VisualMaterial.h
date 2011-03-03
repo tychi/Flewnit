@@ -117,6 +117,7 @@ public:
 
 	inline float getShininess()const{return mShininess;}
 	inline float getReflectivity()const{return mReflectivity;}
+	inline Shader* getCurrentlyUsedShader()const{return mCurrentlyUsedShader;}
 
 private:
 

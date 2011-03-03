@@ -138,7 +138,7 @@ Matrix4x4 AmendedTransform::getLookAtMatrix()const
 //	return getRotationMatrix()*  (1.0f/mScale) ;
 //}
 //accum: translationMatrix* Mat4(normalMatrix)* scaleMatrix;
-Matrix4x4 AmendedTransform::getTotalTransform()const
+const Matrix4x4& AmendedTransform::getTotalTransform()const
 {
 	return mAccumTranslationRotationScaleMatrix;
 }

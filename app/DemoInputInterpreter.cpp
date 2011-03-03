@@ -61,19 +61,16 @@ void DemoInputInterpreter::perFrameCallback()
 {
 	//---------------------------------------------------------
 
-	URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->
-		getMainCamera()->getGlobalTransform().moveRelativeToDirection(
+//	URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera()
+
+	URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().moveRelativeToDirection(
 			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_FRONT_BACK]) 	- 1.0f)
 			* -1.0f *mMovementSpeed * URE_INSTANCE->getFPSCounter()->getLastFrameDuration(),
 			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_RIGHT_LEFT]) 	- 1.0f)
 			* -1.0f * mMovementSpeed * URE_INSTANCE->getFPSCounter()->getLastFrameDuration(),
 			(static_cast<float>(mMovementState[MOVEMENT_DIRECTION_UP_DOWN])  	- 1.0f)
 			*mMovementSpeed * URE_INSTANCE->getFPSCounter()->getLastFrameDuration()
-	)
-
-	;
-
-
+	);
 	//---------------------------------------------------------
 }
 
@@ -232,7 +229,7 @@ void DemoInputInterpreter::interpretInput(Mouse* mouse)
 //					;
 
 			Camera* mainCamera = //SimulationResourceManager::getInstance().getMainCamera();
-					URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
+					URE_INSTANCE->getCurrentlyActiveCamera(); // getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
 
 			//Matrix4x4 lookAtMatrix = mainCamera->getViewMatrix();
 			float differenceHorizontal =  static_cast<float>(mouse->getRecentPosition().x - mouse->getLastPosition().x);

@@ -46,7 +46,7 @@
 
   layout(shared) uniform InstanceTransformBuffer
   {
-    InstanceTransform instanceTransform[  {{numMaxInstancesRenderable}} ];
+    InstanceTransform instanceTransforms[  {{numMaxInstancesRenderable}} ];
   };
 {% else  %}
   uniform mat4 modelMatrix;
@@ -111,12 +111,12 @@ void main()
 {
   {% if SHADER_FEATURE_INSTANCING %}
     //grab the relevant matrices from the buffer
-    mat4 modelMatrix =                 instanceTransform[gl_InstanceID].modelMatrix;
-    mat4 modelViewMatrix=              instanceTransform[gl_InstanceID].modelViewMatrix;
-    mat4 modelViewProjectionMatrix =   instanceTransform[gl_InstanceID].modelViewProjectionMatrix;
+    mat4 modelMatrix =                 instanceTransforms[gl_InstanceID].modelMatrix;
+    mat4 modelViewMatrix=              instanceTransforms[gl_InstanceID].modelViewMatrix;
+    mat4 modelViewProjectionMatrix =   instanceTransforms[gl_InstanceID].modelViewProjectionMatrix;
     //mat4 normalMatrix =                normalMatrices[gl_InstanceID];
     
-    int uniqueInstanceID =             instanceTransform[gl_InstanceID].uniqueInstanceID;
+    int uniqueInstanceID =             instanceTransforms[gl_InstanceID].uniqueInstanceID;
   {% endif %}	
 	
 	

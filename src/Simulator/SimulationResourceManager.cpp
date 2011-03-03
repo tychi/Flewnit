@@ -79,7 +79,7 @@ Scene* SimulationResourceManager::getScene()const
 //"compiled rendering", as render()-calls to instanced geometry only registers drawing needs
 //to its instance manager; For every  (at least non-deferred non-Skybox Lighting-) rendering pass,
 //call this routine after scene graph traversal
-void SimulationResourceManager::executeInstancedRendering()
+void SimulationResourceManager::executeInstancedRendering(SimulationPipelineStage* currentStage)
 {
 	typedef std::map<String, InstanceManager*> InstanceManagerMap;
 	BOOST_FOREACH( InstanceManagerMap::value_type & pair, mInstanceManagers)
@@ -88,7 +88,7 @@ void SimulationResourceManager::executeInstancedRendering()
 	}
 	BOOST_FOREACH( InstanceManagerMap::value_type & pair, mInstanceManagers)
 	{
-		pair.second->drawRegisteredInstances();
+		pair.second->drawRegisteredInstances(currentStage);
 	}
 }
 

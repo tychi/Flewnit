@@ -15,6 +15,7 @@
 #include "Common/BasicObject.h"
 
 #include "SimulatorForwards.h"
+#include "Simulator/SimulationResourceManager.h"
 
 namespace Flewnit
 {
@@ -37,7 +38,7 @@ public:
 	//"compiled rendering", as render()-calls to instanced geometry only registers drawing needs
 	//to its instance manager; For every  (at least non-deferred non-Skybox Lighting-) rendering pass,
 	//call this routine after scene graph traversal
-	void executeInstancedRendering();
+	void executeInstancedRendering(SimulationPipelineStage* currentStage);
 
 	void registerInstanceManager(InstanceManager* im);
 	InstanceManager* getInstanceManager(String name);

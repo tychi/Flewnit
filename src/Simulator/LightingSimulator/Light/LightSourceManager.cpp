@@ -26,6 +26,8 @@
 #include "Util/Log/Log.h"
 
 #include <initializer_list>
+#include "URE.h"
+
 
 
 
@@ -161,7 +163,7 @@ LightSourceManager::~LightSourceManager()
 }
 
 //fill buffers with recent values
-void LightSourceManager::updateLightSourcesUniformBuffer(Camera *cam)
+void LightSourceManager::updateLightSourcesUniformBuffer()
 {
 	if(mLightSourcesUniformBuffer)
 	{
@@ -187,8 +189,8 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *cam)
 				if ( ! ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
 				{
 					//transform to view space
-					lightPos =	cam->getGlobalTransform().getLookAtMatrix()	* lightPos;
-					lightDir =	cam->getGlobalTransform().getLookAtMatrix()	* lightDir;
+					lightPos =	URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getLookAtMatrix()	* lightPos;
+					lightDir =	URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getLookAtMatrix()	* lightDir;
 				}
 
 

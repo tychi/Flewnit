@@ -28,7 +28,9 @@ class InstancedGeometry
 
 	friend class InstanceManager;
 	//only InstanceManager may create objects of this type;
-	InstancedGeometry(String name,InstanceManager* instanceManager, SubObject* owningSubObject, ID instanceID);
+	InstancedGeometry(String name,InstanceManager* instanceManager, ID instanceID);
+	//hen-egg-problem enforces the backtracking setting after construction ;(
+	void setOwningSubObject(SubObject* owningSubObject);
 
 public:
 	virtual ~InstancedGeometry();

@@ -11,10 +11,10 @@
 namespace Flewnit
 {
 
-InstancedGeometry::InstancedGeometry(String name, InstanceManager* instanceManager,  SubObject* owningSubObject, ID instanceID)
+InstancedGeometry::InstancedGeometry(String name, InstanceManager* instanceManager,  ID instanceID)
 :
 		Geometry(name,  INSTANCED_GEOMETRY_REPESENTATION),
-		mInstanceManager(instanceManager), mOwningSubObject(owningSubObject), mInstanceID(instanceID	)
+		mInstanceManager(instanceManager), mOwningSubObject(0), mInstanceID(instanceID	)
 {
 	// TODO Auto-generated constructor stub
 
@@ -22,13 +22,20 @@ InstancedGeometry::InstancedGeometry(String name, InstanceManager* instanceManag
 
 InstancedGeometry::~InstancedGeometry()
 {
-	// TODO Auto-generated destructor stub
+	//nothing to do
+}
+
+//hen-egg-problem enforces the backtracking setting after construction ;(
+void InstancedGeometry::setOwningSubObject(SubObject* owningSubObject)
+{
+	mOwningSubObject= owningSubObject;
 }
 
 void InstancedGeometry::draw(
 		unsigned int numInstances,
 		GeometryRepresentation desiredGeomRep)
 {
+	assert(mOwningSubObject && "owning subobject must have been set!");
 	mInstanceManager->registerInstanceForNextDrawing(this);
 	//do nothing, as actual batched drawing happens at the end of a render pass
 }

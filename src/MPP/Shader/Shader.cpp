@@ -577,10 +577,11 @@ void Shader::bindInt(String uniformName, int val)
 //handles, if appropriate, buffer binding of:
 // 	- shadowmapmatrices buffer
 //	- instance-transformation-matrices buffer
-void Shader::setupTransformationUniforms(Camera *cam, SubObject* so)
+void Shader::setupTransformationUniforms(SubObject* so)
 {
 	VisualMaterial* visMat = dynamic_cast<VisualMaterial*>(so->getMaterial());
 	assert(visMat);
+	Camera *cam = URE_INSTANCE->getCurrentlyActiveCamera();
 
 	//afaik, trying to set a non existing uniform is no tragic thing;
 	//maybe I should "bruteforce" try to set everything..? TODO checkout when stable
@@ -601,7 +602,7 @@ void Shader::setupTransformationUniforms(Camera *cam, SubObject* so)
 	}
 	else
 	{
-		assert(cam && "camera must be passed in non- shadow map generation passes");
+		//assert(cam && "camera must be passed in non- shadow map generation passes");
 		viewMatrix = cam->getGlobalTransform().getLookAtMatrix();
 		viewProjMatrix = cam->getProjectionMatrix() * viewMatrix;
 	}
@@ -678,9 +679,10 @@ void Shader::setupTransformationUniforms(Camera *cam, SubObject* so)
 
 
 
-void Shader::setupLightSourceUniforms(Camera *cam)
+void Shader::setupLightSourceUniforms()
 {
 	const ShaderFeaturesGlobal& sfg = ShaderManager::getInstance().getGlobalShaderFeatures();
+	Camera *cam = URE_INSTANCE->getCurrentlyActiveCamera();
 
 	if(sfg.lightSourcesLightingFeature == LIGHT_SOURCES_LIGHTING_FEATURE_NONE){return;}
 

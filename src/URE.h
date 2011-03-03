@@ -92,6 +92,11 @@ public:
     //pros: have lesser parameters to pass to many constructors;
     inline Config& getConfig()const{return *mConfig;}
 
+    //shortcut to getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getCurrentlyActiveCamera()
+    Camera* getCurrentlyActiveCamera()const;
+    void setCurrentlyActiveCamera(Camera* cam);
+
+
     //inline cl::Context* getOpenCLContext()const{return mOpenCLContext;}
 
 

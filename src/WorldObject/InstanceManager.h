@@ -27,7 +27,7 @@ class InstanceManager
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 	InstanceManager(String name, GLuint numMaxInstances,
-			Material* associatedVisualMaterial, Geometry* nonInstancedGeometryToDraw );
+			SubObject* drawableSubObject );
 
 	virtual ~InstanceManager();
 
@@ -41,10 +41,10 @@ public:
 
 	//called by InstancedVisualMaterial::activate();
 	//SubObject must own an InstacedGeometry;
-	void registerInstanceForNextDrawing(InstancedGeometry* instancedGeo);
+	void registerInstanceForNextDrawing(InstancedGeometry* instancedGeo)throw(SimulatorException);
 
 	void updateTransformBuffer();
-	void drawRegisteredInstances();
+	void drawRegisteredInstances(SimulationPipelineStage* currentStage);
 
 	inline Buffer* getInstanceTransformationInfoUniformBuffer()const{return mInstanceTransformUniformBuffer;}
 
@@ -55,8 +55,8 @@ private:
 
 	GLuint mMaxManagedInstances;
 	GLuint mCreatedManagedInstances;
-	GLuint mNumCurrentlyRegisteredInstancesForNextDrawing;
-
+	//GLuint mNumCurrentlyRegisteredInstancesForNextDrawing;
+	std::vector<InstancedGeometry*> mCurrentlyRegisteredInstancesForNextDrawing;
 
 	//Uniform buffer containing the model,modelView,modelViewProjection transforms of the currently
 	//registered geometry instances, plus the instance ID
@@ -64,9 +64,10 @@ private:
 	UniformBufferMetaInfo* mInstanceTransformUniformBufferMetaInfo;
 
 	//the material holding the shading information
-	Material* mAssociatedMaterial;
+	SubObject* mDrawableSubObject;
+	//Material* mAssociatedMaterial;
 	//the "real" geometry which will be rendered
-	Geometry* mNonInstancedGeometryToDraw;
+	//Geometry* mNonInstancedGeometryToDraw;
 
 	static bool sInstancedRenderingIsCurrentlyActive;
 };

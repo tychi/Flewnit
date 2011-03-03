@@ -43,13 +43,14 @@ bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
 {
 	//LOG<<DEBUG_LOG_LEVEL<<"DefaultLightingStage generator in action! ;(;\n";
 
+	//Camera* cam = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
+
 	//update the uniform buffers of the light sources and the shadow map matrices
-	LightSourceManager::getInstance().updateLightSourcesUniformBuffer(
-		URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera());
+	LightSourceManager::getInstance().updateLightSourcesUniformBuffer();
 
 	SimulationResourceManager::getInstance().getScene()->traverse(this);
 
-	SimulationResourceManager::getInstance().executeInstancedRendering();
+	SimulationResourceManager::getInstance().executeInstancedRendering(this);
 
 	return true;
 }

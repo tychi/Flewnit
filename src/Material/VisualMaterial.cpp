@@ -69,6 +69,7 @@ bool VisualMaterialFlags::operator==(const VisualMaterialFlags& rhs) const
 		;
 }
 
+//--------------------------------------------------------------------------------------
 
 VisualMaterial::VisualMaterial(
 			String name,

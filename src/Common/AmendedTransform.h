@@ -52,7 +52,7 @@ public:
 	//Matrix3x3 getNormalMatrix()const; <-- //removed as it needs a view matrix,
 											//which is unrelated to a transform of a scene node
 	//accum: translationMatrix* Mat4(normalMatrix)* scaleMatrix;
-	Matrix4x4 getTotalTransform()const;
+	const Matrix4x4& getTotalTransform()const;
 
 	//convenience functions:
 	Matrix4x4 getScaleMatrix()const;

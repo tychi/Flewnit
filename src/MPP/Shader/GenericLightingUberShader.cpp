@@ -78,21 +78,22 @@ void GenericLightingUberShader::use(SubObject *so) throw (SimulatorException)
 
    GUARD(glUseProgram(mGLProgramHandle));
 
-   Camera* mainCam = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
+   //Camera* mainCam = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
+   //Camera* cam = URE_INSTANCE->getCurrentlyActiveCamera();
 
    //---------------------------------------------------------
-   setupTransformationUniforms(mainCam,so);
+   setupTransformationUniforms(so);
    //----------------------------------------------------------
    if( (mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_DIRECT_LIGHTING) !=0)
    {
-	   setupLightSourceUniforms(mainCam);
+	   setupLightSourceUniforms();
    }
    //----------------------------------------------------------
    VisualMaterial * visMat =  dynamic_cast<VisualMaterial*>(so->getMaterial());
    assert(visMat);
    setupMaterialUniforms(visMat);
 //---------- uncategorized uniforms to come ------------------------------------------------
-	bindVector3D("eyePositionW",mainCam->getGlobalTransform().getPosition());
+	bindVector3D("eyePositionW",URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getPosition());
 
 }
 

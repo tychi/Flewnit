@@ -167,10 +167,9 @@ protected:
 	//handles, if appropriate, buffer binding of:
 	// 	- shadowmapmatrices buffer
 	//	- instance-transformation-matrices buffer
-	void setupTransformationUniforms(Camera *cam, SubObject* so);
+	void setupTransformationUniforms(SubObject* so);
 	//either binds the lightsoure uniform buffer or sets the non-buffer-single-lightsource uniforms directly
-	void setupLightSourceUniforms(Camera *cam);
-	//void setupShadowUniforms(Camera *mainCam);
+	void setupLightSourceUniforms();
 	void setupMaterialUniforms(VisualMaterial* visMat);
 
 
