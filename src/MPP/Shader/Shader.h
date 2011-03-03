@@ -54,38 +54,13 @@ const String shaderStageFileEndings[] =
 
 //define binding points for the several potentially used uniform buffers;
 //this way, every buffer has its own index and we don't need to track
-enum UniformBufferBindingPoints
+enum UniformBufferBindingPoint
 {
-	INSTANCE_TRANSFORMATION_MATRICES_BUFFER_BINDING_POINT =0,
-	LIGHT_SOURCES_BUFFER_BINDING_POINT =1,
-	SHADOW_MAP_LOOKUP_MATRICES_BUFFER_BINDING_POINT = 2
+	INSTANCE_TRANSFORM_BUFFER_BINDING_POINT =0,
+	LIGHT_SOURCE_BUFFER_BINDING_POINT =1,
+	SHADOW_CAMERA_TRANSFORM_BUFFER_BINDING_POINT = 2
 };
 
-
-//enum ShaderCodeSectionID
-//{
-//	VERSION_TAG,
-//	PRECISION_TAG,
-//	PERSISTENT_DEFINES,
-//	CUSTOMIZABLE_DEFINES,
-//
-//	DATA_TYPES,
-//	MATERIAL_SAMPLERS,
-//	SHADOWMAP_SAMPLERS,
-//	GBUFFER_SAMPLERS,
-//	UNIFORMS,
-//	INPUT,
-//	OUTPUT,
-//
-//	SUBROUTINE_GET_DISTANCE_ATTENUATION,
-//	SUBROUTINE_GET_NORMAL,
-//	SUBROUTINE_GET_SHADOW_ATTENUATION,
-//	SUBROUTINE_GET_SPOTLIGHT_ATTENUATION,
-//
-//	MAIN_ROUTINE,
-//
-//	__NUM_SHADER_CODE_SECTIONS__
-//};
 
 class ShaderStage
 :public BasicObject
@@ -100,12 +75,6 @@ private:
 				Path codeDirectory, Path shaderName, Shader* owningShader);
 	~ShaderStage();
 
-	//throw exceptionif the section does not apply to the shader type
-	//(e.g. customizable #defines cannot be loaded but only generated on the fly)
-	//if file for code does not exist, it is assumed that this is on purpose as the code
-	//snippet is not needed for this stage (like shadow attenuation for geometry, for example ;))
-	//void loadCodeSection(ShaderCodeSectionID which )throw(SimulatorException);
-	//void propagateLoadedSourceToGL();
 
 	void setSource(String sourceCode);
 	void compile();
@@ -126,7 +95,6 @@ private:
 	static GLuint mGLShaderStageIdentifiers[__NUM_SHADER_STAGES__];
 
 	Shader* mOwningShader;
-
 };
 
 
@@ -205,6 +173,8 @@ protected:
 	//void setupShadowUniforms(Camera *mainCam);
 	void setupMaterialUniforms(VisualMaterial* visMat);
 
+
+	void bindUniformBuffer(UniformBufferBindingPoint bindingPoint,String bufferNameInShader, GLuint bufferGLHandle);
 	void bindMatrix4x4(String uniformName, const Matrix4x4& mat);
 	void bindVector4D(String uniformName, const Vector4D& vec);
 	void bindVector3D(String uniformName, const Vector3D& vec);

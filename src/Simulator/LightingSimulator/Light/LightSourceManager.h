@@ -83,7 +83,11 @@ public:
 	inline int getNumTotalLightSources()const{return mLightSources.size();}
 
 	inline LightSource* getLightSource(unsigned int index)const{assert(index<mLightSources.size()); return mLightSources[index];}
-	inline Buffer* getShadowMapMatricesUniformBuffer()const{return mShadowMapMatricesUniformBuffer;}
+	//for single light source scenarios:
+	LightSource* getFirstShadowCaster()const;
+
+
+	inline Buffer* getShadowCameraTransformBuffer()const{return mShadowCameraTransformBuffer;}
 	inline Buffer* getLightSourceUniformBuffer()const{return mLightSourcesUniformBuffer;}
 	//inline Texture* getShadowMapDepthTexture()const{return mShadowMapDepthTexture;}
 	//dictates the clip planes for all lightsource projection matrices;
@@ -137,8 +141,9 @@ private:
 	 * "lightsource cameras" for the geometry shader; in lighting passes, it contains
 	 *  the biased viewProjectionMatrices for the fragment shader;
 	 */
-	Buffer* mShadowMapMatricesUniformBuffer;
-	UniformBufferMetaInfo* mShadowMapMatrixBufferMetaInfo;
+	Buffer* mShadowCameraTransformBuffer;
+	UniformBufferMetaInfo* mShadowCameraTransformBufferMetaInfo_SMGeneration;
+	UniformBufferMetaInfo* mShadowCameraTransformBufferMetaInfo_SMLookup;
 	///\}
 
 

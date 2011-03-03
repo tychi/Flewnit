@@ -96,8 +96,9 @@ public:
 	 *	note: an instance transform uniform block is not necessary, as every instance manager
 	 *	has its "own" shader to query from; only the other two uniform blocks have a "global" character
 	 */
-	Shader* getUniformBufferOffsetQueryShader();
+	Shader* getUniformBufferOffsetQueryShader(bool forShadowMapGeneration);
 
+	bool currentRenderingScenarioPerformsLayeredRendering()const;
 	//returns true if doing layered rendering or other stuff involving multiple view/projection cameras
 	//which would currupt view space transformed data;
 	//note: in this case pure viewspace-dependent stuff like AO calculatins can

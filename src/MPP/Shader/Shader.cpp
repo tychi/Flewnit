@@ -31,6 +31,7 @@
 
 #include <grantlee/engine.h>
 #include "UserInterface/WindowManager/WindowManager.h"
+#include "Util/HelperFunctions.h"
 
 typedef QVariantHash TemplateContextMap;
 
@@ -496,6 +497,23 @@ void ShaderStage::validate()throw(BufferException)
 
 //============ uniform variables logic to come ==========================================================================
 
+void Shader::bindUniformBuffer(UniformBufferBindingPoint bindingPoint, String bufferNameInShader, GLuint bufferGLHandle)
+{
+	GUARD(
+		glBindBufferBase(GL_UNIFORM_BUFFER,
+			static_cast<GLuint>(bindingPoint),
+			bufferGLHandle);
+	);
+	GUARD (GLuint uniformBlockIndex =  glGetUniformBlockIndex(mGLProgramHandle, bufferNameInShader.c_str()));
+	assert(uniformBlockIndex != GL_INVALID_INDEX);
+	GUARD(glUniformBlockBinding(
+			mGLProgramHandle,
+			uniformBlockIndex,
+			static_cast<GLuint>(bindingPoint)
+			)
+	);
+}
+
 
 void Shader::bindMatrix4x4(String uniformName, const Matrix4x4& mat)
 {
@@ -564,6 +582,9 @@ void Shader::setupTransformationUniforms(Camera *cam, SubObject* so)
 	VisualMaterial* visMat = dynamic_cast<VisualMaterial*>(so->getMaterial());
 	assert(visMat);
 
+	//afaik, trying to set a non existing uniform is no tragic thing;
+	//maybe I should "bruteforce" try to set everything..? TODO checkout when stable
+
 	/*
 					if(! lookupMatrices)
 					{
@@ -586,50 +607,58 @@ void Shader::setupTransformationUniforms(Camera *cam, SubObject* so)
 	Matrix4x4 viewMatrix = cam->getGlobalTransform().getLookAtMatrix();
 	Matrix4x4 viewProjMatrix = cam->getProjectionMatrix() * viewMatrix;
 
+
 	//check if we render to a special render target which will make geometry shader delegation
-	//necessary and hence the main cam's view matrix obsolete
-	//EDIT: afaik, trying to set a non existing uniform is no tragic thing;
-	//maybe I should "bruteforce" try to set everything..? TODO checkout when stable
-	if(
-		! (
-			//dyn. envmap rendering?
-			  (mLocalShaderFeatures.renderTargetTextureType == TEXTURE_TYPE_2D_CUBE)
-			//pointlight shadow map gen?
-			||(mLocalShaderFeatures.renderTargetTextureType == TEXTURE_TYPE_2D_CUBE_DEPTH)
-			//multiple spotlight shadow map gen?
-			||(mLocalShaderFeatures.renderTargetTextureType == TEXTURE_TYPE_2D_ARRAY_DEPTH)
-		)
-	)
+	//necessary and hence the main cam's view matrix not only obsolete but maybe even name
+	//conflicting with other variables
+	if(	! ShaderManager::getInstance().currentRenderingScenarioPerformsLayeredRendering() )
 	{
 		bindMatrix4x4("viewMatrix",viewMatrix);
 		bindMatrix4x4("viewProjectionMatrix",viewProjMatrix);
 	}
 	else
 	{
-
+		PointLight* pointLight;
+		switch(mLocalShaderFeatures.renderTargetTextureType)
+		{
+		case TEXTURE_TYPE_2D_CUBE:
+		case TEXTURE_TYPE_2D_CUBE_DEPTH:
+			for(int i=0; i<6; i++)
+			{
+				pointLight = dynamic_cast<PointLight*>(LightSourceManager::getInstance().getFirstShadowCaster());
+				assert("pointlight shadowcaster must exist" && pointLight);
+				bindMatrix4x4(
+					String("cubeMapCameraViewMatrices[") + HelperFunctions::toString(i) + String("]"),
+					pointLight->getViewMatrix(i));
+				bindMatrix4x4(
+						String("cubeMapCameraViewProjectionMatrices[") + HelperFunctions::toString(i)+String("]"),
+						pointLight->getViewProjectionMatrix(i));
+			}
+			break;
+		case TEXTURE_TYPE_2D_ARRAY_DEPTH:
+			bindUniformBuffer(
+				SHADOW_CAMERA_TRANSFORM_BUFFER_BINDING_POINT,
+				String("ShadowCameraTransformBuffer"),
+				LightSourceManager::getInstance().getShadowCameraTransformBuffer()->getGraphicsBufferHandle()
+			);
+			break;
+		default: assert(0 && "no other layered rendering targets currently supported;"
+				"this is mainly a gl3 framework, i.e. stuff like layered cube map rendering won't be implemented too soon ;(");
+		}
 	}
 
 
 	//instanced rendering or not?
 	if( visMat->isInstanced())
 	{
+		//setup the instance uniform buffer; n.b.: this is a valid instanced draw call, otherwise,
+		//the VisualMaterial wouldn't have called the "Shader::use()" routine;
 		assert(mLocalShaderFeatures.instancedRendering);
 		InstancedGeometry* instancedGeo = dynamic_cast<InstancedGeometry*>(so->getGeometry());
 		assert(instancedGeo);
-
-		//setup the instance uniform buffer
-		GUARD(
-			glBindBufferBase(GL_UNIFORM_BUFFER,
-				static_cast<GLuint>(INSTANCE_TRANSFORMATION_MATRICES_BUFFER_BINDING_POINT),
-				instancedGeo->getInstanceManager()->getInstanceTransformationInfoUniformBuffer()->getGraphicsBufferHandle());
-		);
-		GUARD (GLuint uniformBlockIndex =  glGetUniformBlockIndex(mGLProgramHandle, "InstanceTransformInfoBuffer"));
-		assert(uniformBlockIndex != GL_INVALID_INDEX);
-		GUARD(glUniformBlockBinding(
-				mGLProgramHandle,
-				uniformBlockIndex,
-				static_cast<GLuint>(INSTANCE_TRANSFORMATION_MATRICES_BUFFER_BINDING_POINT)
-				)
+		bindUniformBuffer(INSTANCE_TRANSFORM_BUFFER_BINDING_POINT,
+				String("InstanceTransformBuffer"),
+				instancedGeo->getInstanceManager()->getInstanceTransformationInfoUniformBuffer()->getGraphicsBufferHandle()
 		);
 	}
 	else
@@ -667,7 +696,6 @@ void Shader::setupLightSourceUniforms(Camera *cam)
 	{
 		const LightSourceShaderStruct & lsStruct = LightSourceManager::getInstance().getLightSource(0)->getdata();
 
-
 	    Vector4D lightPos = Vector4D( LightSourceManager::getInstance().getLightSource(0)
 	    		->getGlobalTransform().getPosition(),1.0f) ;
 	    Vector4D lightDir = Vector4D( LightSourceManager::getInstance().getLightSource(0)
@@ -692,20 +720,69 @@ void Shader::setupLightSourceUniforms(Camera *cam)
 	else
 	{
 		//setup the uniform buffer as we have several light sources
-		GUARD(glBindBufferBase(GL_UNIFORM_BUFFER,
-				static_cast<GLuint>(LIGHT_SOURCES_BUFFER_BINDING_POINT),
-				LightSourceManager::getInstance().getLightSourceUniformBuffer()->getGraphicsBufferHandle());
-		);
-		GUARD (GLuint uniformBlockIndex =  glGetUniformBlockIndex(mGLProgramHandle, "LightSourceBuffer"));
-		assert(uniformBlockIndex != GL_INVALID_INDEX);
-		GUARD(glUniformBlockBinding(
-				mGLProgramHandle,
-				uniformBlockIndex,
-				static_cast<GLuint>(LIGHT_SOURCES_BUFFER_BINDING_POINT)
-				)
+		bindUniformBuffer(LIGHT_SOURCE_BUFFER_BINDING_POINT,
+				String("LightSourceBuffer"),
+				LightSourceManager::getInstance().getLightSourceUniformBuffer()->getGraphicsBufferHandle()
 		);
 	}
+
+
+	//shadow map matrices -----------------------------------------------
+	SpotLight* spot;
+	PointLight* pointLight;
+	switch(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature)
+	{
+	case LIGHT_SOURCES_SHADOW_FEATURE_NONE:
+		//do nothing ;)
+		break;
+	case LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT:
+		spot = dynamic_cast<SpotLight*>(
+				LightSourceManager::getInstance().getFirstShadowCaster() );
+		assert("in this scenario, a shadow caster must exist and must be a spotlight" && spot);
+		if(ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
+		{
+			bindMatrix4x4("shadowMapLookupMatrix", spot->getBiasedViewProjectionMatrix());
+		}
+		else
+		{
+			bindMatrix4x4("shadowMapLookupMatrix", spot->getViewSpaceShadowMapLookupMatrix(cam));
+		}
+		break;
+
+	case LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT:
+		pointLight = dynamic_cast<PointLight*> (LightSourceManager::getInstance().getFirstShadowCaster());
+				assert("in this scenario, a shadow caster must exist and must be a point light" && pointLight);
+		if(ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
+		{
+			//set identity matrix, it's not needed in the shader,but my fear of unset variables ..;)
+			bindMatrix4x4("viewToPointLightShadowMapMatrix", Matrix4x4());
+		}
+		else
+		{	// (inverse lightSource FarClipPlane) * inversepointLightTranslation * (camView)⁻1
+			Matrix4x4 viewToPointLightShadowMapMatrix =
+				( 1.0f / LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane() )
+				* glm::translate(Matrix4x4(), (-1.0f) * pointLight->getGlobalTransform().getPosition() )
+				* glm::inverse( cam->getViewMatrix() )
+			;
+			bindMatrix4x4("viewToPointLightShadowMapMatrix",viewToPointLightShadowMapMatrix);
+		}
+		break;
+
+	case LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS:
+		bindUniformBuffer(
+			SHADOW_CAMERA_TRANSFORM_BUFFER_BINDING_POINT,
+			String("ShadowCameraTransformBuffer"),
+			LightSourceManager::getInstance().getShadowCameraTransformBuffer()->getGraphicsBufferHandle()
+		);
+		break;
+	default:
+		assert(0 && "no other layered rendering targets currently supported;"
+			"this is mainly a gl3 framework, i.e. stuff like layered cube map rendering won't be implemented too soon ;(");
+		break;
+	}
+
 }
+
 
 
 

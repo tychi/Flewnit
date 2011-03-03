@@ -40,8 +40,9 @@ LightSourceManager::LightSourceManager()
  mLightSourceProjectionMatrixFarClipPlane(1000.0f),
  mLightSourcesUniformBuffer(0),
  mLightSourceBufferMetaInfo(0),
- mShadowMapMatricesUniformBuffer(0),
- mShadowMapMatrixBufferMetaInfo(0),
+ mShadowCameraTransformBuffer(0),
+ mShadowCameraTransformBufferMetaInfo_SMGeneration(0),
+ mShadowCameraTransformBufferMetaInfo_SMLookup(0),
  mNumMaxLightSources(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources)
  //mLightSourceBufferOffsets(0),
  //mRequiredLightSourceBufferSize(0)
@@ -70,7 +71,7 @@ void LightSourceManager::init()
 			mNumMaxLightSources,
 			String("LightSourceBuffer"), String("lightSources"),
 			memberStrings,
-			ShaderManager::getInstance().getUniformBufferOffsetQueryShader());
+			ShaderManager::getInstance().getUniformBufferOffsetQueryShader(false));
 
 		//queryLightSourceBufferSizeAndOffsets();
 
@@ -100,20 +101,30 @@ void LightSourceManager::init()
 	{
 		std::vector<String> memberStrings;//empty on purpose, as the LS uniform buffer has no struct as array elements!
 
-		mShadowMapMatrixBufferMetaInfo = new UniformBufferMetaInfo(
-			mNumMaxLightSources,
-			String("WorldToShadowMapMatrixBuffer"), String("worldToShadowMapMatrices"),
-			memberStrings,
-			ShaderManager::getInstance().getUniformBufferOffsetQueryShader());
+		mShadowCameraTransformBufferMetaInfo_SMGeneration= new UniformBufferMetaInfo(
+				mNumMaxLightSources,
+				String("ShadowCameraTransformBuffer"), String("shadowCameraviewProjectionMatrices"),
+				memberStrings,
+				ShaderManager::getInstance().getUniformBufferOffsetQueryShader(true));
+		mShadowCameraTransformBufferMetaInfo_SMLookup= new UniformBufferMetaInfo(
+				mNumMaxLightSources,
+				String("ShadowCameraTransformBuffer"), String("shadowMapLookupMatrices"),
+				memberStrings,
+				ShaderManager::getInstance().getUniformBufferOffsetQueryShader(false));
 
-		assert( (mShadowMapMatrixBufferMetaInfo->mRequiredBufferSize  % BufferHelper::elementSize(TYPE_MATRIX44F))== 0);
-		mShadowMapMatricesUniformBuffer = new Buffer(
+		assert("at least the buffers should have the same size" &&
+				(mShadowCameraTransformBufferMetaInfo_SMGeneration->mRequiredBufferSize ==
+						mShadowCameraTransformBufferMetaInfo_SMLookup->mRequiredBufferSize)
+		);
+		assert( (mShadowCameraTransformBufferMetaInfo_SMGeneration->mRequiredBufferSize  % BufferHelper::elementSize(TYPE_MATRIX44F))== 0);
+
+		mShadowCameraTransformBuffer = new Buffer(
 			BufferInfo(
 				String("ShadowMapMatricesUniformBuffer"),
 				ContextTypeFlags( HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG),
 				TRANSFORMATION_MATRICES_SEMANTICS,
 				TYPE_MATRIX44F,
-				mShadowMapMatrixBufferMetaInfo->mRequiredBufferSize
+				mShadowCameraTransformBufferMetaInfo_SMGeneration->mRequiredBufferSize
 				/ BufferHelper::elementSize(TYPE_MATRIX44F),
 				BufferElementInfo(true),
 				UNIFORM_BUFFER_TYPE,
@@ -144,7 +155,8 @@ LightSourceManager::~LightSourceManager()
 	}
 
 	if(mLightSourceBufferMetaInfo) delete mLightSourceBufferMetaInfo;
-	if(mShadowMapMatrixBufferMetaInfo) delete mShadowMapMatrixBufferMetaInfo;
+	if(mShadowCameraTransformBufferMetaInfo_SMGeneration) delete mShadowCameraTransformBufferMetaInfo_SMGeneration;
+	if(mShadowCameraTransformBufferMetaInfo_SMLookup) delete mShadowCameraTransformBufferMetaInfo_SMLookup;
 
 }
 
@@ -178,7 +190,6 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *cam)
 					lightPos =	cam->getGlobalTransform().getLookAtMatrix()	* lightPos;
 					lightDir =	cam->getGlobalTransform().getLookAtMatrix()	* lightDir;
 				}
-
 
 
 #define CURRENT_VEC4_VALUE(index) \
@@ -216,6 +227,15 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *cam)
 	}
 }
 
+LightSource* LightSourceManager::getFirstShadowCaster()const
+{
+	BOOST_FOREACH(LightSource* ls, mLightSources)
+	{
+		if(ls->isEnabled() && ls->castsShadows() ){return ls;}
+	}
+	return 0;
+}
+
 
 //cam param only needed for lookup in view space; if viewspace or not
 //is queried via ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform();
@@ -224,21 +244,23 @@ void LightSourceManager::updateLightSourcesUniformBuffer(Camera *cam)
 //lookup && !worldspace: hadowCamBias * shadowCamProjection * shadowCamView * (camView)⁻1
 void LightSourceManager::setupShadowCamMatricesUniformBuffer(bool lookupMatrices, Camera* cam)
 {
-	if(mShadowMapMatricesUniformBuffer)
+	if(mShadowCameraTransformBuffer)
 		{
 			//assuming that there is a CPU component!
 			//NOTE: maybe on could just access the std::vector data and transfer it to the gpu;
 			//but i'm concerned about stuff like alignment, this-pointer and other c++-meta data
 			//which could corrupt a tightly-packed assumption; EDIT: yes, my concern was legitimate ;(
-			unsigned char* bufferToFill = reinterpret_cast<unsigned char*>(mShadowMapMatricesUniformBuffer->getCPUBufferHandle());
+			unsigned char* bufferToFill = reinterpret_cast<unsigned char*>(mShadowCameraTransformBuffer->getCPUBufferHandle());
 			//set everything to zero in order to omit wrong rendering in hardcoeded for-loops
-			memset(bufferToFill,mShadowMapMatricesUniformBuffer->getBufferInfo().bufferSizeInByte,0);
+			memset(bufferToFill,mShadowCameraTransformBuffer->getBufferInfo().bufferSizeInByte,0);
 
 #define MAT4_VALUE(index) \
 	reinterpret_cast<Matrix4x4&>( \
 		bufferToFill[ \
-		    mLightSourceBufferMetaInfo->mBufferOffsets[ index ][0] \
-		] \
+			    lookupMatrices \
+		    	? mShadowCameraTransformBufferMetaInfo_SMLookup->mBufferOffsets[ index ][0] \
+		    	: mShadowCameraTransformBufferMetaInfo_SMGeneration->mBufferOffsets[ index ][0] \
+	    ] \
 	)
 
 			for(unsigned int currentLightSourceHostIndex =0; currentLightSourceHostIndex < mLightSources.size(); currentLightSourceHostIndex++ )

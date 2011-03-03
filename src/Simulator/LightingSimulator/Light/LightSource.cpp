@@ -159,9 +159,9 @@ Matrix4x4 PointLight::getViewMatrix(int whichFace)
 {
 	assert(whichFace<6);
 
-	return mPointLightShadowMapNonTranslationalViewMatrices[whichFace]
-	       *
-	       glm::translate(getGlobalTransform().getPosition());
+	return glm::translate(
+			mPointLightShadowMapNonTranslationalViewMatrices[whichFace],
+			(-1.0f) * getGlobalTransform().getPosition());
 }
 
 

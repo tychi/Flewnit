@@ -8,6 +8,8 @@
 #include "InstanceManager.h"
 
 #include "WorldObject/SubObject.h"
+#include "Simulator/SimulationResourceManager.h"
+#include "Buffer/BufferHelperUtils.h"
 
 namespace Flewnit
 {
@@ -21,21 +23,23 @@ InstanceManager::InstanceManager(String name, GLuint numMaxInstances,
 	mMaxManagedInstances(numMaxInstances),
 	mCreatedManagedInstances(0),
 	mNumCurrentlyRegisteredInstancesForNextDrawing(0),
-	mInstanceTransformationInfoUniformBuffer(0),
-	mAssociatedNonInstancedMaterial(associatedNonInstancedMaterial),
+	mInstanceTransformUniformBuffer(0),
+	mInstanceTransformUniformBufferMetaInfo(0),
+	mAssociatedMaterial(associatedNonInstancedMaterial),
 	mNonInstancedGeometryToDraw(nonInstancedGeometryToDraw)
 {
+	SimulationResourceManager::getInstance().registerInstanceManager(this);
 
 	assert(0 && "TODO implement");
 }
 
 InstanceManager::~InstanceManager()
 {
-	//nothing to do, everythin created/managed will be delete by resource manager or the owning WorldObjects
+	delete mInstanceTransformUniformBufferMetaInfo;
 }
 
-//creates a new SubObject, containing a new InstancedGeometry and a re-used InstancedMaterial object
-//throws exception if
+//creates a new SubObject, containing a new InstancedGeometry and a pointer to mAssociatedMaterial
+//throws exception if more instances than numMaxInstances would be created;
 SubObject* InstanceManager::createInstance()throw(SimulatorException)
 {
 	assert(0 && "TODO implement");

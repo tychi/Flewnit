@@ -60,22 +60,22 @@
   {% if not LIGHT_SOURCES_SHADOW_FEATURE_NONE  %}  
     //begin shadowmap matrix stuff
     {% if LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS %}
-    {%comment%}  any hint we need more than one shadowmap transformation matrix?
-                  (pointlight cube shadow map counts as one and needs no matrix for lookup)? 
-                  (assert also that multiple-lightsource-LIGHTING is enabled)                  {% endcomment %}
-    {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
-        //multiple light source shadow map lookup parameters
-        layout(shared) uniform WorldToShadowMapMatrixBuffer
-        {
-          //bias*perspLight*viewLight                  for light calcs in world space and
-          //bias*perspLight*viewLight * (camView)⁻1    for light calcs in view space <-- THIS IS WHAT I TOOK!
-          mat4 worldToShadowMapMatrices[  {{ numMaxShadowCasters }} ]; 
-                                                                      
-        };
-    {% endif %}    
+      {%comment%}  any hint we need more than one shadowmap transformation matrix?
+                    (pointlight cube shadow map counts as one and needs no matrix for lookup)? 
+                    (assert also that multiple-lightsource-LIGHTING is enabled)                  {% endcomment %}
+      {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
+          //multiple light source shadow map lookup parameters
+          layout(shared) uniform ShadowCameraTransformBuffer
+          {
+            //bias*perspLight*viewLight                  for light calcs in world space 
+            //bias*perspLight*viewLight * (camView)⁻1    for light calcs in view  space  <-- THIS IS WHAT I TOOK AS DEFAULT!
+            mat4 shadowMapLookupMatrices[  {{ numMaxShadowCasters }} ];                                                                        
+          };
+      {% else %} ERROR: you wanna do shadowing with multiple light sources, but actual lighting with one light source or less; think about the logic behind it ;)
+      {% endif %}    
     {% else %}//single light source shadow map lookup parameters following:
         {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}//only one spot light source for shadowing:
-          uniform mat4 worldToShadowMapMatrix; //bias*perspLight*viewLight                for light calcs in world space and
+          uniform mat4 shadowMapLookupMatrix; //bias*perspLight*viewLight                for light calcs in world space and
                                                //bias*perspLight*viewLight * (camView)⁻1  for light calcs in view space
         {% endif %}
         {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT %}

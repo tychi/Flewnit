@@ -167,9 +167,9 @@ String ShaderFeaturesLocal::stringify()const
 		case VISUAL_MATERIAL_TYPE_LIQUID_RENDERING:
 			returnString.append("_MatLiquid");
 			break;
-		case VISUAL_MATERIAL_TYPE_INSTANCED:
-			returnString.append("_MatInstanced");
-			break;
+//		case VISUAL_MATERIAL_TYPE_INSTANCED:
+//			returnString.append("_MatInstanced");
+//			break;
 		default:
 			break;
 	}

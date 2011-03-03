@@ -57,16 +57,25 @@ ShaderManager::~ShaderManager()
 	//do nothing, every object is "owned" by the sim resource manager
 }
 
+bool ShaderManager::currentRenderingScenarioPerformsLayeredRendering()const
+{
+	return
+		//dyn. envmap rendering?
+		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_CUBE) ||
+		//pointlight shadow map gen?
+		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_CUBE_DEPTH) ||
+		//multiple spotlight shadow map gen?
+		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_ARRAY_DEPTH)
+		;
+}
+
 //returns true if doing layered rendering or other stuff involving multiple view/projection cameras
 //which would currupt view space transformed data;
 bool ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform()const
 {
-	return
-		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_CUBE) ||
-		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_CUBE_DEPTH) ||
-		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_ARRAY_DEPTH)
-		;
+	return currentRenderingScenarioPerformsLayeredRendering();
 }
+
 
 
 bool ShaderManager::currentRenderingScenarioNeedsGeometryShader()const
@@ -150,7 +159,7 @@ Shader* ShaderManager::getShader(const ShaderFeaturesLocal& sfl)
  *	note: an instance transform uniform block is not necessary, as every instance manager
  *	has its "own" shader to query from; only the other two uniform blocks have a "global" character
  */
-Shader* ShaderManager::getUniformBufferOffsetQueryShader()
+Shader* ShaderManager::getUniformBufferOffsetQueryShader(bool forShadowMapGeneration)
 {
 	//shaderfeatures to request from the shadermanager a minimalistic shader containing the
 	//uniform buffer declaration, so that offsets can be queried
@@ -165,7 +174,40 @@ Shader* ShaderManager::getUniformBufferOffsetQueryShader()
 				),
 				false //no global instance buffer query needed
 	);
-	return getShader(sfl);
+
+	if(forShadowMapGeneration)
+	{
+		//shadow map generation,layout(shared) uniform ShadowCameraTransformBuffer block
+		//note the ShadowCameraTransformBuffer is used twice:
+		//	- for generation of shadowmaps in a geometry shader
+		//	- for shadowmap lookup in a fragment shader
+		//though the same buffer object is used, the logical uniform block in the shaders is different;
+		//to omit bugs as far as possible, two meta infos for the same buffer will be maintained
+		//queried;
+		return getShader(
+			ShaderFeaturesLocal(
+				RENDERING_TECHNIQUE_SHADOWMAP_GENERATION,
+				TEXTURE_TYPE_2D_RECT, //play no role, dummy..
+				VISUAL_MATERIAL_TYPE_NONE,
+				ShadingFeatures(SHADING_FEATURE_NONE),
+				false //no global instance buffer query needed
+			)
+		);
+	}
+	else
+	{
+		//lighting, for the creation of the "layout(shared) uniform LightSourceBuffer"  block
+		return getShader(
+			ShaderFeaturesLocal(
+				RENDERING_TECHNIQUE_DEFAULT_LIGHTING,
+				TEXTURE_TYPE_2D_RECT, //play no role, dummy..
+				VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+				ShadingFeatures(SHADING_FEATURE_DIRECT_LIGHTING),
+				false //no global instance buffer query needed
+			)
+		);
+	}
+
 }
 
 
@@ -215,10 +257,10 @@ Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 			//newShader = new LiquidShader (mShaderCodeDirectory,sfl);
 			assert(0&&"liquid rendering comes later");
 			break;
-		case VISUAL_MATERIAL_TYPE_INSTANCED:
-			//create nothing, as an instancedMaterial needs no shader;
-			return 0;
-			break;
+//		case VISUAL_MATERIAL_TYPE_INSTANCED:
+//			//create nothing, as an instancedMaterial needs no shader;
+//			return 0;
+//			break;
 		default:
 			assert(0&&" unknown visual material type");
 			break;

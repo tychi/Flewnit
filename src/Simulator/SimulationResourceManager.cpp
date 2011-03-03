@@ -81,7 +81,11 @@ Scene* SimulationResourceManager::getScene()const
 //call this routine after scene graph traversal
 void SimulationResourceManager::executeInstancedRendering()
 {
-	//TODO
+	typedef std::map<String, InstanceManager*> InstanceManagerMap;
+	BOOST_FOREACH( InstanceManagerMap::value_type & pair, mInstanceManagers)
+	{
+		pair.second->drawRegisteredInstances();
+	}
 }
 
 //---------------------------------------------------------------

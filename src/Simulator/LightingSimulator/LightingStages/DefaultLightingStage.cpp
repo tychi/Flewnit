@@ -49,6 +49,8 @@ bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
 
 	SimulationResourceManager::getInstance().getScene()->traverse(this);
 
+	SimulationResourceManager::getInstance().executeInstancedRendering();
+
 	return true;
 }
 

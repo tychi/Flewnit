@@ -33,7 +33,7 @@ layout(triangles) in;
 
 
 {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION and LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS %}
-  layout(shared) uniform LightSourceMatrixBuffer
+  layout(shared) uniform ShadowCameraTransformBuffer
   {
     //we need only the view projection matrices, as no pure view space calculations are performed during shadow map generation
     uniform mat4 shadowCameraviewProjectionMatrices[ {{  numMaxShadowCasters }} ];
