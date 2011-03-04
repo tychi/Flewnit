@@ -109,7 +109,7 @@ out InterfaceData
 
 void main()
 {
-  {% if SHADER_FEATURE_INSTANCING %}
+  {% if instancedRendering %}
     //grab the relevant matrices from the buffer
     mat4 modelMatrix =                 instanceTransforms[gl_InstanceID].modelMatrix;
     mat4 modelViewMatrix=              instanceTransforms[gl_InstanceID].modelViewMatrix;

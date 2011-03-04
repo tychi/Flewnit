@@ -26,7 +26,7 @@
 
 			<windowTitle type="STRING" value="Flewnit" />
 
-			<fullScreen type="BOOL" value="false"/>
+			<fullScreen type="BOOL" value="true"/>
 
 			<enforceCustomResolutionInFullScreen type="BOOL" value="false" />
 
@@ -147,7 +147,7 @@
 					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_NONE"/>
 					<numMaxLightSources type="INT" value="10"/>
 					<numMaxShadowCasters type="INT" value="1"/>
-					<numMaxInstancesRenderable type="INT" value="16"/>
+					<numMaxInstancesRenderable type="INT" value="216"/>
 					<GBufferType type="STRING" value="TEXTURE_TYPE_2D_RECT"/>	
 					
 					<shaderCodeDirectory type="STRING" value="./src/MPP/Shader/ShaderSources/" />		

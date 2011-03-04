@@ -41,7 +41,7 @@ public:
 
 	//called by InstancedVisualMaterial::activate();
 	//SubObject must own an InstacedGeometry;
-	void registerInstanceForNextDrawing(InstancedGeometry* instancedGeo)throw(SimulatorException);
+	void registerInstanceForNextDrawing(SubObject* so)throw(SimulatorException);
 
 	void updateTransformBuffer();
 	void drawRegisteredInstances(SimulationPipelineStage* currentStage);
@@ -56,7 +56,7 @@ private:
 	GLuint mMaxManagedInstances;
 	GLuint mCreatedManagedInstances;
 	//GLuint mNumCurrentlyRegisteredInstancesForNextDrawing;
-	std::vector<InstancedGeometry*> mCurrentlyRegisteredInstancesForNextDrawing;
+	std::vector<SubObject*> mCurrentlyRegisteredInstancesForNextDrawing;
 
 	//Uniform buffer containing the model,modelView,modelViewProjection transforms of the currently
 	//registered geometry instances, plus the instance ID

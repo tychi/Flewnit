@@ -124,7 +124,7 @@ private:
 	TextureType mCurrentRenderTargetTextureType;
 
 	//ShaderFeaturesLocal mCurrenLocalShaderFeatures;
-	bool mIsInitializedGuard;
+	//bool mIsInitializedGuard;
 
 	boost::unordered_map<ShaderFeaturesLocal, Shader*> mShaderMap;
 

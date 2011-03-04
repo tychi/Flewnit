@@ -30,9 +30,9 @@ ShaderManager::ShaderManager(
 		mGlobalShaderFeatures(globalShaderFeatures),
 		//following is actually useless, but i don't like uninitialized values ;(
 		mCurrentRenderingTechnique(RENDERING_TECHNIQUE_DEFAULT_LIGHTING),
-		mCurrentRenderTargetTextureType(TEXTURE_TYPE_2D),
+		mCurrentRenderTargetTextureType(TEXTURE_TYPE_2D)
 
-		mIsInitializedGuard(false)
+		//mIsInitializedGuard(false)
 {
 	mGlobalShaderFeatures.validate();
 
@@ -98,7 +98,7 @@ bool ShaderManager::currentRenderingScenarioNeedsGeometryShader()const
 //void setRenderingScenario(RenderingTechnique rendTech,TextureType renderTargetTextureType, RenderTarget* rt)throw(SimulatorException);
 void ShaderManager::setRenderingScenario(LightingSimStageBase* lightingStage)throw(SimulatorException)
 {
-	mIsInitializedGuard = true;
+	//mIsInitializedGuard = true;
 
 	mCurrentRenderingTechnique = lightingStage->getRenderingTechnique();
 	//we use tex2d as type if rendering to screen
@@ -280,10 +280,10 @@ void ShaderManager::registerVisualMaterial(VisualMaterial* mat)
 	mRegisteredVisualMaterials.push_back(mat);
 
 
-	if(mIsInitializedGuard)
-	{
+	//if(mIsInitializedGuard)
+	//{
 		assignShader(mat);
-	}
+	//}
 }
 
 void ShaderManager::unregisterVisualMaterial(VisualMaterial* mat)

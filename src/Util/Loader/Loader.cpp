@@ -28,6 +28,8 @@
 #include "WorldObject/SubObject.h"
 #include "URE.h"
 #include "Geometry/Procedural/BoxGeometry.h"
+#include "Util/HelperFunctions.h"
+#include "WorldObject/InstanceManager.h"
 
 
 
@@ -262,6 +264,100 @@ void Loader::createHardCodedSceneStuff()
 			matEnvMap
 		)
 	);
+
+	//---------------------- begin instanced geometry -----------------------------------
+	Geometry* boxForInstancingGeom = SimulationResourceManager::getInstance().getGeometry("boxForInstancingGeom");
+	if(! boxForInstancingGeom)
+	{
+		boxForInstancingGeom = new BoxGeometry("boxForInstancingGeom",Vector3D(5.0f,10.0f,2.0f),true,
+				//patch stuff only for GL versions 4.0 or higher
+				false
+				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
+		);
+	}
+
+	Material* matInstanced = SimulationResourceManager::getInstance().getMaterial("instancedRockWallMaterial");
+	if(! matInstanced)
+	{
+		Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
+				String("rockWallDecal"),
+				DECAL_COLOR_SEMANTICS,
+				Path("./assets/textures/rockwallDecal.jpg"),
+				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+				true,
+				false,
+				true
+		);
+		Texture* normalMap= URE_INSTANCE->getLoader()->loadTexture(
+				String("rockWallNormalDisp"),
+				//DECAL_COLOR_SEMANTICS,
+				NORMAL_SEMANTICS,
+				Path("./assets/textures/rockwallNormalDisp.png"),
+				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+				true,
+				false,
+				true
+		);
+		std::map<BufferSemantics,Texture*> myMap;
+		myMap[DECAL_COLOR_SEMANTICS] = decalTex;
+		myMap[NORMAL_SEMANTICS] = normalMap;
+		matInstanced = new VisualMaterial("instancedRockWallMaterial",
+			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+			ShadingFeatures(
+					SHADING_FEATURE_DIRECT_LIGHTING
+					| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_NORMAL_MAPPING
+			),
+			myMap,
+			VisualMaterialFlags(true,false,true,true,
+					true,//YES, is instanced!
+					false),
+			5.0f,
+			0.1f
+		);
+	}//endif !matInstanced
+
+	SubObject* drawableBoxSOforInstancing = new SubObject(
+				"drawableBoxSOforInstancing",
+				VISUAL_SIM_DOMAIN,
+				boxForInstancingGeom,
+				matInstanced
+			);
+
+	int numInstancesPerDimension = 6;
+	InstanceManager* boxInstanceManager = new InstanceManager(
+			"boxInstanceManager",
+			numInstancesPerDimension*numInstancesPerDimension*numInstancesPerDimension,
+			drawableBoxSOforInstancing
+	);
+
+
+	SceneNode& instancesParentNode = rootNode; //todo create other parent node for offsetting
+	Vector3D instanceArmyPosOffset(100,100,-200);
+	Vector3D instanceArmyStride(50,50,50);
+
+	for(int x= -numInstancesPerDimension/2; x< numInstancesPerDimension/2; x++)
+	{
+		for(int y= -numInstancesPerDimension/2; y< numInstancesPerDimension/2; y++)
+		{
+			for(int z= -numInstancesPerDimension/2; z< numInstancesPerDimension/2; z++)
+			{
+				PureVisualObject* pvo = new PureVisualObject(
+					String("myInstancingTestBoxWO")
+						+ String("x") + HelperFunctions::toString(x)
+						+ String("y") + HelperFunctions::toString(y)
+						+ String("z") + HelperFunctions::toString(z),
+					AmendedTransform(
+						instanceArmyPosOffset + (instanceArmyStride * Vector3D(x,y,z)),
+						Vector3D(0.3f,0.0f,-1.0f)
+					)
+				);
+				pvo->addSubObject(boxInstanceManager->createInstance());
+				instancesParentNode.addChild(pvo);
+			}
+		}
+	}
 
 
 

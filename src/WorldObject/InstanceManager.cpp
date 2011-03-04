@@ -96,6 +96,7 @@ InstanceManager::InstanceManager(String name, GLuint numMaxInstances,
 
 InstanceManager::~InstanceManager()
 {
+	delete mDrawableSubObject;
 	delete mInstanceTransformUniformBufferMetaInfo;
 }
 
@@ -129,18 +130,22 @@ SubObject* InstanceManager::createInstance()throw(SimulatorException)
 
 //called by InstancedGeometry::draw(); the owning WorldObject is backtracked, its relevant matrices extracted
 //and the uniform buffer entry filled with the relevant information;
-void InstanceManager::registerInstanceForNextDrawing(InstancedGeometry* instancedGeo)throw(SimulatorException)
+void InstanceManager::registerInstanceForNextDrawing(SubObject* so)throw(SimulatorException)
 {
 	assert(mCurrentlyRegisteredInstancesForNextDrawing.size() < mMaxManagedInstances);
-	assert("instance belongs to this manager" && (instancedGeo->getInstanceManager() == this));
-	BOOST_FOREACH(InstancedGeometry* g, mCurrentlyRegisteredInstancesForNextDrawing)
+	assert("geometry is instanced" && dynamic_cast<InstancedGeometry*>(so->getGeometry()));
+	assert("instance belongs to this manager" && (reinterpret_cast<InstancedGeometry*>(so->getGeometry())->getInstanceManager() == this));
+	BOOST_FOREACH(SubObject* currentSO, mCurrentlyRegisteredInstancesForNextDrawing)
 	{
-		if(g->getUniqueID() == instancedGeo->getUniqueID())
+		if(
+			reinterpret_cast<InstancedGeometry*>(currentSO->getGeometry())->getUniqueID() ==
+			reinterpret_cast<InstancedGeometry*>(so->getGeometry())->getUniqueID()
+		)
 		{
 			throw(SimulatorException("instance with this ID is already registered"));
 		}
 	}
-	mCurrentlyRegisteredInstancesForNextDrawing.push_back(instancedGeo);
+	mCurrentlyRegisteredInstancesForNextDrawing.push_back(so);
 }
 
 
@@ -197,7 +202,7 @@ void InstanceManager::updateTransformBuffer()
 
 	const Matrix4x4& modelMatrix=
 			mCurrentlyRegisteredInstancesForNextDrawing[currentTransformElementIndex]->
-			mOwningSubObject->getOwningWorldObject()->getGlobalTransform().getTotalTransform();
+			getOwningWorldObject()->getGlobalTransform().getTotalTransform();
 
 	//modelMatrix
 	CURRENT_MAT4_VALUE(0)= modelMatrix;
@@ -206,7 +211,8 @@ void InstanceManager::updateTransformBuffer()
 	//modelViewProjectionMatrix
 	CURRENT_MAT4_VALUE(2)= viewProjMatrix * modelMatrix;
 	//uniqueInstanceID
-	CURRENT_INT_VALUE = mCurrentlyRegisteredInstancesForNextDrawing[currentTransformElementIndex]->getUniqueID();
+	CURRENT_INT_VALUE =  reinterpret_cast<InstancedGeometry*>(
+			mCurrentlyRegisteredInstancesForNextDrawing[currentTransformElementIndex]->getGeometry())->getUniqueID();
 
 #undef CURRENT_MAT4_VALUE
 #undef CURRENT_INT_VALUE
@@ -217,17 +223,19 @@ void InstanceManager::updateTransformBuffer()
 
 void InstanceManager::drawRegisteredInstances(SimulationPipelineStage* currentStage)
 {
-	sInstancedRenderingIsCurrentlyActive = true;
+	if(mCurrentlyRegisteredInstancesForNextDrawing.size()>0)
+	{
+		sInstancedRenderingIsCurrentlyActive = true;
+		mDrawableSubObject->getMaterial()->activate(currentStage, mCurrentlyRegisteredInstancesForNextDrawing[0]);
 
-	mDrawableSubObject->getMaterial()->activate(currentStage, mDrawableSubObject);
+		mDrawableSubObject->getGeometry()->draw(mCurrentlyRegisteredInstancesForNextDrawing.size());
 
-	mDrawableSubObject->getGeometry()->draw(mCurrentlyRegisteredInstancesForNextDrawing.size());
+		mDrawableSubObject->getMaterial()->deactivate(currentStage, mDrawableSubObject);
 
-	mDrawableSubObject->getMaterial()->deactivate(currentStage, mDrawableSubObject);
-
-	//reset instance registration:
-	mCurrentlyRegisteredInstancesForNextDrawing.clear();
-	sInstancedRenderingIsCurrentlyActive = false;
+		//reset instance registration:
+		mCurrentlyRegisteredInstancesForNextDrawing.clear();
+		sInstancedRenderingIsCurrentlyActive = false;
+	}
 }
 
 

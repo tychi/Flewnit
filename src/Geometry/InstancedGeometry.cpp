@@ -36,7 +36,7 @@ void InstancedGeometry::draw(
 		GeometryRepresentation desiredGeomRep)
 {
 	assert(mOwningSubObject && "owning subobject must have been set!");
-	mInstanceManager->registerInstanceForNextDrawing(this);
+	mInstanceManager->registerInstanceForNextDrawing(mOwningSubObject);
 	//do nothing, as actual batched drawing happens at the end of a render pass
 }
 

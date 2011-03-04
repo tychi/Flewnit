@@ -102,6 +102,7 @@ UniformBufferMetaInfo::UniformBufferMetaInfo( GLint numMaxArrayElements, String 
 	mNumMemberElements(memberStrings.size() == 0 ? 1 : memberStrings.size() ),
 	mBufferOffsets(0)
 {
+	LOG<<DEBUG_LOG_LEVEL<<bufferName<<"\n";
 	GLuint shaderGLProgramHandle = queryShader->getGLProgramHandle();
 	GLuint uniBlockIndex = GUARD( glGetUniformBlockIndex(shaderGLProgramHandle, bufferName.c_str()) );
 	//query needed buffer size
