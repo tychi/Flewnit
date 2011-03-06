@@ -1,0 +1,75 @@
+//Tesselation control shader template
+
+{% include  "00_Generic_Common_VersionTag.glsl" %}
+{% include  "01_Generic_Common_precisionTag.glsl" %}
+
+layout(vertices = 3) out;
+
+uniform ivec viewPortSize = vec2(640.0,480.0);
+uniform float targetEdgeLenghtInPixels = 25.0;
+
+
+//---- shader interface ----------------------
+//input from vertex/tessEval shader
+in InterfaceData
+{
+  {% include  "09_Generic_InterfaceData.glsl" %}
+} input[];
+//output to fragment shader
+out InterfaceData
+{
+  {% include  "09_Generic_InterfaceData.glsl" %}
+} output[];
+//--------------------------------------------
+
+
+
+void main()
+{
+    if (gl_InvocationID == 0) 
+    {
+        gl_TessLevelInner[0] = 4;
+        
+        gl_TessLevelOuter[0] = 4;
+        gl_TessLevelOuter[1] = 4;
+        gl_TessLevelOuter[2] = 4;
+    }
+
+
+  //------------ following only unmodified pass-through of vertex shader-computed variables ---------
+  
+  output[gl_InvocationID].gl_Position = input[gl_InvocationID].gl_Position;
+    
+  {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}
+    output[gl_InvocationID].position = input[gl_InvocationID].position;
+    output[gl_InvocationID].normal = input[gl_InvocationID].normal;
+    {% if SHADING_FEATURE_NORMAL_MAPPING %}
+      output[gl_InvocationID].tangent = input[gl_InvocationID].tangent;
+    {% endif %}
+    {% if SHADING_FEATURE_DECAL_TEXTURING or SHADING_FEATURE_NORMAL_MAPPING or SHADING_FEATURE_DETAIL_TEXTURING	%}
+      output[gl_InvocationID].texCoords = input[gl_InvocationID].texCoords;
+    {%endif%}
+    {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
+      output[gl_InvocationID].shadowCoord = input[gl_InvocationID].shadowCoord;
+    {% endif %}
+  {% endif %}
+  {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION or RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION  %}
+    {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %} {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %}
+        //output[gl_InvocationID].depthViewSpaceNORMALIZED = input[gl_InvocationID].depthViewSpaceNORMALIZED;
+        //output[gl_InvocationID].depthViewSpaceUNSCALED = input[gl_InvocationID].depthViewSpaceUNSCALED;
+        //output[gl_InvocationID].positionViewSpaceNORMALIZED = input[gl_InvocationID].positionViewSpaceNORMALIZED;
+        output[gl_InvocationID].positionViewSpaceUNSCALED = input[gl_InvocationID].positionViewSpaceUNSCALED;
+    {% endif %} {% endif %}       
+    {% if RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION %}  
+      output[gl_InvocationID].position = input[gl_InvocationID].position;
+    {% endif %}    
+    {%comment%} for default spotlight shadowmap generation, there is no fragment shader necessary at all, hence no input variable {%endcomment%}
+  {% endif %}
+  {% if instancedRendering %}
+    output[gl_InvocationID].uniqueInstanceID = input[gl_InvocationID].uniqueInstanceID;
+  {% endif %}
+  {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION %}
+    output[gl_InvocationID].genericIndices = input[gl_InvocationID].genericIndices;
+  {% endif %}
+    
+}

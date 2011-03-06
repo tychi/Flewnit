@@ -1,4 +1,4 @@
-//Third concept of a vertex shader template, this time in grantlee template engine syntax;
+//Third concept of a geometry shader template, this time in grantlee template engine syntax;
 
 {% comment %} 
   when do we need a geometry shader? 

@@ -4,9 +4,6 @@
   
   
   
-//struct InterfaceData
-//{  
-  
 {%comment%} ################################# following "coloring" inputs ################################################################### {%endcomment%}
 {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}
   vec4 position;
@@ -63,5 +60,4 @@
 {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION %}
   ivec4 genericIndices;
 {% endif %}
- 
-// }; //end InterfacerData
+

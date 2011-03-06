@@ -14,21 +14,26 @@ namespace Flewnit
 {
 
 VertexBasedGeometry::VertexBasedGeometry(String name, GeometryRepresentation geoRep)
-: BufferBasedGeometry(name, geoRep), mIndexBuffer(0),
-  //not needed
-  mNumVerticesPerPatch(0)
+: BufferBasedGeometry(name, geoRep), mIndexBuffer(0)
 {
 	GUARD( glGenVertexArrays(1, &mGLVBO));
 	bind();
+
+	if(	(geoRep == VERTEX_BASED_TRIANGLE_PATCHES)||
+		(geoRep == VERTEX_BASED_QUAD_PATCHES)||
+		(geoRep == VERTEX_BASED_BEZIER_PATCHES)	)
+	{
+		setUpPatchRepresentationState();
+	}
 }
 
-VertexBasedGeometry::VertexBasedGeometry(String name, GLint verticesPerPatch)
-: BufferBasedGeometry(name, VERTEX_BASED_PATCHES), mIndexBuffer(0), mNumVerticesPerPatch(verticesPerPatch)
-{
-	GUARD( glGenVertexArrays(1, &mGLVBO));
-
-	setUpPatchRepresentationState();
-}
+//VertexBasedGeometry::VertexBasedGeometry(String name, GLint verticesPerPatch)
+//: BufferBasedGeometry(name, VERTEX_BASED_PATCHES), mIndexBuffer(0), mNumVerticesPerPatch(verticesPerPatch)
+//{
+//	GUARD( glGenVertexArrays(1, &mGLVBO));
+//
+//	setUpPatchRepresentationState();
+//}
 
 void VertexBasedGeometry::setUpPatchRepresentationState()
 {
@@ -41,25 +46,27 @@ void VertexBasedGeometry::setUpPatchRepresentationState()
 
 	bind();
 
-
+	int numVerticesPerPatch =0;
 	switch(getGeometryRepresentation())
 	{
-	case VERTEX_BASED_PATCHES:
+	case VERTEX_BASED_TRIANGLE_PATCHES:
+		numVerticesPerPatch = 3;
 	break;
-	case VERTEX_BASED_LINES:
-		mNumVerticesPerPatch = 2;
+	case VERTEX_BASED_QUAD_PATCHES:
+		numVerticesPerPatch = 4;
+		assert(0&&" sry VERTEX_BASED_QUAD_PATCHES are not supported yet");
 	break;
-	case VERTEX_BASED_TRIANGLES:
-		mNumVerticesPerPatch = 3;
+	case VERTEX_BASED_BEZIER_PATCHES:
+		numVerticesPerPatch = 16;
+		assert(0&&" sry VERTEX_BASED_BEZIER_PATCHES are not supported yet");
 	break;
 	default:
-		assert(0&&"optional patch drawing only possible with triangles and lines as original representation");
+		assert(0&&"no other patch representation supported yet ;(");
 	break;
 	}
 
-	mGeometryRepresentation = VERTEX_BASED_PATCHES;
 	validateBufferIntegrity();
-	GUARD(glPatchParameteri(GL_PATCH_VERTICES, mNumVerticesPerPatch));
+	GUARD(glPatchParameteri(GL_PATCH_VERTICES, numVerticesPerPatch));
 }
 
 
@@ -209,7 +216,7 @@ void VertexBasedGeometry::draw(
 	else
 		{currentGeomRep = desiredGeomRep;}
 
-	GLenum drawType;
+	GLenum drawType= GL_POINTS; //most compatible value as default
 	switch(currentGeomRep)
 	{
 	case VERTEX_BASED_POINT_CLOUD:
@@ -228,23 +235,17 @@ void VertexBasedGeometry::draw(
 	case VERTEX_BASED_TRIANGLES_ADJACENCY:
 		drawType = GL_TRIANGLES_ADJACENCY;
 	break;
-	case VERTEX_BASED_PATCHES:
+	case VERTEX_BASED_TRIANGLE_PATCHES:
 		drawType = GL_PATCHES;
-		//check for comaptibility with "base" representation and set patch vertices
-		switch(getGeometryRepresentation())
-		{
-		case VERTEX_BASED_PATCHES:
+		GUARD(glPatchParameteri(GL_PATCH_VERTICES, 3));
+		assert(getGeometryRepresentation() == VERTEX_BASED_TRIANGLES ||
+				getGeometryRepresentation() == VERTEX_BASED_TRIANGLE_PATCHES);
 		break;
-		case VERTEX_BASED_LINES:
-			GUARD(glPatchParameteri(GL_PATCH_VERTICES, 2));
+	case VERTEX_BASED_QUAD_PATCHES:
+		assert(0&&"sry VERTEX_BASED_QUAD_PATCHES not supported yet");
 		break;
-		case VERTEX_BASED_TRIANGLES:
-			GUARD(glPatchParameteri(GL_PATCH_VERTICES, 3));
-		break;
-		default:
-			assert(0&&"optional patch drawing only possible with triangles and lines as original representation");
-		break;
-		}
+	case VERTEX_BASED_BEZIER_PATCHES:
+		assert(0&&"sry VERTEX_BASED_BEZIER_PATCHES not supported yet");
 		break;
 	default:
 		drawType = GL_POINTS;
@@ -267,7 +268,7 @@ void VertexBasedGeometry::validateBufferIntegrity()throw(BufferException)
 			getGeometryRepresentation()==VERTEX_BASED_LINE_STRIP ||
 			getGeometryRepresentation()==VERTEX_BASED_TRIANGLES ||
 			getGeometryRepresentation()==VERTEX_BASED_TRIANGLES_ADJACENCY ||
-			getGeometryRepresentation()==VERTEX_BASED_PATCHES
+			getGeometryRepresentation()==VERTEX_BASED_TRIANGLE_PATCHES
 	);
 
 	//made a design mistake: texelinfo make also sense in bufferinfo (then should be called "ComponentInfo"),
@@ -302,29 +303,12 @@ void VertexBasedGeometry::validateBufferIntegrity()throw(BufferException)
 		}
 	}
 
-	if(getGeometryRepresentation()== VERTEX_BASED_PATCHES)
-	{
-		assert( "only the following patch sizes are currently supported:" &&
-			(
-				(mNumVerticesPerPatch == 3)	||
-				(mNumVerticesPerPatch == 4) ||
-				(mNumVerticesPerPatch == 16)
-			)
-
-		);
-	}
-
 
 
 	if(mIndexBuffer)
 	{
 		assert((mIndexBuffer->getBufferInfo().elementType == TYPE_UINT32));
 		assert(mIndexBuffer->getBufferInfo().glBufferType == VERTEX_INDEX_BUFFER_TYPE);
-
-		if(getGeometryRepresentation()== VERTEX_BASED_PATCHES)
-		{
-			assert( "index count multiple of patch size" &&  (mIndexBuffer->getBufferInfo().numElements % mNumVerticesPerPatch  == 0 ));
-		}
 	}
 }
 

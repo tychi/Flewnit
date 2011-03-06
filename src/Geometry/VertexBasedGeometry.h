@@ -25,7 +25,7 @@ class VertexBasedGeometry :
 public:
 	VertexBasedGeometry(String name, GeometryRepresentation geoRep);
 	//constructor for patch-based tesselation geometry
-	VertexBasedGeometry(String name, GLint verticesPerPatch);
+	//VertexBasedGeometry(String name, GLint verticesPerPatch);
 	virtual ~VertexBasedGeometry();
 
 	//the semantics of the buffer is readable from its bufferInfo
@@ -51,8 +51,6 @@ public:
 				unsigned int numInstances,
 				GeometryRepresentation desiredGeomRep);
 
-	//returns zero if geometry is not "patch driven"
-	inline GLint getNumVerticesPerPatch()const {return mNumVerticesPerPatch;}
 
 protected:
 
@@ -68,7 +66,6 @@ private:
 
 	BufferInterface* mIndexBuffer;
 
-	GLint mNumVerticesPerPatch;
 
 	void bind();
 	void unbind();
