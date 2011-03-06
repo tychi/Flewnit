@@ -148,37 +148,6 @@ private:
 };
 
 
-/*
- * A dummy visual material; Exists only to to nothing durcing (de)activation;
- * This desgn decision was done in order to ensure a minimum overhead due to
- * special case treatment  No shader activation or anything else;
- *
- * Note: the actual drawing of instanced geometry happens at the end of a lighting simulation stage,
- * when all to-be-drawn instances have been registered; Then, the LightingSimulationStage
- * calls SimulationResourceManager::executeInstancedRendering(); This routine will iterate over
- * it Instancemanagers, and those will issue an instanced activation/GL-draw call to their
- * "real" Material/Geometry; The "real" material has its isInstanced-flag set and an associated
- * compatible shader;
- *
- * */
-//class InstancedVisualMaterial
-//: public VisualMaterial
-//{
-//	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-//
-//	friend class InstanceManager;
-//	InstancedVisualMaterial(String name, VisualMaterialFlags visFlags);
-//public:
-//	virtual ~InstancedVisualMaterial();
-//	virtual bool operator==(const Material& rhs) const;
-//	virtual void activate(
-//			SimulationPipelineStage* currentStage,
-//			SubObject* currentUsingSuboject) throw(SimulatorException);
-//	virtual void deactivate(SimulationPipelineStage* currentStage,
-//			SubObject* currentUsingSuboject) throw(SimulatorException);
-//};
-
-
 
 class SkyDomeMaterial
 : public VisualMaterial

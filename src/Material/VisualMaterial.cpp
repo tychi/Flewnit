@@ -14,6 +14,7 @@
 #include <boost/foreach.hpp>
 #include "Simulator/LightingSimulator/LightingStages/ShadowMapGenerator.h"
 #include "WorldObject/InstanceManager.h"
+#include "Simulator/OpenCL_Manager.h"
 
 
 namespace Flewnit
@@ -157,8 +158,7 @@ void VisualMaterial::activate(
 			SimulationPipelineStage* currentStage,
 			SubObject* currentUsingSuboject) throw(SimulatorException)
 {
-	//TODO delete those assertions when doing relevant stuff, because VisualMaterial class has
-	//evolved to an omnipotent class
+	//following assertiopns on incompatible rendering states to detect bad masking by the sim-stage
 	LightingSimStageBase* castedStage= reinterpret_cast<LightingSimStageBase*>(currentStage);
 	assert(castedStage);
 	assert(castedStage->getRenderingTechnique() != RENDERING_TECHNIQUE_DEFERRED_LIGHTING);
@@ -292,44 +292,59 @@ void VisualMaterial::validateShader()throw(SimulatorException)
 
 //-------------------------------------------------------------------------------------------
 
-//InstancedVisualMaterial::InstancedVisualMaterial(String name)
-//: VisualMaterial(
-//		name,
-//		VISUAL_MATERIAL_TYPE_INSTANCED,
-//		SHADING_FEATURE_NONE,
-//		std::map<BufferSemantics, Texture*>(),
-//		VisualMaterialFlags(true,false,false,false,true,true)
-//		)
-//{
-//
-//}
-//
-//InstancedVisualMaterial::~InstancedVisualMaterial()
-//{
-//	//nothing to do
-//}
-//
-//bool InstancedVisualMaterial::operator==(const Material& rhs) const
-//{
-//	//as this material is kind of a dummy material, just the type is aapropriate to assure equality
-//	return (dynamic_cast<const InstancedVisualMaterial*>(&rhs) != 0 );
-//}
-//
-//void InstancedVisualMaterial::activate(
-//		SimulationPipelineStage* currentStage,
-//		SubObject* currentUsingSuboject) throw(SimulatorException)
-//{
-//	InstancedGeometry* instancedGeo = dynamic_cast<InstancedGeometry*>(currentUsingSuboject->getGeometry());
-//	assert(instancedGeo && "to an InstancedVisualMaterial MUST be associated an InstancedGeometry!");
-//
-//	instancedGeo->getInstanceManager()->registerInstanceForNextDrawing(instancedGeo->get)
-//}
-//
-//void InstancedVisualMaterial::deactivate(SimulationPipelineStage* currentStage,
-//		SubObject* currentUsingSuboject) throw(SimulatorException)
-//{
-//	//do nothing
-//}
 
+SkyDomeMaterial::SkyDomeMaterial(String name, Texture2DCube* cubeTex)
+: VisualMaterial(
+		name,
+		VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING,
+		SHADING_FEATURE_CUBE_MAPPING,
+		//must contain at least the textures used in the shader as samplers
+		std::map<BufferSemantics, Texture*>{std::pair<BufferSemantics, Texture*>(ENVMAP_SEMANTICS, cubeTex)},
+		VisualMaterialFlags(
+			//NO shadow casting, NOT transparent,
+			false,false,
+			//YES shadable (actually not, but as functionality is integrated in ubershader and defaultlighting stage,
+			//we have to set this flag in order to not mask out the sky dome),
+			true,
+			//NOT instanced,
+			//YES dyncubemaprenderable,NOT custom (is special, but can still
+			//be handled by generic lighting stages)
+			true,false)
+		)
+{
+
+}
+
+SkyDomeMaterial::~SkyDomeMaterial()
+{
+
+}
+
+	//check for equality in order to check if a material with the desired properties
+	//(shader feature set and textures) already exists in the ResourceManager;
+bool SkyDomeMaterial::operator==(const Material& rhs) const
+{
+	return (
+		dynamic_cast<const SkyDomeMaterial*>(&rhs)
+		&&
+		VisualMaterial::operator==(rhs)
+	);
+}
+
+void SkyDomeMaterial::activate(
+			SimulationPipelineStage* currentStage,
+			SubObject* currentUsingSuboject) throw(SimulatorException)
+{
+	//GUARD(glDisable(GL_DEPTH_TEST));
+	GUARD(glCullFace(GL_FRONT));
+
+	getCurrentlyUsedShader()->use(currentUsingSuboject);
+}
+void SkyDomeMaterial::deactivate(SimulationPipelineStage* currentStage,
+			SubObject* currentUsingSuboject) throw(SimulatorException)
+{
+	//GUARD(glEnable(GL_DEPTH_TEST));
+	GUARD(glCullFace(GL_BACK));
+}
 
 }

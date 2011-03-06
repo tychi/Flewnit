@@ -667,7 +667,17 @@ void Shader::setupTransformationUniforms(SubObject* so)
 		//but it doesn't matter to set them anyway; keep business logic as simple as possible ;(
 
 		//setup default "model" related transform uniforms
-		Matrix4x4 modelMatrix = so->getOwningWorldObject()->getGlobalTransform().getTotalTransform();
+		Matrix4x4 modelMatrix(1.0f);
+		if(mLocalShaderFeatures.visualMaterialType == VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING)
+		{
+			 //special case: neither world nor view space transform: set the sky box into centre of view, but don't rotate according to view direction
+			modelMatrix = glm::translate(modelMatrix,  URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getPosition());
+		}
+		else
+		{
+			modelMatrix = so->getOwningWorldObject()->getGlobalTransform().getTotalTransform();
+		}
+
 	    Matrix4x4 modelViewMatrix = viewMatrix * modelMatrix;
 	    Matrix4x4 modelViewProjMatrix = cam->getProjectionMatrix() * modelViewMatrix;
 

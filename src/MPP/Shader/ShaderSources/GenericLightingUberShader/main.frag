@@ -40,8 +40,9 @@ void main()
     return;
   {% else %} {% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
     {% if not SHADING_FEATURE_CUBE_MAPPING %} what the f***, add a cube map! {% endif %}
-    //one of those exceptions: for cube mapping: we have to pass WORLD coords and not VIEW coords!11
-    outFFinalLuminance = texture(cubeMap, normalize( (-1.0) * input.position.xyz));
+    //special case: neither world nor view space transform: use the vertex data directly as world spce direction vectors        
+    outFFinalLuminance = texture(cubeMap, ( (-1.0) * input.position.xyz));
+    gl_FragDepth = 0.99999; //haxx instead of outsourcing the skydome rendering into an own simstage... ;(
     //TODO try when stable non normalized lookup:
     // outFFinalLuminance = texture(cubeMap,  (-1.0) * input.position.xyz );
     return;

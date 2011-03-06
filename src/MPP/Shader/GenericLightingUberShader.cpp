@@ -55,18 +55,6 @@ GenericLightingUberShader::~GenericLightingUberShader()
 
 
 
-//void GenericLightingUberShader::fillOwnMatrixStructure(float* toFill, const Matrix4x4& in)
-//{
-//	for(unsigned int column=0; column<4; column++)
-//	{
-//		for(unsigned int element=0; element<4; element++)
-//		{
-//			toFill[(4*column) + element] = in[column][element];
-//		}
-//	}
-//}
-
-
 
 //virtual bool operator==(const Shader& rhs)const;
 void GenericLightingUberShader::use(SubObject *so) throw (SimulatorException)

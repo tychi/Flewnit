@@ -30,6 +30,7 @@
 #include "Geometry/Procedural/BoxGeometry.h"
 #include "Util/HelperFunctions.h"
 #include "WorldObject/InstanceManager.h"
+#include "WorldObject/SkyDome.h"
 
 
 
@@ -58,6 +59,10 @@ void Loader::loadScene()
 void Loader::createHardCodedSceneStuff()
 {
 	SceneNode& rootNode = SimulationResourceManager::getInstance().getScene()->root();
+	rootNode.addChild(
+		new SkyDome( Path("./assets/textures/cubeMaps/"),"cloudy_noon","jpg")
+	);
+
 	//create the first rendering, to see anything and to test the camera, the buffers, the shares and to overall architectural frame:
 	//TODO
 	rootNode.addChild(
@@ -133,7 +138,7 @@ void Loader::createHardCodedSceneStuff()
 			//std::map<BufferSemantics,Texture*>(),
 			VisualMaterialFlags(true,false,true,true,false,false),
 			1000.0f,
-			0.1f
+			0.5f
 		);
 	}//endif !mat1
 	Material* mat2 = SimulationResourceManager::getInstance().getMaterial("StoneBumpMaterial");
@@ -183,16 +188,20 @@ void Loader::createHardCodedSceneStuff()
 	Material* matEnvMap = SimulationResourceManager::getInstance().getMaterial("EnvMapCloudyNoonMaterial");
 	if(! matEnvMap)
 	{
-		Texture* envMapTex= URE_INSTANCE->getLoader()->loadCubeTexture(
-				String("cloudyNoonEnvMap"),
+		Texture* envMapTex =
+				SimulationResourceManager::getInstance().getTexture("cloudy_noon");
+		if(!envMapTex)
+		{
+			envMapTex= URE_INSTANCE->getLoader()->loadCubeTexture(
+				String("cloudy_noon"),
 				ENVMAP_SEMANTICS,
 				Path("./assets/textures/cubeMaps/cloudy_noon"),
 				String("jpg"),
 				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
 				true,
 				false
-		);
-
+			);
+		}
 //		Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
 //				String("rockwallDecal"),
 //				DECAL_COLOR_SEMANTICS,

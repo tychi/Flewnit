@@ -56,7 +56,7 @@
   //uniform mat4 normalMatrix;
 {% endif %}
 
-
+  uniform vec3 eyePositionW;
   uniform vec2 tangensCamFov = vec2 ( {{tangensCamFovHorizontal}}, {{tangensCamFovVertical}}   ); //for position calculation from pure linear depth value;
 	uniform vec2 cotangensCamFov= vec2 ( {{cotangensCamFovHorizontal}}, {{cotangensCamFovVertical}}   ); //for texcoord calculation from viewspace position value;/inverso of tanget, pass from outside to save calculations
 	uniform float cameraFarClipPlane = {{ cameraFarClipPlane }};
@@ -122,11 +122,12 @@ void main()
 	
 	{%comment%} ################################# following "coloring" output ################################################################### {%endcomment%}
   {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}
-  
+   
       {% if RENDER_TARGET_TEXTURE_TYPE_2D_CUBE %}       
           //WORLD space transform, as view/viewproj transform is done for every layer in the geom shader
           gl_Position =  modelMatrix * inVPosition; 
-          output.position = gl_Position 	; //don't know if necessary; TODO check for optimization when stable
+          //output.position = gl_Position 	; //don't know if necessary; TODO check for optimization when stable
+          output.position =  modelMatrix * inVPosition; 
           //output.normal =     transpose(inverse( modelMatrix)) * inVNormal;  
           output.normal = 		modelMatrix * inVNormal;    
           {% if SHADING_FEATURE_NORMAL_MAPPING %}
@@ -135,7 +136,13 @@ void main()
       {% else %}     
           //default view space transform
           gl_Position =  modelViewProjectionMatrix  * inVPosition; //default MVP transform;
-          output.position =  	modelViewMatrix * inVPosition;  
+          {% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
+            //special case: neither world nor view space transform: use the vertex data directly as world spce direction vectors
+            output.position = inVPosition;
+          {% else %}
+            output.position =  modelViewMatrix * inVPosition;   
+          {% endif %}  
+          
           //output.normal =     transpose(inverse( modelViewMatrix)) * inVNormal;  
           output.normal = 		modelViewMatrix * inVNormal;            
           {% if SHADING_FEATURE_NORMAL_MAPPING %}
@@ -156,7 +163,6 @@ void main()
                      of the fragment world position with the biased sm-MVP matrix in the fragment shader         {%endcomment%}
         output.shadowCoord = shadowMapLookupMatrix *  output.position;
       {% endif %}
-
     
   {% endif %}  {%comment%} end of "coloring" inputs {%endcomment%}
 	

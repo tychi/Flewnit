@@ -210,10 +210,10 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 		String stageType = ConfigCaster::cast<String>(
 				mSimConfigNode->get("SimulationPipelineStage",i).get("Type",0));
 
-		if(stageType  == "SkyBoxRenderer")
-		{
-			mSimStages.push_back(new SkyBoxRenderer( &( mSimConfigNode->get("SimulationPipelineStage",i) ) ) );
-		}
+//		if(stageType  == "SkyBoxRenderer")
+//		{
+//			mSimStages.push_back(new SkyBoxRenderer( &( mSimConfigNode->get("SimulationPipelineStage",i) ) ) );
+//		}
 
 		if(stageType  == "ShadowMapGenerator")
 		{

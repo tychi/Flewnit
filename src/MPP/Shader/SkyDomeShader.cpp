@@ -7,18 +7,26 @@
 
 #include "SkyDomeShader.h"
 
+#include "Simulator/OpenCL_Manager.h"
+#include "Material/VisualMaterial.h"
+#include "WorldObject/SubObject.h"
+#include "URE.h"
+#include "Simulator/LightingSimulator/Camera/Camera.h"
+
 namespace Flewnit {
 
 
 SkyDomeShader::SkyDomeShader(Path codeDirectory, TextureType renderTargetTextureType)
 :
-		Shader(codeDirectory, Path("SkyDomeShader"),
-				ShaderFeaturesLocal(
-						RENDERING_TECHNIQUE_DEFAULT_LIGHTING,
-						renderTargetTextureType,
-						VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING,
-						SHADING_FEATURE_CUBE_MAPPING,
-						false)
+		Shader(
+			codeDirectory,
+			Path("GenericLightingUberShader"), //yes, the sky dome rending is also included in the ubershader
+			ShaderFeaturesLocal(
+				RENDERING_TECHNIQUE_DEFAULT_LIGHTING,
+				renderTargetTextureType,
+				VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING,
+				SHADING_FEATURE_CUBE_MAPPING,
+				false)
 		)
 {
 	//nothing to assert, as the restricted constructor parameters assure that the user
@@ -35,8 +43,14 @@ SkyDomeShader::~SkyDomeShader()
 
 void SkyDomeShader::use(SubObject* so)throw(SimulatorException)
 {
-	//TODO implement
-	assert(0 &&  "SkyDomeShader::use; implement me :P");
+	GUARD(glUseProgram(mGLProgramHandle));
+	setupTransformationUniforms(so);
+
+	VisualMaterial * visMat =  dynamic_cast<VisualMaterial*>(so->getMaterial());
+	assert(visMat);
+	setupMaterialUniforms(visMat);
+	//---------- uncategorized uniforms to come ------------------------------------------------
+	bindVector3D("eyePositionW",URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getPosition());
 }
 
 //virtual void generateCustomDefines();
