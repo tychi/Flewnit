@@ -36,7 +36,8 @@ public:
 		mRecentPosition(0,0),
 		mLastWheelValue(0),
 		mRecentWheelValue(0),
-		mRecentEvent(MOUSE_EVENT_NONE)
+		mRecentEvent(MOUSE_EVENT_NONE),
+		mIsHidden(false)
 	{}
 
 	virtual ~Mouse();
@@ -86,7 +87,7 @@ public:
 	int getRecentWheelValue()const{return mRecentWheelValue;}
 	int getLastWheelValue()const{return mLastWheelValue;}
 
-
+	bool isHidden()const;
 	void setHidden(bool value);
 
 
@@ -102,6 +103,8 @@ private:
 	int mRecentWheelValue;
 
 	MouseEvent mRecentEvent;
+
+	bool mIsHidden;
 
 };
 

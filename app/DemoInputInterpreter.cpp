@@ -41,7 +41,8 @@ namespace Flewnit
 {
 
 DemoInputInterpreter::DemoInputInterpreter(float cameraLookMouseSensivity, float movementSpeed)
-: mCameraLookMouseSensivity(cameraLookMouseSensivity),mMovementSpeed(movementSpeed)
+: mCameraLookMouseSensivity(cameraLookMouseSensivity),mMovementSpeed(movementSpeed),
+  mHideMouse(false)
 {
 	// TODO make cameraLookMouseSensivity  config file- configurable;
 
@@ -166,6 +167,11 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	}
 
+	if((keyboard->getRecentKey() == GLFW_KEY_SPACE) && (keyboard->getRecentStatus() == GLFW_PRESS))
+	{
+		mHideMouse = !mHideMouse;
+	}
+
 
 	//--------------------------------------------------------------------
 
@@ -182,7 +188,11 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 void DemoInputInterpreter::interpretInput(Mouse* mouse)
 {
 
-	static bool hideMouse= false;
+	//static bool hideMouse= false;
+	if(mouse->isHidden() != mHideMouse)
+	{
+		mouse->setHidden(mHideMouse);
+	}
 
 	if(mouse->getRecentEvent() == Mouse::MOUSE_EVENT_BUTTON_CHANGED)
 	{
@@ -198,24 +208,25 @@ void DemoInputInterpreter::interpretInput(Mouse* mouse)
 //			}
 		}
 
-		if(mouse->getRecentButton() == GLFW_MOUSE_BUTTON_RIGHT )
-		{
-			if(mouse->getRecentButtonStatus() == GLFW_PRESS)
-			{
-				//LOG<<DEBUG_LOG_LEVEL<<"right mouse button pressed; toggling mouse hide status;\n";
-				hideMouse = !hideMouse;
-				mouse->setHidden(hideMouse);
-			}
-			else
-			{
-
-			}
-		}
+//		if(mouse->getRecentButton() == GLFW_MOUSE_BUTTON_RIGHT )
+//		{
+//			if(mouse->getRecentButtonStatus() == GLFW_PRESS)
+//			{
+//				//LOG<<DEBUG_LOG_LEVEL<<"right mouse button pressed; toggling mouse hide status;\n";
+//				hideMouse = !hideMouse;
+//				mouse->setHidden(hideMouse);
+//			}
+//			else
+//			{
+//
+//			}
+//		}
 
 	}
 	else
 	{
-		if(mouse->getRecentEvent() == Mouse::MOUSE_EVENT_POSITION_CHANGED)
+		if( (mouse->getRecentEvent() == Mouse::MOUSE_EVENT_POSITION_CHANGED)
+			&& (mouse->isHidden())   )
 		{
 //			LOG<<DEBUG_LOG_LEVEL<<"mouse moved from ("
 //					<<mouse->getLastPosition().x

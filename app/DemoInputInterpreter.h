@@ -53,6 +53,7 @@ private:
 	};
 
 	MovementState mMovementState[__NUM_MOVEMENT_DIRECTIONS__];
+	bool mHideMouse;
 };
 
 }

@@ -29,8 +29,15 @@ void Mouse::notifyInterpreter()
 	}
 }
 
+
+bool Mouse::isHidden()const
+{
+	return mIsHidden;
+}
+
 void Mouse::setHidden(bool value)
 {
+	mIsHidden = value;
 	//forward request to window manager;
 	WindowManager::getInstance().setMouseGrab(value);
 }
