@@ -15,7 +15,8 @@ BoxGeometry::BoxGeometry(
 		String name,
 		const Vector3D& halfextends,
 		bool addTangents,
-		bool patchRepresentation)
+		bool patchRepresentation,
+		const Vector4D& texcoordScale)
 : VertexBasedGeometry(name, VERTEX_BASED_TRIANGLES)
   {
 	if(patchRepresentation)
@@ -103,28 +104,28 @@ BoxGeometry::BoxGeometry(
 			if(addTangents){
 				tangentBuffer[vertexIndexBase+0]= Vector4D( tangent, 0 );
 			}
-			tcBuffer[vertexIndexBase + 0]		= Vector4D(0,0,0, 0 );
+			tcBuffer[vertexIndexBase + 0]		= Vector4D(0,0,0, 0 ) * texcoordScale;
 			//lower right
 			posBuffer[vertexIndexBase + 1] 		= Vector4D( (normal - left + down)* halfextends , 1 );
 			normalBuffer[vertexIndexBase + 1]	= Vector4D( normal, 0 );
 			if(addTangents){
 				tangentBuffer[vertexIndexBase+1]= Vector4D( tangent, 0 );
 			}
-			tcBuffer[vertexIndexBase + 1]		= Vector4D(1,0,0, 0 );
+			tcBuffer[vertexIndexBase + 1]		= Vector4D(1,0,0, 0 )* texcoordScale;
 			//upper right
 			posBuffer[vertexIndexBase + 2] 		= Vector4D( (normal - left - down)* halfextends , 1 );
 			normalBuffer[vertexIndexBase + 2]	= Vector4D( normal, 0 );
 			if(addTangents){
 				tangentBuffer[vertexIndexBase+2]= Vector4D( tangent, 0 );
 			}
-			tcBuffer[vertexIndexBase + 2]		= Vector4D(1,1,0, 0 );
+			tcBuffer[vertexIndexBase + 2]		= Vector4D(1,1,0, 0 )* texcoordScale;
 			//upper left
 			posBuffer[vertexIndexBase + 3] 		= Vector4D( (normal + left - down)* halfextends , 1 );
 			normalBuffer[vertexIndexBase + 3]	= Vector4D( normal, 0 );
 			if(addTangents){
 				tangentBuffer[vertexIndexBase+3]= Vector4D( tangent, 0 );
 			}
-			tcBuffer[vertexIndexBase + 3]		= Vector4D(0,1,0, 0 );
+			tcBuffer[vertexIndexBase + 3]		= Vector4D(0,1,0, 0 )* texcoordScale;
 
 			indexBuffer[indexIndexBase + 0]=  vertexIndexBase + 0;
 			indexBuffer[indexIndexBase + 1]=  vertexIndexBase + 1;

@@ -24,7 +24,9 @@ public:
 			const Vector3D& halfextends,
 			bool addTangents,
 			//set default draw mode to patches (for tesselation) instead of triangles
-			bool patchRepresentation = false);
+			bool patchRepresentation = false,
+			const Vector4D& texcoordScale = Vector4D(1,1,1,1)
+	);
 
 	virtual ~BoxGeometry();
 

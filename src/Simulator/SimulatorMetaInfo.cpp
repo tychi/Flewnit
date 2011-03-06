@@ -246,13 +246,13 @@ std::size_t hash_value(ShaderFeaturesLocal const& sfl)
        int integerizedSFLvalue =
     		   //bit 31..28 (4bits) for number in [0..8]=4 bits --> fits
     		   ( static_cast<int>(sfl.renderingTechnique) <<28 ) |
-    		   //bit 27..20 (8bits) for number in [0..14]=4 bits --> fits
-    		   ( static_cast<int>(sfl.renderTargetTextureType) <<20 ) |
-    		   //bit 19..16 (4bits) for number in [0..7]=3 bits --> fits
-    		   ( static_cast<int>(sfl.visualMaterialType) <<16 ) |
-    		   //bit 15..1 (15 bits) for 9-bit bitfield --> fits
-    		   ( static_cast<int>(sfl.shadingFeatures) << 1 ) |
-    		   //bit 0 for integer value (1 bit) --> fits
+    		   //bit 27..24 (4bits) for number in [0..14]=4 bits --> fits
+    		   ( static_cast<int>(sfl.renderTargetTextureType) <<24 ) |
+    		   //bit 23..20 (4bits) for number in [0..7]=3 bits --> fits
+    		   ( static_cast<int>(sfl.visualMaterialType) <<20 ) |
+    		   //bit 19..10 (10 bits) for 9-bit bitfield --> fits
+    		   ( static_cast<int>(sfl.shadingFeatures) << 10 ) |
+    		   //bit  9.. 0 (10 bits) for  max  val 1023 integer value (10 bit) --> fits
     		   (sfl.instancedRendering? 1: 0)
     		   ;
 

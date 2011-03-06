@@ -26,8 +26,9 @@ class InstanceManager
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	InstanceManager(String name, GLuint numMaxInstances,
-			SubObject* drawableSubObject );
+	InstanceManager(String name, SubObject* drawableSubObject,
+			int numMaxInstances=0//if zero, default size defined by global settings will be taken
+	);
 
 	virtual ~InstanceManager();
 
@@ -53,8 +54,8 @@ private:
 	//called at the end of drawRegisteredInstances() to reset registration state;
 	void resetDrawQueue();
 
-	GLuint mMaxManagedInstances;
-	GLuint mCreatedManagedInstances;
+	int mMaxManagedInstances;
+	int mCreatedManagedInstances;
 	//GLuint mNumCurrentlyRegisteredInstancesForNextDrawing;
 	std::vector<SubObject*> mCurrentlyRegisteredInstancesForNextDrawing;
 

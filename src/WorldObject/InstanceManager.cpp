@@ -30,8 +30,9 @@ namespace Flewnit
 
 bool InstanceManager::sInstancedRenderingIsCurrentlyActive = false;
 
-InstanceManager::InstanceManager(String name, GLuint numMaxInstances,
-		SubObject* drawableSubObject )
+InstanceManager::InstanceManager(String name,
+		SubObject* drawableSubObject,
+		int numMaxInstances)
 :
 	SimulationObject(name, VISUAL_SIM_DOMAIN),
 	mMaxManagedInstances(numMaxInstances),
@@ -41,6 +42,12 @@ InstanceManager::InstanceManager(String name, GLuint numMaxInstances,
 	mDrawableSubObject(drawableSubObject)
 {
 	SimulationResourceManager::getInstance().registerInstanceManager(this);
+	if (mMaxManagedInstances <= 0)
+	{
+		mMaxManagedInstances = ShaderManager::getInstance().getGlobalShaderFeatures().numMaxInstancesRenderable;
+	}
+
+	assert(mMaxManagedInstances <= ShaderManager::getInstance().getGlobalShaderFeatures().numMaxInstancesRenderable);
 
 	std::vector<String> memberStrings=
 		{
@@ -132,7 +139,7 @@ SubObject* InstanceManager::createInstance()throw(SimulatorException)
 //and the uniform buffer entry filled with the relevant information;
 void InstanceManager::registerInstanceForNextDrawing(SubObject* so)throw(SimulatorException)
 {
-	assert(mCurrentlyRegisteredInstancesForNextDrawing.size() < mMaxManagedInstances);
+	assert((int)mCurrentlyRegisteredInstancesForNextDrawing.size() < mMaxManagedInstances);
 	assert("geometry is instanced" && dynamic_cast<InstancedGeometry*>(so->getGeometry()));
 	assert("instance belongs to this manager" && (reinterpret_cast<InstancedGeometry*>(so->getGeometry())->getInstanceManager() == this));
 	BOOST_FOREACH(SubObject* currentSO, mCurrentlyRegisteredInstancesForNextDrawing)
@@ -212,7 +219,7 @@ void InstanceManager::updateTransformBuffer()
 	CURRENT_MAT4_VALUE(2)= viewProjMatrix * modelMatrix;
 	//uniqueInstanceID
 	CURRENT_INT_VALUE =  reinterpret_cast<InstancedGeometry*>(
-			mCurrentlyRegisteredInstancesForNextDrawing[currentTransformElementIndex]->getGeometry())->getUniqueID();
+			mCurrentlyRegisteredInstancesForNextDrawing[currentTransformElementIndex]->getGeometry())->mInstanceID;
 
 #undef CURRENT_MAT4_VALUE
 #undef CURRENT_INT_VALUE

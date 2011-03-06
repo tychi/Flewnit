@@ -67,7 +67,7 @@ void Loader::createHardCodedSceneStuff()
 		new PureVisualObject("MyBox2",AmendedTransform(Vector3D(40,-10,0), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
 	);
 	rootNode.addChild(
-		new PureVisualObject("MyBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),0.3))
+		new PureVisualObject("MyBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),3.0f))
 	);
 	rootNode.addChild(
 		new PureVisualObject("MyEnvmapBox",AmendedTransform(Vector3D(60,-10,-50) )) //, Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
@@ -89,15 +89,17 @@ void Loader::createHardCodedSceneStuff()
 				//patch stuff only for GL versions 4.0 or higher
 				false
 				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
+
 		);
 	}
 	Geometry* geo3 = SimulationResourceManager::getInstance().getGeometry("MyBoxAsPlane");
 	if(! geo3)
 	{
-		geo3 = new BoxGeometry("MyBoxAsPlane",Vector3D(300.0f,2.0f,300.0f),true,
+		geo3 = new BoxGeometry("MyBoxAsPlane",Vector3D(100.0f,2.0f,100.0f),true,
 				//patch stuff only for GL versions 4.0 or higher
-				false
+				false,
 				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
+				Vector4D(20,20,1,1)
 		);
 	}
 
@@ -328,13 +330,23 @@ void Loader::createHardCodedSceneStuff()
 	int numInstancesPerDimension = 6;
 	InstanceManager* boxInstanceManager = new InstanceManager(
 			"boxInstanceManager",
-			numInstancesPerDimension*numInstancesPerDimension*numInstancesPerDimension,
 			drawableBoxSOforInstancing
 	);
 
 
-	SceneNode& instancesParentNode = rootNode; //todo create other parent node for offsetting
-	Vector3D instanceArmyPosOffset(100,100,-200);
+	SceneNode* instancesParentNode = rootNode.addChild(
+			new SceneNode(
+				"boxInstanceArmyParent",
+				PURE_NODE,
+				AmendedTransform(
+					Vector3D(-40,0,-300),
+					Vector3D(0.2,-0.6,-0.8),
+					Vector3D(0,1,0),
+					0.5
+				)
+			)
+	);
+	//Vector3D instanceArmyPosOffset(100,100,-200);
 	Vector3D instanceArmyStride(50,50,50);
 
 	for(int x= -numInstancesPerDimension/2; x< numInstancesPerDimension/2; x++)
@@ -349,12 +361,12 @@ void Loader::createHardCodedSceneStuff()
 						+ String("y") + HelperFunctions::toString(y)
 						+ String("z") + HelperFunctions::toString(z),
 					AmendedTransform(
-						instanceArmyPosOffset + (instanceArmyStride * Vector3D(x,y,z)),
+						/*instanceArmyPosOffset +*/ (instanceArmyStride * Vector3D(x,y,z)),
 						Vector3D(0.3f,0.0f,-1.0f)
 					)
 				);
 				pvo->addSubObject(boxInstanceManager->createInstance());
-				instancesParentNode.addChild(pvo);
+				instancesParentNode->addChild(pvo);
 			}
 		}
 	}

@@ -117,6 +117,9 @@ void main()
                      //outFFinalLuminance= vec4(input.texCoords.xy,0,0); 
                      //outFFinalLuminance= vec4(normalVN, 1.0); //normal debug
                      //outFFinalLuminance= texture(decalTexture,input.texCoords.xy);
+                    {% if instancedRendering %}
+                    // outFFinalLuminance *= vec4( input.uniqueInstanceID /300 ); //validate that id passing works; check;
+                    {% endif %}
                       
                   {% endif %} {%comment%} end distinction between if lighting the samples or not {%endcomment%}
             

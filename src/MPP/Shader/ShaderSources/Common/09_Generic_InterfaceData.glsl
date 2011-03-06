@@ -55,7 +55,8 @@
 {% endif %}
 
 {% if instancedRendering %}
-   flat int uniqueInstanceID; //no interpolation of integer stuff; value needed for potential shading deviations beween instances
+   //flat int uniqueInstanceID; //no interpolation of integer stuff; value needed for potential shading deviations beween instances
+  float uniqueInstanceID; 
 {% endif %}
 
 {%comment%} ################################# following ID inputs ##############################################################{%endcomment%}
