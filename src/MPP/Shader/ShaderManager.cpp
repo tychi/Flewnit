@@ -71,7 +71,7 @@ bool ShaderManager::currentRenderingScenarioPerformsLayeredRendering()const
 
 //returns true if doing layered rendering or other stuff involving multiple view/projection cameras
 //which would currupt view space transformed data;
-bool ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform()const
+bool ShaderManager::vertexShaderNeedsWorldSpaceTransform()const
 {
 	return currentRenderingScenarioPerformsLayeredRendering();
 }

@@ -119,10 +119,17 @@ void main()
   {% endif %}	
   //----------------------------------------------------------------------------------------------
   
-  {%if not SHADING_FEATURE_TESSELATION and not layeredRendering %} 
-    {%comment%}read: if neither tess nor layered, then write gl_Pos, as frag stage will follow directly{%endcomment%}
+  
+  {%if not layeredRendering or SHADING_FEATURE_TESSELATION %} 
+    {%comment%} either we need projected stuff for rasterization because no tessCtrl/TessEval/geom shader follows,
+                OR we need projected stuff for dyn. LOD calc in tessCtrl shader {%endcomment%}
     gl_Position =  modelViewProjectionMatrix  * inVPosition; /*default MVP transform*/ 
   {% endif %} 
+  
+  //{%if not SHADING_FEATURE_TESSELATION and not layeredRendering %} 
+  //  {%comment%}read: if neither tess nor layered, then write gl_Pos, as frag stage will follow directly{%endcomment%}
+  //  gl_Position =  modelViewProjectionMatrix  * inVPosition; /*default MVP transform*/ 
+  //{% endif %} 
    
 	{% if shadeSpacePositionNeeded %}
 		{% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}

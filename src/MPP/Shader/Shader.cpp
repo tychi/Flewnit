@@ -226,7 +226,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	contextMap.insert("GL_MINOR_VERSION", WindowManager::getInstance().getAvailableOpenGLVersion().y);
 
 	contextMap.insert("layeredRendering",ShaderManager::getInstance().currentRenderingScenarioPerformsLayeredRendering());
-	contextMap.insert("worldSpaceTransform",ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform());
+	contextMap.insert("worldSpaceTransform",ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform());
 
 	bool shaderPerformsColorCalculations =
 			(mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_DEFAULT_LIGHTING)
@@ -759,7 +759,7 @@ void Shader::setupLightSourceUniforms()
 	    		->getGlobalTransform().getPosition(),1.0f) ;
 	    Vector4D lightDir = Vector4D( LightSourceManager::getInstance().getLightSource(0)
 	    		->getGlobalTransform().getDirection(), 0.0f );
-		if ( ! ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
+		if ( ! ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform())
 		{
 			//transform to view space
 			lightPos =	cam->getGlobalTransform().getLookAtMatrix()	* lightPos;
@@ -798,7 +798,7 @@ void Shader::setupLightSourceUniforms()
 		spot = dynamic_cast<SpotLight*>(
 				LightSourceManager::getInstance().getFirstShadowCaster() );
 		assert("in this scenario, a shadow caster must exist and must be a spotlight" && spot);
-		if(ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
+		if(ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform())
 		{
 			bindMatrix4x4("shadowMapLookupMatrix", spot->getBiasedViewProjectionMatrix());
 		}
@@ -811,7 +811,7 @@ void Shader::setupLightSourceUniforms()
 	case LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT:
 		pointLight = dynamic_cast<PointLight*> (LightSourceManager::getInstance().getFirstShadowCaster());
 				assert("in this scenario, a shadow caster must exist and must be a point light" && pointLight);
-		if(ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
+		if(ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform())
 		{
 			//set identity matrix, it's not needed in the shader,but my fear of unset variables ..;)
 			bindMatrix4x4("viewToPointLightShadowMapMatrix", Matrix4x4());

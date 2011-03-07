@@ -186,7 +186,7 @@ void LightSourceManager::updateLightSourcesUniformBuffer()
 			    		Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getPosition(), 1.0f);
 			    Vector4D lightDir =
 			    		Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getDirection(), 0.0f);
-				if ( ! ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
+				if ( ! ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform())
 				{
 					//transform to view space
 					lightPos =	URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getLookAtMatrix()	* lightPos;
@@ -292,7 +292,7 @@ void LightSourceManager::setupShadowCamMatricesUniformBuffer(bool lookupMatrices
 					}
 					else
 					{
-						if ( ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform())
+						if ( ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform())
 						{
 							MAT4_VALUE(currentSMlayer) = spot->getBiasedViewProjectionMatrix();
 						}

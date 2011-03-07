@@ -6,6 +6,11 @@
 {% if shadeSpacePositionNeeded %}
   vec4 position;
 {% endif %}
+
+//{%if worldSpaceTransform and SHADING_FEATURE_TESSELATION %}
+//  //for dynamic LOD calculations, we need the view space positions, though for layered rendering, we need world space transformed values 
+//  vec4 viewSpacePosForLOD;
+//{% endif %}
   
 {% if SHADING_FEATURE_TESSELATION or shaderPerformsColorCalculations %}
   vec4 normal;
