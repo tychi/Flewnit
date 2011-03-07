@@ -22,6 +22,8 @@ out InterfaceData
 
 
 uniform sampler2D displacementMap;
+uniform sampler2D normalMap;
+
 uniform float displacementIntensity = 1.0f;
 
 
@@ -58,6 +60,7 @@ void main()
   //grab four linearly interpolated depth values to get a smooth offset:
   //TODO uncomment displacement code when tesselation is stable
   //output.position +=  output.normal * displacementIntensity * textureGather(displacementMap, output.texCoords.xy, 0 );
+  output.position -=  output.normal * displacementIntensity * (textureGather(normalMap, output.texCoords.xy, 3 ) - 0.5 );
   
   {% if not layeredRendering %} 
     //if layered rendering, the world space position will be transformed in geometry shader;

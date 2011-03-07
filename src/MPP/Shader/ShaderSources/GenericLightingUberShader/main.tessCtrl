@@ -28,11 +28,11 @@ void main()
 {
     if (gl_InvocationID == 0) 
     {
-        gl_TessLevelInner[0] = 11;
+        gl_TessLevelInner[0] = 40;
         
-        gl_TessLevelOuter[0] = 11;
-        gl_TessLevelOuter[1] = 11;
-        gl_TessLevelOuter[2] = 11;
+        gl_TessLevelOuter[0] = 45;
+        gl_TessLevelOuter[1] = 45;
+        gl_TessLevelOuter[2] = 45;
     }
 
 

@@ -207,8 +207,8 @@ void Loader::createHardCodedSceneStuff()
 			),
 			myMap,
 			VisualMaterialFlags(true,false,true,true,false,false),
-			5.0f,
-			0.1f
+			100.0f,
+			0.4f
 		);
 	}//endif !stoneBumpTessMat
 
