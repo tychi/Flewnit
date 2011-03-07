@@ -162,7 +162,7 @@ void main()
     output.shadowCoord = shadowMapLookupMatrix *  output.position;
   {% endif %}
   {% if depthButNotSpotLight and not shadeSpacePositionNeeded %}
-     //write out optimized viewspace value if we have not to write out the whole position for tess and/or geom shader:
+     //write out optimized viewspace value for depth image if we have not to write out the whole position for tess and/or geom shader:
      //output.depthViewSpaceNORMALIZED = vec4(shadeSpaceTransform * inVPosition).z * invCameraFarClipPlane;
      //output.depthViewSpaceUNSCALED = vec4(shadeSpaceTransform * inVPosition).z;
      //output.positionViewSpaceNORMALIZED = (shadeSpaceTransform * inVPosition) * invCameraFarClipPlane;

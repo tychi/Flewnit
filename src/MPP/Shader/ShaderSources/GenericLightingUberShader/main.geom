@@ -78,36 +78,34 @@ void main()
       for(int vertexID = 0; vertexID < 3; vertexID ++ )
       {
             gl_Position = cubeMapCameraViewProjectionMatrices[gl_Layer] * gl_in[vertexID].input.position;
-            
-            {% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
-              //special case: neither world nor view space transform: set the box into centre of view, but don't rotate according to view direction
-              output.position = gl_in[vertexID].input.position; // no further transform to view space stuff, kepp pseaudo world space
-            {% else %}  
-             
-              {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %}
+      
+            {% if shaderPerformsColorCalculations %} 
+              {% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
+                //special case: neither world nor view space transform: set the box into centre of view, but don't rotate according to view direction
+                output.position = gl_in[vertexID].input.position; // no further transform to view space stuff, kepp pseaudo world space
+              {% else %}  
+                output.position = cubeMapCameraViewMatrices[gl_Layer] * gl_in[vertexID].input.position;
+              {% endif %}             
+              output.normal = 	cubeMapCameraViewMatrices[gl_Layer] * gl_in[vertexID].input.normal;
+              {% if SHADING_FEATURE_NORMAL_MAPPING %}
+                output.tangent = cubeMapCameraViewMatrices[gl_Layer] * gl_in[vertexID].input.tangent;
+              {% endif %}
+              {% if texCoordsNeeded %}
+                output.texCoords =  gl_in[vertexID].input.texCoords; //pass through
+              {%endif%}    
+              {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
+                output.shadowCoord =  gl_in[vertexID].input.shadowCoord; //pass through
+              {% endif %}
+            {% endif %} 
+           
+              {% if depthButNotSpotLight %}
                 //VIEW space transform
-                //output.depthViewSpaceNORMALIZED =       vec4(cubeMapCameraViewMatrices[gl_Layer]  * gl_in[vertexID].gl_Position).z * invCameraFarClipPlane;
-                //output.depthViewSpaceUNSCALED =         vec4(cubeMapCameraViewMatrices[gl_Layer]  * gl_in[vertexID].gl_Position).z;
-                //output.positionViewSpaceNORMALIZED =        (cubeMapCameraViewMatrices[gl_Layer]  * gl_in[vertexID].gl_Position) * invCameraFarClipPlane;
-                output.positionViewSpaceUNSCALED =        modelViewMatrix * gl_in[vertexID].input.position; //TODO check the optimized data pass variants when stable;
-              {% endif %}      
-              
-              {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING %} 
-                  //output.position = cubeMapCameraViewMatrices[gl_Layer] * gl_in[vertexID].gl_Position;
-                  output.position = cubeMapCameraViewMatrices[gl_Layer] * gl_in[vertexID].input.position;
-              
-                  output.normal = 	cubeMapCameraViewMatrices[gl_Layer] * gl_in[vertexID].input.normal;
-                  {% if SHADING_FEATURE_NORMAL_MAPPING %}
-                    output.tangent = cubeMapCameraViewMatrices[gl_Layer] * gl_in[vertexID].input.tangent;
-                  {% endif %}
-                  {% if SHADING_FEATURE_DECAL_TEXTURING or SHADING_FEATURE_DETAIL_TEXTURING or SHADING_FEATURE_NORMAL_MAPPING %}
-                    output.texCoords =  gl_in[vertexID].input.texCoords; //pass through
-                  {%endif%}    
-                  {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
-                    output.shadowCoord =  gl_in[vertexID].input.shadowCoord; //pass through
-                  {% endif %}
-              {% endif %} 
-            {% endif %} {%comment%} end else VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING {%endcomment%}
+                //output.depthViewSpaceNORMALIZED =       vec4(cubeMapCameraViewMatrices[gl_Layer]  * gl_in[vertexID].input.position).z * invCameraFarClipPlane;
+                //output.depthViewSpaceUNSCALED =         vec4(cubeMapCameraViewMatrices[gl_Layer]  * gl_in[vertexID].input.position).z;
+                //output.positionViewSpaceNORMALIZED =        (cubeMapCameraViewMatrices[gl_Layer]  * gl_in[vertexID].input.position) * invCameraFarClipPlane;
+                output.positionViewSpaceUNSCALED =        cubeMapCameraViewMatrices * gl_in[vertexID].input.position; //TODO check the optimized data pass variants when stable;
+              {% endif %}     
+               
             EmitVertex();   
        }     
        EndPrimitive();

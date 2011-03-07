@@ -251,7 +251,6 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	||  ((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_DECAL_TEXTURING) != 0)
 	||  ((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_DETAIL_TEXTURING) != 0)
 	||  ((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_NORMAL_MAPPING) != 0)
-
 			;
 	contextMap.insert("texCoordsNeeded",texCoordsNeeded);
 
