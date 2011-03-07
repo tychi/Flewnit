@@ -14,17 +14,8 @@
 {% include  "00_Generic_Common_VersionTag.glsl" %}
 {% include  "01_Generic_Common_precisionTag.glsl" %}
 
-//like in the fragment template no #defines are necessary anymore, because the "preprocessor-masking" 
-//is now done much more conveniently by the template engine
 
-//we also need no special data types for fragment/geometry programs
-
-{% comment %} 
-  damn template language: read: 
-      if no layered rendering,i.e. neither rendering to cubemap nor rendering to texture array, then define default view matrices;
-      otherwise, a geometry shader will provide sveral view matrices and the vertex shader only needs to do the model transform;
-{% endcomment %}
-{% if not RENDER_TARGET_TEXTURE_TYPE_2D_CUBE and not RENDER_TARGET_TEXTURE_TYPE_2D_CUBE_DEPTH and not RENDER_TARGET_TEXTURE_TYPE_2D_ARRAY_DEPTH %}
+{% if not layeredRendering %}
     uniform mat4 viewMatrix;
     uniform mat4 projectionMatrix;
     uniform mat4 viewProjectionMatrix;
@@ -53,8 +44,6 @@
   uniform mat4 modelMatrix;
   uniform mat4 modelViewMatrix;
   uniform mat4 modelViewProjectionMatrix; 
-
-  //uniform mat4 normalMatrix;
 {% endif %}
 
   uniform vec3 eyePositionW;
@@ -65,7 +54,7 @@
 
 
 {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
-          uniform mat4 shadowMapLookupMatrix;  //bias*perspLight*viewLight * (camView)⁻1  for light calcs in view space
+  uniform mat4 shadowMapLookupMatrix;  //bias*perspLight*viewLight * (camView)⁻1  for light calcs in view space
 {% endif %}
 
 
@@ -156,7 +145,7 @@ void main()
   {% endif %}  {%comment%} end of "tess and/or color" inputs {%endcomment%}   
     
       
-  {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
+  {% if not SHADING_FEATURE_TESSELATION and SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
     {%comment%} later TODO test this optimaziation for one shadowmap; this would save one multiplication 
                 of the fragment world position with the biased sm-MVP matrix in the fragment shader         {%endcomment%}
     output.shadowCoord = shadowMapLookupMatrix *  output.position;

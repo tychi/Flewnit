@@ -266,6 +266,9 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 			;
 	contextMap.insert("depthButNotSpotLight",depthButNotSpotLight);
 
+
+
+
 	for(unsigned int i = 0; i < __NUM_TOTAL_SEMANTICS__;i++)
 	{
 		//add the numeric value of the semantics enum in order to define the layout qualifier for the vertex shader
