@@ -72,7 +72,7 @@ void Loader::createHardCodedSceneStuff()
 		new PureVisualObject("MyBox1",AmendedTransform(Vector3D(0,-10,-30), Vector3D(0.0,0.1,-1.0)))
 	);
 	rootNode.addChild(
-		new PureVisualObject("MyBox2",AmendedTransform(Vector3D(40,-10,0), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
+		new PureVisualObject("myTessBox1",AmendedTransform(Vector3D(90,-10,50), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1),4.0))
 	);
 	rootNode.addChild(
 		new PureVisualObject("MyBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),3.0f))
@@ -90,10 +90,10 @@ void Loader::createHardCodedSceneStuff()
 				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
 		);
 	}
-	Geometry* tessGeo = SimulationResourceManager::getInstance().getGeometry("MyBox2");
+	Geometry* tessGeo = SimulationResourceManager::getInstance().getGeometry("myTessBox1");
 	if(! tessGeo)
 	{
-		tessGeo = new BoxGeometry("MyBox2",Vector3D(10.0f,20.0f,5.0f),true,
+		tessGeo = new BoxGeometry("myTessBox1",Vector3D(10.0f,10.0f,10.0f),true,
 				//patch stuff only for GL versions 4.0 or higher
 				createTesselationStuffIfTechnicallyPossible
 				 ? (WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
@@ -279,7 +279,7 @@ void Loader::createHardCodedSceneStuff()
 			mat1
 		)
 	);
-	dynamic_cast<WorldObject*>(rootNode.getChild("MyBox2"))->addSubObject(
+	dynamic_cast<WorldObject*>(rootNode.getChild("myTessBox1"))->addSubObject(
 		new SubObject(
 			"BoxSubObject2",
 			VISUAL_SIM_DOMAIN,

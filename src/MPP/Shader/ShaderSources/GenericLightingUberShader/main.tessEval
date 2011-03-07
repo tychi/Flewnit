@@ -13,6 +13,9 @@ in InterfaceData
 {
   {% include  "09_Generic_InterfaceData.glsl" %}
 } input[];
+
+patch in float nonAlignedTessLevel;
+
 //output to fragment shader
 out InterfaceData
 {
@@ -60,8 +63,49 @@ void main()
   //grab four linearly interpolated depth values to get a smooth offset:
   //TODO uncomment displacement code when tesselation is stable
   //output.position +=  output.normal * displacementIntensity * textureGather(displacementMap, output.texCoords.xy, 0 );
-  output.position -=  output.normal * displacementIntensity * (textureGather(normalMap, output.texCoords.xy, 3 ) - 0.5 );
   
+  vec4 displacementVec = (textureGather(normalMap, output.texCoords.xy, 3 ) - 0.5 );
+  float displacementVal = displacementVec.x + displacementVec.y + displacementVec.z + displacementVec.w;
+  displacementVal /= 4.0;
+  
+  output.position -=  output.normal * displacementIntensity * displacementVal / clamp( 0.005* length(output.position.xyz), 1.0, 100.0 );
+ 
+ /*
+  float log2TexSize =  log2( textureSize(normalMap,0).x ) ;
+  float lod =    log2TexSize   / log2( gl_TessLevelInner[0] )  -1.0 ;
+  lod =  clamp(lod,0.0,log2TexSize)  ;
+  
+  int intLodLower = int( floor(lod) );
+  int intLodHigher = int( ceil(lod) );
+  float lodFraction =  fract(lod); 
+  
+  float displacementLowerLod =         
+    texelFetch(
+          normalMap, 
+          ivec2(
+            output.texCoords.x * textureSize(normalMap,0).x,  
+            output.texCoords.y * textureSize(normalMap,0).y
+          ) / (intLodLower+1),
+          intLodLower
+        ).w 
+        - 0.5 ;
+    float displacementHigherLod =         
+      texelFetch(
+          normalMap, 
+          ivec2(
+            output.texCoords.x * textureSize(normalMap,0).x,  
+            output.texCoords.y * textureSize(normalMap,0).y
+          ) / (intLodHigher+1),
+          intLodHigher
+        ).w 
+        - 0.5 ;
+        
+   float finalDisplacement = (1.0-lodFraction)* displacementLowerLod + lodFraction * displacementHigherLod;
+                  
+  output.position -=  output.normal * displacementIntensity * finalDisplacement;
+  */
+
+
   {% if not layeredRendering %} 
     //if layered rendering, the world space position will be transformed in geometry shader;
     //if not, the viewspace position is transformed here:
