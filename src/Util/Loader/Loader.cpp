@@ -72,7 +72,7 @@ void Loader::createHardCodedSceneStuff()
 		new PureVisualObject("MyBox1",AmendedTransform(Vector3D(0,-10,-30), Vector3D(0.0,0.1,-1.0)))
 	);
 	rootNode.addChild(
-		new PureVisualObject("myTessBox1",AmendedTransform(Vector3D(90,-10,50), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1),4.0))
+		new PureVisualObject("myTessBox1",AmendedTransform(Vector3D(90,-10,50), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1),0.5))
 	);
 	rootNode.addChild(
 		new PureVisualObject("MyBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),3.0f))

@@ -11,7 +11,11 @@ uniform float targetEdgeLenghtInPixels = 25.0;
 
 //metro 2033 LOD criteria:
 uniform float numScreenPixels = 640.0;
-uniform float tessQualityFactor = 0.05;
+uniform float tessQualityFactor = 0.04;//0.04;
+
+//textures for size queries for mipmap level calculation
+uniform sampler2D displacementMap;
+uniform sampler2D normalMap;
 
 //---- shader interface ----------------------
 //input from vertex/tessEval shader
@@ -25,11 +29,12 @@ out InterfaceData
   {% include  "09_Generic_InterfaceData.glsl" %}
 } output[];
 
-patch out float nonAlignedTessLevel;
+patch out int dispMapHigherResLod;
+patch out float lodLevelInterpolationFactor;
 //--------------------------------------------
 
 
-float ceilToNexPowerOf2Minus1(float originalTessLevel)
+float ceilToNextPowerOf2Minus1(float originalTessLevel)
 {
   return exp2( ceil( log2(originalTessLevel)) ) -1.0;
 }
@@ -73,43 +78,39 @@ void main()
   //gl_TessLevelOuter[gl_InvocationID] = alignedTessLevelOuter ;
    
   float originalTessLevel = edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS ;
-  gl_TessLevelOuter[gl_InvocationID] = ceilToNexPowerOf2Minus1(originalTessLevel);
-   
-  //gl_TessLevelOuter[gl_InvocationID] = floor (edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS  * 0.5) * 2.0 +1.0;
-   
-  barrier();
-    
+  gl_TessLevelOuter[gl_InvocationID] = originalTessLevel;
+  barrier(); //------------------------------------------
+  float minimalExcactTessLevel;
   if (gl_InvocationID == 0) 
   {
-    //gl_TessLevelInner[0] = (gl_TessLevelOuter[0]+gl_TessLevelOuter[1]+gl_TessLevelOuter[2]) / 3.0; // + 2.0;
-    //float nonAlignedTessLevel = (gl_TessLevelOuter[0]+gl_TessLevelOuter[1]+gl_TessLevelOuter[2]) / 3.0;
-    //gl_TessLevelInner[0] = floor (nonAlignedTessLevel  * 0.5) * 2.0;
-    
+    minimalExcactTessLevel =  min(min(gl_TessLevelOuter[0],gl_TessLevelOuter[1]),gl_TessLevelOuter[2]);
+  } 
+  gl_TessLevelOuter[gl_InvocationID] = ceilToNextPowerOf2Minus1(originalTessLevel);
+  barrier();//----------------------------------------------  
+  if (gl_InvocationID == 0) 
+  {
+    //this way, the  gl_TessLevelInner[0] is at the same time eqal to the approximate power-of-two-number of vertices
+    //generated for an  edge and hence an indicator at which mimpmap level we have to sample the displacement map;
+    //each vertex shall obtain a filtered displacment value in order to omit undersampling artifacts;
     gl_TessLevelInner[0] = min(min(gl_TessLevelOuter[0],gl_TessLevelOuter[1]),gl_TessLevelOuter[2])+1.0;
+    
+    float log2TexSize =  log2( textureSize(normalMap,0).x );
+    float log2AlignedTessLevel = clamp( log2( gl_TessLevelInner[0] ),1.0,log2TexSize);
+    float LODfactor  =    (log2TexSize / log2AlignedTessLevel)  -1.0 ;
+    dispMapHigherResLod =  int( floor( clamp( LODfactor, 0.0, log2TexSize-1.0 ) + 0.5 ) );
+    
+    //we interpolat between power of twos: [2..4] or [4..8] etc.; hence the stride is not constant
+    //a power-of two number halved, gives the power of two-stride to interpolate within
+    float tesslevelStrideToInterpolate =  gl_TessLevelInner[0] * 0.5 ; 
+    float exactTesslevelOnStride =     minimalExcactTessLevel - tesslevelStrideToInterpolate;
+    lodLevelInterpolationFactor = exactTesslevelOnStride / tesslevelStrideToInterpolate;
   }
-  //barrier();
-  //gl_TessLevelOuter[gl_InvocationID] = floor (gl_TessLevelOuter[gl_InvocationID]   * 0.5) * 2.0;
   
 {% else %}
 
   TODO have to hack view space stuff into gl_Positiion 
   
 {% endif %} 
-
-//---------------------------------------------------------------------------------------
-
-
-/*
-    if (gl_InvocationID == 0) 
-    {
-        gl_TessLevelInner[0] = 1;
-        
-        gl_TessLevelOuter[0] = 5;
-        gl_TessLevelOuter[1] = 25;
-        gl_TessLevelOuter[2] = 45;
-    }
-*/    
-
 
   //------------ following only unmodified pass-through of vertex shader-computed variables ---------
   output[gl_InvocationID].position = input[gl_InvocationID].position; //pos will always be needed by tessEval
@@ -124,4 +125,5 @@ void main()
   {% endif %}
   //do NOT pass shadow coord, as projected stuff it must be newly calculated from displaced world/view space vertices
   //do NOT pass the depthButNotSpotLight-optimization variables as they are just redundancy on this stage where we need the full 3D-pos vector;       
+
 }
