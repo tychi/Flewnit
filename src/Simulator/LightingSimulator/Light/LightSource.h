@@ -79,6 +79,7 @@ public:
 
 	//mPointLightShadowMapNonTranslationalViewMatrices[whichFace] * translate(globalPosition);
 	Matrix4x4 getViewMatrix(int whichFace);
+	Matrix4x4 getProjectionMatrix(int whichFace);
 	//perspective(45,1,globalLsNearClipPlane,globalLsFarClipPlane) * getViewMatrix(which)
 	Matrix4x4 getViewProjectionMatrix(int whichFace);
 
@@ -119,6 +120,7 @@ public:
 	// 	opening angle from outerSpotCutOff_Radians,
 	//	aspect ratio = 1/1
 	//a squared depth texture is recommended;
+	Matrix4x4 getProjectionMatrix();
 	Matrix4x4 getViewProjectionMatrix();
 	//matrix for shadowmap lookup in WORLD space: bias*perspLight*viewLight;
 	//scale is configurable in case one wants to use rectangle texture for whatever reason...

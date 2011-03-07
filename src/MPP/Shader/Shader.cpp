@@ -45,9 +45,9 @@ namespace Flewnit
 GLuint ShaderStage::mGLShaderStageIdentifiers[__NUM_SHADER_STAGES__] =
 	{
 			GL_VERTEX_SHADER,
-			GL_GEOMETRY_SHADER,
 			GL_TESS_CONTROL_SHADER,
 			GL_TESS_EVALUATION_SHADER,
+			GL_GEOMETRY_SHADER,
 			GL_FRAGMENT_SHADER
 	};
 
@@ -224,6 +224,48 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 
 	contextMap.insert("GL_MAYOR_VERSION", WindowManager::getInstance().getAvailableOpenGLVersion().x);
 	contextMap.insert("GL_MINOR_VERSION", WindowManager::getInstance().getAvailableOpenGLVersion().y);
+
+	contextMap.insert("layeredRendering",ShaderManager::getInstance().currentRenderingScenarioPerformsLayeredRendering());
+	contextMap.insert("worldSpaceTransform",ShaderManager::getInstance().currentRenderingScenarioNeedsWorldSpaceTransform());
+
+	bool shaderPerformsColorCalculations =
+			(mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_DEFAULT_LIGHTING)
+			||
+			(mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL)
+			||
+			(mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING)
+			;
+	contextMap.insert("shaderPerformsColorCalculations",shaderPerformsColorCalculations);
+
+	bool shadeSpacePositionNeeded =
+			shaderPerformsColorCalculations
+			||
+			ShaderManager::getInstance().currentRenderingScenarioPerformsLayeredRendering()
+			||
+			((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_TESSELATION) != 0)
+			;
+	contextMap.insert("shadeSpacePositionNeeded",shadeSpacePositionNeeded);
+
+	bool texCoordsNeeded=
+		((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_TESSELATION) != 0)
+	||  ((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_DECAL_TEXTURING) != 0)
+	||  ((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_DETAIL_TEXTURING) != 0)
+	||  ((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_NORMAL_MAPPING) != 0)
+
+			;
+	contextMap.insert("texCoordsNeeded",texCoordsNeeded);
+
+	bool depthButNotSpotLight =
+			(mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION)
+			||
+			(
+				(mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
+				&&
+				(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+					== LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT)
+			)
+			;
+	contextMap.insert("depthButNotSpotLight",depthButNotSpotLight);
 
 	for(unsigned int i = 0; i < __NUM_TOTAL_SEMANTICS__;i++)
 	{
@@ -588,6 +630,7 @@ void Shader::setupTransformationUniforms(SubObject* so)
 
 	//unused identity matrices if they aren't set below:
 	Matrix4x4 viewMatrix(1.0f);
+	Matrix4x4 projMatrix(1.0f);
 	Matrix4x4 viewProjMatrix(1.0f);
 	if (mLocalShaderFeatures.renderingTechnique==RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
 	{
@@ -597,6 +640,7 @@ void Shader::setupTransformationUniforms(SubObject* so)
 			SpotLight* spot = dynamic_cast<SpotLight*> (LightSourceManager::getInstance().getFirstShadowCaster());
 			assert("in this scenario, a shadow caster must be a spotlight" && spot);
 			viewMatrix = spot->getViewMatrix(); //unneeded, but whatever.. :P
+			projMatrix = spot->getProjectionMatrix();
 			viewProjMatrix = spot->getViewProjectionMatrix();
 		}
 	}
@@ -604,6 +648,7 @@ void Shader::setupTransformationUniforms(SubObject* so)
 	{
 		//assert(cam && "camera must be passed in non- shadow map generation passes");
 		viewMatrix = cam->getGlobalTransform().getLookAtMatrix();
+		projMatrix = cam->getProjectionMatrix();
 		viewProjMatrix = cam->getProjectionMatrix() * viewMatrix;
 	}
 
@@ -614,6 +659,7 @@ void Shader::setupTransformationUniforms(SubObject* so)
 	if(	! ShaderManager::getInstance().currentRenderingScenarioPerformsLayeredRendering() )
 	{
 		bindMatrix4x4("viewMatrix",viewMatrix);
+		bindMatrix4x4("projectionMatrix",projMatrix);
 		bindMatrix4x4("viewProjectionMatrix",viewProjMatrix);
 	}
 	else

@@ -5,7 +5,7 @@
 
 layout(vertices = 3) out;
 
-uniform ivec viewPortSize = vec2(640.0,480.0);
+uniform vec2 viewPortSize = vec2(640.0,480.0);
 uniform float targetEdgeLenghtInPixels = 25.0;
 
 
@@ -38,7 +38,8 @@ void main()
 
   //------------ following only unmodified pass-through of vertex shader-computed variables ---------
   
-  output[gl_InvocationID].gl_Position = input[gl_InvocationID].gl_Position;
+  //output[gl_InvocationID].gl_Position = input[gl_InvocationID].gl_Position;
+  output[gl_InvocationID].position = gl_Position[gl_InvocationID]; //JUST TO TEST
     
   {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}
     output[gl_InvocationID].position = input[gl_InvocationID].position;

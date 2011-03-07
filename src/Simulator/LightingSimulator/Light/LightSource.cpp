@@ -164,6 +164,17 @@ Matrix4x4 PointLight::getViewMatrix(int whichFace)
 			(-1.0f) * getGlobalTransform().getPosition());
 }
 
+Matrix4x4 PointLight::getProjectionMatrix(int whichFace)
+{
+	return
+		glm::gtc::matrix_projection::perspective(
+			45.0f,
+			1.0f,
+			LightSourceManager::getInstance().getLightSourceProjectionMatrixNearClipPlane(),
+			LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane()
+		);
+}
+
 
 
 Matrix4x4 PointLight::getViewProjectionMatrix(int whichFace)
@@ -171,12 +182,7 @@ Matrix4x4 PointLight::getViewProjectionMatrix(int whichFace)
 	assert(whichFace<6);
 
 	return
-		glm::gtc::matrix_projection::perspective(
-				45.0f,
-				1.0f,
-				LightSourceManager::getInstance().getLightSourceProjectionMatrixNearClipPlane(),
-				LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane()
-		)
+		getProjectionMatrix(whichFace)
 		*
 		getViewMatrix(whichFace);
 }
@@ -210,7 +216,16 @@ Matrix4x4 SpotLight::getViewMatrix()
 	return getGlobalTransform().getLookAtMatrix();
 }
 
-
+Matrix4x4 SpotLight::getProjectionMatrix()
+{
+	return
+		glm::gtc::matrix_projection::perspective(
+				glm::degrees( getdata().outerSpotCutOff_Radians ),
+				1.0f, //assum square shadow map
+				LightSourceManager::getInstance().getLightSourceProjectionMatrixNearClipPlane(),
+				LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane()
+		);
+}
 
 //Projective part is constructed like this;
 // 	opening angle from outerSpotCutOff_Radians,
@@ -219,14 +234,7 @@ Matrix4x4 SpotLight::getViewMatrix()
 Matrix4x4 SpotLight::getViewProjectionMatrix()
 {
 	return
-		glm::gtc::matrix_projection::perspective(
-				glm::degrees( getdata().outerSpotCutOff_Radians ),
-				1.0f, //assum square shadow map
-				LightSourceManager::getInstance().getLightSourceProjectionMatrixNearClipPlane(),
-				LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane()
-		)
-		*
-		getViewMatrix();
+		getProjectionMatrix()*getViewMatrix();
 }
 
 	//matrix for shadowmap lookup; scale is configuarable in case one wants to use rectangle texture for whatever reason...

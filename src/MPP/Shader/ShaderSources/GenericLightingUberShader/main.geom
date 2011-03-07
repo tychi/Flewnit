@@ -77,7 +77,7 @@ void main()
     {
       for(int vertexID = 0; vertexID < 3; vertexID ++ )
       {
-            gl_Position = cubeMapCameraViewProjectionMatrices[gl_Layer] * gl_in[vertexID].gl_Position;
+            gl_Position = cubeMapCameraViewProjectionMatrices[gl_Layer] * gl_in[vertexID].input.position;
             
             {% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
               //special case: neither world nor view space transform: set the box into centre of view, but don't rotate according to view direction
@@ -89,7 +89,7 @@ void main()
                 //output.depthViewSpaceNORMALIZED =       vec4(cubeMapCameraViewMatrices[gl_Layer]  * gl_in[vertexID].gl_Position).z * invCameraFarClipPlane;
                 //output.depthViewSpaceUNSCALED =         vec4(cubeMapCameraViewMatrices[gl_Layer]  * gl_in[vertexID].gl_Position).z;
                 //output.positionViewSpaceNORMALIZED =        (cubeMapCameraViewMatrices[gl_Layer]  * gl_in[vertexID].gl_Position) * invCameraFarClipPlane;
-                output.positionViewSpaceUNSCALED =        modelViewMatrix * gl_in[vertexID].gl_Position; //TODO check the optimized data pass variants when stable;
+                output.positionViewSpaceUNSCALED =        modelViewMatrix * gl_in[vertexID].input.position; //TODO check the optimized data pass variants when stable;
               {% endif %}      
               
               {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING %} 
@@ -122,7 +122,7 @@ void main()
     {
       for(int vertexID = 0; vertexID < 3; vertexID ++ )
       {            
-            gl_Position = cubeMapCameraViewProjectionMatrices[gl_Layer] * gl_in[vertexID].gl_Position; 
+            gl_Position = cubeMapCameraViewProjectionMatrices[gl_Layer] * gl_in[vertexID].input.position; 
             EmitVertex();   
        }     
        EndPrimitive();
@@ -131,9 +131,11 @@ void main()
   {% endif %}  
      
   {%comment%} ############################## begin primitive ID grabbing stuff ;) ##################################### {%endcomment%}
-  {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION %}
-    
-  {% endif %}   
+  {%comment%} ################################# following ID inputs ##############################################################{%endcomment%}
+  {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION or instancedRendering %}
+      output.genericIndices= input.genericIndices;
+      output.genericIndices.x= gl_PrimitiveID;
+  {% endif %}
     
 } //end main
 

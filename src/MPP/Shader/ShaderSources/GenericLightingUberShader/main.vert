@@ -26,6 +26,7 @@
 {% endcomment %}
 {% if not RENDER_TARGET_TEXTURE_TYPE_2D_CUBE and not RENDER_TARGET_TEXTURE_TYPE_2D_CUBE_DEPTH and not RENDER_TARGET_TEXTURE_TYPE_2D_ARRAY_DEPTH %}
     uniform mat4 viewMatrix;
+    uniform mat4 projectionMatrix;
     uniform mat4 viewProjectionMatrix;
 {% endif %}
 
@@ -109,122 +110,75 @@ out InterfaceData
 
 void main()
 {
+  //-------------------- grab the appropriate transformation matrices ------------------------------
+
   {% if instancedRendering %}
     //grab the relevant matrices from the buffer
-    mat4 modelMatrix =                 instanceTransforms[gl_InstanceID].modelMatrix;
-    mat4 modelViewMatrix=              instanceTransforms[gl_InstanceID].modelViewMatrix;
-    mat4 modelViewProjectionMatrix =   instanceTransforms[gl_InstanceID].modelViewProjectionMatrix;
-    //mat4 normalMatrix =                normalMatrices[gl_InstanceID];
-    
+    {%if worldSpaceTransform %}
+      mat4 shadeSpaceTransform = instanceTransforms[gl_InstanceID].modelMatrix;
+    {% else %}
+      mat4 shadeSpaceTransform = instanceTransforms[gl_InstanceID].modelViewMatrix;
+    {% endif %}
+    mat4 modelViewProjectionMatrix =   instanceTransforms[gl_InstanceID].modelViewProjectionMatrix;   
     int uniqueInstanceID =             instanceTransforms[gl_InstanceID].uniqueInstanceID;
+  {% else %}
+    {%if worldSpaceTransform %}
+      mat4 shadeSpaceTransform = modelMatrix;
+    {% else %}
+      mat4 shadeSpaceTransform = modelViewMatrix;
+    {% endif %}
   {% endif %}	
-	
-	
-	{%comment%} ################################# following "coloring" output ################################################################### {%endcomment%}
-  {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}
-   
-      {% if RENDER_TARGET_TEXTURE_TYPE_2D_CUBE %}       
-          //WORLD space transform, as view/viewproj transform is done for every layer in the geom shader
-          gl_Position =  modelMatrix * inVPosition; 
-          //output.position = gl_Position 	; //don't know if necessary; TODO check for optimization when stable
-          output.position =  modelMatrix * inVPosition; 
-          //output.normal =     transpose(inverse( modelMatrix)) * inVNormal;  
-          output.normal = 		modelMatrix * inVNormal;    
-          {% if SHADING_FEATURE_NORMAL_MAPPING %}
-            output.tangent = 	modelMatrix * inVTangent;
-          {% endif %}                            
-      {% else %}     
-          //default view space transform
-          gl_Position =  modelViewProjectionMatrix  * inVPosition; //default MVP transform;
-          {% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
-            //special case: neither world nor view space transform: use the vertex data directly as world spce direction vectors
-            output.position = inVPosition;
-          {% else %}
-            output.position =  modelViewMatrix * inVPosition;   
-          {% endif %}  
-          
-          //output.normal =     transpose(inverse( modelViewMatrix)) * inVNormal;  
-          output.normal = 		modelViewMatrix * inVNormal;            
-          {% if SHADING_FEATURE_NORMAL_MAPPING %}
-            output.tangent = 	modelViewMatrix * inVTangent;
-          {% endif %} 
-      {%endif%}
-      
-      {% if SHADING_FEATURE_DECAL_TEXTURING or SHADING_FEATURE_DETAIL_TEXTURING or  SHADING_FEATURE_NORMAL_MAPPING	%}
-         output.texCoords = inVTexCoord;
-      {%endif%}    
-      
-      {% if instancedRendering %}
-        output.uniqueInstanceID= uniqueInstanceID; 
-      {% endif %}
-      
-      {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
-      	{%comment%} later TODO test this optimaziation for one shadowmap; this would save one multiplication 
-                     of the fragment world position with the biased sm-MVP matrix in the fragment shader         {%endcomment%}
-        output.shadowCoord = shadowMapLookupMatrix *  output.position;
-      {% endif %}
-    
-  {% endif %}  {%comment%} end of "coloring" inputs {%endcomment%}
-	
-  {%comment%} ################################# following shadow/pos/depth inputs ############################################################## {%endcomment%}
-  {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION or RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION or RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION  %}
-   
-    {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION  %}
-       
-       {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT or LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS %}
-       
-          //WORLD space transform, as view/viewproj transform is done for every layer in the geom shader
-            output. positionViewSpaceUNSCALED = modelMatrix * inVPosition; //TODO is obsolete in vertex shader! remove when stable
-            gl_Position = modelMatrix * inVPosition;
-       
-       {% else %} {% comment %} can only be LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT {% endcomment  %}
+  //----------------------------------------------------------------------------------------------
   
-          //default MVP transform;  
-            gl_Position = modelViewProjectionMatrix * inVPosition;
-        
-       {% endif %}
+  {%if not SHADING_FEATURE_TESSELATION and not layeredRendering %} 
+    {%comment%}read: if neither tess nor layered, then write gl_Pos, as frag stage will follow directly{%endcomment%}
+    gl_Position =  modelViewProjectionMatrix  * inVPosition; /*default MVP transform*/ 
+  {% endif %} 
    
-    {% else %}{% if RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION %}
+	{% if shadeSpacePositionNeeded %}
+		{% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
+      //special case: neither world nor view space transform: use the vertex data directly as world spce direction vectors
+      output.position = inVPosition;
+    {% else %}
+      output.position =  shadeSpaceTransform * inVPosition; 
+    {% endif %}       
+  {% endif %}  
+	
+	
+  {% if SHADING_FEATURE_TESSELATION or shaderPerformsColorCalculations %}              
+      output.normal = 		shadeSpaceTransform * inVNormal; //output.normal =     transpose(inverse( modelViewMatrix)) * inVNormal;           
+      {% if SHADING_FEATURE_NORMAL_MAPPING %}
+        output.tangent = 	shadeSpaceTransform * inVTangent;
+      {% endif %} 
+      {% if texCoordsNeeded %}
+         output.texCoords = inVTexCoord;
+      {%endif%}   
+  {% endif %}  {%comment%} end of "tess and/or color" inputs {%endcomment%}   
     
-          //VIEW space transform
-            //output.depthViewSpaceNORMALIZED = vec4(modelViewMatrix * inVPosition).z * invCameraFarClipPlane;
-            //output.depthViewSpaceUNSCALED = vec4(modelViewMatrix * inVPosition).z;
-            //output.positionViewSpaceNORMALIZED = (modelViewMatrix * inVPosition) * invCameraFarClipPlane;
-            output.positionViewSpaceUNSCALED = modelViewMatrix * inVPosition; //TODO check the optimized data pass variants when stable;
-            gl_Position = modelViewProjectionMatrix * inVPosition;
-                
-    {% else %}{% if RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION %}
-       //default view space transform, same as for the default shading case ;(
-            output.position =  	modelViewMatrix * inVPosition;
-            gl_Position =       modelViewProjectionMatrix * output.position; //default MVP transform;
-    {% endif %}{% endif %}{% endif %}
-   
+      
+  {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
+    {%comment%} later TODO test this optimaziation for one shadowmap; this would save one multiplication 
+                of the fragment world position with the biased sm-MVP matrix in the fragment shader         {%endcomment%}
+    output.shadowCoord = shadowMapLookupMatrix *  output.position;
   {% endif %}
+  {% if depthButNotSpotLight and not shadeSpacePositionNeeded %}
+     //write out optimized viewspace value if we have not to write out the whole position for tess and/or geom shader:
+     //output.depthViewSpaceNORMALIZED = vec4(shadeSpaceTransform * inVPosition).z * invCameraFarClipPlane;
+     //output.depthViewSpaceUNSCALED = vec4(shadeSpaceTransform * inVPosition).z;
+     //output.positionViewSpaceNORMALIZED = (shadeSpaceTransform * inVPosition) * invCameraFarClipPlane;
+     output.positionViewSpaceUNSCALED = shadeSpaceTransform * inVPosition; //TODO check the optimized data pass variants when stable;               
+  {% endif %}
+	
   
   {%comment%} ################################# following ID inputs ##############################################################{%endcomment%}
-  {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION %}
-    output.genericIndices= ivec4(0,0,gl_InstanceID,23); //some funny value in w to check if it is passed anything
+  {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION or instancedRendering %}
+    {% if instancedRendering %}
+      output.genericIndices= ivec4(0,gl_InstanceID,uniqueInstanceID,23); //some funny value in w to check if it is passed anything
+    {% else %}
+      output.genericIndices= ivec4(0,gl_InstanceID,52,23); //some funny value in w to check if it is passed anything
+    {% endif %}
   {% endif %}
 
 }
 
 
-
-{%comment%} //-----------------------------------------------------------------
-    //lecacy instancing uniform buffer content stuff; has been redesigned, see above; TODO delete this when instancing works
-  
-	  mat4 modelMatrices [ {{numMaxInstancesRenderable}} ];     //needed for layered rendering to be combined with the several lightsource matrices
-    mat4 modelViewMatrices [ {{numMaxInstancesRenderable}} ]; //in a non-layered context for calculation of view-space values for lighting calculations
-    mat4 modelViewProjectionMatrices[ {{numMaxInstancesRenderable}} ]; //in a non-layered context for gl_Position calculation
-    
-    int uniqueInstanceID;
-    
-    //following alignemt stuff, because 
-    float pad1;
-    float pad2;
-    float pad3;
-    
-  
-  	//mat4 normalMatrices[ {{numMaxInstancesRenderable}} ];	    //only precomputable without layered rendering,i.e. less than one view matrix
-
-{%endcomment%}

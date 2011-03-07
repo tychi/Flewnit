@@ -17,7 +17,8 @@ BoxGeometry::BoxGeometry(
 		bool addTangents,
 		bool patchRepresentation,
 		const Vector4D& texcoordScale)
-: VertexBasedGeometry(name, VERTEX_BASED_TRIANGLES)
+: VertexBasedGeometry(name,
+		patchRepresentation ? VERTEX_BASED_TRIANGLE_PATCHES : VERTEX_BASED_TRIANGLES)
   {
 	if(patchRepresentation)
 	{

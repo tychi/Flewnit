@@ -31,6 +31,7 @@
 #include "Util/HelperFunctions.h"
 #include "WorldObject/InstanceManager.h"
 #include "WorldObject/SkyDome.h"
+#include "UserInterface/WindowManager/WindowManager.h"
 
 
 
@@ -58,6 +59,8 @@ void Loader::loadScene()
 //DEBUG stuff:
 void Loader::createHardCodedSceneStuff()
 {
+	bool createTesselationStuffIfTechnicallyPossible = false;
+
 	SceneNode& rootNode = SimulationResourceManager::getInstance().getScene()->root();
 	rootNode.addChild(
 		new SkyDome( Path("./assets/textures/cubeMaps/"),"cloudy_noon","jpg")
@@ -92,9 +95,9 @@ void Loader::createHardCodedSceneStuff()
 	{
 		geo2 = new BoxGeometry("MyBox2",Vector3D(10.0f,20.0f,5.0f),true,
 				//patch stuff only for GL versions 4.0 or higher
-				false
-				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
-
+				createTesselationStuffIfTechnicallyPossible
+				 ? (WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
+			     : false
 		);
 	}
 	Geometry* geo3 = SimulationResourceManager::getInstance().getGeometry("MyBoxAsPlane");
@@ -175,6 +178,7 @@ void Loader::createHardCodedSceneStuff()
 					SHADING_FEATURE_DIRECT_LIGHTING
 					| SHADING_FEATURE_DECAL_TEXTURING
 					| SHADING_FEATURE_NORMAL_MAPPING
+					| (createTesselationStuffIfTechnicallyPossible ? SHADING_FEATURE_TESSELATION :0)
 			),
 			myMap,
 			//SHADING_FEATURE_DIRECT_LIGHTING,
