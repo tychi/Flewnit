@@ -59,7 +59,7 @@ void Loader::loadScene()
 //DEBUG stuff:
 void Loader::createHardCodedSceneStuff()
 {
-	bool createTesselationStuffIfTechnicallyPossible = false;
+	bool createTesselationStuffIfTechnicallyPossible = true;
 
 	SceneNode& rootNode = SimulationResourceManager::getInstance().getScene()->root();
 	rootNode.addChild(
@@ -78,7 +78,7 @@ void Loader::createHardCodedSceneStuff()
 		new PureVisualObject("MyBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),3.0f))
 	);
 	rootNode.addChild(
-		new PureVisualObject("MyEnvmapBox",AmendedTransform(Vector3D(60,-10,-50) )) //, Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
+		new PureVisualObject("myEnvmapBox",AmendedTransform(Vector3D(100,20,-80) )) //, Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
 	);
 
 	Geometry* geo1 = SimulationResourceManager::getInstance().getGeometry("MyBox1");
@@ -90,10 +90,10 @@ void Loader::createHardCodedSceneStuff()
 				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
 		);
 	}
-	Geometry* geo2 = SimulationResourceManager::getInstance().getGeometry("MyBox2");
-	if(! geo2)
+	Geometry* tessGeo = SimulationResourceManager::getInstance().getGeometry("MyBox2");
+	if(! tessGeo)
 	{
-		geo2 = new BoxGeometry("MyBox2",Vector3D(10.0f,20.0f,5.0f),true,
+		tessGeo = new BoxGeometry("MyBox2",Vector3D(10.0f,20.0f,5.0f),true,
 				//patch stuff only for GL versions 4.0 or higher
 				createTesselationStuffIfTechnicallyPossible
 				 ? (WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
@@ -178,7 +178,6 @@ void Loader::createHardCodedSceneStuff()
 					SHADING_FEATURE_DIRECT_LIGHTING
 					| SHADING_FEATURE_DECAL_TEXTURING
 					| SHADING_FEATURE_NORMAL_MAPPING
-					| (createTesselationStuffIfTechnicallyPossible ? SHADING_FEATURE_TESSELATION :0)
 			),
 			myMap,
 			//SHADING_FEATURE_DIRECT_LIGHTING,
@@ -188,6 +187,31 @@ void Loader::createHardCodedSceneStuff()
 			0.1f
 		);
 	}//endif !mat2
+
+	Material* stoneBumpTessMat = SimulationResourceManager::getInstance().getMaterial("StoneBumpTessMaterial");
+	if(! stoneBumpTessMat)
+	{
+		std::map<BufferSemantics,Texture*> myMap;
+		myMap[DECAL_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpDecal");
+		myMap[NORMAL_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpNormalDisp");
+		//myMap[DECAL_COLOR_SEMANTICS] = normalMap;
+		//myMap[DECAL_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("bunnyDecalTex");
+		stoneBumpTessMat = new VisualMaterial("StoneBumpTessMaterial",
+			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+			ShadingFeatures(
+					SHADING_FEATURE_DIRECT_LIGHTING
+					| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_NORMAL_MAPPING
+					| (createTesselationStuffIfTechnicallyPossible ? SHADING_FEATURE_TESSELATION :0)
+			),
+			myMap,
+			VisualMaterialFlags(true,false,true,true,false,false),
+			5.0f,
+			0.1f
+		);
+	}//endif !stoneBumpTessMat
+
 
 	Material* matEnvMap = SimulationResourceManager::getInstance().getMaterial("EnvMapCloudyNoonMaterial");
 	if(! matEnvMap)
@@ -259,8 +283,8 @@ void Loader::createHardCodedSceneStuff()
 		new SubObject(
 			"BoxSubObject2",
 			VISUAL_SIM_DOMAIN,
-			geo2,
-			mat2
+			tessGeo,
+			stoneBumpTessMat
 		)
 	);
 	dynamic_cast<WorldObject*>(rootNode.getChild("MyBoxAsPlane"))->addSubObject(
@@ -271,11 +295,11 @@ void Loader::createHardCodedSceneStuff()
 			mat2
 		)
 	);
-	dynamic_cast<WorldObject*>(rootNode.getChild("MyEnvmapBox"))->addSubObject(
+	dynamic_cast<WorldObject*>(rootNode.getChild("myEnvmapBox"))->addSubObject(
 		new SubObject(
 			"MyEnvmapBoxSubObject1",
 			VISUAL_SIM_DOMAIN,
-			geo2,
+			new BoxGeometry("myEnvMapBox",Vector3D(20,50,30),true,false),
 			matEnvMap
 		)
 	);

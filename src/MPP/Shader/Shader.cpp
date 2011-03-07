@@ -430,7 +430,7 @@ void Shader::validate()throw(BufferException)
 {
 	const int buffSize = 1000000; //yes, one million ;P
 	int shaderInfoLogSize=0;
-	static GLchar logBuffer[buffSize];
+	GLchar logBuffer[buffSize];
 
 	GUARD( glValidateProgram(mGLProgramHandle) );
 
@@ -891,8 +891,8 @@ void Shader::setupMaterialUniforms(VisualMaterial* visMat)
 
 		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_TESSELATION) !=0 ))
 		{
-			assert(0&& "TODO bind a lot of stuff like textures and opening angles, "
-					"texture sizes, desired pixel lenght of subdivided  line etc.."); //TODO
+//			assert(0&& "TODO bind a lot of stuff like textures and opening angles, "
+//					"texture sizes, desired pixel lenght of subdivided  line etc.."); //TODO
 			//assert also that normal mapping is active... at least at first
 		}
 

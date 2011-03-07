@@ -20,11 +20,6 @@ BoxGeometry::BoxGeometry(
 : VertexBasedGeometry(name,
 		patchRepresentation ? VERTEX_BASED_TRIANGLE_PATCHES : VERTEX_BASED_TRIANGLES)
   {
-	if(patchRepresentation)
-	{
-		setUpPatchRepresentationState();
-	}
-
 	BufferInfo bufferi(
 			name + String("BoxGeometryPositionBuffer"),
 			ContextTypeFlags(HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG),
