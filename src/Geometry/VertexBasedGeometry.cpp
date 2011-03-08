@@ -9,6 +9,7 @@
 #include "Simulator/OpenCL_Manager.h"
 #include "Buffer/BufferInterface.h"
 #include "UserInterface/WindowManager/WindowManager.h"
+#include "Util/Log/Log.h"
 
 namespace Flewnit
 {
@@ -39,9 +40,22 @@ void VertexBasedGeometry::setUpPatchRepresentationState()
 {
 	if(WindowManager::getInstance().getAvailableOpenGLVersion().x < 4)
 	{
-		//TODO
-		assert(0 && "sorry, your opengl version is smaller than 4.0, and a fallback implemetation for "
-				"tesselation geometry is not yet implemented; coming soon ;(");
+
+		if(mGeometryRepresentation == VERTEX_BASED_TRIANGLE_PATCHES)
+		{
+			LOG<<WARNING_LOG_LEVEL<<"You requested a tessellated triangle geometry, but your active OpenGL version "
+				    <<"doesn't support this; Hence, Tesselation will be deactivated;\n";
+			mGeometryRepresentation = VERTEX_BASED_TRIANGLES;
+		}
+		else
+		{
+			LOG<<ERROR_LOG_LEVEL<<"You requested a tessellated non-triangle geometry representation,"
+					<<" but your active OpenGL version "
+				    <<"doesn't support this and there is no compatible fallback; aborting;\n";
+			assert(0);
+		}
+
+		return;
 	}
 
 	bind();

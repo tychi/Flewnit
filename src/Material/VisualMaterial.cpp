@@ -15,6 +15,8 @@
 #include "Simulator/LightingSimulator/LightingStages/ShadowMapGenerator.h"
 #include "WorldObject/InstanceManager.h"
 #include "Simulator/OpenCL_Manager.h"
+#include "UserInterface/WindowManager/WindowManager.h"
+#include "Util/Log/Log.h"
 
 
 namespace Flewnit
@@ -93,6 +95,16 @@ VisualMaterial::VisualMaterial(
 	mReflectivity(reflectivity)
 {
 	mTextures = textures;
+
+    if((mShadingFeatures & SHADING_FEATURE_TESSELATION ) != 0 )
+    {
+    	if(WindowManager::getInstance().getAvailableOpenGLVersion().x < 4)
+    	{
+    		LOG<<WARNING_LOG_LEVEL<<"You requested a tessellated material, but your active OpenGL version "
+    				<<"doesn't support this; Hence, Tesselation will be deactivated;\n";
+    		reinterpret_cast<unsigned int&>(mShadingFeatures) &=  (~SHADING_FEATURE_TESSELATION);
+    	}
+    }
 
 	validateTextures();
 
