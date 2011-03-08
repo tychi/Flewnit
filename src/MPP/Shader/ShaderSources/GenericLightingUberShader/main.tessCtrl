@@ -11,7 +11,12 @@ uniform float targetEdgeLenghtInPixels = 25.0;
 
 //metro 2033 LOD criteria:
 uniform float numScreenPixels = 640.0;
-uniform float tessQualityFactor = 0.04;//0.04;
+uniform float tessQualityFactor = 0.006;//0.04;
+uniform float distanceToBeginWithTesselation = 100.0;
+uniform float distanceUntilFullSubdevision = 20.0;
+uniform float minTessLevel = 2.0f;
+uniform float maxTessLevel = 64.0;
+
 
 //textures for size queries for mipmap level calculation
 uniform sampler2D displacementMap;
@@ -36,9 +41,9 @@ patch out float originalTessLevelOuter[3];
 //--------------------------------------------
 
 
-float ceilToNextPowerOf2Minus1(float originalTessLevel)
+float ceilToNextPowerOf2(float originalTessLevel)
 {
-  return exp2( ceil( log2(originalTessLevel)) ) -1.0;
+  return exp2( ceil( log2(originalTessLevel)) ) ;//-1.0;
 }
 
 
@@ -72,18 +77,30 @@ void main()
   //metro 2033 LOD criteria: TESS_FACT = LEN * NP * Q / DIST
   
   vec3 edgeStartVS = input[ (gl_InvocationID + 1) % 3 ].position.xyz;
-  vec3 edgeEndVS   = input[ (gl_InvocationID + 2) % 3 ].position.xyz;
-  float edgeLengthVS = length( edgeEndVS - edgeStartVS  );
+  vec3 edgeEndVS   = input[ (gl_InvocationID + 2) % 3 ].position.xyz; 
   float edgeDistVS = length( 0.5 * ( edgeEndVS + edgeStartVS) );
   
   //float alignedTessLevelOuter = floor (edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS  * 0.5) * 2.0;
   //gl_TessLevelOuter[gl_InvocationID] = alignedTessLevelOuter ;
+  
+  
+  
+ float distFraction = clamp(
+  (edgeDistVS - distanceUntilFullSubdevision) / (distanceToBeginWithTesselation - distanceUntilFullSubdevision),
+  0.0,1.0 );
+  //mix(maxTessLevel, minTessLevel, distFraction)
+
+ float edgeLengthVS = length( edgeEndVS - edgeStartVS  );
    
-  float originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS ;
+  float originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor * (1.0- (sqrt(distFraction))) ; 
+  //originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS ;
+  originalTessLevel = clamp(originalTessLevel , minTessLevel, maxTessLevel);
+  
+  
   originalTessLevelOuter[gl_InvocationID] = originalTessLevel;
 
 /*
-  //gl_TessLevelOuter[gl_InvocationID] = ceilToNextPowerOf2Minus1(originalTessLevel);
+  //gl_TessLevelOuter[gl_InvocationID] = ceilToNextPowerOf2(originalTessLevel);
   //gl_TessLevelOuter[gl_InvocationID] = originalTessLevel;
   
   barrier(); //------------------------------------------
@@ -96,16 +113,17 @@ void main()
   }
 */
     
-  barrier(); //------------------------------------------
   
-  gl_TessLevelOuter[gl_InvocationID] = ceilToNextPowerOf2Minus1(originalTessLevel);
+  //gl_TessLevelOuter[gl_InvocationID] = ceilToNextPowerOf2(originalTessLevel);  
+  gl_TessLevelOuter[gl_InvocationID] = originalTessLevel;
+  barrier(); //------------------------------------------
   
   if (gl_InvocationID == 0) 
   {
     //this way, the  gl_TessLevelInner[0] is at the same time eqal to the approximate power-of-two-number of vertices
     //generated for an  edge and hence an indicator at which mimpmap level we have to sample the displacement map;
     //each vertex shall obtain a filtered displacment value in order to omit undersampling artifacts;
-    gl_TessLevelInner[0] = min(min(gl_TessLevelOuter[0],gl_TessLevelOuter[1]),gl_TessLevelOuter[2])+1.0;
+    gl_TessLevelInner[0] = min(min(gl_TessLevelOuter[0],gl_TessLevelOuter[1]),gl_TessLevelOuter[2]);//+1.0;
     
     /*
     float log2TexSize =  log2( textureSize(normalMap,0).x );

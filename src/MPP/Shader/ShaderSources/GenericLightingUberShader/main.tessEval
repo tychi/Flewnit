@@ -4,7 +4,8 @@
 {% include  "01_Generic_Common_precisionTag.glsl" %}
 
 //layout(triangles, equal_spacing, cw) in;
-layout(triangles, equal_spacing, ccw) in;
+//layout(triangles, equal_spacing, ccw) in;
+layout(triangles, fractional_even_spacing, ccw) in;
 
 
 //---- shader interface ----------------------
@@ -117,38 +118,55 @@ void main()
     
     int mipMapLODFactor = int( max( log2(texCoordScale), 0 ) );
 
-  
   float displacementValHighRes = texelFetch(
           normalMap, 
           ivec2(
             output.texCoords.x * textureSize(normalMap,0).x,  
             output.texCoords.y * textureSize(normalMap,0).y
-          ) / texCoordScale ,
-          mipMapLODFactor 
+          ) ,
+          0  
         ).w 
         - 0.5;
+
+  
+/*
+  float displacementValHighRes = texelFetch(
+          normalMap, 
+          ivec2(
+            output.texCoords.x * textureSize(normalMap,0).x,  
+            output.texCoords.y * textureSize(normalMap,0).y
+          ) / (texCoordScale  ) ,
+          mipMapLODFactor  
+        ).w 
+        - 0.5;
+*/
+
+ /*
   float displacementValLowRes = texelFetch(
           normalMap, 
           ivec2(
             output.texCoords.x * textureSize(normalMap,0).x,  
             output.texCoords.y * textureSize(normalMap,0).y
-          ) / (texCoordScale*2),
-          mipMapLODFactor + 1 
+          ) / (texCoordScale),
+          mipMapLODFactor  
         ).w 
         - 0.5;
+ */
         
   float exactTesslevelOnStride =   originalTessLevel - tesslevelStrideToInterpolate;
   float lodLevelInterpolationFactor = exactTesslevelOnStride / tesslevelStrideToInterpolate;
         
-  float  displacementVal = (1.0 - lodLevelInterpolationFactor) * displacementValLowRes  + 
-                          lodLevelInterpolationFactor * displacementValHighRes ;
+  float  displacementVal = // (1.0 - lodLevelInterpolationFactor) * displacementValLowRes  + 
+                          //lodLevelInterpolationFactor * 
+                          lodLevelInterpolationFactor * 0.00001+
+                          displacementValHighRes ;
      
    //displacementVal = displacementVal* 0.000001 +  displacementValHighRes * 10;                  
    //displacementVal = displacementVal* 0.000001 + lodLevelInterpolationFactor * 10;
                           
    //displacementVal *=  extraDisp;
   
-  output.position -=  output.normal * displacementIntensity * displacementVal;// / clamp( 0.005* length(output.position.xyz), 1.0, 100.0 );
+  output.position -=  output.normal * displacementIntensity * displacementVal/ clamp( 0.05* length(output.position.xyz), 1.0, 100.0 );
  
  /*
   float log2TexSize =  log2( textureSize(normalMap,0).x ) ;
