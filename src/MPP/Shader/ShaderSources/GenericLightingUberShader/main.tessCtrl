@@ -5,22 +5,14 @@
 
 layout(vertices = 3) out;
 
-//own flickering (i.e. BAD) LOD criteria:
-uniform vec2 viewPortHalfExtends = vec2(320.0,240.0);
-uniform float targetEdgeLenghtInPixels = 25.0;
 
 //metro 2033 LOD criteria:
 uniform float numScreenPixels = 640.0;
-uniform float tessQualityFactor = 0.006;//0.04;
+uniform float tessQualityFactor = 0.007;//0.04;
 uniform float distanceToBeginWithTesselation = 100.0;
-uniform float distanceUntilFullSubdevision = 20.0;
+uniform float distanceUntilFullSubdevision = 10.0;
 uniform float minTessLevel = 2.0f;
 uniform float maxTessLevel = 64.0;
-
-
-//textures for size queries for mipmap level calculation
-uniform sampler2D displacementMap;
-uniform sampler2D normalMap;
 
 //---- shader interface ----------------------
 //input from vertex/tessEval shader
@@ -35,22 +27,86 @@ out InterfaceData
   
 } output[];
 
-//patch out int dispMapHigherResLod;
-//patch out float lodLevelInterpolationFactor;
-patch out float originalTessLevelOuter[3];
+patch out float distanceDependentDisplacementFactor;
+
 //--------------------------------------------
 
-
-float ceilToNextPowerOf2(float originalTessLevel)
-{
-  return exp2( ceil( log2(originalTessLevel)) ) ;//-1.0;
-}
 
 
 void main()
 {
+  //metro 2033 LOD criteria: TESS_FACT = LEN * NP * Q / DIST
+  //modified in the way that distance contribution to tessfactor is in a limitied range
+  
+{%if worldSpaceTransform %}
+  //every user varyings are in world space; the vertex shader will have written view space pos to gl_Position
+  //in case both tess and layered rendering is active 
+  vec3 edgeStartVS = gl_in[ (gl_InvocationID + 1) % 3 ].gl_Position.xyz;
+  vec3 edgeEndVS   = gl_in[ (gl_InvocationID + 2) % 3 ].gl_Position.xyz;
+{% else %}
+  vec3 edgeStartVS = input[ (gl_InvocationID + 1) % 3 ].position.xyz;
+  vec3 edgeEndVS   = input[ (gl_InvocationID + 2) % 3 ].position.xyz;  
+{% endif %}   
+  
+  
+  float edgeDistVS = length( 0.5 * ( edgeEndVS + edgeStartVS) );
+  
+  
+ float distFraction = clamp(
+  (edgeDistVS - distanceUntilFullSubdevision) / (distanceToBeginWithTesselation - distanceUntilFullSubdevision),
+  0.0,1.0 );
+ float distanceFactor = 1.0- (sqrt(distFraction));
+
+ float edgeLengthVS = length( edgeEndVS - edgeStartVS  );
+   
+  float originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor * distanceFactor ;
+  //originalTessLevel -= 8.0; 
+  //float originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor * (1.0- (sqrt(sqrt(distFraction)))) ; 
+  //originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS ;
+  originalTessLevel = clamp(originalTessLevel , minTessLevel, maxTessLevel);    
+ 
+  gl_TessLevelOuter[gl_InvocationID] = originalTessLevel;
+  barrier(); //------------------------------------------ 
+  if (gl_InvocationID == 0) 
+  {
+    gl_TessLevelInner[0] = max(max(gl_TessLevelOuter[0],gl_TessLevelOuter[1]),gl_TessLevelOuter[2]) ;//+1.0;//+1.0;
+    distanceDependentDisplacementFactor = distanceFactor;
+  }
+  
+
+
+  //------------ following only unmodified pass-through of vertex shader-computed variables ---------
+  output[gl_InvocationID].position = input[gl_InvocationID].position; //pos will always be needed by tessEval
+  output[gl_InvocationID].normal = input[gl_InvocationID].normal; //normal, too, for displacement
+  {% if SHADING_FEATURE_NORMAL_MAPPING %}
+      output[gl_InvocationID].tangent = input[gl_InvocationID].tangent;
+  {% endif %}
+  output[gl_InvocationID].texCoords = input[gl_InvocationID].texCoords; //also always needed for displ map lookup
+
+  {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION or instancedRendering %}
+    output[gl_InvocationID].genericIndices = input[gl_InvocationID].genericIndices;
+  {% endif %}
+  //do NOT pass shadow coord, as projected stuff it must be newly calculated from displaced world/view space vertices
+  //do NOT pass the depthButNotSpotLight-optimization variables as they are just redundancy on this stage where we need the full 3D-pos vector;       
+
+}
+
+
+{%comment%} following lagacy code
 /*
-  //own flickering try:
+//patch out int dispMapHigherResLod;
+//patch out float lodLevelInterpolationFactor;
+//patch out float originalTessLevelOuter[3];
+*/
+
+/*
+//own flickering (i.e. BAD) LOD criteria:
+uniform vec2 viewPortHalfExtends = vec2(320.0,240.0);
+uniform float targetEdgeLenghtInPixels = 25.0;
+*/
+
+/*
+  //own flickering LOD try:
   
   vec4 edgeStartHomog  = gl_in[ (gl_InvocationID + 1) % 3 ].gl_Position;
   vec4 edgeEndHomog    = gl_in[ (gl_InvocationID + 2) % 3 ].gl_Position;
@@ -73,51 +129,16 @@ void main()
 
 //---------------------------------------------------------------------------------------
 
-{%if not layeredRendering %} 
-  //metro 2033 LOD criteria: TESS_FACT = LEN * NP * Q / DIST
-  
-  vec3 edgeStartVS = input[ (gl_InvocationID + 1) % 3 ].position.xyz;
-  vec3 edgeEndVS   = input[ (gl_InvocationID + 2) % 3 ].position.xyz; 
-  float edgeDistVS = length( 0.5 * ( edgeEndVS + edgeStartVS) );
-  
-  //float alignedTessLevelOuter = floor (edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS  * 0.5) * 2.0;
-  //gl_TessLevelOuter[gl_InvocationID] = alignedTessLevelOuter ;
-  
-  
-  
- float distFraction = clamp(
-  (edgeDistVS - distanceUntilFullSubdevision) / (distanceToBeginWithTesselation - distanceUntilFullSubdevision),
-  0.0,1.0 );
-  //mix(maxTessLevel, minTessLevel, distFraction)
-
- float edgeLengthVS = length( edgeEndVS - edgeStartVS  );
-   
-  float originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor * (1.0- (sqrt(distFraction))) ; 
-  //originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS ;
-  originalTessLevel = clamp(originalTessLevel , minTessLevel, maxTessLevel);
-  
-  
-  originalTessLevelOuter[gl_InvocationID] = originalTessLevel;
 
 /*
-  //gl_TessLevelOuter[gl_InvocationID] = ceilToNextPowerOf2(originalTessLevel);
-  //gl_TessLevelOuter[gl_InvocationID] = originalTessLevel;
-  
-  barrier(); //------------------------------------------
-  
-  float minimalExcactTessLevel;
-  if (gl_InvocationID == 0) 
-  {
-    float dummy0 = gl_TessLevelOuter[0];float dummy1 = gl_TessLevelOuter[1];float dummy2 = gl_TessLevelOuter[2];
-    minimalExcactTessLevel =  min(min(dummy0,dummy1),dummy2);
-  }
+float ceilToNextPowerOf2(float originalTessLevel)
+{
+  return exp2( ceil( log2(originalTessLevel)) ) ;//-1.0;
+}
+
 */
-    
-  
-  //gl_TessLevelOuter[gl_InvocationID] = ceilToNextPowerOf2(originalTessLevel);  
-  gl_TessLevelOuter[gl_InvocationID] = originalTessLevel;
-  barrier(); //------------------------------------------
-  
+
+/*
   if (gl_InvocationID == 0) 
   {
     //this way, the  gl_TessLevelInner[0] is at the same time eqal to the approximate power-of-two-number of vertices
@@ -125,7 +146,6 @@ void main()
     //each vertex shall obtain a filtered displacment value in order to omit undersampling artifacts;
     gl_TessLevelInner[0] = min(min(gl_TessLevelOuter[0],gl_TessLevelOuter[1]),gl_TessLevelOuter[2]);//+1.0;
     
-    /*
     float log2TexSize =  log2( textureSize(normalMap,0).x );
     float log2AlignedTessLevel = clamp( log2( gl_TessLevelInner[0] ),1.0,log2TexSize);
     float LODfactor  =    (log2TexSize / log2AlignedTessLevel)  -1.0 ;
@@ -136,27 +156,8 @@ void main()
     float tesslevelStrideToInterpolate =  gl_TessLevelInner[0] * 0.5 ; 
     float exactTesslevelOnStride =     minimalExcactTessLevel - tesslevelStrideToInterpolate;
     lodLevelInterpolationFactor = exactTesslevelOnStride / tesslevelStrideToInterpolate;
-    */
+
   }
-  
-{% else %}
 
-  TODO have to hack view space stuff into gl_Positiion 
-  
-{% endif %} 
-
-  //------------ following only unmodified pass-through of vertex shader-computed variables ---------
-  output[gl_InvocationID].position = input[gl_InvocationID].position; //pos will always be needed by tessEval
-  output[gl_InvocationID].normal = input[gl_InvocationID].normal; //normal, too, for displacement
-  {% if SHADING_FEATURE_NORMAL_MAPPING %}
-      output[gl_InvocationID].tangent = input[gl_InvocationID].tangent;
-  {% endif %}
-  output[gl_InvocationID].texCoords = input[gl_InvocationID].texCoords; //also always needed for displ map lookup
-
-  {% if RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION or instancedRendering %}
-    output[gl_InvocationID].genericIndices = input[gl_InvocationID].genericIndices;
-  {% endif %}
-  //do NOT pass shadow coord, as projected stuff it must be newly calculated from displaced world/view space vertices
-  //do NOT pass the depthButNotSpotLight-optimization variables as they are just redundancy on this stage where we need the full 3D-pos vector;       
-
-}
+*/
+{%endcomment%}

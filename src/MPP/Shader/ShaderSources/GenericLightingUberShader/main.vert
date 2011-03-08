@@ -120,10 +120,16 @@ void main()
   //----------------------------------------------------------------------------------------------
   
   
-  {%if not layeredRendering or SHADING_FEATURE_TESSELATION %} 
-    {%comment%} either we need projected stuff for rasterization because no tessCtrl/TessEval/geom shader follows,
-                OR we need projected stuff for dyn. LOD calc in tessCtrl shader {%endcomment%}
-    gl_Position =  modelViewProjectionMatrix  * inVPosition; /*default MVP transform*/ 
+  {%if not layeredRendering and not SHADING_FEATURE_TESSELATION %} 
+    //we need projected stuff for rasterization because no tessCtrl/TessEval/geom shader follows,
+    gl_Position =  modelViewProjectionMatrix  * inVPosition; /*default MVP transform*/   
+  {% endif %} 
+  
+  {%if worldSpaceTransform and SHADING_FEATURE_TESSELATION %} 
+    //as every user varyings are in world space, we have to write view space pos to gl_Position
+    //in case both tess and layered rendering is active, so that the tess control shader can perform its 
+    //view space dynamic LOD calculations 
+    gl_Position =  modelViewMatrix  * inVPosition;
   {% endif %} 
   
   //{%if not SHADING_FEATURE_TESSELATION and not layeredRendering %} 
