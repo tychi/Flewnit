@@ -74,6 +74,11 @@ void Loader::createHardCodedSceneStuff()
 	rootNode.addChild(
 		new PureVisualObject("myTessBox1",AmendedTransform(Vector3D(90,-10,50), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1),0.5))
 	);
+
+	rootNode.addChild(
+		new PureVisualObject("myBlackNWhiteBox",AmendedTransform(Vector3D(-90,-10,50), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1),1.0))
+	);
+
 	rootNode.addChild(
 		new PureVisualObject("MyBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),3.0f))
 	);
@@ -100,6 +105,15 @@ void Loader::createHardCodedSceneStuff()
 			     : false
 		);
 	}
+
+
+	Geometry* blackNWhiteGeo = SimulationResourceManager::getInstance().getGeometry("blackNWhiteGeo");
+	if(! blackNWhiteGeo)
+	{
+		blackNWhiteGeo = new BoxGeometry("blackNWhiteGeo",Vector3D(20.0f,20.0f,20.0f),true, false);
+	}
+
+
 	Geometry* geo3 = SimulationResourceManager::getInstance().getGeometry("MyBoxAsPlane");
 	if(! geo3)
 	{
@@ -144,6 +158,8 @@ void Loader::createHardCodedSceneStuff()
 			0.5f
 		);
 	}//endif !mat1
+
+
 	Material* mat2 = SimulationResourceManager::getInstance().getMaterial("StoneBumpMaterial");
 	if(! mat2)
 	{
@@ -211,6 +227,35 @@ void Loader::createHardCodedSceneStuff()
 			0.4f
 		);
 	}//endif !stoneBumpTessMat
+
+
+	Material* blackNWhiteMat = SimulationResourceManager::getInstance().getMaterial("blackNWhiteMat");
+	if(! blackNWhiteMat)
+	{
+			Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
+				String("rockbumpDisp"),
+				DECAL_COLOR_SEMANTICS,
+				Path("./assets/textures/rockbumpDisp.png"),
+				BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
+				true,
+				false,
+				true
+		);
+		std::map<BufferSemantics,Texture*> myMap;
+		myMap[DECAL_COLOR_SEMANTICS] = decalTex;
+		blackNWhiteMat = new VisualMaterial("blackNWhiteMat",
+			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+			ShadingFeatures(
+					SHADING_FEATURE_DIRECT_LIGHTING
+					| SHADING_FEATURE_DECAL_TEXTURING
+			),
+			myMap,
+			VisualMaterialFlags(true,false,true,true,false,false),
+			1000.0f,
+			0.5f
+		);
+	}//endif !blackNWhiteMat
 
 
 	Material* matEnvMap = SimulationResourceManager::getInstance().getMaterial("EnvMapCloudyNoonMaterial");
@@ -281,12 +326,23 @@ void Loader::createHardCodedSceneStuff()
 	);
 	dynamic_cast<WorldObject*>(rootNode.getChild("myTessBox1"))->addSubObject(
 		new SubObject(
-			"BoxSubObject2",
+			"myTessBox1SO",
 			VISUAL_SIM_DOMAIN,
 			tessGeo,
 			stoneBumpTessMat
 		)
 	);
+
+	dynamic_cast<WorldObject*>(rootNode.getChild("myBlackNWhiteBox"))->addSubObject(
+		new SubObject(
+			"myBlackNWhiteBoxSO",
+			VISUAL_SIM_DOMAIN,
+			blackNWhiteGeo,
+			blackNWhiteMat
+		)
+	);
+
+
 	dynamic_cast<WorldObject*>(rootNode.getChild("MyBoxAsPlane"))->addSubObject(
 		new SubObject(
 			"MyBoxAsPlaneSubObject1",
@@ -618,8 +674,7 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 	 image->load(fileName.string().c_str());
 	 LOG<<INFO_LOG_LEVEL<< "Loading image with path "
 	          << fileName.string()
-	          << "; Bits Per Pixel: "
-	          << image->getBitsPerPixel()
+	          << "; Bits Per Pixel: " << image->getBitsPerPixel()
 	          << "; width: " << image->getWidth()
 	          << "; height" << image->getHeight()<<";\n";
 
@@ -789,40 +844,60 @@ void Loader::transformPixelData(BufferSemantics bufferSemantics,
 	switch(image->getImageType())
 	{
 	case FIT_BITMAP:
-		if(image->getBitsPerPixel() != 32)
+		if(texelLayout.numChannels==1)
 		{
-			if ( ! (image->convertTo32Bits()) )
-			{
-				throw(BufferException("conversion of image to 32 bit per texel failed"));
-			}
+			fipImage* greyImage = new fipImage();
+			BOOL sucess = image->getChannel(*greyImage, FICC_RED);
+			assert("got gray image" && sucess);
+			assert("8 bits per pixel" && greyImage->getBitsPerPixel() == 8);
+			  memcpy( buffer,
+					  reinterpret_cast<void*>(greyImage->accessPixels()),
+					  texelLayout.numChannels * sizeof(BYTE) * greyImage->getWidth()* greyImage->getHeight()
+			  );
 		}
-
-#if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR
-		convertBGRAtoRGBA(image->accessPixels(), image->getWidth()*image->getHeight());
-#endif
-
-//		if(bufferSemantics == DISPLACEMENT_SEMANTICS)
-//		{
-//			LOG<<WARNING_LOG_LEVEL<<"Trying the shiftUnsignedByteToSignedByteForNormalMapping; "
-//				<< "This is experimental; in case of bugs, check  Loader::loadTexture()";
-//			//normalmapping adoption :)
-//			shiftUnsignedByteToSignedByteForNormalMapping(image->accessPixels(), image->getImageSize());
-//			texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_INT,8,true);
-//		}
-//		else
+		else
 		{
+			if(image->getBitsPerPixel() != 32)
+			{
+				if ( ! (image->convertTo32Bits()) )
+				{
+					throw(BufferException("conversion of image to 32 bit per texel failed"));
+				}
+			}
+
+			#if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR
+				convertBGRAtoRGBA(image->accessPixels(), image->getWidth()*image->getHeight());
+			#endif
+
+			//if(bufferSemantics == DISPLACEMENT_SEMANTICS)
+			//{
+			//	LOG<<WARNING_LOG_LEVEL<<"Trying the shiftUnsignedByteToSignedByteForNormalMapping; "
+			//		<< "This is experimental; in case of bugs, check  Loader::loadTexture()";
+			//	//normalmapping adoption :)
+			//	shiftUnsignedByteToSignedByteForNormalMapping(image->accessPixels(), image->getImageSize());
+			//	texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_INT,8,true);
+			//}
+			//else{
 			//override to default as i don't have time for sophisticated adoption atm
 			texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true);
+			//}
+
+			  //copy altered image contents to the designated buffer
+			  memcpy( buffer,
+					  reinterpret_cast<void*>(image->accessPixels()),
+					  texelLayout.numChannels * sizeof(BYTE) * image->getWidth()* image->getHeight()
+			  );
 		}
+		break;
 
-		  //copy altered image contents to the designated buffer
-		  memcpy( buffer,
-				  reinterpret_cast<void*>(image->accessPixels()),
-				  texelLayout.numChannels * sizeof(BYTE) * image->getWidth()* image->getHeight()
-		  );
+	case FIT_FLOAT:
+		assert("we want load a gray level image" && texelLayout.numChannels==1);
 
-		  break;
-	  case FIT_RGBAF:
+		//TODO
+		assert(0 && "TODO implement gray float image loading for high res displ mapping!");
+		break;
+
+	case FIT_RGBAF:
 		  texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
 
 		  //copy altered image contents to the designated buffer
@@ -830,8 +905,10 @@ void Loader::transformPixelData(BufferSemantics bufferSemantics,
 				  reinterpret_cast<void*>(image->accessPixels()),
 				  texelLayout.numChannels * sizeof(float) * image->getWidth()* image->getHeight()
 		  );
+
 		  break;
-	  case FIT_RGBF:
+
+	case FIT_RGBF:
 		  //add alpha channel for alignment purposes; freeimange doesn't support this conversion,
 		  //so let's hack it for ourselves:
 		  //buffer	= new Vector4D[image->getWidth()*image->getHeight()];
@@ -851,10 +928,12 @@ void Loader::transformPixelData(BufferSemantics bufferSemantics,
 				  texelLayout.numChannels * sizeof(float) * image->getWidth()* image->getHeight()
 			);
 		  break;
-	  default:
+
+	default:
 		  throw(BufferException("sorry, there is no other image type but "
 				  "floating point or Bitmap(i.e. 8 bit unsigned normalized int) RGB(A) supported yet "));
-	  }
+
+	}
 }
 
 

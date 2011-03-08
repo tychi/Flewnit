@@ -39,7 +39,7 @@
 		
 		
 		<OpenGL_Settings>
-			<contextVersion type="VEC2I" x="4" y="1" />
+			<contextVersion type="VEC2I" x="4" y="0" />
 			<enforceCoreProfile type="BOOL" value="true" />
 		</OpenGL_Settings>
 		
