@@ -20,9 +20,9 @@ out InterfaceData
   {% include  "09_Generic_InterfaceData.glsl" %}
 } output;
 
-patch in int dispMapHigherResLod;
-patch in float lodLevelInterpolationFactor;
-//patch in float originalTessLevelOuter[3];
+//patch in int dispMapHigherResLod;
+//patch in float lodLevelInterpolationFactor;
+patch in float originalTessLevelOuter[3];
 //--------------------------------------------
 
 
@@ -49,6 +49,20 @@ uniform float displacementIntensity = 1.0f;
 //uniform mat4 Projection;
 //uniform mat4 Modelview;
 
+//bool isOnEdge()
+//{
+//  return any(equal(gl_TessCoord.xyz, vec3(0.0,0.0,0.0)));
+//}
+
+int edgeIndexIfVertexOnEdge()
+{
+  if(gl_TessCoord.x <= 0.01) return 0;
+  if(gl_TessCoord.y <= 0.01) return 1;
+  if(gl_TessCoord.z <= 0.01) return 2;
+  
+  return -1;
+}
+
 void main()
 {    
   //------------ following barycentric weighted output of vertex shader-computed variables ---------
@@ -62,22 +76,55 @@ void main()
   {% endif %}
   output.texCoords =  BARYCENTRIC_WEIGHTED(texCoords);
   
-  //grab four linearly interpolated depth values to get a smooth offset:
-  //TODO uncomment displacement code when tesselation is stable
-  //output.position +=  output.normal * displacementIntensity * textureGather(displacementMap, output.texCoords.xy, 0 );
   
-  //vec4 displacementVec = (textureGather(normalMap, output.texCoords.xy, 3 ) - 0.5 );
-  //float displacementVal = displacementVec.x + displacementVec.y + displacementVec.z + displacementVec.w;
-  //displacementVal /= 4.0;
-  
+  //-------------------------------------------------------------------
+  //displacemant calcs :
+   
+  //interpolation calcs:
+
+    int edgeIndex = edgeIndexIfVertexOnEdge();
+    
+    float originalTessLevel =  min(min(originalTessLevelOuter[0],originalTessLevelOuter[1]),originalTessLevelOuter[2]);
+    //float originalTessLevel = gl_TessLevelInner[0];
+    float pow2AlignedTessLevel = gl_TessLevelInner[0];
+    //float extraDisp= 1.0;
+    if(edgeIndex>=0)
+    {
+      //calc edge specific interpolation
+      originalTessLevel = originalTessLevelOuter[edgeIndex];
+      //grab not the minimum of all tesslavels (as caculated in tessCtrl and written to gl_TessLevelInner[0] )
+      // but the actual "aligned" tesslevel of the edge the vertex lies on; 
+      //(we know that it has the form (2^n)-1), hence the following strid calculation is correct
+      pow2AlignedTessLevel = gl_TessLevelOuter[edgeIndex] + 1.0;
+      
+      //extraDisp= 10.0;
+    }
+    //we interpolate between power of twos: [2..4] or [4..8] etc.; hence the stride is not constant
+    //a power-of two number halved, gives the power of two-stride to interpolate within
+    float tesslevelStrideToInterpolate =  pow2AlignedTessLevel * 0.5;
+    
+
+    //float log2TexSize =  log2( textureSize(normalMap,0).x );
+    //float log2AlignedTessLevel = clamp( log2( originalTessLevel ),1.0,log2TexSize);
+    //float LODfactor  =    (log2TexSize / log2AlignedTessLevel)  -1.0 ;
+    
+    int texCoordScale  = 
+      int
+      ( 
+        textureSize(normalMap,0).x / 
+        clamp( int(pow2AlignedTessLevel*4), 1, textureSize(normalMap,0).x ) 
+       )   ; 
+    
+    int mipMapLODFactor = int( max( log2(texCoordScale), 0 ) );
+
   
   float displacementValHighRes = texelFetch(
           normalMap, 
           ivec2(
             output.texCoords.x * textureSize(normalMap,0).x,  
             output.texCoords.y * textureSize(normalMap,0).y
-          ) / (dispMapHigherResLod +1 ),
-          dispMapHigherResLod
+          ) / texCoordScale ,
+          mipMapLODFactor 
         ).w 
         - 0.5;
   float displacementValLowRes = texelFetch(
@@ -85,12 +132,21 @@ void main()
           ivec2(
             output.texCoords.x * textureSize(normalMap,0).x,  
             output.texCoords.y * textureSize(normalMap,0).y
-          ) / (dispMapHigherResLod + 2 ),
-          dispMapHigherResLod + 1
+          ) / (texCoordScale*2),
+          mipMapLODFactor + 1 
         ).w 
         - 0.5;
         
-  float  displacementVal = (1.0 - lodLevelInterpolationFactor) * displacementValLowRes  + lodLevelInterpolationFactor * displacementValHighRes ;
+  float exactTesslevelOnStride =   originalTessLevel - tesslevelStrideToInterpolate;
+  float lodLevelInterpolationFactor = exactTesslevelOnStride / tesslevelStrideToInterpolate;
+        
+  float  displacementVal = (1.0 - lodLevelInterpolationFactor) * displacementValLowRes  + 
+                          lodLevelInterpolationFactor * displacementValHighRes ;
+     
+   //displacementVal = displacementVal* 0.000001 +  displacementValHighRes * 10;                  
+   //displacementVal = displacementVal* 0.000001 + lodLevelInterpolationFactor * 10;
+                          
+   //displacementVal *=  extraDisp;
   
   output.position -=  output.normal * displacementIntensity * displacementVal;// / clamp( 0.005* length(output.position.xyz), 1.0, 100.0 );
  
