@@ -14,14 +14,15 @@ in InterfaceData
   {% include  "09_Generic_InterfaceData.glsl" %}
 } input[];
 
-patch in int dispMapHigherResLod;
-patch in float lodLevelInterpolationFactor;
-
 //output to fragment shader
 out InterfaceData
 {
   {% include  "09_Generic_InterfaceData.glsl" %}
 } output;
+
+patch in int dispMapHigherResLod;
+patch in float lodLevelInterpolationFactor;
+//patch in float originalTessLevelOuter[3];
 //--------------------------------------------
 
 
@@ -68,15 +69,28 @@ void main()
   //vec4 displacementVec = (textureGather(normalMap, output.texCoords.xy, 3 ) - 0.5 );
   //float displacementVal = displacementVec.x + displacementVec.y + displacementVec.z + displacementVec.w;
   //displacementVal /= 4.0;
-  float displacementVal = texelFetch(
+  
+  
+  float displacementValHighRes = texelFetch(
           normalMap, 
           ivec2(
             output.texCoords.x * textureSize(normalMap,0).x,  
             output.texCoords.y * textureSize(normalMap,0).y
-          ),
-          0
+          ) / (dispMapHigherResLod +1 ),
+          dispMapHigherResLod
         ).w 
         - 0.5;
+  float displacementValLowRes = texelFetch(
+          normalMap, 
+          ivec2(
+            output.texCoords.x * textureSize(normalMap,0).x,  
+            output.texCoords.y * textureSize(normalMap,0).y
+          ) / (dispMapHigherResLod + 2 ),
+          dispMapHigherResLod + 1
+        ).w 
+        - 0.5;
+        
+  float  displacementVal = (1.0 - lodLevelInterpolationFactor) * displacementValLowRes  + lodLevelInterpolationFactor * displacementValHighRes ;
   
   output.position -=  output.normal * displacementIntensity * displacementVal;// / clamp( 0.005* length(output.position.xyz), 1.0, 100.0 );
  

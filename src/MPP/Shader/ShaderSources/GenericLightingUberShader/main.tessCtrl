@@ -11,7 +11,7 @@ uniform float targetEdgeLenghtInPixels = 25.0;
 
 //metro 2033 LOD criteria:
 uniform float numScreenPixels = 640.0;
-uniform float tessQualityFactor = 0.04;//0.04;
+uniform float tessQualityFactor = 0.01;//0.04;
 
 //textures for size queries for mipmap level calculation
 uniform sampler2D displacementMap;
@@ -27,10 +27,12 @@ in InterfaceData
 out InterfaceData
 {
   {% include  "09_Generic_InterfaceData.glsl" %}
+  
 } output[];
 
 patch out int dispMapHigherResLod;
 patch out float lodLevelInterpolationFactor;
+//patch out float originalTessLevelOuter[3];
 //--------------------------------------------
 
 
@@ -77,16 +79,22 @@ void main()
   //float alignedTessLevelOuter = floor (edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS  * 0.5) * 2.0;
   //gl_TessLevelOuter[gl_InvocationID] = alignedTessLevelOuter ;
    
-  float originalTessLevel = edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS ;
+  float originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS ;
+  //originalTessLevelOuter[gl_InvocationID] = originalTessLevel;
+  //gl_TessLevelOuter[gl_InvocationID] = ceilToNextPowerOf2Minus1(originalTessLevel);
   gl_TessLevelOuter[gl_InvocationID] = originalTessLevel;
+  
   barrier(); //------------------------------------------
   float minimalExcactTessLevel;
   if (gl_InvocationID == 0) 
   {
-    minimalExcactTessLevel =  min(min(gl_TessLevelOuter[0],gl_TessLevelOuter[1]),gl_TessLevelOuter[2]);
-  } 
+    float dummy0 = gl_TessLevelOuter[0];float dummy1 = gl_TessLevelOuter[1];float dummy2 = gl_TessLevelOuter[2];
+    minimalExcactTessLevel =  min(min(dummy0,dummy1),dummy2);
+  }   
+  barrier(); //------------------------------------------
+  
   gl_TessLevelOuter[gl_InvocationID] = ceilToNextPowerOf2Minus1(originalTessLevel);
-  barrier();//----------------------------------------------  
+  
   if (gl_InvocationID == 0) 
   {
     //this way, the  gl_TessLevelInner[0] is at the same time eqal to the approximate power-of-two-number of vertices
@@ -99,7 +107,7 @@ void main()
     float LODfactor  =    (log2TexSize / log2AlignedTessLevel)  -1.0 ;
     dispMapHigherResLod =  int( floor( clamp( LODfactor, 0.0, log2TexSize-1.0 ) + 0.5 ) );
     
-    //we interpolat between power of twos: [2..4] or [4..8] etc.; hence the stride is not constant
+    //we interpolate between power of twos: [2..4] or [4..8] etc.; hence the stride is not constant
     //a power-of two number halved, gives the power of two-stride to interpolate within
     float tesslevelStrideToInterpolate =  gl_TessLevelInner[0] * 0.5 ; 
     float exactTesslevelOnStride =     minimalExcactTessLevel - tesslevelStrideToInterpolate;
