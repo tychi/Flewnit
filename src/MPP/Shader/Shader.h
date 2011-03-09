@@ -171,6 +171,7 @@ protected:
 	//either binds the lightsoure uniform buffer or sets the non-buffer-single-lightsource uniforms directly
 	void setupLightSourceUniforms();
 	void setupMaterialUniforms(VisualMaterial* visMat);
+	void setupTessellationParameters(VisualMaterial* visMat);
 
 
 	void bindUniformBuffer(UniformBufferBindingPoint bindingPoint,String bufferNameInShader, GLuint bufferGLHandle);

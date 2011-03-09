@@ -8,10 +8,10 @@ layout(vertices = 3) out;
 
 //metro 2033 LOD criteria:
 uniform float numScreenPixels = 640.0;
-uniform float tessQualityFactor = 0.007;//0.04;
-uniform float distanceToBeginWithTesselation = 100.0;
-uniform float distanceUntilFullSubdevision = 10.0;
-uniform float minTessLevel = 2.0f;
+uniform float tessQualityFactor = 0.004;//0.0025;//0.007;//0.04;
+uniform float distanceToBeginWithTesselation = 50.0;
+uniform float distanceUntilFullSubdivision = 30.0;
+uniform float minTessLevel = 1.0f;
 uniform float maxTessLevel = 64.0;
 
 //---- shader interface ----------------------
@@ -24,6 +24,8 @@ in InterfaceData
 out InterfaceData
 {
   {% include  "09_Generic_InterfaceData.glsl" %}
+  
+  //float distanceDependentDisplacementFactor;
   
 } output[];
 
@@ -53,7 +55,7 @@ void main()
   
   
  float distFraction = clamp(
-  (edgeDistVS - distanceUntilFullSubdevision) / (distanceToBeginWithTesselation - distanceUntilFullSubdevision),
+  (edgeDistVS - distanceUntilFullSubdivision) / (distanceToBeginWithTesselation - distanceUntilFullSubdivision),
   0.0,1.0 );
  float distanceFactor = 1.0- (sqrt(distFraction));
 

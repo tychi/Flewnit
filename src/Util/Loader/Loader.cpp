@@ -210,6 +210,20 @@ void Loader::createHardCodedSceneStuff()
 		std::map<BufferSemantics,Texture*> myMap;
 		myMap[DECAL_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpDecal");
 		myMap[NORMAL_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpNormalDisp");
+		Texture* dispTex =  SimulationResourceManager::getInstance().getTexture("rockbumpDisp.png");
+		if(!dispTex)
+		{
+			dispTex= URE_INSTANCE->getLoader()->loadTexture(
+				String("rockbumpDisp.png"),
+				DECAL_COLOR_SEMANTICS,
+				Path("./assets/textures/rockbumpDisp.png"),
+				BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
+				true,
+				false,
+				true
+		 	 );
+		}
+		myMap[DISPLACEMENT_SEMANTICS] = dispTex;
 		//myMap[DECAL_COLOR_SEMANTICS] = normalMap;
 		//myMap[DECAL_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("bunnyDecalTex");
 		stoneBumpTessMat = new VisualMaterial("StoneBumpTessMaterial",
@@ -232,15 +246,19 @@ void Loader::createHardCodedSceneStuff()
 	Material* blackNWhiteMat = SimulationResourceManager::getInstance().getMaterial("blackNWhiteMat");
 	if(! blackNWhiteMat)
 	{
-			Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
-				String("rockbumpDisp"),
+		Texture* decalTex =  SimulationResourceManager::getInstance().getTexture("rockwallDispDecalTest");
+		if(!decalTex)
+		{
+		 	 decalTex= URE_INSTANCE->getLoader()->loadTexture(
+				String("rockwallDispDecalTest"),
 				DECAL_COLOR_SEMANTICS,
-				Path("./assets/textures/rockbumpDisp.png"),
+				Path("./assets/textures/rockwallDisp.png"),
 				BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
 				true,
 				false,
 				true
-		);
+		 	 );
+		}
 		std::map<BufferSemantics,Texture*> myMap;
 		myMap[DECAL_COLOR_SEMANTICS] = decalTex;
 		blackNWhiteMat = new VisualMaterial("blackNWhiteMat",
@@ -364,12 +382,15 @@ void Loader::createHardCodedSceneStuff()
 	Geometry* boxForInstancingGeom = SimulationResourceManager::getInstance().getGeometry("boxForInstancingGeom");
 	if(! boxForInstancingGeom)
 	{
-		boxForInstancingGeom = new BoxGeometry("boxForInstancingGeom",Vector3D(5.0f,10.0f,2.0f),true,
+		boxForInstancingGeom = new BoxGeometry("boxForInstancingGeom",Vector3D(5.0f,25.0f,25.0f),true,
 				//patch stuff only for GL versions 4.0 or higher
-				false
-				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
+				createTesselationStuffIfTechnicallyPossible
+				 ? (WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
+			     : false
 		);
 	}
+
+
 
 	Material* matInstanced = SimulationResourceManager::getInstance().getMaterial("instancedRockWallMaterial");
 	if(! matInstanced)
@@ -393,9 +414,22 @@ void Loader::createHardCodedSceneStuff()
 				false,
 				true
 		);
+
+		Texture* dispTex= URE_INSTANCE->getLoader()->loadTexture(
+			String("rockwallDisp.png"),
+			DISPLACEMENT_SEMANTICS,
+			Path("./assets/textures/rockwallDisp.png"),
+			BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
+			true,
+			false,
+			true
+	 	 );
+
+
 		std::map<BufferSemantics,Texture*> myMap;
 		myMap[DECAL_COLOR_SEMANTICS] = decalTex;
 		myMap[NORMAL_SEMANTICS] = normalMap;
+		myMap[DISPLACEMENT_SEMANTICS] = dispTex;
 		matInstanced = new VisualMaterial("instancedRockWallMaterial",
 			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
 			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
@@ -403,6 +437,7 @@ void Loader::createHardCodedSceneStuff()
 					SHADING_FEATURE_DIRECT_LIGHTING
 					| SHADING_FEATURE_DECAL_TEXTURING
 					| SHADING_FEATURE_NORMAL_MAPPING
+					| (createTesselationStuffIfTechnicallyPossible ? SHADING_FEATURE_TESSELATION :0)
 			),
 			myMap,
 			VisualMaterialFlags(true,false,true,true,
@@ -432,7 +467,7 @@ void Loader::createHardCodedSceneStuff()
 				"boxInstanceArmyParent",
 				PURE_NODE,
 				AmendedTransform(
-					Vector3D(-40,0,-300),
+					Vector3D(-80,0,-200),
 					Vector3D(0.2,-0.6,-0.8),
 					Vector3D(0,1,0),
 					0.5
@@ -454,8 +489,8 @@ void Loader::createHardCodedSceneStuff()
 						+ String("y") + HelperFunctions::toString(y)
 						+ String("z") + HelperFunctions::toString(z),
 					AmendedTransform(
-						/*instanceArmyPosOffset +*/ (instanceArmyStride * Vector3D(x,y,z)),
-						Vector3D(0.3f,0.0f,-1.0f)
+						/*instanceArmyPosOffset +*/ (instanceArmyStride * Vector3D(x,y,z))
+						//Vector3D(0.3f,0.0f,-1.0f)
 					)
 				);
 				pvo->addSubObject(boxInstanceManager->createInstance());

@@ -891,12 +891,27 @@ void Shader::setupMaterialUniforms(VisualMaterial* visMat)
 
 		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_TESSELATION) !=0 ))
 		{
+			setupTessellationParameters(visMat);
 //			assert(0&& "TODO bind a lot of stuff like textures and opening angles, "
 //					"texture sizes, desired pixel lenght of subdivided  line etc.."); //TODO
 			//assert also that normal mapping is active... at least at first
 		}
 
 	}
+}
+
+
+void Shader::setupTessellationParameters(VisualMaterial* visMat)
+{
+	assert(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_TESSELATION) !=0 ));
+
+	if( visMat->getTexture(DISPLACEMENT_SEMANTICS) )
+	{
+		glActiveTexture(GL_TEXTURE0 + DISPLACEMENT_SEMANTICS);
+		visMat->getTexture(DISPLACEMENT_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+		bindInt("displacementMap",DISPLACEMENT_SEMANTICS);
+	}
+	//TODO continue
 }
 
 

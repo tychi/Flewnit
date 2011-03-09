@@ -12,6 +12,9 @@ layout(triangles, fractional_even_spacing, ccw) in;
 in InterfaceData
 {
   {% include  "09_Generic_InterfaceData.glsl" %}
+  
+  //float distanceDependentDisplacementFactor;
+  
 } input[];
 
 //output to fragment shader
@@ -26,7 +29,7 @@ patch in float distanceDependentDisplacementFactor;
 
 
 uniform sampler2D displacementMap;
-uniform sampler2D normalMap;
+//uniform sampler2D normalMap;
 
 uniform float displacementIntensity = 1.0f;
 
@@ -70,7 +73,7 @@ void main()
   //-------------------------------------------------------------------
   //displacemant calcs:
 
-  float displacementVal = texelFetch(
+/*  float displacementVal = texelFetch(
           normalMap, 
           ivec2(
             output.texCoords.x * textureSize(normalMap,0).x,  
@@ -79,13 +82,35 @@ void main()
           0  
         ).w 
         - 0.5;
+*/
 
-  output.position -=  
+  float displacementVal = texelFetch(
+          displacementMap, 
+          ivec2(
+            output.texCoords.x * textureSize(displacementMap,0).x,  
+            output.texCoords.y * textureSize(displacementMap,0).y
+          )/1 ,
+          0  
+        ).x 
+        - 0.5;
+        
+
+
+  output.position +=  
     normalize(output.normal) * 
     displacementVal *
     displacementIntensity * 
-    distanceDependentDisplacementFactor /// clamp( 0.05* length(output.position.xyz), 1.0, 100.0 );
+    distanceDependentDisplacementFactor;
     ;
+
+
+/*
+  output.position +=  
+    normalize(output.normal) * 
+    displacementVal *
+    displacementIntensity
+    ;
+*/
 
 
   //-------------------------------------------------------------------
