@@ -9,7 +9,7 @@ layout(vertices = 3) out;
 //metro 2033 LOD criteria:
 uniform float numScreenPixels = 640.0;
 uniform float tessQualityFactor = 0.004;//0.0025;//0.007;//0.04;
-uniform float distanceToBeginWithTesselation = 50.0;
+uniform float distanceToBeginWithTesselation = 75.0;
 uniform float distanceUntilFullSubdivision = 30.0;
 uniform float minTessLevel = 1.0f;
 uniform float maxTessLevel = 64.0;
@@ -25,13 +25,27 @@ out InterfaceData
 {
   {% include  "09_Generic_InterfaceData.glsl" %}
   
-  //float distanceDependentDisplacementFactor;
+  float distanceDependentDisplacementFactor;
   
 } output[];
 
-patch out float distanceDependentDisplacementFactor;
+//patch out float distanceDependentDisplacementFactor;
 
 //--------------------------------------------
+
+
+
+float calculateDistanceDependentDisplacementFactor( float distanceVS )
+{
+ float distFraction = 
+    clamp(
+      (distanceVS - distanceUntilFullSubdivision) / (distanceToBeginWithTesselation - distanceUntilFullSubdivision),
+      0.0,
+      1.0 
+    );
+  
+ return 1.0- (sqrt(distFraction));
+}
 
 
 
@@ -45,19 +59,17 @@ void main()
   //in case both tess and layered rendering is active 
   vec3 edgeStartVS = gl_in[ (gl_InvocationID + 1) % 3 ].gl_Position.xyz;
   vec3 edgeEndVS   = gl_in[ (gl_InvocationID + 2) % 3 ].gl_Position.xyz;
+  vec3 ownVertVS     = gl_in[  gl_InvocationID          ].gl_Position.xyz;
 {% else %}
   vec3 edgeStartVS = input[ (gl_InvocationID + 1) % 3 ].position.xyz;
-  vec3 edgeEndVS   = input[ (gl_InvocationID + 2) % 3 ].position.xyz;  
+  vec3 edgeEndVS   = input[ (gl_InvocationID + 2) % 3 ].position.xyz;
+  vec3 ownVertVS     = input[  gl_InvocationID          ].position.xyz;  
 {% endif %}   
   
   
   float edgeDistVS = length( 0.5 * ( edgeEndVS + edgeStartVS) );
-  
-  
- float distFraction = clamp(
-  (edgeDistVS - distanceUntilFullSubdivision) / (distanceToBeginWithTesselation - distanceUntilFullSubdivision),
-  0.0,1.0 );
- float distanceFactor = 1.0- (sqrt(distFraction));
+  float distanceFactor = calculateDistanceDependentDisplacementFactor( edgeDistVS ) ;
+  output[gl_InvocationID].distanceDependentDisplacementFactor = calculateDistanceDependentDisplacementFactor( length(ownVertVS) );
 
  float edgeLengthVS = length( edgeEndVS - edgeStartVS  );
    
@@ -72,7 +84,7 @@ void main()
   if (gl_InvocationID == 0) 
   {
     gl_TessLevelInner[0] = max(max(gl_TessLevelOuter[0],gl_TessLevelOuter[1]),gl_TessLevelOuter[2]) ;//+1.0;//+1.0;
-    distanceDependentDisplacementFactor = distanceFactor;
+    //distanceDependentDisplacementFactor = distanceFactor;
   }
   
 

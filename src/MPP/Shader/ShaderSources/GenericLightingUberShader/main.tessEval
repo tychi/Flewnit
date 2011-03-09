@@ -13,7 +13,7 @@ in InterfaceData
 {
   {% include  "09_Generic_InterfaceData.glsl" %}
   
-  //float distanceDependentDisplacementFactor;
+  float distanceDependentDisplacementFactor;
   
 } input[];
 
@@ -23,7 +23,7 @@ out InterfaceData
   {% include  "09_Generic_InterfaceData.glsl" %}
 } output;
 
-patch in float distanceDependentDisplacementFactor;
+//patch in float distanceDependentDisplacementFactor;
 
 //--------------------------------------------
 
@@ -84,23 +84,28 @@ void main()
         - 0.5;
 */
 
+  ivec2 texelPos = ivec2(
+            output.texCoords.x * (textureSize(displacementMap,0).x -1),  
+            output.texCoords.y * (textureSize(displacementMap,0).y -1)
+          );
+          
+
   float displacementVal = texelFetch(
           displacementMap, 
-          ivec2(
-            output.texCoords.x * textureSize(displacementMap,0).x,  
-            output.texCoords.y * textureSize(displacementMap,0).y
-          )/1 ,
+          texelPos,
           0  
         ).x 
         - 0.5;
-        
+
+  float weightedDistDepDisplFactor = BARYCENTRIC_WEIGHTED(distanceDependentDisplacementFactor);         
 
 
   output.position +=  
     normalize(output.normal) * 
     displacementVal *
     displacementIntensity * 
-    distanceDependentDisplacementFactor;
+    weightedDistDepDisplFactor
+    //distanceDependentDisplacementFactor
     ;
 
 

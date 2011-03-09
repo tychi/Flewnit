@@ -16,10 +16,19 @@
 
 
 {% if not layeredRendering %}
-    uniform mat4 viewMatrix;
-    uniform mat4 projectionMatrix;
-    uniform mat4 viewProjectionMatrix;
+   //seemingly unneded in this stage:
+   // uniform mat4 viewMatrix;
+   // uniform mat4 projectionMatrix;
+   // uniform mat4 viewProjectionMatrix;
 {% endif %}
+
+{%if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION and SHADING_FEATURE_TESSELATION %} 
+    //as every user varyings are in world space, we have to write view space pos OF THE SPECTOTOR CAM to gl_Position
+    //in case both tess and layered rendering is active, so that the tess control shader can perform its 
+    //view space dynamic LOD calculations; Even for shadow map generation, the tesslevels should be performed in cam space
+    //in order to omit artifacts due to different generation and comparison-geometry; 
+     uniform mat4 spectatorCamViewMatrix;
+{% endif %} 
 
 //a bit overkill of matrix permutations, but removing unnecessary ones later is easyier than adding missing ones; those matrices makeing no sense in a certein rendering environment will be ignored;
 {% if instancedRendering %}
@@ -68,7 +77,7 @@ layout(location = {{ NORMAL_SEMANTICS }}      ) 	in vec4 inVNormal;
 {% if SHADING_FEATURE_NORMAL_MAPPING %}
 layout(location = {{ TANGENT_SEMANTICS }}     ) 	in vec4 inVTangent;
 {% endif %}
-{% if SHADING_FEATURE_DECAL_TEXTURING or SHADING_FEATURE_DETAIL_TEXTURING or  SHADING_FEATURE_NORMAL_MAPPING %}
+{% if texCoordsNeeded %}
 layout(location = {{ TEXCOORD_SEMANTICS }}    ) 	in vec4 inVTexCoord;
 {% endif %}
 
@@ -108,8 +117,9 @@ void main()
     {% else %}
       mat4 shadeSpaceTransform = instanceTransforms[gl_InstanceID].modelViewMatrix;
     {% endif %}
-    mat4 modelViewProjectionMatrix =   instanceTransforms[gl_InstanceID].modelViewProjectionMatrix;   
-    int uniqueInstanceID =             instanceTransforms[gl_InstanceID].uniqueInstanceID;
+    mat4 modelViewProjectionMatrix =    instanceTransforms[gl_InstanceID].modelViewProjectionMatrix;   
+    mat4 modelViewMatrix =              instanceTransforms[gl_InstanceID].modelViewMatrix;   
+    int uniqueInstanceID =              instanceTransforms[gl_InstanceID].uniqueInstanceID;
   {% else %}
     {%if worldSpaceTransform %}
       mat4 shadeSpaceTransform = modelMatrix;
@@ -125,17 +135,6 @@ void main()
     gl_Position =  modelViewProjectionMatrix  * inVPosition; /*default MVP transform*/   
   {% endif %} 
   
-  {%if worldSpaceTransform and SHADING_FEATURE_TESSELATION %} 
-    //as every user varyings are in world space, we have to write view space pos to gl_Position
-    //in case both tess and layered rendering is active, so that the tess control shader can perform its 
-    //view space dynamic LOD calculations 
-    gl_Position =  modelViewMatrix  * inVPosition;
-  {% endif %} 
-  
-  //{%if not SHADING_FEATURE_TESSELATION and not layeredRendering %} 
-  //  {%comment%}read: if neither tess nor layered, then write gl_Pos, as frag stage will follow directly{%endcomment%}
-  //  gl_Position =  modelViewProjectionMatrix  * inVPosition; /*default MVP transform*/ 
-  //{% endif %} 
    
 	{% if shadeSpacePositionNeeded %}
 		{% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
@@ -145,6 +144,18 @@ void main()
       output.position =  shadeSpaceTransform * inVPosition; 
     {% endif %}       
   {% endif %}  
+	
+	 {%if worldSpaceTransform and SHADING_FEATURE_TESSELATION %} 
+    //as every user varyings are in world space, we have to write view space pos OF THE SPECTOTOR CAM to gl_Position
+    //in case both tess and layered rendering is active, so that the tess control shader can perform its 
+    //view space dynamic LOD calculations; Even for shadow map generation, the tesslevels should be performed in cam space
+    //in order to omit artifacts due to different generation and comparison-geometry; 
+      {%if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION %} 
+        gl_Position =  spectatorCamViewMatrix * output.position;
+      {% else %} 
+        gl_Position =  modelViewMatrix * inVPosition;
+      {% endif %} 
+  {% endif %} 
 	
 	
   {% if SHADING_FEATURE_TESSELATION or shaderPerformsColorCalculations %}              

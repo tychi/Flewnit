@@ -252,7 +252,7 @@ void Loader::createHardCodedSceneStuff()
 		 	 decalTex= URE_INSTANCE->getLoader()->loadTexture(
 				String("rockwallDispDecalTest"),
 				DECAL_COLOR_SEMANTICS,
-				Path("./assets/textures/rockwallDisp.png"),
+				Path("./assets/textures/rockbumpDisp.png"),
 				BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
 				true,
 				false,

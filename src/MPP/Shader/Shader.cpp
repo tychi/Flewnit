@@ -896,7 +896,6 @@ void Shader::setupMaterialUniforms(VisualMaterial* visMat)
 //					"texture sizes, desired pixel lenght of subdivided  line etc.."); //TODO
 			//assert also that normal mapping is active... at least at first
 		}
-
 	}
 }
 
@@ -912,6 +911,15 @@ void Shader::setupTessellationParameters(VisualMaterial* visMat)
 		bindInt("displacementMap",DISPLACEMENT_SEMANTICS);
 	}
 	//TODO continue
+
+	bindFloat("numScreenPixels", static_cast<float>(WindowManager::getInstance().getWindowResolution().x));
+	//rest still hardcoded in shader:
+//	"tessQualityFactor"
+//	"distanceToBeginWithTesselation"
+//	"distanceUntilFullSubdivision"
+//	"minTessLevel"
+//	"maxTessLevel"
+//	"displacementIntensity"
 }
 
 
