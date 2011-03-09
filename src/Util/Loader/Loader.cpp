@@ -252,8 +252,10 @@ void Loader::createHardCodedSceneStuff()
 		 	 decalTex= URE_INSTANCE->getLoader()->loadTexture(
 				String("rockwallDispDecalTest"),
 				DECAL_COLOR_SEMANTICS,
-				Path("./assets/textures/rockbumpDisp.png"),
-				BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
+//				Path("./assets/textures/rockbumpDisp.png"),
+//				BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
+				Path("./assets/blendfiles/raptor/textures/raptorDisp_32f.exr"),
+				BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
 				true,
 				false,
 				true
@@ -885,10 +887,11 @@ void Loader::transformPixelData(BufferSemantics bufferSemantics,
 			BOOL sucess = image->getChannel(*greyImage, FICC_RED);
 			assert("got gray image" && sucess);
 			assert("8 bits per pixel" && greyImage->getBitsPerPixel() == 8);
-			  memcpy( buffer,
+			memcpy( buffer,
 					  reinterpret_cast<void*>(greyImage->accessPixels()),
 					  texelLayout.numChannels * sizeof(BYTE) * greyImage->getWidth()* greyImage->getHeight()
-			  );
+			);
+			delete greyImage;
 		}
 		else
 		{
@@ -933,6 +936,22 @@ void Loader::transformPixelData(BufferSemantics bufferSemantics,
 		break;
 
 	case FIT_RGBAF:
+		if(texelLayout.numChannels==1)
+		{
+			assert("float image really wanted" && (texelLayout.internalGPU_DataType==GPU_DATA_TYPE_FLOAT)
+					&& (texelLayout.bitsPerChannel ==32));
+			fipImage* greyImage = new fipImage();
+			BOOL sucess = image->getChannel(*greyImage, FICC_RED);
+			assert("got gray image" && sucess);
+			assert("32 bits per pixel" && greyImage->getBitsPerPixel() == 32);
+			 memcpy( buffer,
+					  reinterpret_cast<void*>(greyImage->accessPixels()),
+					  texelLayout.numChannels * sizeof(float) * greyImage->getWidth()* greyImage->getHeight()
+			 );
+			 delete greyImage;
+		}
+		else
+		{
 		  texelLayout = BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false);
 
 		  //copy altered image contents to the designated buffer
@@ -940,6 +959,7 @@ void Loader::transformPixelData(BufferSemantics bufferSemantics,
 				  reinterpret_cast<void*>(image->accessPixels()),
 				  texelLayout.numChannels * sizeof(float) * image->getWidth()* image->getHeight()
 		  );
+		}
 
 		  break;
 
