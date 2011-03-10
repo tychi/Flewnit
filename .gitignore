@@ -1,6 +1,7 @@
 CMakeFiles/
 src/MPP/Shader/ShaderSources/backup/
 src/MPP/Shader/ShaderSources/__generated/GenericLightingUberShader*
+assets/textures/currently unneeded/
 bin/
 lib/
 include/GL3/
