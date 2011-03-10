@@ -49,9 +49,9 @@ class ConfigCaster
 {
 public:
 	template<typename T>
-	static T cast(ConfigStructNode& csn) throw(ConfigCastException)
+	static T cast(const ConfigStructNode& csn) throw(ConfigCastException)
 	{
-		ConfigValueNode<T>* cvn = dynamic_cast<ConfigValueNode<T>* > ( & csn);
+		const ConfigValueNode<T>* cvn = dynamic_cast<const ConfigValueNode<T>* > ( & csn);
 
 		if(cvn)
 		{

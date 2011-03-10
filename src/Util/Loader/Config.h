@@ -108,8 +108,8 @@ public:
 
 
 
-	T value(){return mValue;}
-	const GUIParams& getGUIParams(){return mGUIParams;}
+	const T value()const{return mValue;}
+	const GUIParams& getGUIParams()const{return mGUIParams;}
 
 private:
 

@@ -74,7 +74,7 @@ void main()
     
       outFFinalLuminance = vec4(0.0,0.0,0.0,0.0); //init to zero as it will be accumulated over samples and lightsources
       vec3 fragToCamN = normalize( (-1.0) * input.position.xyz);   //vec3 fragToCamN = normalize(eyePosition_WS - input.position); <--legacy worldspace code
-      {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING %} vec4 position = input.position; /*have to do this to assur code compatibility for dereferred and default lighting calculations*/  {% endif %} 
+      {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING %} vec4 position = input.position; /*have to do this to ensure code compatibility for dereferred and default lighting calculations*/  {% endif %} 
                
       {% if RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
         //{############### begin outer samples loop ####################################################################
@@ -152,7 +152,16 @@ void main()
           //debug
           //outFFinalLuminance = texture( cubeMap, transpose(mat3(viewMatrix)) * reflect( position.xyz , normalVN )     );
       {% endif %}
-   
+      
+      //"participating media", stupid straight forward approach #1; won't continie, more important stuff to do atm ;(
+      /*
+      float desaturateBeginDistance = 200.0;
+      float desaturateEndDistance = 500.0; 
+      float fragDist = length(position.xyz);
+      float desaturateFraction = clamp( (fragDist-desaturateBeginDistance)/(desaturateEndDistance - desaturateBeginDistance)  ,0.0,1.0);
+      desaturateFraction*=desaturateFraction;
+      outFFinalLuminance = mix(outFFinalLuminance, vec4((outFFinalLuminance.x+outFFinalLuminance.y+outFFinalLuminance.z)*0.33),  desaturateFraction);
+      */
     
     {% endif %}     {%comment%} end distinction between G-buffer fill and lighting  {%endcomment%}
          

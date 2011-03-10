@@ -19,15 +19,18 @@ namespace Flewnit
 class HardCodedSceneLoader:
 	public SceneLoader
 {
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+	//FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	HardCodedSceneLoader();
+	HardCodedSceneLoader(ConfigStructNode& scenesGlobalSettings, ConfigStructNode& sceneConfig );
 	virtual ~HardCodedSceneLoader();
+
+	virtual void loadScene();
 
 protected:
 
-	virtual void init();
+	virtual void init(ConfigStructNode& sceneConfig);
 
+	virtual void loadTextures();
 	virtual void loadMaterials();
 	virtual void loadGeometries();
 	virtual void createSceneNodeHierarchy(); //parse the assimp scene nodes
@@ -35,6 +38,7 @@ protected:
 	virtual void addSubObjectsWorldObjects();
 	virtual void loadLightSources();
 	virtual void loadCamera();
+
 };
 
 }

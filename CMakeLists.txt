@@ -28,7 +28,7 @@ if(UNIX)
     option(RELEASE "build in Release mode for more performance but no debugging features" OFF)
     
     set(GLM_DIRECTORY "../thirdParty/ogl-math" CACHE PATH "Path to glm Math library")
-    set(ASSIMP_DIRECTORY "../thirdParty/assimp" CACHE PATH "Path to assimp asset loading library")
+    set(ASSIMP_DIRECTORY "/usr/local/include/assimp" CACHE PATH "Path to assimp asset loading library")
     
 
 elseif(WIN32)

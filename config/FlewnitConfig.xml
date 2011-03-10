@@ -14,30 +14,46 @@
 
 	</generalSettings>
 	
-	<scene>
-		<tesselateMeshesWithDisplacementMap type="BOOL" value="true" />		
-		<environmentMap type="STRING" value="./assets/textures/cubeMaps/early_morning.jpg" />
+	<scenes>
+
+	  <scenesGlobalSettings>
+		  <tesselateMeshesWithDisplacementMap type="BOOL" value="true" />		
+		  <environmentMap type="STRING" value="./assets/textures/cubeMaps/stormy.jpg" />
+  		<referenceCountThresholdForInstancedRendering type="INT" value="8" />
+		</scenesGlobalSettings>
 		
-		<sceneFile type="STRING" value="./assets/blendfiles/raptor/raptor_11k_FacesNormalDisp_NoPackedTextures.blend" />			
-		<sceneFileRootNode>
-			<name type="STRING" value="sceneFileRootNode" />
-			<position type="VEC3" x="0.0" y="100.0" z="-100.0" />
-			<direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
-			<up type="VEC3" x="0.0" y="1.0" z="0.0" />				
-			<scale type="FLOAT" value="1.0"/>	
-		</sceneFileRootNode>	
+		<Scene>
+		  <Type type="STRING" value="SceneFile"/>
+  		<sceneFile type="STRING" value="./assets/blendfiles/raptor/raptor_11k_FacesNormalDisp_NoPackedTextures.blend" />		
+  		
+  		<SceneNode>
+			  <Type type="STRING" value="PURE_NODE"/>
+			  <name type="STRING" value="blendFileSceneRootNode" />
+			  <position type="VEC3" x="0.0" y="100.0" z="-100.0" />
+			  <direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
+			  <up type="VEC3" x="0.0" y="1.0" z="0.0" />				
+			  <scale type="FLOAT" value="1.0"/>	
+			</SceneNode>  
+			  
+		</Scene>	
 	
-		<loadHardCodedSceneElements type="BOOL" value="true" />
-		<referenceCountThresholdForInstancedRendering type="INT" value="8" />
-		<hardCodeSceneRootNode>
-			<name type="STRING" value="hardCodeSceneRootNode" />
-			<position type="VEC3" x="-50.0" y="0.0" z="-0.0" />
-			<direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
-			<up type="VEC3" x="0.0" y="1.0" z="0.0" />				
-			<scale type="FLOAT" value="1.0"/>	
-		</hardCodeSceneRootNode>
+
+		<Scene>
+		  <Type type="STRING" value="HardCodedScene"/>
+
+  		<SceneNode>
+			  <Type type="STRING" value="PURE_NODE"/>
+			  <name type="STRING" value="hardCodedSceneRootNode" />
+			  
+			  <position type="VEC3" x="-50.0" y="0.0" z="-0.0" />
+			  <direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
+			  <up type="VEC3" x="0.0" y="1.0" z="0.0" />				
+			  <scale type="FLOAT" value="1.0"/>	
+      </SceneNode>  
+      
+		</Scene>
 	
-	</scene>
+	</scenes>
 
 
 	<UI_Settings>
