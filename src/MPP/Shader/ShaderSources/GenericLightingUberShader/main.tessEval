@@ -95,7 +95,10 @@ void main()
           texelPos,
           0  
         ).x 
-        - 0.5;
+        - 0.5
+        ;
+        
+   //displacementVal*=-1.0;
 
   float weightedDistDepDisplFactor = BARYCENTRIC_WEIGHTED(distanceDependentDisplacementFactor);         
 

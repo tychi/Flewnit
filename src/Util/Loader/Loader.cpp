@@ -35,6 +35,7 @@
 #include <tinyxml.h>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
+#include "Common/Profiler.h"
 
 
 
@@ -65,26 +66,26 @@ void Loader::loadScene()
 	BOOST_FOREACH(ConfigStructNode* sceneConfNode, scenesConfigNode.get("Scene"))
 	{
 		String type = ConfigCaster::cast<String>(sceneConfNode->get("Type",0));
-		if(type == String("SceneFile"))
+		if(type == String("HardCodedScene"))
 		{
-			SceneLoader sceneLoader(
-					(scenesConfigNode.get("scenesGlobalSettings",0)),
-					*sceneConfNode
+			HardCodedSceneLoader hcsl(
+				(scenesConfigNode.get("scenesGlobalSettings",0)),
+				*sceneConfNode
 			);
-			sceneLoader.loadScene();
+			hcsl.loadScene();
+			Profiler::getInstance().updateMemoryTrackingInfo();
 		}
 		else
 		{
-			if(type == String("HardCodedScene"))
+			if(type == String("SceneFile"))
 			{
-				//TODO
-				//createHardCodedSceneStuff();
-
-				HardCodedSceneLoader hcsl(
+				SceneLoader sceneLoader(
 						(scenesConfigNode.get("scenesGlobalSettings",0)),
 						*sceneConfNode
 				);
-				hcsl.loadScene();
+
+				sceneLoader.loadScene();
+				Profiler::getInstance().updateMemoryTrackingInfo();
 			}
 			else
 			{

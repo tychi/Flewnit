@@ -66,19 +66,19 @@ void HardCodedSceneLoader::createSceneNodeHierarchy()
 {
 	//create the first rendering, to see anything and to test the camera, the buffers, the shares and to overall architectural frame:
 	//TODO
-	mSceneRootNode->addChild(
+	mRootSceneNode->addChild(
 		new PureVisualObject("myDefaultBoxGeo1",AmendedTransform(Vector3D(0,-10,-30), Vector3D(0.0,0.1,-1.0)))
 	);
-	mSceneRootNode->addChild(
+	mRootSceneNode->addChild(
 		new PureVisualObject("myTessBoxGeo1",AmendedTransform(Vector3D(90,-10,50), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1),0.5))
 	);
-	mSceneRootNode->addChild(
+	mRootSceneNode->addChild(
 		new PureVisualObject("myBlackNWhiteBox",AmendedTransform(Vector3D(-90,-10,50), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1),1.0))
 	);
-	mSceneRootNode->addChild(
+	mRootSceneNode->addChild(
 		new PureVisualObject("myBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),3.0f))
 	);
-	mSceneRootNode->addChild(
+	mRootSceneNode->addChild(
 		new PureVisualObject("myEnvmapBox",AmendedTransform(Vector3D(100,20,-80) )) //, Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
 	);
 }
@@ -213,10 +213,67 @@ void HardCodedSceneLoader::loadTextures()
 	 );
 
 
+	 // raptor displacement material textures; TODO delete before implementing to whole scene stuff!
+	 URE_INSTANCE->getLoader()->loadTexture(
+	 			String("raptorDecal"),
+	 			DIFFUSE_COLOR_SEMANTICS,
+	 			Path("./assets/textures/stonestuff.jpg"),
+	 			BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+	 			true,
+	 			false,
+	 			true
+	 	);
+	 URE_INSTANCE->getLoader()->loadTexture(
+	 			String("raptorNormal"),
+	 			//DIFFUSE_COLOR_SEMANTICS,
+	 			NORMAL_SEMANTICS,
+	 			Path("./assets/blendfiles/raptor/textures/raptorNorm_RGBA8.png"),
+	 			BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+	 			true,
+	 			false,
+	 			true
+	 	);
+	 URE_INSTANCE->getLoader()->loadTexture(
+	 		String("raptorDisp"),
+	 		DISPLACEMENT_SEMANTICS,
+	 		Path("./assets/blendfiles/raptor/textures/raptorDisp_32f.exr"),
+	 		BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
+	 		true,
+	 		false,
+	 		true
+	  	 );
 }
 
 void HardCodedSceneLoader::loadMaterials()
 {
+	// raptor displacement material ; TODO delete before implementing to whole scene stuff!
+	Material* raptorTessMat = SimulationResourceManager::getInstance().getMaterial("raptorTessMat");
+	if(! raptorTessMat)
+	{
+				std::map<BufferSemantics,Texture*> myMap;
+				myMap[DIFFUSE_COLOR_SEMANTICS] =
+						SimulationResourceManager::getInstance().getTexture("raptorDecal");
+				myMap[NORMAL_SEMANTICS] =
+						SimulationResourceManager::getInstance().getTexture("raptorNormal");
+				myMap[DISPLACEMENT_SEMANTICS]=
+						SimulationResourceManager::getInstance().getTexture("raptorDisp");
+
+				raptorTessMat = new VisualMaterial("raptorTessMat",
+					//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+					VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+					ShadingFeatures(
+							SHADING_FEATURE_DIRECT_LIGHTING
+							//| SHADING_FEATURE_DIFFUSE_TEXTURING
+							| SHADING_FEATURE_NORMAL_MAPPING
+							| (mTesselateMeshesWithDisplacementMap ? SHADING_FEATURE_TESSELATION :0)
+					),
+					myMap,
+					VisualMaterialFlags(true,false,true,true,false,false),
+					100.0f,
+					0.4f
+				);
+	}//endif !raptorTessMat
+
 	Material* bunnyDecalMat = SimulationResourceManager::getInstance().getMaterial("bunnyDecalMat");
 	if(! bunnyDecalMat)
 	{
@@ -426,7 +483,7 @@ void HardCodedSceneLoader::createInstancingSetup()
 		);
 
 
-		SceneNode* instancesParentNode = mSceneRootNode->addChild(
+		SceneNode* instancesParentNode = mRootSceneNode->addChild(
 				new SceneNode(
 					"boxInstanceArmyParent",
 					PURE_NODE,
@@ -467,7 +524,7 @@ void HardCodedSceneLoader::createInstancingSetup()
 
 void HardCodedSceneLoader::addSubObjectsToWorldObjects()
 {
-	dynamic_cast<WorldObject*>(mSceneRootNode->getChild("myDefaultBoxGeo1"))->addSubObject(
+	dynamic_cast<WorldObject*>(mRootSceneNode->getChild("myDefaultBoxGeo1"))->addSubObject(
 		new SubObject(
 			"BoxSubObject1",
 			VISUAL_SIM_DOMAIN,
@@ -475,7 +532,7 @@ void HardCodedSceneLoader::addSubObjectsToWorldObjects()
 			SimulationResourceManager::getInstance().getMaterial("bunnyDecalMat")
 		)
 	);
-	dynamic_cast<WorldObject*>(mSceneRootNode->getChild("myTessBoxGeo1"))->addSubObject(
+	dynamic_cast<WorldObject*>(mRootSceneNode->getChild("myTessBoxGeo1"))->addSubObject(
 		new SubObject(
 			"myTessBoxGeo1SO",
 			VISUAL_SIM_DOMAIN,
@@ -484,7 +541,7 @@ void HardCodedSceneLoader::addSubObjectsToWorldObjects()
 		)
 	);
 
-	dynamic_cast<WorldObject*>(mSceneRootNode->getChild("myBlackNWhiteBox"))->addSubObject(
+	dynamic_cast<WorldObject*>(mRootSceneNode->getChild("myBlackNWhiteBox"))->addSubObject(
 		new SubObject(
 			"myBlackNWhiteBoxSO",
 			VISUAL_SIM_DOMAIN,
@@ -494,7 +551,7 @@ void HardCodedSceneLoader::addSubObjectsToWorldObjects()
 	);
 
 
-	dynamic_cast<WorldObject*>(mSceneRootNode->getChild("myBoxAsPlane"))->addSubObject(
+	dynamic_cast<WorldObject*>(mRootSceneNode->getChild("myBoxAsPlane"))->addSubObject(
 		new SubObject(
 			"myBoxAsPlaneSubObject1",
 			VISUAL_SIM_DOMAIN,
@@ -502,7 +559,7 @@ void HardCodedSceneLoader::addSubObjectsToWorldObjects()
 			SimulationResourceManager::getInstance().getMaterial("rockbumpMat")
 		)
 	);
-	dynamic_cast<WorldObject*>(mSceneRootNode->getChild("myEnvmapBox"))->addSubObject(
+	dynamic_cast<WorldObject*>(mRootSceneNode->getChild("myEnvmapBox"))->addSubObject(
 		new SubObject(
 			"MyEnvmapBoxSubObject1",
 			VISUAL_SIM_DOMAIN,

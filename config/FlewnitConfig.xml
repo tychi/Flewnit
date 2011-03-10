@@ -23,22 +23,6 @@
 		</scenesGlobalSettings>
 		
 		<Scene>
-		  <Type type="STRING" value="SceneFile"/>
-  		<sceneFile type="STRING" value="./assets/blendfiles/raptor/raptor_11k_FacesNormalDisp_NoPackedTextures.blend" />		
-  		
-  		<SceneNode>
-			  <Type type="STRING" value="PURE_NODE"/>
-			  <name type="STRING" value="blendFileSceneRootNode" />
-			  <position type="VEC3" x="0.0" y="100.0" z="-100.0" />
-			  <direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
-			  <up type="VEC3" x="0.0" y="1.0" z="0.0" />				
-			  <scale type="FLOAT" value="1.0"/>	
-			</SceneNode>  
-			  
-		</Scene>	
-	
-
-		<Scene>
 		  <Type type="STRING" value="HardCodedScene"/>
 
   		<SceneNode>
@@ -52,6 +36,23 @@
       </SceneNode>  
       
 		</Scene>
+
+		<Scene>
+		  <Type type="STRING" value="SceneFile"/>
+  		<sceneFile type="STRING" value="./assets/blendfiles/raptor/raptor_11k_FacesNormalDisp_NoPackedTextures.blend" />		
+  		
+  		<SceneNode>
+			  <Type type="STRING" value="PURE_NODE"/>
+			  <name type="STRING" value="blendFileSceneRootNode" />
+			  <position type="VEC3" x="0.0" y="0.0" z="0.0" />
+			  <direction type="VEC3" x="0.0" y="-1.0" z="0.0" />
+			  <up type="VEC3" x="0.0" y="0.0" z="-1.0" />				
+			  <scale type="FLOAT" value="1."/>	
+			</SceneNode>  
+			  
+		</Scene>	
+	
+
 	
 	</scenes>
 
@@ -77,7 +78,7 @@
 		
 		
 		<OpenGL_Settings>
-			<contextVersion type="VEC2I" x="4" y="0" />
+			<contextVersion type="VEC2I" x="4" y="1" />
 			<enforceCoreProfile type="BOOL" value="true" />
 		</OpenGL_Settings>
 		
@@ -180,7 +181,7 @@
 				</Camera>
 				
 				<GlobalShadingFeatures>
-					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS"/>
+					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS"/>
 					<lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_NONE"/>
 					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_NONE"/>
 					<numMaxLightSources type="INT" value="10"/>

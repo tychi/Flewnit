@@ -49,7 +49,7 @@ protected:
 	bool mTesselateMeshesWithDisplacementMap;
 
 	//is appended to the gloabel root scene node automatically
-	SceneNode* mSceneRootNode;
+	SceneNode* mRootSceneNode;
 
 	Assimp::Importer* mImporter;
 	const aiScene* mAssimpScene;
@@ -64,6 +64,10 @@ protected:
 	int mReferenceCountThresholdForInstancedRendering;
 	std::vector<int> mGeometryReferenceCounters;
 	std::vector<InstanceManager*> mInstanceManagers;
+
+
+	//track those scene nodes having meshes attached, as those are world objects to be further processed
+	//std::map<String,WorldObject*> mWorldObjects;
 
 };
 

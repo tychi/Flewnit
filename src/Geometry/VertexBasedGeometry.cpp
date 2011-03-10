@@ -303,7 +303,7 @@ void VertexBasedGeometry::validateBufferIntegrity()throw(BufferException)
 				assert("number of elements all the same"&&
 						(numElements == mAttributeBuffers[i]->getBufferInfo().numElements));
 			}
-			assert("must be four component" && ((mAttributeBuffers[i]->getBufferInfo().numElements % 4) == 0));
+			assert("must be four component" && ((mAttributeBuffers[i]->getBufferInfo().elementInfo.numChannels ) == 4));
 			assert( "indirectly testing for 32 bit size of single data element" &&
 				( (mAttributeBuffers[i]->getBufferInfo().bufferSizeInByte /
 				  (mAttributeBuffers[i]->getBufferInfo().numElements)       % (4*sizeof(float))) == 0));
