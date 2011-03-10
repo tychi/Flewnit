@@ -148,7 +148,7 @@ void Loader::createHardCodedSceneStuff()
 	{
 		Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
 				String("bunnyDecalTex"),
-				DECAL_COLOR_SEMANTICS,
+				DIFFUSE_COLOR_SEMANTICS,
 				Path("./assets/textures/bunny.png"),
 				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
 				true,
@@ -157,14 +157,14 @@ void Loader::createHardCodedSceneStuff()
 		);
 
 		std::map<BufferSemantics,Texture*> myMap;
-		myMap[DECAL_COLOR_SEMANTICS] = decalTex;
+		myMap[DIFFUSE_COLOR_SEMANTICS] = decalTex;
 
 		mat1 = new VisualMaterial("BunnyDecalMaterial",
 			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
 			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
 			ShadingFeatures(
 					SHADING_FEATURE_DIRECT_LIGHTING
-					| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_DIFFUSE_TEXTURING
 			),
 			myMap,
 			//SHADING_FEATURE_DIRECT_LIGHTING,
@@ -181,7 +181,7 @@ void Loader::createHardCodedSceneStuff()
 	{
 		Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
 				String("rockbumpDecal"),
-				DECAL_COLOR_SEMANTICS,
+				DIFFUSE_COLOR_SEMANTICS,
 				Path("./assets/textures/rockbumpDecal.jpg"),
 				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
 				true,
@@ -190,7 +190,7 @@ void Loader::createHardCodedSceneStuff()
 		);
 		Texture* normalMap= URE_INSTANCE->getLoader()->loadTexture(
 				String("rockbumpNormalDisp"),
-				//DECAL_COLOR_SEMANTICS,
+				//DIFFUSE_COLOR_SEMANTICS,
 				NORMAL_SEMANTICS,
 				Path("./assets/textures/rockbumpNormalDisp.png"),
 				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
@@ -199,16 +199,16 @@ void Loader::createHardCodedSceneStuff()
 				true
 		);
 		std::map<BufferSemantics,Texture*> myMap;
-		myMap[DECAL_COLOR_SEMANTICS] = decalTex;
+		myMap[DIFFUSE_COLOR_SEMANTICS] = decalTex;
 		myMap[NORMAL_SEMANTICS] = normalMap;
-		//myMap[DECAL_COLOR_SEMANTICS] = normalMap;
-		//myMap[DECAL_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("bunnyDecalTex");
+		//myMap[DIFFUSE_COLOR_SEMANTICS] = normalMap;
+		//myMap[DIFFUSE_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("bunnyDecalTex");
 		mat2 = new VisualMaterial("StoneBumpMaterial",
 			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
 			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
 			ShadingFeatures(
 					SHADING_FEATURE_DIRECT_LIGHTING
-					| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_DIFFUSE_TEXTURING
 					| SHADING_FEATURE_NORMAL_MAPPING
 			),
 			myMap,
@@ -224,14 +224,14 @@ void Loader::createHardCodedSceneStuff()
 	if(! stoneBumpTessMat)
 	{
 		std::map<BufferSemantics,Texture*> myMap;
-		myMap[DECAL_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpDecal");
+		myMap[DIFFUSE_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpDecal");
 		myMap[NORMAL_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpNormalDisp");
-		Texture* dispTex =  SimulationResourceManager::getInstance().getTexture("rockbumpDisp.png");
+		Texture* dispTex =  SimulationResourceManager::getInstance().getTexture("rockbumpDisp");
 		if(!dispTex)
 		{
 			dispTex= URE_INSTANCE->getLoader()->loadTexture(
-				String("rockbumpDisp.png"),
-				DECAL_COLOR_SEMANTICS,
+				String("rockbumpDisp"),
+				DIFFUSE_COLOR_SEMANTICS,
 				Path("./assets/textures/rockbumpDisp.png"),
 				BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
 				true,
@@ -240,14 +240,14 @@ void Loader::createHardCodedSceneStuff()
 		 	 );
 		}
 		myMap[DISPLACEMENT_SEMANTICS] = dispTex;
-		//myMap[DECAL_COLOR_SEMANTICS] = normalMap;
-		//myMap[DECAL_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("bunnyDecalTex");
+		//myMap[DIFFUSE_COLOR_SEMANTICS] = normalMap;
+		//myMap[DIFFUSE_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("bunnyDecalTex");
 		stoneBumpTessMat = new VisualMaterial("StoneBumpTessMaterial",
 			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
 			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
 			ShadingFeatures(
 					SHADING_FEATURE_DIRECT_LIGHTING
-					| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_DIFFUSE_TEXTURING
 					| SHADING_FEATURE_NORMAL_MAPPING
 					| (createTesselationStuffIfTechnicallyPossible ? SHADING_FEATURE_TESSELATION :0)
 			),
@@ -267,7 +267,7 @@ void Loader::createHardCodedSceneStuff()
 		{
 		 	 decalTex= URE_INSTANCE->getLoader()->loadTexture(
 				String("rockwallDispDecalTest"),
-				DECAL_COLOR_SEMANTICS,
+				DIFFUSE_COLOR_SEMANTICS,
 //				Path("./assets/textures/rockbumpDisp.png"),
 //				BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
 				Path("./assets/blendfiles/raptor/textures/raptorDisp_32f.exr"),
@@ -278,13 +278,13 @@ void Loader::createHardCodedSceneStuff()
 		 	 );
 		}
 		std::map<BufferSemantics,Texture*> myMap;
-		myMap[DECAL_COLOR_SEMANTICS] = decalTex;
+		myMap[DIFFUSE_COLOR_SEMANTICS] = decalTex;
 		blackNWhiteMat = new VisualMaterial("blackNWhiteMat",
 			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
 			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
 			ShadingFeatures(
 					SHADING_FEATURE_DIRECT_LIGHTING
-					| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_DIFFUSE_TEXTURING
 			),
 			myMap,
 			VisualMaterialFlags(true,false,true,true,false,false),
@@ -297,51 +297,57 @@ void Loader::createHardCodedSceneStuff()
 	Material* matEnvMap = SimulationResourceManager::getInstance().getMaterial("EnvMapCloudyNoonMaterial");
 	if(! matEnvMap)
 	{
-		Texture* envMapTex =
-				SimulationResourceManager::getInstance().getTexture("cloudy_noon");
-		if(!envMapTex)
+		Texture* envMapTex = 0;
+		if(SimulationResourceManager::getInstance().getCurrentSkyDome())
 		{
-			envMapTex= URE_INSTANCE->getLoader()->loadCubeTexture(
-				Path("./assets/textures/cubeMaps/cloudy_noon.jpg"),
-				ENVMAP_SEMANTICS,
-				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
-				true,
-				false
-			);
+			envMapTex = SimulationResourceManager::getInstance().getCurrentSkyDome()->getCubeMap();
 		}
-//		Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
-//				String("rockwallDecal"),
-//				DECAL_COLOR_SEMANTICS,
-//				Path("./assets/textures/rockwallDecal.jpg"),
-//				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
-//				true,
-//				false,
-//				true
-//		);
-//		Texture* normalMap= URE_INSTANCE->getLoader()->loadTexture(
-//				String("rockwallNormalDisp"),
-//				//DECAL_COLOR_SEMANTICS,
-//				NORMAL_SEMANTICS,
-//				Path("./assets/textures/rockwallNormalDisp.png"),
-//				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
-//				true,
-//				false,
-//				true
-//		);
+		else
+		{
+			envMapTex = SimulationResourceManager::getInstance().getTexture("cloudy_noon");
+			if(!envMapTex)
+			{
+				envMapTex= URE_INSTANCE->getLoader()->loadCubeTexture(
+					Path("./assets/textures/cubeMaps/cloudy_noon.jpg"),
+					ENVMAP_SEMANTICS,
+					BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+					true,
+					false
+				);
+			}
+		}
+
+		Texture* dispTex =  SimulationResourceManager::getInstance().getTexture("rockbumpDisp");
+		if(!dispTex)
+		{
+			dispTex= URE_INSTANCE->getLoader()->loadTexture(
+				String("rockbumpDisp"),
+				DIFFUSE_COLOR_SEMANTICS,
+				Path("./assets/textures/rockbumpDisp.png"),
+				BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
+				true,
+				false,
+				true
+		 	 );
+		}
 
 		std::map<BufferSemantics,Texture*> myMap;
 		myMap[ENVMAP_SEMANTICS] = envMapTex;
-		myMap[DECAL_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpDecal");
+
+
+		myMap[DIFFUSE_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpDecal");
 		myMap[NORMAL_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpNormalDisp");
+		myMap[DISPLACEMENT_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpDisp");
 
 		matEnvMap = new VisualMaterial("EnvMapCloudyNoonMaterial",
 			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
 			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
 			ShadingFeatures(
 					SHADING_FEATURE_DIRECT_LIGHTING
-					| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_DIFFUSE_TEXTURING
 					| SHADING_FEATURE_NORMAL_MAPPING
 					| SHADING_FEATURE_CUBE_MAPPING
+					| (createTesselationStuffIfTechnicallyPossible ? SHADING_FEATURE_TESSELATION : 0)
 			),
 			myMap,
 			//not dyn. cubemap renderable
@@ -389,7 +395,12 @@ void Loader::createHardCodedSceneStuff()
 		new SubObject(
 			"MyEnvmapBoxSubObject1",
 			VISUAL_SIM_DOMAIN,
-			new BoxGeometry("myEnvMapBox",Vector3D(20,50,30),true,false),
+			new BoxGeometry("myEnvMapBox",Vector3D(5,12.5,7.5f),true,
+					createTesselationStuffIfTechnicallyPossible
+					 ? (WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
+				     : false,
+				     Vector4D(1,1.5,5,5)
+			),
 			matEnvMap
 		)
 	);
@@ -413,7 +424,7 @@ void Loader::createHardCodedSceneStuff()
 	{
 		Texture* decalTex= URE_INSTANCE->getLoader()->loadTexture(
 				String("rockWallDecal"),
-				DECAL_COLOR_SEMANTICS,
+				DIFFUSE_COLOR_SEMANTICS,
 				Path("./assets/textures/rockwallDecal.jpg"),
 				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
 				true,
@@ -422,7 +433,7 @@ void Loader::createHardCodedSceneStuff()
 		);
 		Texture* normalMap= URE_INSTANCE->getLoader()->loadTexture(
 				String("rockWallNormalDisp"),
-				//DECAL_COLOR_SEMANTICS,
+				//DIFFUSE_COLOR_SEMANTICS,
 				NORMAL_SEMANTICS,
 				Path("./assets/textures/rockwallNormalDisp.png"),
 				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
@@ -443,7 +454,7 @@ void Loader::createHardCodedSceneStuff()
 
 
 		std::map<BufferSemantics,Texture*> myMap;
-		myMap[DECAL_COLOR_SEMANTICS] = decalTex;
+		myMap[DIFFUSE_COLOR_SEMANTICS] = decalTex;
 		myMap[NORMAL_SEMANTICS] = normalMap;
 		myMap[DISPLACEMENT_SEMANTICS] = dispTex;
 		matInstanced = new VisualMaterial("instancedRockWallMaterial",
@@ -451,7 +462,7 @@ void Loader::createHardCodedSceneStuff()
 			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
 			ShadingFeatures(
 					SHADING_FEATURE_DIRECT_LIGHTING
-					| SHADING_FEATURE_DECAL_TEXTURING
+					| SHADING_FEATURE_DIFFUSE_TEXTURING
 					| SHADING_FEATURE_NORMAL_MAPPING
 					| (createTesselationStuffIfTechnicallyPossible ? SHADING_FEATURE_TESSELATION :0)
 			),

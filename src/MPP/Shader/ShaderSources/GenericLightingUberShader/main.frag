@@ -55,7 +55,7 @@ void main()
     {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING  %} 
       {%comment%} get the fragment values in the classical way {%endcomment%}
       vec3 normalVN = getNormal(0); //sampleindex zero, as no multisampling is used
-      vec4 fragmentColor =  {% if SHADING_FEATURE_DECAL_TEXTURING %}  texture(decalTexture,input.texCoords.xy);
+      vec4 fragmentColor =  {% if SHADING_FEATURE_DIFFUSE_TEXTURING %}  texture(decalTexture,input.texCoords.xy);
                             {% else %} vec4(1.0,1.0,1.0,1.0);
                             {% endif %}  
     {% endif %}

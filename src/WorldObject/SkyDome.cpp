@@ -37,11 +37,19 @@ SkyDome::SkyDome( Path cubeMapFilePath )//Path cubeMapDirectory, String cubeMapF
 	SubObject* so = new SubObject(getName(),VISUAL_SIM_DOMAIN,boxGeo,skyDomeMat);
 
 	addSubObject(so);
+
+	SimulationResourceManager::getInstance().registerSkydome(this);
 }
 
 SkyDome::~SkyDome()
 {
 	// TODO Auto-generated destructor stub
+}
+
+Texture* SkyDome::getCubeMap()
+{
+	return reinterpret_cast<VisualMaterial*>
+		(getSubObjects(VISUAL_SIM_DOMAIN)[0]->getMaterial())->getTexture(ENVMAP_SEMANTICS);
 }
 
 }

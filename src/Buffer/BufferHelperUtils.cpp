@@ -50,7 +50,7 @@ String BufferHelper::BufferSemanticsToString(BufferSemantics bs)
 
 			"Z_INDEX_SEMANTICS",
 
-			"DECAL_COLOR_SEMANTICS",
+			"DIFFUSE_COLOR_SEMANTICS",
 
 			"CUSTOM_SEMANTICS",
 

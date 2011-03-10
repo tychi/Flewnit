@@ -238,9 +238,9 @@ void VisualMaterial::validateTextures()throw(SimulatorException)
 {
 	if(mType == VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING)
 	{
-		if( (mShadingFeatures &  SHADING_FEATURE_DECAL_TEXTURING) != 0)
+		if( (mShadingFeatures &  SHADING_FEATURE_DIFFUSE_TEXTURING) != 0)
 		{
-			assert(mTextures.find(DECAL_COLOR_SEMANTICS) != mTextures.end());
+			assert(mTextures.find(DIFFUSE_COLOR_SEMANTICS) != mTextures.end());
 		}
 		if( (mShadingFeatures &  SHADING_FEATURE_DETAIL_TEXTURING) != 0)
 		{

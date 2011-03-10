@@ -3,7 +3,7 @@
 	applicable to following stages: fragment {%endcomment%} 
 {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}
 	//following textures helping to determine the "unlit" fragment color to be lit or to be written to the Color buffer of the G-Buffer
-	{% if SHADING_FEATURE_DECAL_TEXTURING 	%}uniform sampler2D decalTexture;		{%endif%}
+	{% if SHADING_FEATURE_DIFFUSE_TEXTURING 	%}uniform sampler2D decalTexture;		{%endif%}
 	{% if SHADING_FEATURE_DETAIL_TEXTURING 	%}uniform sampler2D detailTexture;	{%endif%}
 	{% if SHADING_FEATURE_NORMAL_MAPPING 		%}uniform sampler2D normalMap;			{%endif%}
 	{% if SHADING_FEATURE_TESSELATION   		%}uniform sampler2D displacementMap;{%endif%}

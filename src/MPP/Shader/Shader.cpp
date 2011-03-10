@@ -209,7 +209,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	ShaderFeaturesLocal sfl (mLocalShaderFeatures);
 
 	//DEBUG mod the features in order to check template rendering
-	//sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_DECAL_TEXTURING );
+	//sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_DIFFUSE_TEXTURING );
 	//sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_DETAIL_TEXTURING);
 	//sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_NORMAL_MAPPING );
 	//sfl.shadingFeatures = ShadingFeatures( sfl.shadingFeatures | SHADING_FEATURE_CUBE_MAPPING);
@@ -248,7 +248,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 
 	bool texCoordsNeeded=
 		((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_TESSELATION) != 0)
-	||  ((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_DECAL_TEXTURING) != 0)
+	||  ((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_DIFFUSE_TEXTURING) != 0)
 	||  ((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_DETAIL_TEXTURING) != 0)
 	||  ((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_NORMAL_MAPPING) != 0)
 			;
@@ -854,11 +854,11 @@ void Shader::setupMaterialUniforms(VisualMaterial* visMat)
 		bindFloat("shininess",visMat->getShininess());
 		bindFloat("reflectivity",visMat->getReflectivity());
 
-		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DECAL_TEXTURING ) !=0 ))
+		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DIFFUSE_TEXTURING ) !=0 ))
 		{
-			glActiveTexture(GL_TEXTURE0 + DECAL_COLOR_SEMANTICS);
-			visMat->getTexture(DECAL_COLOR_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
-			bindInt("decalTexture",DECAL_COLOR_SEMANTICS);
+			glActiveTexture(GL_TEXTURE0 + DIFFUSE_COLOR_SEMANTICS);
+			visMat->getTexture(DIFFUSE_COLOR_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+			bindInt("decalTexture",DIFFUSE_COLOR_SEMANTICS);
 		}
 		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DETAIL_TEXTURING ) !=0 ))
 		{

@@ -63,6 +63,10 @@ public:
 	Geometry* getGeometry(String name);
 	//void deleteGeometry(Geometry* geo);
 
+	//called by SkyDome constructor automatically;
+	void registerSkydome(SkyDome* skyDome);
+	inline SkyDome* getCurrentSkyDome()const{return mCurrentSkyDome;}
+
 
 private:
 
@@ -103,6 +107,9 @@ private:
 
 	//OpenGL kernels and OpenGL Shaders stored centrally for multiple usage
 	std::map<String, MPP*>		mMPPs;
+
+
+	SkyDome* mCurrentSkyDome;
 
 };
 

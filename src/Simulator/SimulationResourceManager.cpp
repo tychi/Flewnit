@@ -204,6 +204,11 @@ Geometry* SimulationResourceManager::getGeometry(String name)
 
 #undef FLEWNIT_INTERNAL_FIND_MACRO
 
+void SimulationResourceManager::registerSkydome(SkyDome* skyDome)
+{
+	mCurrentSkyDome = skyDome;
+}
+
 
 }
 

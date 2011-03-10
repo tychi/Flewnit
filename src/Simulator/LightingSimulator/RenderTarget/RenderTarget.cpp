@@ -597,7 +597,7 @@ void RenderTarget::requestCreateAndStoreColorTexture(BufferSemantics which)throw
 	//floating point four-component textures:
 	case POSITION_SEMANTICS:
 	case TEXCOORD_SEMANTICS:
-	case DECAL_COLOR_SEMANTICS:
+	case DIFFUSE_COLOR_SEMANTICS:
 	case VELOCITY_SEMANTICS:
 	case FORCE_SEMANTICS:
 	case DISPLACEMENT_SEMANTICS: //normal-depth or normal map

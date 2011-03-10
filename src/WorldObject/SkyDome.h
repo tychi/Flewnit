@@ -21,6 +21,8 @@ class SkyDome
 public:
 	SkyDome( Path cubeMapFilePath );//Path cubeMapDirectory, String cubeMapFilename, String fileEnding);
 	virtual ~SkyDome();
+
+	Texture* getCubeMap();
 };
 
 }

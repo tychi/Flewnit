@@ -105,7 +105,7 @@
 	#define SHADING_FEATURE_DIRECT_LIGHTING		1<<0
 	//global lighting via layered depth images or stuff... just a brainstroming, won't be implemented	
 	#define SHADING_FEATURE_GLOBAL_LIGHTING		1<<1
-	#define SHADING_FEATURE_DECAL_TEXTURING		1<<2
+	#define SHADING_FEATURE_DIFFUSE_TEXTURING		1<<2
 	#define	SHADING_FEATURE_DETAIL_TEXTURING	1<<3
 	#define SHADING_FEATURE_NORMAL_MAPPING		1<<4
 	#define SHADING_FEATURE_CUBE_MAPPING		1<<5

@@ -85,9 +85,9 @@ void main()
 */
 
   ivec2 texelPos = ivec2(
-            output.texCoords.x * (textureSize(displacementMap,0).x -1),  
-            output.texCoords.y * (textureSize(displacementMap,0).y -1)
-          );
+            output.texCoords.x * (textureSize(displacementMap,0).x ),  
+            output.texCoords.y * (textureSize(displacementMap,0).y )
+          ) % textureSize(displacementMap,0)  ;
           
 
   float displacementVal = texelFetch(

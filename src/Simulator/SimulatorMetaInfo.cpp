@@ -194,7 +194,7 @@ String ShaderFeaturesLocal::stringify()const
 			case SHADING_FEATURE_GLOBAL_LIGHTING:
 				returnString.append("_ShadeGlobalLighting");
 				break;
-			case SHADING_FEATURE_DECAL_TEXTURING:
+			case SHADING_FEATURE_DIFFUSE_TEXTURING:
 				returnString.append("_ShadeDecal");
 				break;
 			case SHADING_FEATURE_DETAIL_TEXTURING:

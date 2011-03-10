@@ -89,7 +89,7 @@ layout(location = {{ DENSITY_SEMANTICS }}     ) 	in vec4 inVDensity;
 layout(location = {{ PRESSURE_SEMANTICS }}    ) 	in vec4 invPressure;
 layout(location = {{ FORCE_SEMANTICS }}       ) 	in vec4 inVForce;
 layout(location = {{ Z_INDEX_SEMANTICS }}     ) 	in vec4 inVZIndex;
-layout(location = {{ DECAL_COLOR_SEMANTICS }} )   in vec4 inVDecalColor;
+layout(location = {{ DIFFUSE_COLOR_SEMANTICS }} )   in vec4 inVDecalColor;
 layout(location = {{ CUSTOM_SEMANTICS }}      ) 	in vec4 inVCustomAttribute;
 {% endif %}
 //}

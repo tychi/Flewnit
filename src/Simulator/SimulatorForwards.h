@@ -146,7 +146,7 @@ class SceneNode;
 //WorldObject is derived from SceneNode
 class WorldObject;
 class	PureVisualObject;
-class 	SkyBox;
+class 	SkyDome;
 ///\{ following: concrete WorldObjects with different purpose:
 class Camera;
 
