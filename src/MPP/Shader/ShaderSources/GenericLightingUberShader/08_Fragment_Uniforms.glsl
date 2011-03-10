@@ -34,7 +34,7 @@
               be re-used in the deferred case {%endcomment%}
   {% endif %}
   //factor of attenuation outside the outer light cone
-  uniform float spotLightAmbientFactor = 0.03;
+  uniform float spotLightAmbientFactor = 0.3;
   
   uniform vec4 eyePositionW; //world space eye position, needed e.g. for skydome rendering
   uniform mat4 viewMatrix; //the transpose (=inverse) of the rotational component of the view matrix is needed to transform "envmap lookup vector" from view space back to world space

@@ -80,7 +80,7 @@ void SceneLoader::loadMaterials(){}
 void SceneLoader::loadGeometries(){}
 void SceneLoader::createSceneNodeHierarchy(){} //parse the assimp scene nodes
 void SceneLoader::createInstancingSetup(){}
-void SceneLoader::addSubObjectsWorldObjects(){}
+void SceneLoader::addSubObjectsToWorldObjects(){}
 void SceneLoader::loadLightSources(){}
 void SceneLoader::loadCamera(){}
 

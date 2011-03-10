@@ -40,7 +40,7 @@ protected:
 	virtual void loadGeometries();
 	virtual void createSceneNodeHierarchy(); //parse the assimp scene nodes
 	virtual void createInstancingSetup();
-	virtual void addSubObjectsWorldObjects();
+	virtual void addSubObjectsToWorldObjects();
 	virtual void loadLightSources();
 	virtual void loadCamera();
 
