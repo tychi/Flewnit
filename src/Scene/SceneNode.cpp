@@ -198,11 +198,31 @@ const AABB& SceneNode::getGlobalAABB()
 }
 
 
+//recursively searches in the child trees; returns 0 if node with name does not exist in own descendants
+SceneNode* SceneNode::findNode(String name)
+{
+	if(getName() ==name)
+	{return this;}
+
+	SceneNode* foundNode=0;
+	BOOST_FOREACH(Nodemap::value_type nodepair, mChildren)
+	{
+		foundNode = nodepair.second->findNode(name);
+		if(foundNode) return foundNode;
+	}
+
+	return 0;
+}
+
+
 SceneNode* SceneNode::getChild(String name)
 {
-	assert(mChildren.find(name) != mChildren.end());
-
-	return mChildren[name];
+	//assert(mChildren.find(name) != mChildren.end());
+	if(mChildren.find(name) != mChildren.end())
+	{
+		return mChildren[name];
+	}
+	return 0;
 }
 
 SceneNode& SceneNode::operator[](String name)

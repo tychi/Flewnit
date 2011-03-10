@@ -40,18 +40,36 @@ namespace Flewnit
 
 Loader::Loader()
 {
-	// TODO Auto-generated constructor stub
-
 }
 
 Loader::~Loader()
 {
-	// TODO Auto-generated destructor stub
 }
 
 void Loader::loadScene()
 {
-	createHardCodedSceneStuff();
+	ConfigStructNode& sceneConfigNode = URE_INSTANCE->getConfig().root().get("scene",0);
+	SceneNode& rootSceneNode = SimulationResourceManager::getInstance().getScene()->root();
+
+	if( sceneConfigNode.childExists("sceneFile",0))
+	{
+		Path sceneFilePath = Path(
+				ConfigCaster::cast<String>( sceneConfigNode.get("sceneFile",0) )
+		);
+	}
+
+	if( sceneConfigNode.childExists("environmentMap",0) )
+	{
+		Path envMapPath= Path( ConfigCaster::cast<String>( sceneConfigNode.get("environmentMap",0) ) );
+		rootSceneNode.addChild(new SkyDome(envMapPath));
+	}
+
+
+	if( ConfigCaster::cast<bool>( sceneConfigNode.get("loadHardCodedSceneElements",0) ) )
+	{
+		createHardCodedSceneStuff();
+	}
+
 
 }
 
@@ -62,9 +80,7 @@ void Loader::createHardCodedSceneStuff()
 	bool createTesselationStuffIfTechnicallyPossible = true;
 
 	SceneNode& rootNode = SimulationResourceManager::getInstance().getScene()->root();
-	rootNode.addChild(
-		new SkyDome( Path("./assets/textures/cubeMaps/"),"cloudy_noon","jpg")
-	);
+
 
 	//create the first rendering, to see anything and to test the camera, the buffers, the shares and to overall architectural frame:
 	//TODO
@@ -286,10 +302,8 @@ void Loader::createHardCodedSceneStuff()
 		if(!envMapTex)
 		{
 			envMapTex= URE_INSTANCE->getLoader()->loadCubeTexture(
-				String("cloudy_noon"),
+				Path("./assets/textures/cubeMaps/cloudy_noon.jpg"),
 				ENVMAP_SEMANTICS,
-				Path("./assets/textures/cubeMaps/cloudy_noon"),
-				String("jpg"),
 				BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
 				true,
 				false
@@ -777,9 +791,9 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 
 
 Texture2DCube* Loader::loadCubeTexture(
-		String name,  BufferSemantics bufferSemantics, Path fileName, String fileEndingWithoutDot,
-					const BufferElementInfo& texelPreferredLayout,
-					bool allocHostMemory,  bool genMipmaps
+		Path cubeMapFilePath,  BufferSemantics bufferSemantics,
+		const BufferElementInfo& texelPreferredLayout,
+		bool allocHostMemory,  bool genMipmaps
 )throw(BufferException)//may be changed by the loading routine!
 {
 	//sequence.. maybe  becaus of left handed system and wtf... ;(
@@ -797,18 +811,25 @@ Texture2DCube* Loader::loadCubeTexture(
 	//as it's only a temorary buffer
 	void* buffer = 0;
 
+	String pureFileNameWithoutFaceOrExtension = Path( cubeMapFilePath.filename() ).stem();
 
 	unsigned int dimensions;
 	for(int runner=0;runner<6;runner++)
 	{
-		String currentFileName = fileName.string();
-		currentFileName.append(suffixes[runner]);
-		currentFileName.append(".");
-		currentFileName.append(fileEndingWithoutDot);
+		Path currentFilePath =
+			Path(cubeMapFilePath.parent_path()) /  //directory
+			//construct file name with face suffix and file extension
+			Path(pureFileNameWithoutFaceOrExtension + suffixes[runner] + cubeMapFilePath.extension())
+			;
 
-		image->load(currentFileName.c_str());
+//		String currentFileName = fileName.string();
+//		currentFileName.append(suffixes[runner]);
+//		//currentFileName.append(".");
+//		currentFileName.append(fileEndingWithDot);
+
+		image->load(currentFilePath.string().c_str());
 		 LOG<<INFO_LOG_LEVEL<< "Loading image with path "
-		          << currentFileName
+		          << currentFilePath.string()
 		          << "; Bits Per Pixel: "
 		          << image->getBitsPerPixel()
 		          << "; width: " << image->getWidth()
@@ -859,7 +880,7 @@ Texture2DCube* Loader::loadCubeTexture(
 
 	Texture2DCube* returnTex =
 			new Texture2DCube(
-					name, dimensions, newTexeli,allocHostMemory,
+					pureFileNameWithoutFaceOrExtension, dimensions, newTexeli,allocHostMemory,
 					buffer,genMipmaps
 			);
 

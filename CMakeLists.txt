@@ -28,6 +28,8 @@ if(UNIX)
     option(RELEASE "build in Release mode for more performance but no debugging features" OFF)
     
     set(GLM_DIRECTORY "../thirdParty/ogl-math" CACHE PATH "Path to glm Math library")
+    set(ASSIMP_DIRECTORY "../thirdParty/assimp" CACHE PATH "Path to assimp asset loading library")
+    
 
 elseif(WIN32)
 
@@ -161,7 +163,8 @@ endif(UNIX)
  include_directories(
      src
      include
-     ${GLM_DIRECTORY}  	
+     ${GLM_DIRECTORY} 
+     ${ASSIMP_DIRECTORY}  	
      include/opencl10
      ${QT_INCLUDES}
  )

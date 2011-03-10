@@ -64,7 +64,6 @@ public:
 
 
 
-
 	AmendedTransform& getGlobalTransform();
 	//overwrite + handle childen's global transform, AABB n stuffM
 	void setGlobalTransform(const AmendedTransform& newTransform);
@@ -74,6 +73,8 @@ public:
 	const AABB& getLocalAABB();
 	const AABB& getGlobalAABB();
 
+	//recursively searches in the child trees; returns 0 if node with name does not exist in own descendants
+	SceneNode* findNode(String name);
 
 	SceneNode* getChild(String name);
 	SceneNode& operator[](String name);

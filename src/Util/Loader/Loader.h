@@ -48,11 +48,11 @@ public:
 	) throw(BufferException);
 
 	Texture2DCube* loadCubeTexture(
-			String name,  BufferSemantics bufferSemantics, Path fileName, String fileEndingWithoutDot,
-						//loading routine doesn't guaranty that the preferred layout will be done!
-						//default layout for non-HDR color images unsigned byte to be normalize to float in [0..1]
-						const BufferElementInfo& texelPreferredLayout = BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
-						bool allocHostMemory=true,  bool genMipmaps = false
+			Path cubeMapFilePath,  BufferSemantics bufferSemantics,
+			//loading routine doesn't guaranty that the preferred layout will be done!
+			//default layout for non-HDR color images unsigned byte to be normalize to float in [0..1]
+			const BufferElementInfo& texelPreferredLayout = BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+			bool allocHostMemory=true,  bool genMipmaps = false
 	)throw(BufferException);
 
 private:
