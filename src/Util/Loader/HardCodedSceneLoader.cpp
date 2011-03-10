@@ -212,6 +212,16 @@ void HardCodedSceneLoader::loadTextures()
 		true
 	 );
 
+	 if(! SimulationResourceManager::getInstance().getCurrentSkyDome())
+	 {
+		 //just load custom cube map if no skydome exists
+		 URE_INSTANCE->getLoader()->loadCubeTexture(
+							Path("./assets/textures/cubeMaps/cloudy_noon.jpg"),
+							ENVMAP_SEMANTICS,
+							BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+							true,
+							false);
+	 }
 
 	 // raptor displacement material textures; TODO delete before implementing to whole scene stuff!
 	 URE_INSTANCE->getLoader()->loadTexture(
@@ -258,19 +268,29 @@ void HardCodedSceneLoader::loadMaterials()
 				myMap[DISPLACEMENT_SEMANTICS]=
 						SimulationResourceManager::getInstance().getTexture("raptorDisp");
 
+				Texture* envMapTex = 0;
+				if(SimulationResourceManager::getInstance().getCurrentSkyDome())
+				{
+					envMapTex = SimulationResourceManager::getInstance().getCurrentSkyDome()->getCubeMap();
+				}else{
+					envMapTex = SimulationResourceManager::getInstance().getTexture("cloudy_noon");
+				}
+				myMap[ENVMAP_SEMANTICS] = envMapTex;
+
 				raptorTessMat = new VisualMaterial("raptorTessMat",
 					//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
 					VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
 					ShadingFeatures(
 							SHADING_FEATURE_DIRECT_LIGHTING
-							//| SHADING_FEATURE_DIFFUSE_TEXTURING
+							| SHADING_FEATURE_DIFFUSE_TEXTURING
 							| SHADING_FEATURE_NORMAL_MAPPING
+							| SHADING_FEATURE_CUBE_MAPPING
 							| (mTesselateMeshesWithDisplacementMap ? SHADING_FEATURE_TESSELATION :0)
 					),
 					myMap,
 					VisualMaterialFlags(true,false,true,true,false,false),
-					100.0f,
-					0.4f
+					50.0f,
+					0.3f
 				);
 	}//endif !raptorTessMat
 
@@ -365,46 +385,19 @@ void HardCodedSceneLoader::loadMaterials()
 	}//endif !blackNWhiteMat
 
 
-		Material* envMapTessMat1 = SimulationResourceManager::getInstance().getMaterial("envMapTessMat1");
-		if(! envMapTessMat1)
-		{
+	Material* envMapTessMat1 = SimulationResourceManager::getInstance().getMaterial("envMapTessMat1");
+	if(! envMapTessMat1)
+	{
+			std::map<BufferSemantics,Texture*> myMap;
+
 			Texture* envMapTex = 0;
 			if(SimulationResourceManager::getInstance().getCurrentSkyDome())
 			{
 				envMapTex = SimulationResourceManager::getInstance().getCurrentSkyDome()->getCubeMap();
-			}
-			else
-			{
+			}else{
 				envMapTex = SimulationResourceManager::getInstance().getTexture("cloudy_noon");
-				if(!envMapTex)
-				{
-					envMapTex= URE_INSTANCE->getLoader()->loadCubeTexture(
-						Path("./assets/textures/cubeMaps/cloudy_noon.jpg"),
-						ENVMAP_SEMANTICS,
-						BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
-						true,
-						false
-					);
-				}
 			}
-
-			Texture* dispTex =  SimulationResourceManager::getInstance().getTexture("rockbumpDisp");
-			if(!dispTex)
-			{
-				dispTex= URE_INSTANCE->getLoader()->loadTexture(
-					String("rockbumpDisp"),
-					DIFFUSE_COLOR_SEMANTICS,
-					Path("./assets/textures/rockbumpDisp.png"),
-					BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
-					true,
-					false,
-					true
-			 	 );
-			}
-
-			std::map<BufferSemantics,Texture*> myMap;
 			myMap[ENVMAP_SEMANTICS] = envMapTex;
-
 
 			myMap[DIFFUSE_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpDecal");
 			myMap[NORMAL_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("rockbumpNormalDisp");
@@ -423,7 +416,7 @@ void HardCodedSceneLoader::loadMaterials()
 				myMap,
 				//not dyn. cubemap renderable
 				VisualMaterialFlags(true,false,true,false,false,false));
-		}//endif !envMapTessMat1
+	}//endif !envMapTessMat1
 
 }
 
@@ -588,7 +581,7 @@ void HardCodedSceneLoader::loadLightSources()
 		)
 		{
 			LightSourceManager::getInstance().createPointLight(
-					Vector4D(70.0f,90.0f,60.0f,1.0f),
+					Vector4D(70.0f,10.0f,60.0f,1.0f),
 					false,
 					Vector4D(1.0f,1.0f,1.4f,1.0f),
 					Vector4D(0.4f,1.0f,3.0f,1.0f)

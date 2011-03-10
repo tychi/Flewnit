@@ -12,6 +12,7 @@ vec3 getNormal(int sampleIndex)
       return normalize(input.normal.xyz);
     {% else %}
       vec3 nonPerturbedNormal = (texture(normalMap,input.texCoords.xy).xyz - vec3(0.5)) ;//* 2.0;
+      //vec3 nonPerturbedNormal = (texture(normalMap,input.texCoords.xy).xyz );
       nonPerturbedNormal = normalize(nonPerturbedNormal);
 
       vec3 normalN = normalize(input.normal.xyz);

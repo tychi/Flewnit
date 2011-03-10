@@ -31,7 +31,7 @@ out InterfaceData
 uniform sampler2D displacementMap;
 //uniform sampler2D normalMap;
 
-uniform float displacementIntensity = 1.0f;
+uniform float displacementIntensity = 2.0f;
 
 
 {% if not layeredRendering %}

@@ -18,7 +18,7 @@
 
 	  <scenesGlobalSettings>
 		  <tesselateMeshesWithDisplacementMap type="BOOL" value="true" />		
-		  <environmentMap type="STRING" value="./assets/textures/cubeMaps/stormy.jpg" />
+		  <environmentMap type="STRING" value="./assets/textures/cubeMaps/evening.jpg" />
   		<referenceCountThresholdForInstancedRendering type="INT" value="8" />
 		</scenesGlobalSettings>
 		
@@ -29,7 +29,7 @@
 			  <Type type="STRING" value="PURE_NODE"/>
 			  <name type="STRING" value="hardCodedSceneRootNode" />
 			  
-			  <position type="VEC3" x="-50.0" y="0.0" z="-0.0" />
+			  <position type="VEC3" x="-75.0" y="0.0" z="-0.0" />
 			  <direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
 			  <up type="VEC3" x="0.0" y="1.0" z="0.0" />				
 			  <scale type="FLOAT" value="1.0"/>	
@@ -44,7 +44,7 @@
   		<SceneNode>
 			  <Type type="STRING" value="PURE_NODE"/>
 			  <name type="STRING" value="blendFileSceneRootNode" />
-			  <position type="VEC3" x="0.0" y="0.0" z="0.0" />
+			  <position type="VEC3" x="0.0" y="0.0" z="-100.0" />
 			  <direction type="VEC3" x="0.0" y="-1.0" z="0.0" />
 			  <up type="VEC3" x="0.0" y="0.0" z="-1.0" />				
 			  <scale type="FLOAT" value="1."/>	
@@ -65,11 +65,11 @@
 
 			<windowTitle type="STRING" value="Flewnit" />
 
-			<fullScreen type="BOOL" value="false"/>
+			<fullScreen type="BOOL" value="true"/>
 
 			<enforceCustomResolutionInFullScreen type="BOOL" value="false" />
 
-			<resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
+			<resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
 			<position type="VEC2I" x="400" y="100" GUIVisibility="read" tweakConfigString="TODO"/>
 			
 			<numMultiSamples type="INT" value ="8" />
