@@ -237,7 +237,7 @@ void HardCodedSceneLoader::loadTextures()
 	 			String("raptorNormal"),
 	 			//DIFFUSE_COLOR_SEMANTICS,
 	 			NORMAL_SEMANTICS,
-	 			Path("./assets/blendfiles/raptor/textures/raptorNorm_RGBA8.png"),
+	 			Path("./assets/blendfiles/raptor/textures/raptorNorm_RGBA8.jpg"),
 	 			BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
 	 			true,
 	 			false,
