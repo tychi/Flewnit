@@ -37,18 +37,18 @@
 ////--------------------------------------------------------------
 //#elif FLEWNIT_USE_GLM_MATH
 
-#	include  <glm/setup.hpp>
+//#	include  <glm/setup.hpp>
 //no swizzling for the moment
 //#	define GLM_SWIZZLE  GLM_SWIZZLE_FULL
 #	include  <glm/glm.hpp>
 
 //extensions:
 #	include <glm/gtc/matrix_transform.hpp>
-#	include <glm/gtc/matrix_projection.hpp>
+//#	include <glm/gtc/matrix_projection.hpp>
 #	include <glm/gtc/quaternion.hpp>
 
 //for perspective()
-#	include <glm/gtc/matrix_projection.hpp>
+//#	include <glm/gtc/matrix_projection.hpp>
 //for lookAt()
 #	include <glm/gtx/transform2.hpp>
 

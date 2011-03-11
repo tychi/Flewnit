@@ -167,7 +167,7 @@ Matrix4x4 PointLight::getViewMatrix(int whichFace)
 Matrix4x4 PointLight::getProjectionMatrix(int whichFace)
 {
 	return
-		glm::gtc::matrix_projection::perspective(
+		glm::gtc::matrix_transform::perspective(
 			45.0f,
 			1.0f,
 			LightSourceManager::getInstance().getLightSourceProjectionMatrixNearClipPlane(),
@@ -219,7 +219,7 @@ Matrix4x4 SpotLight::getViewMatrix()
 Matrix4x4 SpotLight::getProjectionMatrix()
 {
 	return
-		glm::gtc::matrix_projection::perspective(
+		glm::gtc::matrix_transform::perspective(
 				glm::degrees( getdata().outerSpotCutOff_Radians ),
 				1.0f, //assum square shadow map
 				LightSourceManager::getInstance().getLightSourceProjectionMatrixNearClipPlane(),

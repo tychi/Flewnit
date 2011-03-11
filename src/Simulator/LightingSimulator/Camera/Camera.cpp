@@ -58,7 +58,7 @@ const Matrix4x4& Camera::perspective(	float verticalFOVAngle,
 	mNearClipPlane=nearClipPlane;
 	mFarClipPlane=farClipPlane;
 
-	mProjectionMatrix =  glm::gtc::matrix_projection::perspective(
+	mProjectionMatrix =  glm::gtc::matrix_transform::perspective(
 			verticalFOVAngle, aspectRatioXtoY, nearClipPlane, farClipPlane );
 
 	return mProjectionMatrix;
@@ -78,7 +78,7 @@ const Matrix4x4& Camera::ortho	(float left,
 	mNearClipPlane=nearClipPlane;
 	mFarClipPlane=farClipPlane;
 
-	mProjectionMatrix = glm::gtc::matrix_projection::ortho(left,right,bottom,top,nearClipPlane,farClipPlane);
+	mProjectionMatrix = glm::gtc::matrix_transform::ortho(left,right,bottom,top,nearClipPlane,farClipPlane);
 	return mProjectionMatrix;
 }
 
