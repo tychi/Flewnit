@@ -246,9 +246,13 @@ void HardCodedSceneLoader::loadTextures()
 	 URE_INSTANCE->getLoader()->loadTexture(
 	 		String("raptorDisp"),
 	 		DISPLACEMENT_SEMANTICS,
-			Path("./assets/blendfiles/raptor/textures/raptorDisp8BitTrueSingleChannelGrayBG.jpg"),
-			BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
-	 		//Path("./assets/blendfiles/raptor/textures/notInRepo/raptorDisp_32f.exr"),
+			//Path("./assets/blendfiles/raptor/textures/raptorDisp8BitTrueSingleChannelGrayBG.jpg"),
+	 		//Path("./assets/blendfiles/raptor/textures/raptorDisp_new.jpg"),
+	 		//Path("./assets/blendfiles/raptor/textures/raptorDispOriginalNew.tga"),
+	 		Path("./assets/blendfiles/raptor/textures/raptorDisp.jpg"),
+	 		BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
+
+	 	 	//Path("./assets/blendfiles/raptor/textures/notInRepo/raptorDisp_32f.exr"),
 	 		//BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
 	 		true,
 	 		false,

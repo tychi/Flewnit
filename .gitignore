@@ -6,6 +6,7 @@ src/MPP/Shader/ShaderSources/__generated/GenericLightingUberShader*
 assets/textures/currently unneeded/
 assets/blendfiles/misc_notInRepo/
 assets/blendfiles/raptor/notInRepo/
+assets/blendfiles/raptor/textures/notInRepo/
 bin/
 lib/
 include/GL3/

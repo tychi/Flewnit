@@ -31,7 +31,7 @@ out InterfaceData
 uniform sampler2D displacementMap;
 //uniform sampler2D normalMap;
 
-uniform float displacementIntensity = 2.0f;
+uniform float displacementIntensity = 1.0f;
 
 
 {% if not layeredRendering %}
@@ -90,17 +90,24 @@ void main()
           ) % textureSize(displacementMap,0)  ;
           
 
-  float displacementVal = texelFetch(
-          displacementMap, 
-          texelPos,
-          0  
-        ).x 
-        - 0.5
+  float displacementVal = 
+        (
+          texelFetch(
+            displacementMap, 
+            texelPos,
+            0  
+          ).x 
+          //- 0.75
+          -0.5
+        )
+        *2.0
         ;
         
-   //displacementVal*=-1.0;
+   //displacementVal*=2.0;
 
   float weightedDistDepDisplFactor = BARYCENTRIC_WEIGHTED(distanceDependentDisplacementFactor);         
+
+
 
 
   output.position +=  
