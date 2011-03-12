@@ -246,9 +246,9 @@ void HardCodedSceneLoader::loadTextures()
 	 URE_INSTANCE->getLoader()->loadTexture(
 	 		String("raptorDisp"),
 	 		DISPLACEMENT_SEMANTICS,
-			Path("./assets/textures/rockbumpDisp.png"),
+			Path("./assets/blendfiles/raptor/textures/raptorDisp8BitTrueSingleChannelGrayBG.jpg"),
 			BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
-	 		//Path("./assets/blendfiles/raptor/textures/raptorDisp_32f.exr"),
+	 		//Path("./assets/blendfiles/raptor/textures/notInRepo/raptorDisp_32f.exr"),
 	 		//BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
 	 		true,
 	 		false,
@@ -284,15 +284,15 @@ void HardCodedSceneLoader::loadMaterials()
 					VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
 					ShadingFeatures(
 							SHADING_FEATURE_DIRECT_LIGHTING
-							| SHADING_FEATURE_DIFFUSE_TEXTURING
+							//| SHADING_FEATURE_DIFFUSE_TEXTURING
 							| SHADING_FEATURE_NORMAL_MAPPING
-							| SHADING_FEATURE_CUBE_MAPPING
+							//| SHADING_FEATURE_CUBE_MAPPING
 							| (mTesselateMeshesWithDisplacementMap ? SHADING_FEATURE_TESSELATION :0)
 					),
 					myMap,
 					VisualMaterialFlags(true,false,true,true,false,false),
 					50.0f,
-					0.6f
+					0.0f//6f
 				);
 	}//endif !raptorTessMat
 

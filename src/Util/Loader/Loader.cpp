@@ -150,7 +150,10 @@ Texture* Loader::loadTexture(String name,  BufferSemantics bufferSemantics, Path
 	          << "; width: " << image->getWidth()
 	          << "; height" << image->getHeight()<<";\n";
 
-
+	 if( (image->getWidth()==0)||(image->getHeight()==0))
+	 {
+		 	throw(BufferException( String("image file \"") + fileName.string() + String("\" not found! aborting..") ));
+	 }
 
 	 assert(sizeof(Vector4D) == 4* sizeof(float) && "Vector types must be tightly packed");
 	 //alloc buffer of maximum size; maybe only a fourth will be needed, but that does'nt matter,
@@ -325,15 +328,25 @@ void Loader::transformPixelData(BufferSemantics bufferSemantics,
 	case FIT_BITMAP:
 		if(texelLayout.numChannels==1)
 		{
-			fipImage* greyImage = new fipImage();
-			BOOL sucess = image->getChannel(*greyImage, FICC_RED);
-			assert("got gray image" && sucess);
-			assert("8 bits per pixel" && greyImage->getBitsPerPixel() == 8);
-			memcpy( buffer,
-					  reinterpret_cast<void*>(greyImage->accessPixels()),
-					  texelLayout.numChannels * sizeof(BYTE) * greyImage->getWidth()* greyImage->getHeight()
-			);
-			delete greyImage;
+			if(image->getBitsPerPixel() == 8)
+			{
+				memcpy( buffer,
+						reinterpret_cast<void*>(image->accessPixels()),
+						texelLayout.numChannels * sizeof(BYTE) * image->getWidth()* image->getHeight()
+				);
+			}
+			else
+			{
+				fipImage* greyImage = new fipImage();
+				BOOL sucess = image->getChannel(*greyImage, FICC_RED);
+				assert("got gray image" && sucess);
+				assert("8 bits per pixel" && greyImage->getBitsPerPixel() == 8);
+				memcpy( buffer,
+						  reinterpret_cast<void*>(greyImage->accessPixels()),
+						  texelLayout.numChannels * sizeof(BYTE) * greyImage->getWidth()* greyImage->getHeight()
+				);
+				delete greyImage;
+			}
 		}
 		else
 		{
