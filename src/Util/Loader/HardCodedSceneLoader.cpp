@@ -246,8 +246,10 @@ void HardCodedSceneLoader::loadTextures()
 	 URE_INSTANCE->getLoader()->loadTexture(
 	 		String("raptorDisp"),
 	 		DISPLACEMENT_SEMANTICS,
-	 		Path("./assets/blendfiles/raptor/textures/raptorDisp_32f.exr"),
-	 		BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
+			Path("./assets/textures/rockbumpDisp.png"),
+			BufferElementInfo(1,GPU_DATA_TYPE_UINT,8,true),
+	 		//Path("./assets/blendfiles/raptor/textures/raptorDisp_32f.exr"),
+	 		//BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
 	 		true,
 	 		false,
 	 		true
