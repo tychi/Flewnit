@@ -1,3 +1,5 @@
+.cproject
+.project
 CMakeFiles/
 src/MPP/Shader/ShaderSources/backup/
 src/MPP/Shader/ShaderSources/__generated/GenericLightingUberShader*
