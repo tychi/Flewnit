@@ -2,6 +2,8 @@ CMakeFiles/
 src/MPP/Shader/ShaderSources/backup/
 src/MPP/Shader/ShaderSources/__generated/GenericLightingUberShader*
 assets/textures/currently unneeded/
+assets/blendfiles/misc_notInRepo/
+assets/blendfiles/raptor/notInRepo/
 bin/
 lib/
 include/GL3/

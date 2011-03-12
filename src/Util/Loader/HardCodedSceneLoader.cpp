@@ -290,7 +290,7 @@ void HardCodedSceneLoader::loadMaterials()
 					myMap,
 					VisualMaterialFlags(true,false,true,true,false,false),
 					50.0f,
-					0.3f
+					0.6f
 				);
 	}//endif !raptorTessMat
 
