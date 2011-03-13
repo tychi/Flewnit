@@ -850,36 +850,47 @@ void Shader::setupMaterialUniforms(VisualMaterial* visMat)
 	if( (mLocalShaderFeatures.renderingTechnique== RENDERING_TECHNIQUE_DEFAULT_LIGHTING) ||
 		(mLocalShaderFeatures.renderingTechnique== RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL))
 	{
+		assert(visMat);
 
 		bindFloat("shininess",visMat->getShininess());
 		bindFloat("reflectivity",visMat->getReflectivity());
 
-		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DIFFUSE_TEXTURING ) !=0 ))
+		if( ((visMat->getShadingFeatures() & SHADING_FEATURE_DIFFUSE_TEXTURING ) !=0 )
+			&& (ShaderManager::getInstance().shadingFeaturesAreEnabled(SHADING_FEATURE_DIFFUSE_TEXTURING))
+		)
 		{
 			glActiveTexture(GL_TEXTURE0 + DIFFUSE_COLOR_SEMANTICS);
 			visMat->getTexture(DIFFUSE_COLOR_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
 			bindInt("decalTexture",DIFFUSE_COLOR_SEMANTICS);
 		}
-		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_DETAIL_TEXTURING ) !=0 ))
+		if(	((visMat->getShadingFeatures() & SHADING_FEATURE_DETAIL_TEXTURING ) !=0 )
+			&& (ShaderManager::getInstance().shadingFeaturesAreEnabled(SHADING_FEATURE_DETAIL_TEXTURING))
+		)
 		{
 			glActiveTexture(GL_TEXTURE0 + DETAIL_TEXTURE_SEMANTICS);
 			visMat->getTexture(DETAIL_TEXTURE_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
 			bindInt("detailTexture",DETAIL_TEXTURE_SEMANTICS);
 		}
-		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_NORMAL_MAPPING) !=0 ))
+		if(	((visMat->getShadingFeatures() & SHADING_FEATURE_NORMAL_MAPPING) !=0 )
+			&& (ShaderManager::getInstance().shadingFeaturesAreEnabled(SHADING_FEATURE_NORMAL_MAPPING))
+		)
 		{
 			glActiveTexture(GL_TEXTURE0 + NORMAL_SEMANTICS);
 			visMat->getTexture(NORMAL_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
 			bindInt("normalMap",NORMAL_SEMANTICS);
 		}
-		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_CUBE_MAPPING ) !=0 ))
+		if( ((visMat->getShadingFeatures() & SHADING_FEATURE_CUBE_MAPPING ) !=0 )
+			&& (ShaderManager::getInstance().shadingFeaturesAreEnabled(SHADING_FEATURE_CUBE_MAPPING))
+		)
 		{
 			glActiveTexture(GL_TEXTURE0 + ENVMAP_SEMANTICS);
 			visMat->getTexture(ENVMAP_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
 			bindInt("cubeMap",ENVMAP_SEMANTICS);
 		}
 
-		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_AMBIENT_OCCLUSION ) !=0 ))
+		if(	((visMat->getShadingFeatures() & SHADING_FEATURE_AMBIENT_OCCLUSION ) !=0 )
+			&& (ShaderManager::getInstance().shadingFeaturesAreEnabled(SHADING_FEATURE_AMBIENT_OCCLUSION))
+		)
 		{
 			//note: bind DEPTH_BUFFER_SEMANTICS instead of AMBIENT_OCCLUSION_SEMANTICS, as AMBIENT_OCCLUSION_SEMANTICS
 			//contains the AO result and not the raw image for computation
@@ -889,9 +900,12 @@ void Shader::setupMaterialUniforms(VisualMaterial* visMat)
 			bindInt("depthBufferForAO",DEPTH_BUFFER_SEMANTICS);
 		}
 
-		if(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_TESSELATION) !=0 ))
+		if( ((visMat->getShadingFeatures() & SHADING_FEATURE_TESSELATION) !=0 )
+			&& ShaderManager::getInstance().tesselationIsEnabled()
+		)
 		{
 			setupTessellationParameters(visMat);
+
 //			assert(0&& "TODO bind a lot of stuff like textures and opening angles, "
 //					"texture sizes, desired pixel lenght of subdivided  line etc.."); //TODO
 			//assert also that normal mapping is active... at least at first

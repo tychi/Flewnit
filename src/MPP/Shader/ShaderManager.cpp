@@ -18,6 +18,7 @@
 #include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
 
 #include <boost/foreach.hpp>
+#include "UserInterface/WindowManager/WindowManager.h"
 
 
 namespace Flewnit {
@@ -30,8 +31,18 @@ ShaderManager::ShaderManager(
 		mGlobalShaderFeatures(globalShaderFeatures),
 		//following is actually useless, but i don't like uninitialized values ;(
 		mCurrentRenderingTechnique(RENDERING_TECHNIQUE_DEFAULT_LIGHTING),
-		mCurrentRenderTargetTextureType(TEXTURE_TYPE_2D)
-
+		mCurrentRenderTargetTextureType(TEXTURE_TYPE_2D),
+		mEnabledShadingFeatures(
+			ShadingFeatures(
+				  SHADING_FEATURE_DIRECT_LIGHTING
+				| SHADING_FEATURE_DIFFUSE_TEXTURING
+				| SHADING_FEATURE_NORMAL_MAPPING
+				| SHADING_FEATURE_CUBE_MAPPING
+				| ( 	(WindowManager::getInstance().getAvailableOpenGLVersion().x >=4)
+						? SHADING_FEATURE_TESSELATION:0)
+			)
+		)
+		//mTesselationIsEnabled(WindowManager::getInstance().getAvailableOpenGLVersion().x >=4)
 		//mIsInitializedGuard(false)
 {
 	mGlobalShaderFeatures.validate();
@@ -90,6 +101,72 @@ bool ShaderManager::currentRenderingScenarioNeedsGeometryShader()const
 		;
 }
 
+
+void ShaderManager::setEnableShadingFeatures(ShadingFeatures sfs, bool val)
+{
+	if(val)
+	{
+		reinterpret_cast<unsigned int&>(mEnabledShadingFeatures) |= (sfs);
+	}
+	else
+	{
+		reinterpret_cast<unsigned int&>(mEnabledShadingFeatures) &= (~sfs);
+	}
+
+	if( WindowManager::getInstance().getAvailableOpenGLVersion().x < 4 )
+	{
+		//mask out tess if not possible for technical reasons
+		reinterpret_cast<unsigned int&>(mEnabledShadingFeatures) &= (~SHADING_FEATURE_TESSELATION);
+	}
+
+
+	BOOST_FOREACH(VisualMaterial* mat, mRegisteredVisualMaterials)
+	{
+		//only play around with non-special shader
+		if(mat->getType() == VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING)
+		{
+			assignShader(mat);
+		}
+	}
+
+}
+
+bool ShaderManager::shadingFeaturesAreEnabled(ShadingFeatures sfs)const
+{
+	return (mEnabledShadingFeatures & sfs) != 0;
+}
+
+
+bool ShaderManager::tesselationIsEnabled()const
+{
+	return ( WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4 )
+			&& (( mEnabledShadingFeatures & SHADING_FEATURE_TESSELATION ) != 0);
+}
+
+
+
+//void ShaderManager::setEnableTesselation(bool val)
+//{
+//	if(mTesselationIsEnabled == val) return;
+//	if((WindowManager::getInstance().getAvailableOpenGLVersion().x < 4)) return; //technically impossible, do nothing;
+//
+//	mTesselationIsEnabled = val;
+//
+//	BOOST_FOREACH(VisualMaterial* mat, mRegisteredVisualMaterials)
+//	{
+//		if(
+//			( (mat->getShadingFeatures() & SHADING_FEATURE_TESSELATION ) !=0 )
+//			//checked this case already above
+//			// &&(WindowManager::getInstance().getAvailableOpenGLVersion().x >=4)
+//		)
+//		{
+//			assignShader(mat);
+//		}
+//	}
+//}
+
+
+
 //iterates all visual materials and assigns them shaders fitting the current scenario;
 //the shaders might need to be generated first (done automatically);
 //the attachment status of the rendertaget is validated to fit the material's needs and the shader's
@@ -123,9 +200,16 @@ void  ShaderManager::assignShader(VisualMaterial* mat)
 		mCurrentRenderingTechnique,
 		mCurrentRenderTargetTextureType,
 		mat->getType(),
-		mat->getShadingFeatures(),
+		//permit only the enabled features!
+		ShadingFeatures( mat->getShadingFeatures() & (mEnabledShadingFeatures) ),
 		mat->isInstanced()
 	);
+
+//	if( (!tesselationIsEnabled()) )
+//	{
+//		//mask out tesselation feature!
+//		reinterpret_cast<unsigned int&>(sfl.shadingFeatures) &= (~SHADING_FEATURE_TESSELATION);
+//	}
 
 	if(mShaderMap.find(sfl) == mShaderMap.end())
 	{

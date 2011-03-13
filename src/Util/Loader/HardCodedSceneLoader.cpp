@@ -99,10 +99,8 @@ void HardCodedSceneLoader::loadGeometries()
 	if(! myTessBoxGeo1)
 	{
 		myTessBoxGeo1 = new BoxGeometry("myTessBoxGeo1",Vector3D(10.0f,10.0f,10.0f),true,
-				//patch stuff only for GL versions 4.0 or higher
-				mTesselateMeshesWithDisplacementMap
-				 ? (WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
-			     : false
+				//patch stuff only for GL versions 4.0 or higher <-- catche by vertexBased geometry itself
+				true
 		);
 	}
 	Geometry* blackNWhiteGeo = SimulationResourceManager::getInstance().getGeometry("blackNWhiteGeo");
@@ -114,7 +112,6 @@ void HardCodedSceneLoader::loadGeometries()
 	if(! myBoxAsPlane)
 	{
 		myBoxAsPlane = new BoxGeometry("myBoxAsPlane",Vector3D(100.0f,2.0f,100.0f),true,
-				//patch stuff only for GL versions 4.0 or higher
 				false,
 				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
 				Vector4D(20,20,1,1)
@@ -288,15 +285,16 @@ void HardCodedSceneLoader::loadMaterials()
 					VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
 					ShadingFeatures(
 							SHADING_FEATURE_DIRECT_LIGHTING
-							//| SHADING_FEATURE_DIFFUSE_TEXTURING
+							| SHADING_FEATURE_DIFFUSE_TEXTURING
 							| SHADING_FEATURE_NORMAL_MAPPING
-							//| SHADING_FEATURE_CUBE_MAPPING
-							| (mTesselateMeshesWithDisplacementMap ? SHADING_FEATURE_TESSELATION :0)
+							| SHADING_FEATURE_CUBE_MAPPING
+							//| (mTesselateMeshesWithDisplacementMap ? SHADING_FEATURE_TESSELATION :0)
+							| SHADING_FEATURE_TESSELATION
 					),
 					myMap,
 					VisualMaterialFlags(true,false,true,true,false,false),
-					50.0f,
-					0.0f//6f
+					100.0f,
+					0.2f//6f
 				);
 	}//endif !raptorTessMat
 
@@ -361,7 +359,8 @@ void HardCodedSceneLoader::loadMaterials()
 						SHADING_FEATURE_DIRECT_LIGHTING
 						| SHADING_FEATURE_DIFFUSE_TEXTURING
 						| SHADING_FEATURE_NORMAL_MAPPING
-						| (mTesselateMeshesWithDisplacementMap ? SHADING_FEATURE_TESSELATION :0)
+						//| (mTesselateMeshesWithDisplacementMap ? SHADING_FEATURE_TESSELATION :0)
+						| SHADING_FEATURE_TESSELATION
 				),
 				myMap,
 				VisualMaterialFlags(true,false,true,true,false,false),
@@ -417,7 +416,8 @@ void HardCodedSceneLoader::loadMaterials()
 						| SHADING_FEATURE_DIFFUSE_TEXTURING
 						| SHADING_FEATURE_NORMAL_MAPPING
 						| SHADING_FEATURE_CUBE_MAPPING
-						| (mTesselateMeshesWithDisplacementMap ? SHADING_FEATURE_TESSELATION : 0)
+						//| (mTesselateMeshesWithDisplacementMap ? SHADING_FEATURE_TESSELATION : 0)
+						| SHADING_FEATURE_TESSELATION
 				),
 				myMap,
 				//not dyn. cubemap renderable
@@ -434,10 +434,7 @@ void HardCodedSceneLoader::createInstancingSetup()
 	if(! boxForInstancingGeom)
 	{
 		boxForInstancingGeom = new BoxGeometry("boxForInstancingGeom",Vector3D(5.0f,25.0f,25.0f),true,
-				//patch stuff only for GL versions 4.0 or higher
-				mTesselateMeshesWithDisplacementMap
-				 ? (WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
-			     : false
+				true
 		);
 	}
 
@@ -457,7 +454,8 @@ void HardCodedSceneLoader::createInstancingSetup()
 						SHADING_FEATURE_DIRECT_LIGHTING
 						| SHADING_FEATURE_DIFFUSE_TEXTURING
 						| SHADING_FEATURE_NORMAL_MAPPING
-						| (mTesselateMeshesWithDisplacementMap ? SHADING_FEATURE_TESSELATION :0)
+						//| (mTesselateMeshesWithDisplacementMap ? SHADING_FEATURE_TESSELATION :0)
+						| SHADING_FEATURE_TESSELATION
 				),
 				myMap,
 				VisualMaterialFlags(true,false,true,true,
@@ -563,9 +561,7 @@ void HardCodedSceneLoader::addSubObjectsToWorldObjects()
 			"MyEnvmapBoxSubObject1",
 			VISUAL_SIM_DOMAIN,
 			new BoxGeometry("myEnvMapBox",Vector3D(5,12.5,7.5f),true,
-					mTesselateMeshesWithDisplacementMap
-					 ? (WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
-				     : false,
+					 true,
 				     Vector4D(1,1.5,5,5)
 			),
 			SimulationResourceManager::getInstance().getMaterial("envMapTessMat1")
@@ -632,11 +628,11 @@ void HardCodedSceneLoader::loadLightSources()
 		)
 		{
 			LightSourceManager::getInstance().createSpotLight(
-					Vector4D(70.0f,90.0f,60.0f,1.0f),
-					Vector4D(-0.3f,-1.0f,-0.5f,0.0f),
+					Vector4D(70.0f,90.0f,-20.0f,1.0f),
+					Vector4D(-0.5f,-1.0f,-0.5f,0.0f),
 					false,
-					45.0f,
-					65.5f,
+					35.0f,
+					50.0f,
 					10.0f,
 					Vector4D(1.0f,1.0f,1.4f,1.0f),
 					Vector4D(0.4f,1.0f,3.0f,1.0f)

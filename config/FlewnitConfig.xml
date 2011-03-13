@@ -44,7 +44,7 @@
   		<SceneNode>
 			  <Type type="STRING" value="PURE_NODE"/>
 			  <name type="STRING" value="blendFileSceneRootNode" />
-			  <position type="VEC3" x="0.0" y="0.0" z="-100.0" />
+			  <position type="VEC3" x="0.0" y="-15.0" z="-100.0" />
 			  <direction type="VEC3" x="0.0" y="-1.0" z="0.0" />
 			  <up type="VEC3" x="0.0" y="0.0" z="-1.0" />				
 			  <scale type="FLOAT" value="1."/>	
@@ -72,7 +72,7 @@
 			<resolution type="VEC2I" x="800" y="600" GUIVisibility="read" tweakConfigString="TODO"/>
 			<position type="VEC2I" x="400" y="100" GUIVisibility="read" tweakConfigString="TODO"/>
 			
-			<numMultiSamples type="INT" value ="8" />
+			<numMultiSamples type="INT" value ="1" />
 			
 		</windowSettings>
 		
@@ -181,10 +181,10 @@
 				</Camera>
 				
 				<GlobalShadingFeatures>
-					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS"/>
+					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT"/>
 					<lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_NONE"/>
 					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_NONE"/>
-					<numMaxLightSources type="INT" value="10"/>
+					<numMaxLightSources type="INT" value="1"/>
 					<numMaxShadowCasters type="INT" value="1"/>
 					<numMaxInstancesRenderable type="INT" value="300"/>
 					<GBufferType type="STRING" value="TEXTURE_TYPE_2D_RECT"/>	

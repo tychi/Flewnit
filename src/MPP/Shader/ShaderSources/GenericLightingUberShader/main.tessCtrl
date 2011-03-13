@@ -8,7 +8,7 @@ layout(vertices = 3) out;
 
 //metro 2033 LOD criteria:
 uniform float numScreenPixels = 640.0;
-uniform float tessQualityFactor = 0.02;//0.007;// 0.004;//0.0025;//0.04;
+uniform float tessQualityFactor = 0.01;//0.007;// 0.004;//0.0025;//0.04;
 uniform float distanceToBeginWithTesselation = 75.0;
 uniform float distanceUntilFullSubdivision = 30.0;
 uniform float minTessLevel = 1.0f;

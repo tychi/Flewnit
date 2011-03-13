@@ -10,6 +10,7 @@
 #include "Buffer/BufferInterface.h"
 #include "UserInterface/WindowManager/WindowManager.h"
 #include "Util/Log/Log.h"
+#include "MPP/Shader/ShaderManager.h"
 
 namespace Flewnit
 {
@@ -250,10 +251,18 @@ void VertexBasedGeometry::draw(
 		drawType = GL_TRIANGLES_ADJACENCY;
 	break;
 	case VERTEX_BASED_TRIANGLE_PATCHES:
-		drawType = GL_PATCHES;
-		GUARD(glPatchParameteri(GL_PATCH_VERTICES, 3));
-		assert(getGeometryRepresentation() == VERTEX_BASED_TRIANGLES ||
+		assert( getGeometryRepresentation() == VERTEX_BASED_TRIANGLES ||
 				getGeometryRepresentation() == VERTEX_BASED_TRIANGLE_PATCHES);
+
+		if(ShaderManager::getInstance().tesselationIsEnabled())
+		{
+			drawType = GL_PATCHES;
+			GUARD(glPatchParameteri(GL_PATCH_VERTICES, 3));
+		}
+		else
+		{
+			drawType = GL_TRIANGLES;
+		}
 		break;
 	case VERTEX_BASED_QUAD_PATCHES:
 		assert(0&&"sry VERTEX_BASED_QUAD_PATCHES not supported yet");

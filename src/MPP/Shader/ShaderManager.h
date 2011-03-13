@@ -106,6 +106,18 @@ public:
 	bool vertexShaderNeedsWorldSpaceTransform()const;
 	bool currentRenderingScenarioNeedsGeometryShader()const;
 
+	//silently ignores returns if tess is not enabled by config or for technical reasons;
+
+
+	void setEnableShadingFeatures(ShadingFeatures sfs, bool val);
+	//void setEnableTesselation(bool val);
+
+
+	bool shadingFeaturesAreEnabled(ShadingFeatures sfs)const;
+	inline ShadingFeatures getEnabledShadingFeatures()const{return mEnabledShadingFeatures;}
+	bool tesselationIsEnabled()const;
+
+
 private:
 
 
@@ -122,6 +134,9 @@ private:
 	//renderTargetTextureType delegates creation and/or configuration of a geometry shader,
 	//defining layers for cubemap rendering or general layered rendering
 	TextureType mCurrentRenderTargetTextureType;
+
+	//bool mTesselationIsEnabled;
+	ShadingFeatures mEnabledShadingFeatures;
 
 	//ShaderFeaturesLocal mCurrenLocalShaderFeatures;
 	//bool mIsInitializedGuard;

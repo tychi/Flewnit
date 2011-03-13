@@ -67,7 +67,6 @@ public:
 	void registerSkydome(SkyDome* skyDome);
 	inline SkyDome* getCurrentSkyDome()const{return mCurrentSkyDome;}
 
-
 private:
 
 	friend class URE;

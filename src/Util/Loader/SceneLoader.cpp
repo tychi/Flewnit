@@ -24,6 +24,7 @@
 #include "Geometry/VertexBasedGeometry.h"
 #include "Buffer/Buffer.h"
 #include "WorldObject/SubObject.h"
+#include "MPP/Shader/ShaderManager.h"
 
 
 
@@ -32,12 +33,13 @@ namespace Flewnit
 
 SceneLoader::SceneLoader(ConfigStructNode& scenesGlobalSettings, ConfigStructNode& sceneConfig, bool initialize)
 :
-		mTesselateMeshesWithDisplacementMap(false),
 		mRootSceneNode(0),
 		mImporter(0),
 		mAssimpScene(0)
 {
-	mTesselateMeshesWithDisplacementMap = ConfigCaster::cast<bool>(scenesGlobalSettings.get("tesselateMeshesWithDisplacementMap",0));
+	ShaderManager::getInstance().setEnableShadingFeatures( SHADING_FEATURE_TESSELATION,
+			ConfigCaster::cast<bool>(scenesGlobalSettings.get("tesselateMeshesWithDisplacementMap",0)));
+
 	mReferenceCountThresholdForInstancedRendering =  ConfigCaster::cast<int>(scenesGlobalSettings.get("referenceCountThresholdForInstancedRendering",0));
 
 	mRootSceneNode = parseSceneNode(sceneConfig.get("SceneNode",0));
@@ -206,7 +208,7 @@ void SceneLoader::loadGeometries()
 
 		VertexBasedGeometry* flewnitGeo = new VertexBasedGeometry(
 			String(assimpMesh->mName.data)+String("Geometry"),
-			VERTEX_BASED_TRIANGLE_PATCHES //VERTEX_BASED_TRIANGLES //HARDCODE TODO REFACTOR
+			VERTEX_BASED_TRIANGLE_PATCHES //HARDCODE TODO REFACTOR
 		);
 		BufferInfo bufferi(
 				String(assimpMesh->mName.data) + String("PositionBuffer"),

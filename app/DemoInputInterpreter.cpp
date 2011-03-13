@@ -33,6 +33,8 @@
 #	include <GL/glfw.h>
 #include "Simulator/OpenCL_Manager.h"
 #include "Util/Time/FPSCounter.h"
+#include "Simulator/SimulationResourceManager.h"
+#include "MPP/Shader/ShaderManager.h"
 #else
 
 #endif
@@ -171,6 +173,54 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 	{
 		mHideMouse = !mHideMouse;
 	}
+
+
+	//---------------------------------------------------------------------------
+	//static ShadingFeatures currentlyEnabledFeatures = ShaderManager::getInstance().getEnabledShadingFeatures();
+
+	if(keyboard->getRecentStatus() == GLFW_PRESS)
+	{
+		ShadingFeatures sfToChange = SHADING_FEATURE_NONE;
+		switch (keyboard->getRecentKey())
+		{
+			case 'N':
+				sfToChange = SHADING_FEATURE_DIFFUSE_TEXTURING;
+				break;
+			case 'M':
+				sfToChange = SHADING_FEATURE_DIRECT_LIGHTING;
+				break;
+			case ',':
+				sfToChange = SHADING_FEATURE_NORMAL_MAPPING;
+				break;
+			case '.':
+				sfToChange = SHADING_FEATURE_CUBE_MAPPING;
+				break;
+			case '-':
+				sfToChange = SHADING_FEATURE_TESSELATION;
+				break;
+			default:
+				break;
+		}
+
+		if( sfToChange != SHADING_FEATURE_NONE)
+		{
+			ShaderManager::getInstance().setEnableShadingFeatures(
+				sfToChange,
+				//toggle current activations state by querying, negating and setting it
+				! ShaderManager::getInstance().shadingFeaturesAreEnabled(sfToChange)
+			);
+
+		}
+	}
+
+//	static bool enableTess =ShaderManager::getInstance().tesselationIsEnabled();
+//	if((keyboard->getRecentKey() == GLFW_KEY_TAB) && (keyboard->getRecentStatus() == GLFW_PRESS))
+//	{
+//		enableTess = !enableTess;
+//		ShaderManager::getInstance().setEnableTesselation(enableTess);
+//	}
+
+
 
 
 	//--------------------------------------------------------------------

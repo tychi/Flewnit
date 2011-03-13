@@ -46,8 +46,6 @@ protected:
 
 	SceneNode* parseSceneNode(ConfigStructNode& configNode);
 
-	bool mTesselateMeshesWithDisplacementMap;
-
 	//is appended to the gloabel root scene node automatically
 	SceneNode* mRootSceneNode;
 

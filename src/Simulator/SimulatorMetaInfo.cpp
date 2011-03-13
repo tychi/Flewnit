@@ -195,7 +195,7 @@ String ShaderFeaturesLocal::stringify()const
 				returnString.append("_ShadeGlobalLighting");
 				break;
 			case SHADING_FEATURE_DIFFUSE_TEXTURING:
-				returnString.append("_ShadeDecal");
+				returnString.append("_ShadeDiffuse");
 				break;
 			case SHADING_FEATURE_DETAIL_TEXTURING:
 				returnString.append("_ShadeDetail");
@@ -204,7 +204,7 @@ String ShaderFeaturesLocal::stringify()const
 				returnString.append("_ShadeNormalMapping");
 				break;
 			case SHADING_FEATURE_CUBE_MAPPING:
-				returnString.append("_ShadeCubelMapping");
+				returnString.append("_ShadeCubeMapping");
 				break;
 			case SHADING_FEATURE_AMBIENT_OCCLUSION:
 				returnString.append("_ShadeAO");
