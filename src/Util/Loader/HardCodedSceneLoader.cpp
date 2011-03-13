@@ -584,7 +584,11 @@ void HardCodedSceneLoader::loadLightSources()
 		{
 			LightSourceManager::getInstance().createPointLight(
 					Vector4D(70.0f,10.0f,60.0f,1.0f),
-					false,
+					(
+						//shadow casting or not depends on global shading features
+						ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+						== LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT
+					),
 					Vector4D(1.0f,1.0f,1.4f,1.0f),
 					Vector4D(0.4f,1.0f,3.0f,1.0f)
 			);
@@ -598,7 +602,7 @@ void HardCodedSceneLoader::loadLightSources()
 				{
 					LightSourceManager::getInstance().createPointLight(
 						Vector4D(-70.0f,25.0f,10.0f,1.0f),
-						false,
+						false, //no multiple point light shadowmaps allowed due to gl3 restrictions ;)
 						Vector4D(0.0f,0.0f,1.0f,1.0f),
 						Vector4D(0.0f,0.0f,1.0f,1.0f)
 					);
@@ -611,7 +615,7 @@ void HardCodedSceneLoader::loadLightSources()
 					float fraction = (float)(i)/(float)(numTotalLightSourcesToCreate);
 					LightSourceManager::getInstance().createPointLight(
 						Vector4D(0.0f,15.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
-						false,
+						false, //no multiple point light shadowmaps allowed due to gl3 restrictions ;)
 						Vector4D(0.0f,0.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
 						Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
 					);
@@ -630,7 +634,13 @@ void HardCodedSceneLoader::loadLightSources()
 			LightSourceManager::getInstance().createSpotLight(
 					Vector4D(70.0f,90.0f,-20.0f,1.0f),
 					Vector4D(-0.5f,-1.0f,-0.5f,0.0f),
-					false,
+					(   //shadow casting or not depends on global shading features...
+						(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+							== LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT)
+						||
+						(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+							== LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)
+					),
 					35.0f,
 					50.0f,
 					10.0f,
@@ -648,7 +658,15 @@ void HardCodedSceneLoader::loadLightSources()
 					LightSourceManager::getInstance().createSpotLight(
 							Vector4D(-70.0f,25.0f,10.0f,1.0f),
 							Vector4D(1.0f,-1.0f,-1.0f,0.0f),
-							false,
+							(
+								//shadow casting or not depends on global shading features...
+								(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+									== LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)
+								&&
+								//and on max shadow casters:
+								( LightSourceManager::getInstance().getNumTotalShadowingLightSources()  <
+								  ShaderManager::getInstance().getGlobalShaderFeatures().numMaxShadowCasters)
+							),
 							45.0f,
 							60.5f,
 							10.0f,
@@ -665,7 +683,15 @@ void HardCodedSceneLoader::loadLightSources()
 					LightSourceManager::getInstance().createSpotLight(
 						Vector4D(100.0f - 300.0f* fraction + 75 * (i%2) ,40.0f,240.0f + (-480.0f) * fraction + 100* (i%2) ,1.0f) ,
 						Vector4D(1.0f - 2*fraction,-1.0f,0.0f,0.0f),
-						false,
+						(
+							//shadow casting or not depends on global shading features...
+							(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+								== LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)
+							&&
+							//and on max shadow casters:
+							( LightSourceManager::getInstance().getNumTotalShadowingLightSources()  <
+							  ShaderManager::getInstance().getGlobalShaderFeatures().numMaxShadowCasters)
+						),
 						20.0f  + 40* fraction,
 						30.5f + 40* fraction,
 						5.0f,
@@ -686,7 +712,11 @@ void HardCodedSceneLoader::loadLightSources()
 		{
 			LightSourceManager::getInstance().createPointLight(
 					Vector4D(70.0f,90.0f,10.0f,1.0f),
-					false,
+					(
+						//shadow casting or not depends on global shading features
+						ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+							== LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT
+					),
 					Vector4D(1.0f,1.0f,1.0f,1.0f)*0.25,
 					Vector4D(1.0f,1.0f,1.0f,1.0f)*0.25
 			);
@@ -696,7 +726,11 @@ void HardCodedSceneLoader::loadLightSources()
 				LightSourceManager::getInstance().createSpotLight(
 					Vector4D(-70.0f,25.0f,10.0f,1.0f),
 					Vector4D(1.0f,-1.0f,-1.0f,0.0f),
-					false,
+					(
+						//shadow casting or not depends on global shading features
+						ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+							== LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT
+					),
 					45.0f,
 					60.5f,
 					10.0f,
@@ -714,7 +748,7 @@ void HardCodedSceneLoader::loadLightSources()
 				{
 					LightSourceManager::getInstance().createPointLight(
 						Vector4D(0.0f,30.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
-						false,
+						false, //no multiple point light shadowmaps allowed due to gl3 restrictions ;)
 						Vector4D(1.0f,1.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
 						Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
 					);
@@ -724,7 +758,15 @@ void HardCodedSceneLoader::loadLightSources()
 					LightSourceManager::getInstance().createSpotLight(
 							Vector4D(0.0f,30.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
 							Vector4D(0.0f,-1.0f,0.0f,0.0f),
-							false,
+							(
+								//shadow casting or not depends on global shading features...
+								(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+									== LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)
+								&&
+								//...and on max allowed shadow casters:
+								( LightSourceManager::getInstance().getNumTotalShadowingLightSources()
+										< ShaderManager::getInstance().getGlobalShaderFeatures().numMaxShadowCasters)
+							),
 							15.0f,
 							25.5f,
 							10.0f,

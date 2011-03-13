@@ -17,7 +17,7 @@ float getShadowAttenuation(float shadowMapLayer, vec3 fragPosVS)
   {% if SHADOW_TECHNIQUE_DEFAULT  %}
   
     if(   (shadowMapLayer < 0.0)                                          //indicator that the light source is no shadow caster
-      ||  (shadowmapLayer >= numCurrentlyActiveShadowCasters ) )  //indicator that the light source is no (at least currently active) shadow caster
+      ||  (shadowMapLayer >= numCurrentlyActiveShadowCasters ) )  //indicator that the light source is no (at least currently active) shadow caster
     { return 1.0; } // layer must be zero, else it is an indicator that the lightsource is not a shadow caster;
   
     {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT or LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS  %}
@@ -43,7 +43,7 @@ float getShadowAttenuation(float shadowMapLayer, vec3 fragPosVS)
       {% endif %}
   
       //we don't want a squared shadow-throwing lightsource impression, but a circled one:  
-      if( length(vec2(0.5 + shadowCoord.x, 0.5  shadowCoord.y)) < 0.5 )
+      if( length(vec2( shadowCoord.x -0.5, shadowCoord.y -0.5)) < 0.5 )
       {
         {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %} {%comment%} deistinguish between vec3 and vec4 lookup ;( {%endcomment%}
           return  clamp(texture( shadowMap, shadowCoord.xyz ), minimalshadowAttenuation , 1.0);  
