@@ -17,7 +17,7 @@ float getShadowAttenuation(float shadowMapLayer, vec3 fragPosVS)
   {% if SHADOW_TECHNIQUE_DEFAULT  %}
   
     if(   (shadowMapLayer < 0.0)                                          //indicator that the light source is no shadow caster
-      ||  (shadowmapLayer >= (float)(numCurrentlyActiveShadowCasters) ) )  //indicator that the light source is no (at least currently active) shadow caster
+      ||  (shadowmapLayer >= numCurrentlyActiveShadowCasters ) )  //indicator that the light source is no (at least currently active) shadow caster
     { return 1.0; } // layer must be zero, else it is an indicator that the lightsource is not a shadow caster;
   
     {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT or LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS  %}

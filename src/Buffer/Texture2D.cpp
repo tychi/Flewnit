@@ -68,7 +68,7 @@ Texture2D:: Texture2D(String name,
 						| OPEN_GL_CONTEXT_TYPE_FLAG
 						| (clInterOp ? OPEN_CL_CONTEXT_TYPE_FLAG : NO_CONTEXT_TYPE_FLAG )
 				),
-				SHADOW_MAP_SEMANTICS,
+				DEPTH_BUFFER_SEMANTICS, //SHADOW_MAP_SEMANTICS,
 				BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false)
 			),
 			2,
@@ -274,7 +274,7 @@ Texture2DCube::Texture2DCube(String name,	int quadraticSize, bool allocHostMemor
 						(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
 						| OPEN_GL_CONTEXT_TYPE_FLAG
 				),
-				SHADOW_MAP_SEMANTICS,
+				DEPTH_BUFFER_SEMANTICS, //SHADOW_MAP_SEMANTICS,
 				BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false)
 			),
 			2,
@@ -586,7 +586,7 @@ Texture2DArray::Texture2DArray(String name,
 						(allocHostMemory ? HOST_CONTEXT_TYPE_FLAG: NO_CONTEXT_TYPE_FLAG )
 						| OPEN_GL_CONTEXT_TYPE_FLAG
 				),
-				SHADOW_MAP_SEMANTICS,
+				DEPTH_BUFFER_SEMANTICS, //SHADOW_MAP_SEMANTICS,
 				BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false)
 			),
 			2,

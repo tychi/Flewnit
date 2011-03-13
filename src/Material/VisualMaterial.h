@@ -110,8 +110,14 @@ public:
 	inline bool isCustomMaterial()const{return mVisMatFlags.isCustomMaterial;}
 
 
-	//calls validateTextures()
+	//calls validateTextures(); Map semantics key of texture in the texture map will be
+	//tex->getBufferInfo().bufferSemantics, i.e. implcitely set
 	void setTexture(Texture* tex);
+	//for ambigous usages like depth images, use this setter:
+	//Map semantics key of texture in the texture map will be
+	//explicitSemantics, no matter what the "actual" semantics of the texture is;
+	//this way, the same texture storage can have different purposes in different stages;
+	void setTexture(BufferSemantics explicitSemantics, Texture* tex);
 	//returns NULL if doesn't exist;
 	Texture* getTexture(BufferSemantics bs)const;
 

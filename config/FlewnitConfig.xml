@@ -44,7 +44,7 @@
   		<SceneNode>
 			  <Type type="STRING" value="PURE_NODE"/>
 			  <name type="STRING" value="blendFileSceneRootNode" />
-			  <position type="VEC3" x="0.0" y="-15.0" z="-100.0" />
+			  <position type="VEC3" x="0.0" y="-15.0" z="-70.0" />
 			  <direction type="VEC3" x="0.0" y="-1.0" z="0.0" />
 			  <up type="VEC3" x="0.0" y="0.0" z="-1.0" />				
 			  <scale type="FLOAT" value="1."/>	
@@ -182,8 +182,17 @@
 				
 				<GlobalShadingFeatures>
 					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT"/>
+					
+					<!-- - ->
+					<lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT"/>
+					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_DEFAULT"/>
+					<!- - -->
+					
+					<!-- -->
 					<lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_NONE"/>
 					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_NONE"/>
+					<!-- -->
+					 
 					<numMaxLightSources type="INT" value="1"/>
 					<numMaxShadowCasters type="INT" value="1"/>
 					<numMaxInstancesRenderable type="INT" value="300"/>
@@ -202,12 +211,13 @@
 				<cubeMapName type="STRING" value="cloudy_noon" />
 				<cubeMapFileEnding type="STRING" value="jpg" />
 
-			</SimulationPipelineStage> 
+			</SimulationPipelineStage>
 						
 			<SimulationPipelineStage>
 				<Type type="STRING" value="ShadowMapGenerator"/>
 
-			</SimulationPipelineStage> -->
+			</SimulationPipelineStage> 
+			--> 
 						
 			<SimulationPipelineStage>
 				<Type type="STRING" value="DefaultLightingStage"/>

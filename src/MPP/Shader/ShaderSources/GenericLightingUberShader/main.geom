@@ -48,7 +48,7 @@ layout(triangles) in;
 
 {% if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION and LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS %}
   //number of lightsources casting shadows being currently active
-  uniform int numCurrentlyActiveShadowCasters = {{ numMaxShadowCasters }} ;
+  uniform float numCurrentlyActiveShadowCasters = {{ numMaxShadowCasters }} ;
   uniform float invNumCurrentlyActiveShadowShadowCasters =  {{ invNumMaxShadowCasters }} ;
 {% endif %}
 	uniform float cameraFarClipPlane = {{ cameraFarClipPlane }};

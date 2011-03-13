@@ -189,6 +189,10 @@ void ShaderManager::setRenderingScenario(LightingSimStageBase* lightingStage)thr
 
 	BOOST_FOREACH(VisualMaterial* mat, mRegisteredVisualMaterials)
 	{
+		if(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
+		{
+			mat->setTexture(SHADOW_MAP_SEMANTICS, rt->getStoredDepthTexture());
+		}
 		assignShader(mat);
 	}
 

@@ -24,7 +24,7 @@
   uniform float invNumCurrentlyActiveLightSources = {{ invNumMaxLightSources }} ;
   
   //number of lightsources casting shadows being currently active
-  uniform int numCurrentlyActiveShadowCasters = {{ numMaxShadowCasters }} ;
+  uniform float numCurrentlyActiveShadowCasters = {{ numMaxShadowCasters }} ;
   uniform float invNumCurrentlyActiveShadowShadowCasters =  {{ invNumMaxShadowCasters }} ;
 
   {% if not RENDERING_TECHNIQUE_DEFERRED_LIGHTING  %}  

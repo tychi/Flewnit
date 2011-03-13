@@ -6,6 +6,7 @@
 //---- interface ---------------------------------------------------------------------------------
 //---- application (uniform) input ----
 {% include  "05_Fragment_materialSamplers.glsl" %}
+
 {% include  "06_Fragment_shadowMapSamplers.glsl" %}
 {% include  "07_Fragment_GBufferSamplers.glsl" %}
 {% include  "08_Fragment_Uniforms.glsl" %}
@@ -20,12 +21,13 @@ in InterfaceData
 //---- shader output -------------------
 {% include  "10_Fragment_output.glsl" %}
 //----- subroutines ------------------------------------------------------------------------------
-{% include  "11_Fragment_subroutine_getDistanceAttenuation.glsl" %}
-{% include  "11_Fragment_subroutine_getNormal.glsl" %}
-{% include  "11_Fragment_subroutine_getShadowAttenuation.glsl" %}
-{% include  "11_Fragment_subroutine_getSpotLightAttenuation.glsl" %}
-{% include  "11_Fragment_subroutine_getAOAttenuation.glsl" %}
-
+{% if not VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
+  {% include  "11_Fragment_subroutine_getDistanceAttenuation.glsl" %}
+  {% include  "11_Fragment_subroutine_getNormal.glsl" %}
+  {% include  "11_Fragment_subroutine_getShadowAttenuation.glsl" %}
+  {% include  "11_Fragment_subroutine_getSpotLightAttenuation.glsl" %}
+  {% include  "11_Fragment_subroutine_getAOAttenuation.glsl" %}
+{%endif%}
 
 
 void main()

@@ -43,19 +43,19 @@ VisualMaterialFlags::VisualMaterialFlags(const VisualMaterialFlags& rhs)
 {}
 
 //checker to compare a meterial's flags with those of a lighting stage in order to check if they are compatible
-bool VisualMaterialFlags::areCompatibleTo(const VisualMaterialFlags& rhs)const
+bool VisualMaterialFlags::areCompatibleTo(const VisualMaterialFlags& lightingStageMask)const
 {
-	if(rhs.castsShadows && (! castsShadows )) return false;
-	if(rhs.isTransparent && (! isTransparent )) return false;
-	if(rhs.isShadable && (! isShadable )) return false;
-	if(rhs.isDynamicCubeMapRenderable && (! isDynamicCubeMapRenderable )) return false;
+	if( (! castsShadows ) && lightingStageMask.castsShadows ) return false;
+	if( (! isTransparent )&& lightingStageMask.isTransparent ) return false;
+	if( (! isShadable )   &&  lightingStageMask.isShadable) return false;
+	if( (! isDynamicCubeMapRenderable ) && lightingStageMask.isDynamicCubeMapRenderable) return false;
 
 	//Instancing is not tested, as it should not play any role, the shader generation
 	//and the geometry implementation should completely hide the special treatment of instanced geometry...
 
 
 	//mask any kind of custom material, is handled by another control flow of special lighting stages;
-	if(rhs.isCustomMaterial || isCustomMaterial ) return false;
+	if( isCustomMaterial || lightingStageMask.isCustomMaterial) return false;
 
 	return true;
 }
@@ -220,6 +220,13 @@ void VisualMaterial::setTexture(Texture* tex)
 	validateTextures();
 }
 
+void VisualMaterial::setTexture(BufferSemantics explicitSemantics, Texture* tex)
+{
+	mTextures[explicitSemantics] = tex;
+	validateTextures();
+}
+
+
 //returns NULL if doesn't exist;
 Texture* VisualMaterial::getTexture(BufferSemantics bs)const
 {
@@ -262,15 +269,17 @@ void VisualMaterial::validateTextures()throw(SimulatorException)
 					"as in the shader generation, the depth-optimazation is not included yet");
 		}
 
-		//shadow map check:
-		if( (ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
-				!= LIGHT_SOURCES_SHADOW_FEATURE_NONE)
-			&&
-			( (mShadingFeatures & SHADING_FEATURE_DIRECT_LIGHTING  ) != 0)
-		)
-		{
-			assert(mTextures.find(SHADOW_MAP_SEMANTICS) != mTextures.end());
-		}
+		//shadow map check: <-- shadow maps CANNOT exist so far, because materials are created before
+		//any simulators and their according render targets;
+		//the shadowmaps must be set globally
+//		if( (ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+//				!= LIGHT_SOURCES_SHADOW_FEATURE_NONE)
+//			&&
+//			( (mShadingFeatures & SHADING_FEATURE_DIRECT_LIGHTING  ) != 0)
+//		)
+//		{
+//			assert(mTextures.find(SHADOW_MAP_SEMANTICS) != mTextures.end());
+//		}
 
 		return;
 
