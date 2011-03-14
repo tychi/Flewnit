@@ -16,6 +16,7 @@
 #include "Simulator/SimulationResourceManager.h"
 #include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 #include "Scene/Scene.h"
+#include "Simulator/OpenCL_Manager.h"
 
 namespace Flewnit
 {
@@ -110,6 +111,13 @@ bool ShadowMapGenerator::stepSimulation() throw(SimulatorException)
 
 	//LOG<<DEBUG_LOG_LEVEL<<"Shadowmap generator in action! ;(;\n";
 
+	ShaderManager::getInstance().setRenderingScenario(this);
+
+	GUARD(glViewport(0,0,mShadowMapResolution,mShadowMapResolution));
+	GUARD(glEnable(GL_POLYGON_OFFSET_FILL));
+	GUARD(glEnable(GL_POLYGON_OFFSET_LINE));
+	GUARD(glEnable(GL_POLYGON_OFFSET_POINT));
+	//GUARD(glPolygonOffset(-0.1f,-5.0f));
 	//fill transform matrix buffer for shadow map gen, i.e. lookup parem set to false ;)
 	LightSourceManager::getInstance().setupShadowCamMatricesUniformBuffer(false);
 
@@ -134,6 +142,12 @@ bool ShadowMapGenerator::stepSimulation() throw(SimulatorException)
 
 
 	RenderTarget::renderToScreen();
+
+
+	GUARD(glDisable(GL_POLYGON_OFFSET_FILL));
+	GUARD(glDisable(GL_POLYGON_OFFSET_LINE));
+	GUARD(glDisable(GL_POLYGON_OFFSET_POINT));
+
 	return true;
 }
 

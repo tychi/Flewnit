@@ -129,7 +129,7 @@ public:
 private:
 
 	void validateMembers()throw(BufferException);
-	void validateTexture(Texture* tex, bool isDepthTex = false)throw(BufferException);
+	void validateTexture(Texture* tex, bool isDepthTex)throw(BufferException);
 
 	void bindSave();
 	void unbindSave();

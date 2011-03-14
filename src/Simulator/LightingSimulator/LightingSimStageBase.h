@@ -51,7 +51,7 @@ public:
 	virtual void validateStage()throw(SimulatorException) = 0;
 
 	inline RenderTarget* getUsedRenderTarget()const{return mUsedRenderTarget;}
-
+	inline const VisualMaterialFlags& getMaterialFlagMask()const{return mMaterialFlagMask;}
 
 protected:
 	//init to 0

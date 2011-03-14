@@ -27,7 +27,10 @@ float getShadowAttenuation(float shadowMapLayer, vec3 fragPos)
           vec4 shadowCoord= input.shadowCoord; 
         {% else %}  
           vec4 shadowCoord =  shadowMapLookupMatrix * input.position;
+          
           shadowCoord /= shadowCoord.w; //divide by homogene coord:
+
+          //shadowCoord = (shadowCoord + 1.0) *0.5 ;                
         {%endif%}  
       {% endif %}
 

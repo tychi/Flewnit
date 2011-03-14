@@ -97,11 +97,14 @@ layout(location = {{ CUSTOM_SEMANTICS }}      ) 	in vec4 inVCustomAttribute;
 
 
 //---- shader output -------------------
-out InterfaceData
-{
-  {% include  "09_Generic_InterfaceData.glsl" %}
-} output;
-  
+{%comment%} read: if not all three feature at the same time, then declare an output, otherwise, the interface block is empty
+            and causes a compiler error {%endcomment%}   
+{%if not RENDERING_TECHNIQUE_SHADOWMAP_GENERATION or not LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT or SHADING_FEATURE_TESSELATION or instancedRendering  %}
+  out InterfaceData
+  {
+    {% include  "09_Generic_InterfaceData.glsl" %}
+  } output;
+{% endif %}  
 //--------------------------------------
 
 

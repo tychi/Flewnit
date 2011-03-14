@@ -859,7 +859,9 @@ void Shader::setupLightSourceUniforms()
 		}
 		else
 		{
-			bindMatrix4x4("shadowMapLookupMatrix", spot->getViewSpaceShadowMapLookupMatrix(cam));
+			bindMatrix4x4("shadowMapLookupMatrix",
+					//spot->getViewSpaceShadowMapLookupMatrix(cam,1.0f,0.0f));
+					spot->getViewSpaceShadowMapLookupMatrix(cam));
 		}
 		break;
 

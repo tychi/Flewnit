@@ -35,6 +35,7 @@
 #include "Util/Time/FPSCounter.h"
 #include "Simulator/SimulationResourceManager.h"
 #include "MPP/Shader/ShaderManager.h"
+#include "../include/GL3/gl3.h"
 #else
 
 #endif
@@ -81,6 +82,36 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 {
 //	Camera* mainCamera =
 //		URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
+
+	static float polygonOffSetFactor =2.5f;
+	static float polyGonOffsetUnit = 5.8f;
+	const float increment = 0.1f;
+	if(keyboard->getRecentStatus() == GLFW_PRESS)
+	{
+		if( (keyboard->getRecentKey()) == GLFW_KEY_UP)
+		{
+			polygonOffSetFactor += increment;
+		}
+		if( (keyboard->getRecentKey()) == GLFW_KEY_DOWN)
+		{
+			polygonOffSetFactor -= increment;
+		}
+		if( (keyboard->getRecentKey()) == GLFW_KEY_LEFT)
+		{
+			polyGonOffsetUnit += increment;
+		}
+		if( (keyboard->getRecentKey()) == GLFW_KEY_RIGHT)
+		{
+			polyGonOffsetUnit -= increment;
+		}
+
+		LOG<<DEBUG_LOG_LEVEL<<"polygonOffSetFactor: "<<polygonOffSetFactor
+				<<"; polyGonOffsetUnit: "<<polyGonOffsetUnit<<";\n";
+		GUARD(glPolygonOffset(polygonOffSetFactor,polyGonOffsetUnit));
+	}
+
+
+
 
 	if(keyboard->getRecentKey() == GLFW_KEY_ENTER)
 	{

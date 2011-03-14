@@ -181,7 +181,7 @@ void RenderTarget::createAndStoreDepthTexture()
 		break;
 	}
 
-	validateTexture(mOwnedDepthTexture);
+	validateTexture(mOwnedDepthTexture, true);
 	attachStoredDepthBuffer();
 }
 
@@ -378,7 +378,7 @@ void RenderTarget::setEnableColorRendering(bool value)
 			bind();
 		}
 		GUARD_FRAMEBUFFER (glDrawBuffer(GL_NONE));
-		GUARD_FRAMEBUFFER (glReadBuffer(GL_NONE));
+		//GUARD_FRAMEBUFFER (glReadBuffer(GL_NONE)); <-- invalid enum; dann eben nicht^^
 	}
 
 	unbindSave();
@@ -501,6 +501,8 @@ void RenderTarget::attachColorTexture(Texture* tex, int where)throw(BufferExcept
 	}
 
 	mCurrentlyAttachedColorTextures[where] = tex;
+
+	validateTexture(tex, false);
 
 
 	unbindSave();
@@ -679,7 +681,7 @@ void RenderTarget::requestCreateAndStoreColorTexture(BufferSemantics which)throw
 
 
 	switch(mTextureType)
-				{
+	{
 				case TEXTURE_TYPE_2D:
 				case TEXTURE_TYPE_2D_RECT:
 					mOwnedTexturePool[which] = new Texture2D(
@@ -743,7 +745,9 @@ void RenderTarget::requestCreateAndStoreColorTexture(BufferSemantics which)throw
 				default:
 					assert(0 && "no other color texture attachment type supported" );
 					break;
-				}
+	}
+
+	validateTexture(mOwnedTexturePool[which],false);
 
 }
 
@@ -1064,10 +1068,10 @@ void RenderTarget::checkFrameBufferErrors()throw(BufferException)
     	 //LOG<<ERROR_LOG_LEVEL<<statusString;
     	 //throw(BufferException(statusString));
     }
-    else
-    {
-    	LOG<<INFO_LOG_LEVEL<<statusString<<"\n";
-    }
+//    else
+//    {
+//    	LOG<<INFO_LOG_LEVEL<<statusString<<"\n";
+//    }
 
     unbindSave();
 }

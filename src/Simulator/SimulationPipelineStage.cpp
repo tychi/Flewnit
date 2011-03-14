@@ -27,7 +27,7 @@ SimulationPipelineStage::~SimulationPipelineStage()
 //acessor to the different buffers, if subsequent stages need them
 BufferInterface* SimulationPipelineStage::getRenderingResult(BufferSemantics what)
 {
-	if(mRenderingResults.find(what) != mRenderingResults.end())
+	if(mRenderingResults.find(what) == mRenderingResults.end())
 	{
 		return 0;
 	}

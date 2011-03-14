@@ -210,6 +210,7 @@ void VisualMaterial::setShader(Shader* shader)
 {
 	mCurrentlyUsedShader = shader;
 	validateShader();
+
 }
 
 
@@ -304,8 +305,11 @@ void VisualMaterial::validateTextures()throw(SimulatorException)
 //called by setShader();
 void VisualMaterial::validateShader()throw(SimulatorException)
 {
-	assert( (mCurrentlyUsedShader->getLocalShaderFeatures().instancedRendering )
+	if(mCurrentlyUsedShader)
+	{
+		assert( (mCurrentlyUsedShader->getLocalShaderFeatures().instancedRendering )
 			== isInstanced() );
+	}
 
 	//TODO further validation when needed
 }

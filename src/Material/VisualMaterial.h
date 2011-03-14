@@ -129,6 +129,7 @@ private:
 
 	friend class ShaderManager;
 	//called by ShaderManager when a new shader becomes necessary as the rendering scenario has changed;
+	//can be NULL if material won't be used by current stage
 	//calls validateShader()
 	void setShader(Shader* shader);
 

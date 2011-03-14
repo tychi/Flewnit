@@ -97,6 +97,7 @@ void SimulationResourceManager::executeInstancedRendering(SimulationPipelineStag
 #define FLEWNIT_INTERNAL_REGISTER_MACRO(instanceName,getterFunction,containerMember) \
 		if(getterFunction(instanceName->getName())) \
 		{ \
+			LOG<<ERROR_LOG_LEVEL<< instanceName->getName()<<"\n";	\
 			assert(0 && "Object with specified name already exists!"); \
 		} \
 		else \

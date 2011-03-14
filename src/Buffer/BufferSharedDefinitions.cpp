@@ -341,6 +341,8 @@ bool TextureInfo::calculateCLGLImageFormatValues()throw (BufferException)
 							<<"It should work, but use on your own risk, especially for shadowmapping (other sampler (samplerRectShadow) and bias matrix!);\n";
 				}
 
+				elementType = TYPE_FLOAT;
+
 				glImageFormat.desiredInternalFormat = GL_DEPTH_COMPONENT32;
 				glImageFormat.channelOrder= GL_DEPTH_COMPONENT;
 

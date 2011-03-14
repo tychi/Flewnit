@@ -17,6 +17,8 @@
 #include "URE.h"
 #include "Simulator/SimulatorInterface.h"
 #include "Simulator/LightingSimulator/LightingSimulator.h"
+#include "Simulator/LightingSimulator/Camera/Camera.h"
+#include "UserInterface/WindowManager/WindowManager.h"
 
 
 
@@ -44,6 +46,16 @@ bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
 	//LOG<<DEBUG_LOG_LEVEL<<"DefaultLightingStage generator in action! ;(;\n";
 
 	//Camera* cam = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
+
+	URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera()
+		->setGLViewPort(
+				Vector2Di(0,0),
+				Vector2Di(WindowManager::getInstance().getWindowResolution())
+	);
+
+	//assign lighting shaders to materials after shadowmap gen matrials might have been set by a preceding
+	//SM gen stage
+	ShaderManager::getInstance().setRenderingScenario(this);
 
 	//update the uniform buffers of the light sources and the shadow map matrices
 	LightSourceManager::getInstance().updateLightSourcesUniformBuffer();

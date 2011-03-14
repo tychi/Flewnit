@@ -221,19 +221,40 @@ void ShaderManager::setRenderingScenario(LightingSimStageBase* lightingStage)thr
 			//mat->setTexture(SHADOW_MAP_SEMANTICS, rt->getStoredDepthTexture());
 			mat->setTexture(SHADOW_MAP_SEMANTICS, shadowMapTex);
 		}
-		assignShader(mat);
+
+		if ( !  mat->getFlags().areCompatibleTo(lightingStage->getMaterialFlagMask())) {
+			//will be masked anyway, set shader to 0 as there is nothing useful to generate
+			mat->setShader(0);
+		} else {
+			assignShader(mat);
+		}
 	}
 
 }
 
 void  ShaderManager::assignShader(VisualMaterial* mat)
 {
+	ShadingFeatures shadingFeaturesToGenerate =
+			ShadingFeatures( mat->getShadingFeatures() & (mEnabledShadingFeatures) );
+	if(
+			(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
+		||	(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION)
+		||	(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION)
+		||	(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION)
+	)
+	{
+		//mask all shading features of those "none-lighting-techniques" but tessellation
+		reinterpret_cast<unsigned int&>(shadingFeaturesToGenerate) &= ShadingFeatures(
+			SHADING_FEATURE_NONE | SHADING_FEATURE_TESSELATION
+		);
+	}
+
 	ShaderFeaturesLocal sfl = ShaderFeaturesLocal(
 		mCurrentRenderingTechnique,
 		mCurrentRenderTargetTextureType,
 		mat->getType(),
 		//permit only the enabled features!
-		ShadingFeatures( mat->getShadingFeatures() & (mEnabledShadingFeatures) ),
+		shadingFeaturesToGenerate,
 		mat->isInstanced()
 	);
 
