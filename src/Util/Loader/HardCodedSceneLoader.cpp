@@ -91,8 +91,9 @@ void HardCodedSceneLoader::loadGeometries()
 	{
 		myDefaultBoxGeo1 = new BoxGeometry("myDefaultBoxGeo1",Vector3D(30.0f,7.0f,150.0f),true,
 				//patch stuff only for GL versions 4.0 or higher
-				false
+				false,
 				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
+				Vector4D(5,3,1,1)
 		);
 	}
 	Geometry* myTessBoxGeo1 = SimulationResourceManager::getInstance().getGeometry("myTessBoxGeo1");

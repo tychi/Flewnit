@@ -76,7 +76,11 @@ void main()
 
  float edgeLengthVS = length( edgeEndVS - edgeStartVS  );
    
-  float originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor * distanceFactor ;
+  float originalTessLevel =  
+        edgeLengthVS 
+      *640 //* numScreenPixels 
+      * tessQualityFactor 
+      * distanceFactor ;
   //originalTessLevel -= 8.0; 
   //float originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor * (1.0- (sqrt(sqrt(distFraction)))) ; 
   //originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS ;

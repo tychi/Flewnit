@@ -249,6 +249,13 @@ void  ShaderManager::assignShader(VisualMaterial* mat)
 		);
 	}
 
+	if(mat->getType() == VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING)
+	{
+		//for skydom, cube mapping must always be enabled, no matter what the gloabe state says ;(
+		reinterpret_cast<unsigned int&>(shadingFeaturesToGenerate) |=
+			SHADING_FEATURE_CUBE_MAPPING;
+	}
+
 	ShaderFeaturesLocal sfl = ShaderFeaturesLocal(
 		mCurrentRenderingTechnique,
 		mCurrentRenderTargetTextureType,

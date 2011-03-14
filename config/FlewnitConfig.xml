@@ -18,7 +18,9 @@
 
 	  <scenesGlobalSettings>
 		  <tesselateMeshesWithDisplacementMap type="BOOL" value="true" />		
-		  <environmentMap type="STRING" value="./assets/textures/cubeMaps/evening.jpg" />
+		 
+		 <environmentMap type="STRING" value="./assets/textures/cubeMaps/evening.jpg" /> 
+	
   		<referenceCountThresholdForInstancedRendering type="INT" value="8" />
 		</scenesGlobalSettings>
 		
@@ -65,14 +67,14 @@
 
 			<windowTitle type="STRING" value="Flewnit" />
 
-			<fullScreen type="BOOL" value="false"/>
+			<fullScreen type="BOOL" value="true"/>
 
 			<enforceCustomResolutionInFullScreen type="BOOL" value="false" />
 
-			<resolution type="VEC2I" x="800" y="600" GUIVisibility="read" tweakConfigString="TODO"/>
+			<resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
 			<position type="VEC2I" x="400" y="100" GUIVisibility="read" tweakConfigString="TODO"/>
 			
-			<numMultiSamples type="INT" value ="1" />
+			<numMultiSamples type="INT" value ="2" />
 			
 		</windowSettings>
 		
@@ -181,7 +183,7 @@
 				</Camera>
 				
 				<GlobalShadingFeatures>
-					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT"/>
+					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS"/>
 					
 					<!-- -->
 					<lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT"/>
@@ -193,7 +195,7 @@
 					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_NONE"/>
 					<!- - -->
 					 
-					<numMaxLightSources type="INT" value="1"/>
+					<numMaxLightSources type="INT" value="5"/>
 					<numMaxShadowCasters type="INT" value="1"/>
 					<numMaxInstancesRenderable type="INT" value="300"/>
 					<GBufferType type="STRING" value="TEXTURE_TYPE_2D_RECT"/>	
@@ -217,7 +219,7 @@
 			<!-- -->		
 			<SimulationPipelineStage>
 				<Type type="STRING" value="ShadowMapGenerator"/>
-        <shadowMapResolution type="INT" value="1024" />
+        <shadowMapResolution type="INT" value="4096" />
 			</SimulationPipelineStage> 
 			<!-- -->	
 					
