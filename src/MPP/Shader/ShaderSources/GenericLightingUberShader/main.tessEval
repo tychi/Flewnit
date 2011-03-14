@@ -145,7 +145,7 @@ void main()
     output.genericIndices = input[0].genericIndices;
   {% endif %}
   
-  //do NOT pass the depthButNotSpotLight-optimization variables as they are just redundancy on this stage where
+  //do NOT pass the depthImageOrPointLightSMGen-optimization variables as they are just redundancy on this stage where
   //the full 3D-pos vector has already been written to; (hard optimization is not the primary goal atm);   
     
 }

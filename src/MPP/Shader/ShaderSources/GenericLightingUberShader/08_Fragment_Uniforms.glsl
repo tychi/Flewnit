@@ -45,7 +45,7 @@
   uniform float minimalshadowAttenuation = 0.2;
   //} end non-dependently generated material relevant uniforms;
 
-  //----- begin lightsource/shadowmap interface ------------------------------------
+  //----- begin lightsource interface ------------------------------------
   {% if LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT or LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT  %}  
     uniform LightSource lightSource;
   {% else %}
@@ -56,14 +56,38 @@
       };
     {% endif %}  
   {% endif %}
+  //-----end lightsource interface -----------------------------------
   
+  //begin shadowmap matrix interface --------------------------------------------------------
   {% if not LIGHT_SOURCES_SHADOW_FEATURE_NONE  %}  
-    //begin shadowmap matrix stuff
+       
+    //single light source shadow map lookup parameters following:
+    {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}//only one spot light source for shadowing:
+      uniform mat4 shadowMapLookupMatrix; //bias*perspLight*viewLight                for light calcs in world space and
+                                          //bias*perspLight*viewLight * (camView)⁻1  for light calcs in view space
+    {% endif %}
+    
+    {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT %}
+      //in case of one point light shadow mapping, the lookup is in "non-1/z" camera space, 
+      //i.e. needs no additional transformation matrix when calculating in world space; 
+      //but because the depth buffer is always clamped to [0..1], the depth value
+      //must be scaled by 1/farclipPlane of lightSource camera;
+ 
+      {%if worldSpaceTransform %}
+        uniform float invLightSourceFarClipPlane = {{invLightSourceFarClipPlane}};
+      {% else %}
+        //BUT BEWARE: when calculating in view spcace, we need a matrix: 
+        //remember: viewToPointShadowMapMatrix=  invLightSourceFarClipPlane * inversepointLightTranslation * (camView)⁻1
+        uniform mat4 viewToPointLightShadowMapMatrix;
+      {% endif %}  
+      
+      //bias for lookup, in case the glPolygonOffset doesn't apply when writing the gl_FragDepth manually:
+      uniform float shadowMapComparisonOffset= -0.01;
+    {% endif %}  
+    
     {% if LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS %}
-      {%comment%}  any hint we need more than one shadowmap transformation matrix?
-                    (pointlight cube shadow map counts as one and needs no matrix for lookup)? 
-                    (assert also that multiple-lightsource-LIGHTING is enabled)                  {% endcomment %}
-      {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
+      {%comment%}  assert that multiple-lightsource-LIGHTING is enabled  {% endcomment %}
+      {% if LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS %}
           //multiple light source shadow map lookup parameters
           layout(shared) uniform ShadowCameraTransformBuffer
           {
@@ -73,25 +97,9 @@
           };
       {% else %} ERROR: you wanna do shadowing with multiple light sources, but actual lighting with one light source or less; think about the logic behind it ;)
       {% endif %}    
-    {% else %}//single light source shadow map lookup parameters following:
-        {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}//only one spot light source for shadowing:
-          uniform mat4 shadowMapLookupMatrix; //bias*perspLight*viewLight                for light calcs in world space and
-                                               //bias*perspLight*viewLight * (camView)⁻1  for light calcs in view space
-        {% endif %}
-        {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT %}
-          //in case of one point light shadow mapping, the lookup is in "non-1/z" camera space, 
-          //i.e. needs no additional transformation matrix when calculating in world space; 
-          
-          //BUT BEWARE: when calculating in view spcace, we need a matrix:    
-          uniform mat4 viewToPointLightShadowMapMatrix; // (inverse lightSource FarClipPlane) * inversepointLightTranslation * (camView)⁻1
-          //but because the depth buffer is always clamped to [0..1], the depth value
-          //must be scaled by 1/farclipPlane of lightSource camera ({{invCameraFarClipPlane}});
-          
-          //bias for lookup, in case the glPolygonOffset doesn't apply when writing the gl_FragDepth manually:
-          uniform float shadowMapComparisonOffset= -0.01;
-        {% endif %}  
     {% endif %}
-    //end shadowmap matrix stuff
-  {% endif %}
-  //-----end lightsource/shadowmap interface -----------------------------------
+
+  {% endif %}  
+  //end shadowmap matrix interface --------------------------------------------------------
+  
 {% endif %} {%comment%} end if !SHADING_FEATURE_NONE {%endcomment%}

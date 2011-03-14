@@ -7,7 +7,7 @@
 
 {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
 
-float getShadowAttenuation(float shadowMapLayer, vec3 fragPosVS)
+float getShadowAttenuation(float shadowMapLayer, vec3 fragPos)
 {
   {% if SHADOW_TECHNIQUE_NONE or LIGHT_SOURCES_SHADOW_FEATURE_NONE  %}
     return 1.0;
@@ -58,27 +58,26 @@ float getShadowAttenuation(float shadowMapLayer, vec3 fragPosVS)
     {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT %}
     //---------- pointlight calculations -----------------------------------------------------------------------
       {% if LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT or LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS %}
-        //assert that the LIGHTING is also pointlight bist, otherwise the shading logic would be TO unrealistic
+        //assert that the LIGHTING is also pointlight, otherwise the shading logic would be TO unrealistic
         WHAT WERE YOU THINKING!? ;)  //provoking compiler error on purpose :P                                   
       {% endif %}
-      
-      vec3 pointLightShadowCoord = viewToPointLightShadowMapMatrix * fragPosVS; // remember: viewToPointShadowMapMatrix=  inverse_lightSourcesFarClipPlane * inversepointLightTranslation * (camView)⁻1
-      
-      viewToPointShadowMapMatrix; // inverse_lightSourcesFarClipPlane * inversepointLightTranslation * (camView)⁻1
-     
-      {%comment%} 
-        I once decided to do al lighting calculations in WORLD space; thinking about ambient occlusion made me discard this approach;
-        Now, everything is done in view space; what follows is the legacy wolrd space code:
-        
-        vec3 lightToModelW = fragPosVS - lightSource.position;    
+
+      {%if worldSpaceTransform %}
+        vec3 lightToModel = fragPos - lightSource.position;    
         float comparisonReferenceValue = 
-          (   length(lightToModelW) 
-            //scale to compensate for the depthbuffer [0..1] clamping  
-            * inverse_lightSourcesFarClipPlane   )
-          + shadowMapComparisonOffset;
-        return texture(shadowMap, vec4(lightToModelW.xyz,comparisonReferenceValue ));
-      {%endcomment%}
+            (   
+              length(lightToModel) 
+              * invLightSourceFarClipPlane  //scale to compensate for the depthbuffer [0..1] clamping  
+            )
+            + shadowMapComparisonOffset;
+      {% else %}
+        //remember: viewToPointShadowMapMatrix=  invLightSourceFarClipPlane * inversepointLightTranslation * (camView)⁻1
+        vec3 lightToModel = viewToPointLightShadowMapMatrix * fragPos;
+        float comparisonReferenceValue = length(lightToModel) + shadowMapComparisonOffset;  
+      {% endif %}  
       
+      return texture(shadowMap, vec4(lightToModel.xyz,comparisonReferenceValue )); 
+       
     {% endif %}  {%comment%} endif pointlight calculations {%endcomment%}
 
   {% endif %}  {%comment%} endif SHADOW_TECHNIQUE_DEFAULT {%endcomment%}

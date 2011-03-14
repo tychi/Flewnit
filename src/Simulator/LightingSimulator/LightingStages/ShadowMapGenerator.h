@@ -29,9 +29,6 @@ public:
 
 private:
 
-	//Texture* mShadowMapDepthTexture; //<-- wil lbe integrated as member of the rendertarget;
-	//Shader* mShadowMapGenerationShader;
-
 	int mShadowMapResolution; //shadowmap is alwayas of squared size:
 
 };

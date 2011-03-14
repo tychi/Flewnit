@@ -53,16 +53,16 @@ GLuint ShaderStage::mGLShaderStageIdentifiers[__NUM_SHADER_STAGES__] =
 
 
 
-Shader::Shader(Path codeDirectory, Path shaderName, const ShaderFeaturesLocal& localShaderFeatures)
+Shader::Shader(Path codeDirectory, Path specificShaderCodeSubFolderName, const ShaderFeaturesLocal& localShaderFeatures)
 :
 		//generate a unigque name:
-		MPP(	shaderName.string() + localShaderFeatures.stringify(),
+		MPP(	specificShaderCodeSubFolderName.string() + localShaderFeatures.stringify(),
 				//String(shaderName.string()).append(localShaderFeatures.stringify()),
 				//String (shaderName.string() + localShaderFeatures.stringify() ),
 				VISUAL_SIM_DOMAIN
 		),
 		mCodeDirectory(ShaderManager::getInstance().getShaderCodeDirectory()),
-		mShaderName(shaderName),
+		mSpecificShaderCodeSubFolderName(specificShaderCodeSubFolderName),
 		mLocalShaderFeatures(localShaderFeatures)
 //		mGrantleeShaderFeaturesContext(
 //				new GrantleeShaderFeaturesContext(
@@ -101,7 +101,7 @@ void Shader::build()
 
     Grantlee::Engine *templateEngine = new Grantlee::Engine();
     Grantlee::FileSystemTemplateLoader::Ptr loader = Grantlee::FileSystemTemplateLoader::Ptr( new Grantlee::FileSystemTemplateLoader() );
-    String shaderDirectory=	(mCodeDirectory / mShaderName).string() ;
+    String shaderDirectory=	(mCodeDirectory / mSpecificShaderCodeSubFolderName).string() ;
     String commonCodeSnippetsDirectory = (mCodeDirectory / Path("Common")).string();
     loader->setTemplateDirs( QStringList() << shaderDirectory.c_str() << commonCodeSnippetsDirectory.c_str());
     templateEngine->addTemplateLoader(loader);
@@ -128,8 +128,10 @@ void Shader::build()
     	generateShaderStage(GEOMETRY_SHADER_STAGE,templateEngine,contextMap);
     }
 
-    generateShaderStage(FRAGMENT_SHADER_STAGE,templateEngine,contextMap);
-
+    if(ShaderManager::getInstance().currentRenderingScenarioNeedsFragmentShader())
+    {
+    	generateShaderStage(FRAGMENT_SHADER_STAGE,templateEngine,contextMap);
+    }
 
     link();
 
@@ -148,7 +150,7 @@ void Shader::generateShaderStage(ShaderStageType shaderStageType,  Grantlee::Eng
 
     //create the fragment shader:
     mShaderStages[shaderStageType] = new ShaderStage(
-    		shaderStageType, shaderSourceCode, mCodeDirectory, mShaderName,this);
+    		shaderStageType, shaderSourceCode, mCodeDirectory, mSpecificShaderCodeSubFolderName,this);
     attachCompiledStage(shaderStageType);
 }
 
@@ -158,7 +160,7 @@ void Shader::writeToDisk(String sourceCode, ShaderStageType type)
 {
 	String shaderDirectory=
 		(	mCodeDirectory  / Path("__generated") /
-			  Path( mShaderName.string()+ mLocalShaderFeatures.stringify() + String(".")+  shaderStageFileEndings[type] )
+			  Path( mSpecificShaderCodeSubFolderName.string()+ mLocalShaderFeatures.stringify() + String(".")+  shaderStageFileEndings[type] )
 		).string() ;
 	std::fstream fileStream;
 	fileStream.open(shaderDirectory.c_str(), std::ios::out);
@@ -189,7 +191,7 @@ bool Shader::operator==(const Shader& rhs)const
 {
 	return
 		mCodeDirectory == rhs.mCodeDirectory &&
-		mShaderName == rhs.mShaderName &&
+		mSpecificShaderCodeSubFolderName == rhs.mSpecificShaderCodeSubFolderName &&
 		mLocalShaderFeatures == rhs.mLocalShaderFeatures;
 }
 
@@ -226,7 +228,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	contextMap.insert("GL_MINOR_VERSION", WindowManager::getInstance().getAvailableOpenGLVersion().y);
 
 	contextMap.insert("layeredRendering",ShaderManager::getInstance().currentRenderingScenarioPerformsLayeredRendering());
-	contextMap.insert("worldSpaceTransform",ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform());
+	contextMap.insert("worldSpaceTransform",ShaderManager::getInstance().shaderNeedsWorldSpaceTransform());
 
 	bool shaderPerformsColorCalculations =
 			(mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_DEFAULT_LIGHTING)
@@ -254,7 +256,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 			;
 	contextMap.insert("texCoordsNeeded",texCoordsNeeded);
 
-	bool depthButNotSpotLight =
+	bool depthImageOrPointLightSMGen =
 			(mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION)
 			||
 			(
@@ -264,7 +266,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 					== LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT)
 			)
 			;
-	contextMap.insert("depthButNotSpotLight",depthButNotSpotLight);
+	contextMap.insert("depthImageOrPointLightSMGen",depthImageOrPointLightSMGen);
 
 
 
@@ -368,7 +370,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	contextMap.insert("invNumMultiSamples", 1.0f /sfg.numMultiSamples);
 
 
-	contextMap.insert("inverse_lightSourcesFarClipPlane",
+	contextMap.insert("invLightSourceFarClipPlane",
 			1.0f / LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane());
 
 
@@ -440,7 +442,7 @@ void Shader::validate()throw(BufferException)
 	{
 		//something went wrong, write info to disk for easier inspection
 		String logFileName=
-				mShaderName.string() + mLocalShaderFeatures.stringify() +
+				mSpecificShaderCodeSubFolderName.string() + mLocalShaderFeatures.stringify() +
 				String("_LOG_PROGRAM.txt");
 
 		Path logFilePath= mCodeDirectory  / Path("__generated") / Path(logFileName);
@@ -464,7 +466,7 @@ ShaderStage::ShaderStage(ShaderStageType shaderStageType,
 		mType(shaderStageType),
 		mSourceCode(sourceCode),
 		mCodeDirectory(codeDirectory),
-		mShaderName(shaderName),
+		mSpecificShaderCodeSubFolderName(shaderName),
 		mOwningShader(owningShader)
 {
 	GUARD( mGLShaderStageHandle = glCreateShader(mGLShaderStageIdentifiers[shaderStageType]));
@@ -522,7 +524,7 @@ void ShaderStage::validate()throw(BufferException)
 	{
 		//something went wrong, write info to disk for easier inspection
 		String logFileName=
-				mShaderName.string() +
+				mSpecificShaderCodeSubFolderName.string() +
 				mOwningShader->getLocalShaderFeatures().stringify() +
 				String(".")+
 				shaderStageFileEndings[mType]+
@@ -623,6 +625,7 @@ void Shader::bindInt(String uniformName, int val)
 //	- instance-transformation-matrices buffer
 void Shader::setupTransformationUniforms(SubObject* so)
 {
+
 	VisualMaterial* visMat = dynamic_cast<VisualMaterial*>(so->getMaterial());
 	assert(visMat);
 	Camera *cam = URE_INSTANCE->getCurrentlyActiveCamera();
@@ -630,6 +633,7 @@ void Shader::setupTransformationUniforms(SubObject* so)
 	//afaik, trying to set a non existing uniform is no tragic thing;
 	//maybe I should "bruteforce" try to set everything..? TODO checkout when stable
 
+	//+++++++++++++ step 1: grab the standard model- independent matrices: view, proj, viewProj +++++++++++++++++++++++++
 	//unused identity matrices if they aren't set below:
 	Matrix4x4 viewMatrix(1.0f);
 	Matrix4x4 projMatrix(1.0f);
@@ -655,6 +659,8 @@ void Shader::setupTransformationUniforms(SubObject* so)
 	}
 
 
+	//+++++++++++++ step 2: bind view, proj, viewProj to shader +++++++++++++++++++++++++
+
 	//check if we render to a special render target which will make geometry shader delegation
 	//necessary and hence the main cam's view matrix not only obsolete but maybe even name
 	//conflicting with other variables
@@ -666,35 +672,47 @@ void Shader::setupTransformationUniforms(SubObject* so)
 	}
 	else
 	{
-		PointLight* pointLight;
-		switch(mLocalShaderFeatures.renderTargetTextureType)
+		if(mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
 		{
-		case TEXTURE_TYPE_2D_CUBE:
-		case TEXTURE_TYPE_2D_CUBE_DEPTH:
-			for(int i=0; i<6; i++)
+			PointLight* pointLight=0; 	//declare it here as else come some strange compiler warnings
+										//when declaring within switch statement;
+			switch(mLocalShaderFeatures.renderTargetTextureType)
 			{
-				pointLight = dynamic_cast<PointLight*>(LightSourceManager::getInstance().getFirstShadowCaster());
-				assert("pointlight shadowcaster must exist" && pointLight);
-				bindMatrix4x4(
-					String("cubeMapCameraViewMatrices[") + HelperFunctions::toString(i) + String("]"),
-					pointLight->getViewMatrix(i));
-				bindMatrix4x4(
-						String("cubeMapCameraViewProjectionMatrices[") + HelperFunctions::toString(i)+String("]"),
-						pointLight->getViewProjectionMatrix(i));
+			case TEXTURE_TYPE_2D_CUBE_DEPTH:
+				for(int i=0; i<6; i++)
+				{
+					pointLight = dynamic_cast<PointLight*>(LightSourceManager::getInstance().getFirstShadowCaster());
+					assert("pointlight shadowcaster must exist" && pointLight);
+					bindMatrix4x4(
+						String("cubeMapCameraViewMatrices[") + HelperFunctions::toString(i) + String("]"),
+						pointLight->getViewMatrix(i));
+					bindMatrix4x4(
+							String("cubeMapCameraViewProjectionMatrices[") + HelperFunctions::toString(i)+String("]"),
+							pointLight->getViewProjectionMatrix(i));
+				}
+				break;
+			case TEXTURE_TYPE_2D_ARRAY_DEPTH:
+				bindUniformBuffer(
+					SHADOW_CAMERA_TRANSFORM_BUFFER_BINDING_POINT,
+					String("ShadowCameraTransformBuffer"),
+					LightSourceManager::getInstance().getShadowCameraTransformBuffer()->getGraphicsBufferHandle()
+				);
+				break;
+			default: assert(0 && "no other layered rendering targets currently supported for shadow map generation;"
+					"this is mainly a gl3 framework, i.e. stuff like layered cube map rendering won't be implemented too soon ;(");
 			}
-			break;
-		case TEXTURE_TYPE_2D_ARRAY_DEPTH:
-			bindUniformBuffer(
-				SHADOW_CAMERA_TRANSFORM_BUFFER_BINDING_POINT,
-				String("ShadowCameraTransformBuffer"),
-				LightSourceManager::getInstance().getShadowCameraTransformBuffer()->getGraphicsBufferHandle()
-			);
-			break;
-		default: assert(0 && "no other layered rendering targets currently supported;"
-				"this is mainly a gl3 framework, i.e. stuff like layered cube map rendering won't be implemented too soon ;(");
+		}
+		else
+		{
+			assert(mLocalShaderFeatures.renderTargetTextureType ==  TEXTURE_TYPE_2D_CUBE);
+
+			//TODO implement
+			assert(0 && "TODO: grab position from DynamicCubeMapGenerationStage and fill the cubeMapCameraViewMatrices");
 		}
 	}
 
+
+	//+++++++++++++ step 3: bind model-related transforms to shader +++++++++++++++++++++++++
 
 	//instanced rendering or not?
 	if( visMat->isInstanced())
@@ -711,28 +729,65 @@ void Shader::setupTransformationUniforms(SubObject* so)
 	}
 	else
 	{
-		//note: when rendering to tex array or cube map, MV and MVP are unused;
-		//but it doesn't matter to set them anyway; keep business logic as simple as possible ;(
-
 		//setup default "model" related transform uniforms
 		Matrix4x4 modelMatrix(1.0f);
 		if(mLocalShaderFeatures.visualMaterialType == VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING)
-		{
-			 //special case: neither world nor view space transform: set the sky box into centre of view, but don't rotate according to view direction
+		{   //special case: neither world nor view space transform: set the sky box into centre of view, but don't rotate according to view direction
 			modelMatrix = glm::translate(modelMatrix,  URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getPosition());
-		}
-		else
-		{
+		}else{
 			modelMatrix = so->getOwningWorldObject()->getGlobalTransform().getTotalTransform();
 		}
+		 bindMatrix4x4("modelMatrix",modelMatrix);
 
-	    Matrix4x4 modelViewMatrix = viewMatrix * modelMatrix;
-	    Matrix4x4 modelViewProjMatrix = cam->getProjectionMatrix() * modelViewMatrix;
-
-	    bindMatrix4x4("modelMatrix",modelMatrix);
+		 //note: when rendering to tex array or cube map, MV and MVP are unused;
+		//but it doesn't matter to set them anyway; keep business logic as simple as possible ;(
+	    //{
+		Matrix4x4 modelViewMatrix = viewMatrix * modelMatrix;
+	    Matrix4x4 modelViewProjMatrix = viewProjMatrix *  modelMatrix;
+	    		//cam->getProjectionMatrix() * modelViewMatrix; <-- BUG: wrong if shadowmapgeneration ;(
 	    bindMatrix4x4("modelViewMatrix",modelViewMatrix);
 	    bindMatrix4x4("modelViewProjectionMatrix",modelViewProjMatrix);
+	    //}
 	}
+
+
+	// done in setupLightSourceUniforms();
+//	//+++++++++++++ step 4: bind shadow map lookup transforms to shader +++++++++++++++++++++++++
+//	LightSourcesShadowFeature lssf = ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature;
+//	if(
+//		//shadow stuff gloablly enabled?
+//		( lssf != LIGHT_SOURCES_SHADOW_FEATURE_NONE)
+//		&&
+//		(	//do we actually do some lighting? (shadowing without lighting makes no sense...
+//			//where light is, there is shadow... unless the programmer's too stupid to implement it ;(  )
+//			((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_DIRECT_LIGHTING) != 0 )
+//			||
+//			((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_GLOBAL_LIGHTING) != 0 )
+//		)
+//	)
+//	{
+//		SpotLight* sl=0;
+//		PointLight* pl=0;
+//		switch (lssf) {
+//			case  LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT:
+//				sl = dynamic_cast<SpotLight*>( LightSourceManager::getInstance().getFirstShadowCaster() );
+//				assert( "we need a spotlight shadow caster" && sl);
+//					TODO
+//				break;
+//			case  LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT:
+//				pl = dynamic_cast<PointLight*>( LightSourceManager::getInstance().getFirstShadowCaster() );
+//								assert( "we need a pointlight shadow caster" && sl);
+//			TODO
+//				break;
+//			case  LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS:
+//			TODO
+//				break;
+//			default:
+//				assert(0 && "wtf");
+//				break;
+//		}
+//
+//	}
 }
 
 
@@ -759,7 +814,7 @@ void Shader::setupLightSourceUniforms()
 	    		->getGlobalTransform().getPosition(),1.0f) ;
 	    Vector4D lightDir = Vector4D( LightSourceManager::getInstance().getLightSource(0)
 	    		->getGlobalTransform().getDirection(), 0.0f );
-		if ( ! ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform())
+		if ( ! ShaderManager::getInstance().shaderNeedsWorldSpaceTransform())
 		{
 			//transform to view space
 			lightPos =	cam->getGlobalTransform().getLookAtMatrix()	* lightPos;
@@ -798,7 +853,7 @@ void Shader::setupLightSourceUniforms()
 		spot = dynamic_cast<SpotLight*>(
 				LightSourceManager::getInstance().getFirstShadowCaster() );
 		assert("in this scenario, a shadow caster must exist and must be a spotlight" && spot);
-		if(ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform())
+		if(ShaderManager::getInstance().shaderNeedsWorldSpaceTransform())
 		{
 			bindMatrix4x4("shadowMapLookupMatrix", spot->getBiasedViewProjectionMatrix());
 		}
@@ -811,13 +866,14 @@ void Shader::setupLightSourceUniforms()
 	case LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT:
 		pointLight = dynamic_cast<PointLight*> (LightSourceManager::getInstance().getFirstShadowCaster());
 				assert("in this scenario, a shadow caster must exist and must be a point light" && pointLight);
-		if(ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform())
+		if(ShaderManager::getInstance().shaderNeedsWorldSpaceTransform())
 		{
-			//set identity matrix, it's not needed in the shader,but my fear of unset variables ..;)
-			bindMatrix4x4("viewToPointLightShadowMapMatrix", Matrix4x4());
+			bindFloat("invLightSourceFarClipPlane", 1.0f / LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane());
 		}
 		else
-		{	// (inverse lightSource FarClipPlane) * inversepointLightTranslation * (camView)⁻1
+		{
+			//remember: viewToPointShadowMapMatrix=
+			//	invLightSourceFarClipPlane * inversepointLightTranslation * (camView)⁻1
 			Matrix4x4 viewToPointLightShadowMapMatrix =
 				( 1.0f / LightSourceManager::getInstance().getLightSourceProjectionMatrixFarClipPlane() )
 				* glm::translate(Matrix4x4(), (-1.0f) * pointLight->getGlobalTransform().getPosition() )
@@ -900,23 +956,29 @@ void Shader::setupMaterialUniforms(VisualMaterial* visMat)
 			bindInt("depthBufferForAO",DEPTH_BUFFER_SEMANTICS);
 		}
 
-		if( ((visMat->getShadingFeatures() & SHADING_FEATURE_TESSELATION) !=0 )
-			&& ShaderManager::getInstance().tesselationIsEnabled()
-		)
-		{
+		//setupTessellationParameters() returns doing nothing if tess is not enablled globally or in this mat
+		//if( ((visMat->getShadingFeatures() & SHADING_FEATURE_TESSELATION) !=0 )
+		//	&& ShaderManager::getInstance().tesselationIsEnabled()
+		//)
+		//{
 			setupTessellationParameters(visMat);
-
-//			assert(0&& "TODO bind a lot of stuff like textures and opening angles, "
-//					"texture sizes, desired pixel lenght of subdivided  line etc.."); //TODO
-			//assert also that normal mapping is active... at least at first
-		}
+		//}
 	}
 }
 
 
 void Shader::setupTessellationParameters(VisualMaterial* visMat)
 {
-	assert(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_TESSELATION) !=0 ));
+
+	if(
+		( (visMat->getShadingFeatures() & SHADING_FEATURE_TESSELATION) == 0 )
+		|| ( ! ShaderManager::getInstance().tesselationIsEnabled() )
+	)
+	{
+		return; //tess is not active
+	}
+
+	//assert(visMat &&  ((visMat->getShadingFeatures() & SHADING_FEATURE_TESSELATION) !=0 ));
 
 	if( visMat->getTexture(DISPLACEMENT_SEMANTICS) )
 	{
@@ -924,10 +986,30 @@ void Shader::setupTessellationParameters(VisualMaterial* visMat)
 		visMat->getTexture(DISPLACEMENT_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
 		bindInt("displacementMap",DISPLACEMENT_SEMANTICS);
 	}
-	//TODO continue
+
 
 	bindFloat("numScreenPixels", static_cast<float>(WindowManager::getInstance().getWindowResolution().x));
-	//rest still hardcoded in shader:
+
+
+	if(
+		(mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
+		&&
+		( (mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_TESSELATION) != 0 )
+	)
+	{
+	    //as every user varyings in the vertex shader are in world space, we have to write view space pos
+		//OF THE SPECTOTOR CAM to gl_Position in case tess is active for SM gen, so that the tess control
+		//shader can perform its view space dynamic LOD calculations; Even for shadow map generation,
+		//the tesslevels should be performed in SPECTATOR cam space in order to omit
+	    //artifacts due to different SM-generation- and comparison-geometry;
+
+		Camera *cam = URE_INSTANCE->getCurrentlyActiveCamera();
+
+		bindMatrix4x4("spectatorCamViewMatrix",  cam->getViewMatrix());
+	}
+
+
+	//rest still hardcoded in shader: later todo in faaar future ;)
 //	"tessQualityFactor"
 //	"distanceToBeginWithTesselation"
 //	"distanceUntilFullSubdivision"

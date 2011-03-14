@@ -32,7 +32,7 @@ struct VisualMaterialFlags
 
 
 	//checker to compare a meterial's flags with those of a lighting stage in order to check if they are compatible
-	bool areCompatibleTo(const VisualMaterialFlags& rhs)const;
+	bool areCompatibleTo(const VisualMaterialFlags& lightingStageMask)const;
 
 	//some stuff shall not cast shadows, like the skybox or
 	//lightsource/camera visualization geometry

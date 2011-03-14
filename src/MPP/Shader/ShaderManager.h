@@ -103,8 +103,10 @@ public:
 	//which would currupt view space transformed data;
 	//note: in this case pure viewspace-dependent stuff like AO calculatins can
 	//only be done without costly per-pixel back-transformations if some conditions are satified
-	bool vertexShaderNeedsWorldSpaceTransform()const;
+	bool shaderNeedsWorldSpaceTransform()const;
+
 	bool currentRenderingScenarioNeedsGeometryShader()const;
+	bool currentRenderingScenarioNeedsFragmentShader()const;
 
 	//silently ignores returns if tess is not enabled by config or for technical reasons;
 

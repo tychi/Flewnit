@@ -23,6 +23,7 @@ public:
 	DepthImageGenerationShader(Path codeDirectory,
 			RenderingTechnique renderingTechnique,
 			TextureType renderTargetTextureType,
+			bool forTessellation,
 			bool instancedRendering);
 
 	virtual ~DepthImageGenerationShader();

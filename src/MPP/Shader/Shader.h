@@ -90,7 +90,7 @@ private:
 	String mSourceCode;
 
 	Path mCodeDirectory;
-	Path mShaderName;
+	Path mSpecificShaderCodeSubFolderName;
 
 	static GLuint mGLShaderStageIdentifiers[__NUM_SHADER_STAGES__];
 
@@ -138,7 +138,7 @@ public:
 protected:
 
 	friend class ShaderManager;
-	Shader(Path codeDirectory, Path shaderName, const ShaderFeaturesLocal& localShaderFeatures);
+	Shader(Path codeDirectory, Path specificShaderCodeSubFolderName, const ShaderFeaturesLocal& localShaderFeatures);
 
 	//called by constructor
 	void build();
@@ -188,7 +188,7 @@ protected:
 
 
 	Path mCodeDirectory;
-	Path mShaderName;
+	Path mSpecificShaderCodeSubFolderName;
 
 	ShaderFeaturesLocal mLocalShaderFeatures;
 

@@ -186,7 +186,7 @@ void LightSourceManager::updateLightSourcesUniformBuffer()
 			    		Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getPosition(), 1.0f);
 			    Vector4D lightDir =
 			    		Vector4D( mLightSources[currentLightSourceHostIndex]->getGlobalTransform().getDirection(), 0.0f);
-				if ( ! ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform())
+				if ( ! ShaderManager::getInstance().shaderNeedsWorldSpaceTransform())
 				{
 					//transform to view space
 					lightPos =	URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getLookAtMatrix()	* lightPos;
@@ -241,9 +241,11 @@ LightSource* LightSourceManager::getFirstShadowCaster()const
 
 //cam param only needed for lookup in view space; if viewspace or not
 //is queried via ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform();
-//!lookup: shadowCamProjection * shadowCamView
-//lookup && worldspace: hadowCamBias * shadowCamProjection * shadowCamView
-//lookup && !worldspace: hadowCamBias * shadowCamProjection * shadowCamView * (camView)⁻1
+//matrix buffer will be filled like like the following:
+//!lookup (i.e. for shadowmap GENERATION): shadowCamProjection * shadowCamView
+//for LOOKUP (within lighting shaders) of already generated shadow maps:
+//lookup && worldspace: shadowCamBias * shadowCamProjection * shadowCamView
+//lookup && !worldspace: shadowCamBias * shadowCamProjection * shadowCamView * (camView)⁻1
 void LightSourceManager::setupShadowCamMatricesUniformBuffer(bool lookupMatrices, Camera* cam)
 {
 	if(mShadowCameraTransformBuffer)
@@ -292,7 +294,7 @@ void LightSourceManager::setupShadowCamMatricesUniformBuffer(bool lookupMatrices
 					}
 					else
 					{
-						if ( ShaderManager::getInstance().vertexShaderNeedsWorldSpaceTransform())
+						if ( ShaderManager::getInstance().shaderNeedsWorldSpaceTransform())
 						{
 							MAT4_VALUE(currentSMlayer) = spot->getBiasedViewProjectionMatrix();
 						}

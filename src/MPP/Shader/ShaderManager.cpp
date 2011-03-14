@@ -19,6 +19,7 @@
 
 #include <boost/foreach.hpp>
 #include "UserInterface/WindowManager/WindowManager.h"
+#include "Buffer/Texture.h"
 
 
 namespace Flewnit {
@@ -82,7 +83,7 @@ bool ShaderManager::currentRenderingScenarioPerformsLayeredRendering()const
 
 //returns true if doing layered rendering or other stuff involving multiple view/projection cameras
 //which would currupt view space transformed data;
-bool ShaderManager::vertexShaderNeedsWorldSpaceTransform()const
+bool ShaderManager::shaderNeedsWorldSpaceTransform()const
 {
 	return currentRenderingScenarioPerformsLayeredRendering();
 }
@@ -99,6 +100,28 @@ bool ShaderManager::currentRenderingScenarioNeedsGeometryShader()const
 		(mCurrentRenderTargetTextureType == TEXTURE_TYPE_2D_ARRAY_DEPTH) ||
 		(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION )
 		;
+}
+
+bool ShaderManager::currentRenderingScenarioNeedsFragmentShader()const
+{
+	return
+		!	(
+			    (mCurrentRenderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
+			    &&
+			    (
+			    	(mGlobalShaderFeatures.lightSourcesShadowFeature ==
+			    		LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT)
+			    	||
+			    	(mGlobalShaderFeatures.lightSourcesShadowFeature ==
+			    	   	LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS)
+
+			//    	(mLocalShaderFeatures.renderTargetTextureType== TEXTURE_TYPE_2D_DEPTH)
+			//    	||
+			//    	(mLocalShaderFeatures.renderTargetTextureType== TEXTURE_TYPE_2D_RECT_DEPTH)
+			//    	||
+			//    	(mLocalShaderFeatures.renderTargetTextureType== TEXTURE_TYPE_2D_ARRAY)
+			    )
+			);
 }
 
 
@@ -191,7 +214,12 @@ void ShaderManager::setRenderingScenario(LightingSimStageBase* lightingStage)thr
 	{
 		if(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
 		{
-			mat->setTexture(SHADOW_MAP_SEMANTICS, rt->getStoredDepthTexture());
+			Texture* shadowMapTex = dynamic_cast<Texture*>(
+					lightingStage->getRenderingResult(SHADOW_MAP_SEMANTICS));
+			assert(shadowMapTex);
+
+			//mat->setTexture(SHADOW_MAP_SEMANTICS, rt->getStoredDepthTexture());
+			mat->setTexture(SHADOW_MAP_SEMANTICS, shadowMapTex);
 		}
 		assignShader(mat);
 	}
@@ -317,6 +345,7 @@ Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 				mShaderCodeDirectory,
 				sfl.renderingTechnique,
 				sfl.renderTargetTextureType,
+				((sfl.shadingFeatures & SHADING_FEATURE_TESSELATION) !=0),
 				sfl.instancedRendering
 		);
 	}

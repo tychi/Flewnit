@@ -24,10 +24,10 @@
 
 {%if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION and SHADING_FEATURE_TESSELATION %} 
     //as every user varyings are in world space, we have to write view space pos OF THE SPECTOTOR CAM to gl_Position
-    //in case both tess and layered rendering is active, so that the tess control shader can perform its 
-    //view space dynamic LOD calculations; Even for shadow map generation, the tesslevels should be performed in cam space
-    //in order to omit artifacts due to different generation and comparison-geometry; 
-     uniform mat4 spectatorCamViewMatrix;
+    //in case tess is active for SM gen, so that the tess control shader can perform its 
+    //view space dynamic LOD calculations; Even for shadow map generation, the tesslevels should be performed in 
+    //SPECTATOR cam space in order to omit artifacts due to different SM-generation- and comparison-geometry; 
+    uniform mat4 spectatorCamViewMatrix;
 {% endif %} 
 
 //a bit overkill of matrix permutations, but removing unnecessary ones later is easyier than adding missing ones; those matrices makeing no sense in a certein rendering environment will be ignored;
@@ -55,7 +55,7 @@
   uniform mat4 modelViewProjectionMatrix; 
 {% endif %}
 
-  uniform vec3 eyePositionW;
+  uniform vec3 eyePositionW = vec3(0.0,0.0,0.0);
   uniform vec2 tangensCamFov = vec2 ( {{tangensCamFovHorizontal}}, {{tangensCamFovVertical}}   ); //for position calculation from pure linear depth value;
 	uniform vec2 cotangensCamFov= vec2 ( {{cotangensCamFovHorizontal}}, {{cotangensCamFovVertical}}   ); //for texcoord calculation from viewspace position value;/inverso of tanget, pass from outside to save calculations
 	uniform float cameraFarClipPlane = {{ cameraFarClipPlane }};
@@ -118,7 +118,8 @@ void main()
       mat4 shadeSpaceTransform = instanceTransforms[gl_InstanceID].modelViewMatrix;
     {% endif %}
     mat4 modelViewProjectionMatrix =    instanceTransforms[gl_InstanceID].modelViewProjectionMatrix;   
-    mat4 modelViewMatrix =              instanceTransforms[gl_InstanceID].modelViewMatrix;   
+    mat4 modelViewMatrix =              instanceTransforms[gl_InstanceID].modelViewMatrix;
+    mat4 modelMatrix =                  instanceTransforms[gl_InstanceID].modelMatrix;   
     int uniqueInstanceID =              instanceTransforms[gl_InstanceID].uniqueInstanceID;
   {% else %}
     {%if worldSpaceTransform %}
@@ -129,14 +130,9 @@ void main()
   {% endif %}	
   //----------------------------------------------------------------------------------------------
   
-  
-  {%if not layeredRendering and not SHADING_FEATURE_TESSELATION %} 
-    //we need projected stuff for rasterization because no tessCtrl/TessEval/geom shader follows,
-    gl_Position =  modelViewProjectionMatrix  * inVPosition; /*default MVP transform*/   
-  {% endif %} 
-  
-   
-	{% if shadeSpacePositionNeeded %}
+  //++++++++++++++ step 1: calculate the shade space position ++++++++++++++++++++++++++++++++++++
+  {% if shadeSpacePositionNeeded %} {%comment%} i.e. color calcs or layered (world transform needed) 
+                                                or tess (world transform for layered, view transform else) {%endcomment%}   
 		{% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
       //special case: neither world nor view space transform: use the vertex data directly as world spce direction vectors
       output.position = inVPosition;
@@ -144,21 +140,37 @@ void main()
       output.position =  shadeSpaceTransform * inVPosition; 
     {% endif %}       
   {% endif %}  
-	
-	 {%if worldSpaceTransform and SHADING_FEATURE_TESSELATION %} 
-    //as every user varyings are in world space, we have to write view space pos OF THE SPECTOTOR CAM to gl_Position
-    //in case both tess and layered rendering is active, so that the tess control shader can perform its 
-    //view space dynamic LOD calculations; Even for shadow map generation, the tesslevels should be performed in cam space
-    //in order to omit artifacts due to different generation and comparison-geometry; 
-      {%if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION %} 
-        gl_Position =  spectatorCamViewMatrix * output.position;
-      {% else %} 
-        gl_Position =  modelViewMatrix * inVPosition;
-      {% endif %} 
+  
+  //++++++++++++++ step 2: calculate the gl_Position  ++++++++++++++++++++++++++++++++++++++++++++
+  {%if not layeredRendering and not SHADING_FEATURE_TESSELATION %} 
+    //default case
+    //we need projected stuff for rasterization because no tessCtrl/TessEval/geom shader follows,
+    gl_Position =  modelViewProjectionMatrix  * inVPosition; /*default MVP transform*/   
   {% endif %} 
+ 
+  {%if SHADING_FEATURE_TESSELATION %} 
+    {%if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION %}
+      //write the "spectator view space pos" to gl_Position for tess LOD calcs 
+      //gl_Position =  spectatorCamModelViewMatrix * inVPosition; <-- not possible, info for accum matrix doesn't fit 
+                    //to instance uniform buffer without hacky encoding it to the model or modelviewprojection matrix 
+                    //(unused in this setup). maybe a TODO for later optimazation----
+      gl_Position =  spectatorCamViewMatrix * (modelMatrix * inVPosition);
+    {% else %}
+      {% if worldSpaceTransform  %}
+        //write the "own view space pos" to gl_Position for tess LOD calcs 
+        
+        //even for dyn.cubemap generation, a modelViewMatrix shall be passed to the vertex shader for this scenario:
+        //the tess LOD calculation is invariant to cam rotation, hence only the translational part of the view matrix
+        //is relevant, and this part is equal for every six cube map faces
+        gl_Position =  modelViewMatrix * inVPosition;
+      {% endif %}
+    {% endif %}
+  {% endif %}
+  
 	
+  //+++++++ step 3: calculate the shade space tranceform of the rest of the varyings (everything put position and gl_Position) ++
 	
-  {% if SHADING_FEATURE_TESSELATION or shaderPerformsColorCalculations %}              
+  {% if shaderPerformsColorCalculations or SHADING_FEATURE_TESSELATION %}              
       output.normal = 		shadeSpaceTransform * inVNormal; //output.normal =     transpose(inverse( modelViewMatrix)) * inVNormal;           
       {% if SHADING_FEATURE_NORMAL_MAPPING %}
         output.tangent = 	shadeSpaceTransform * inVTangent;
@@ -169,12 +181,12 @@ void main()
   {% endif %}  {%comment%} end of "tess and/or color" inputs {%endcomment%}   
     
       
-  {% if not SHADING_FEATURE_TESSELATION and SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
+  {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT and not SHADING_FEATURE_TESSELATION  %}
     {%comment%} later TODO test this optimaziation for one shadowmap; this would save one multiplication 
                 of the fragment world position with the biased sm-MVP matrix in the fragment shader         {%endcomment%}
-    output.shadowCoord = shadowMapLookupMatrix *  output.position;
+    output.shadowCoord = shadowMapLookupMatrix * output.position;
   {% endif %}
-  {% if depthButNotSpotLight and not shadeSpacePositionNeeded %}
+  {% if depthImageOrPointLightSMGen and not shadeSpacePositionNeeded %}
      //write out optimized viewspace value for depth image if we have not to write out the whole position for tess and/or geom shader:
      //output.depthViewSpaceNORMALIZED = vec4(shadeSpaceTransform * inVPosition).z * invCameraFarClipPlane;
      //output.depthViewSpaceUNSCALED = vec4(shadeSpaceTransform * inVPosition).z;

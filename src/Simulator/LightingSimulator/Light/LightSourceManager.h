@@ -101,11 +101,14 @@ public:
 	//if ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform(),
 	//	then the light source pos and dir will be set in worldspace coords
 	void updateLightSourcesUniformBuffer();
+
 	//cam param only needed for lookup in view space; if viewspace or not
 	//is queried via ShaderManager::currentRenderingScenarioNeedsWorldSpaceTransform();
-	//!lookup: shadowCamProjection * shadowCamView
-	//lookup && worldspace: hadowCamBias * shadowCamProjection * shadowCamView
-	//lookup && !worldspace: hadowCamBias * shadowCamProjection * shadowCamView * (camView)⁻1
+	//matrix buffer will be filled like like the following:
+	//!lookup (i.e. for shadowmap GENERATION): shadowCamProjection * shadowCamView
+	//for LOOKUP (within lighting shaders) of already generated shadow maps:
+	//lookup && worldspace: shadowCamBias * shadowCamProjection * shadowCamView
+	//lookup && !worldspace: shadowCamBias * shadowCamProjection * shadowCamView * (camView)⁻1
 	void setupShadowCamMatricesUniformBuffer(bool lookupMatrices, Camera* cam = 0);
 	//}
 

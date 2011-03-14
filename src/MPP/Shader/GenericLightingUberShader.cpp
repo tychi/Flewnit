@@ -59,15 +59,8 @@ GenericLightingUberShader::~GenericLightingUberShader()
 //virtual bool operator==(const Shader& rhs)const;
 void GenericLightingUberShader::use(SubObject *so) throw (SimulatorException)
 {
-    //IMPORTANT: THIS USE FUNKTION IS A QUICK HACK TO TEST THE FIRST RENDERING;
-    //FOR FULL COMPLIANCE TO THE TEMPLATE, THERE MUST MUCH MORE LOGIC BE PUT INTO THIS ROUTINE,
-    //AND SOME STUFF LIKE INSTANCEMANAGER AND LIGHTSOURCE;AMANAGER MUST IMPLEMENT THERI BUFFFER FILLINGS
-    // TODO TODO TODO
-
    GUARD(glUseProgram(mGLProgramHandle));
 
-   //Camera* mainCam = URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->getMainCamera();
-   //Camera* cam = URE_INSTANCE->getCurrentlyActiveCamera();
 
    //---------------------------------------------------------
    setupTransformationUniforms(so);

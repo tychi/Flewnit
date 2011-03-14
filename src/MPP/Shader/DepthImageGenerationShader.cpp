@@ -6,6 +6,9 @@
  */
 
 #include "DepthImageGenerationShader.h"
+#include "Simulator/OpenCL_Manager.h"
+#include "WorldObject/SubObject.h"
+#include "Material/VisualMaterial.h"
 
 namespace Flewnit {
 
@@ -16,13 +19,18 @@ DepthImageGenerationShader::DepthImageGenerationShader(
 		Path codeDirectory,
 		RenderingTechnique renderingTechnique,
 		TextureType renderTargetTextureType,
+		bool forTessellation,
 		bool instancedRendering)
 :
-		Shader(codeDirectory, Path("DepthImageGenerationShader"),
+		Shader(codeDirectory,
+				//even the shadow map gen is included in the uber shader:
+				Path("GenericLightingUberShader"),
+				//Path("DepthImageGenerationShader"),
 				ShaderFeaturesLocal(
 						renderingTechnique,
 						renderTargetTextureType,
-						VISUAL_MATERIAL_TYPE_NONE,SHADING_FEATURE_NONE,
+						VISUAL_MATERIAL_TYPE_NONE,
+						forTessellation ? SHADING_FEATURE_TESSELATION : SHADING_FEATURE_NONE,
 						instancedRendering)
 		)
 {
@@ -40,15 +48,25 @@ DepthImageGenerationShader::~DepthImageGenerationShader()
 
 void DepthImageGenerationShader::use(SubObject* so)throw(SimulatorException)
 {
-	//TODO implement
-	assert(0 &&  "DepthImageGenerationShader::use; implement me :P");
+	GUARD(glUseProgram(mGLProgramHandle));
+
+	//---------------------------------------------------------
+	setupTransformationUniforms(so);
+	//----------------------------------------------------------
+	VisualMaterial * visMat =  dynamic_cast<VisualMaterial*>(so->getMaterial());
+	assert(visMat);
+	//setupTessellationParameters() returns doing nothing if tess is not enablled globally or in this mat
+	setupTessellationParameters(visMat);
+	//---------- uncategorized uniforms to come ------------------------------------------------
+	//bindVector3D("eyePositionW",URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getPosition());
+
+	//TODO check if the upper impl. works ;(
 }
 
 //virtual void generateCustomDefines();
 void DepthImageGenerationShader::bindFragDataLocations(RenderTarget* rt) throw(BufferException)
 {
-	//TODO implement
-	assert(0 &&  "DepthImageGenerationShader::bindFragDataLocations; implement me :P");
+	assert(0 &&  "DepthImageGenerationShader::bindFragDataLocations: no frag data locs to bind as rendering only to depth buffers ;(");
 }
 
 }

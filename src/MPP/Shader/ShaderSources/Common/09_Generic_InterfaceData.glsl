@@ -36,11 +36,11 @@
              of the fragment world position with the biased sm-MVP matrix in the fragment shader         {%endcomment%}
   vec4 shadowCoord;
 {% endif %}
-{% if depthButNotSpotLight %}
+{% if depthImageOrPointLightSMGen %}
   //goal: writing a linear viewspace depthvalue, scaled to [0..1] to the gl_FragDepth;
   //following variable listing in descending optimazation; i will begin with the non optimized and hence fewest error prone one
   //float depthViewSpaceNORMALIZED;
   //float depthViewSpaceUNSCALED;
-  //vec4 positionViewSpaceNORMALIZED; //light space linear coords, scaled by inverse farclipplane of lightsource camera ({{inverse_lightSourcesFarClipPlane}})
+  //vec4 positionViewSpaceNORMALIZED; //light space linear coords, scaled by inverse farclipplane of lightsource camera ({{invLightSourceFarClipPlane}})
   vec4 positionViewSpaceUNSCALED; //light space linear coords, unscaled to test the most simple case before the more error prone optimized one
 {% endif %}
