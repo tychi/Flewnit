@@ -27,10 +27,10 @@ ShadowMapGenerator::ShadowMapGenerator(ConfigStructNode* simConfigNode)
 		//mask every material not castnig shadows:
 		VisualMaterialFlags(true,false,false,false,false),
 		simConfigNode),
-	mShadowMapResolution(0) //set in init function
+	mShadowMapResolution(ConfigCaster::cast<int>( simConfigNode->get("shadowMapResolution",0))),
+	mPolygonOffset(ConfigCaster::cast<Vector2D>( simConfigNode->get("polygonOffset",0)))
 {
-
-	mShadowMapResolution =  ConfigCaster::cast<int>( simConfigNode->get("shadowMapResolution",0));
+	setPolygonOffset(mPolygonOffset);
 	assert( (mShadowMapResolution >0) && (BufferHelper::isPowerOfTwo(mShadowMapResolution)));
 }
 
@@ -152,7 +152,13 @@ bool ShadowMapGenerator::stepSimulation() throw(SimulatorException)
 }
 
 
+void ShadowMapGenerator::setPolygonOffset(const Vector2D& val)
+{
+	mPolygonOffset = val;
 
+	GUARD(glPolygonOffset(mPolygonOffset.x,mPolygonOffset.y));
+
+}
 
 }
 

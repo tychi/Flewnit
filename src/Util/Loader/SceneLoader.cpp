@@ -37,8 +37,8 @@ SceneLoader::SceneLoader(ConfigStructNode& scenesGlobalSettings, ConfigStructNod
 		mImporter(0),
 		mAssimpScene(0)
 {
-	ShaderManager::getInstance().setEnableShadingFeatures( SHADING_FEATURE_TESSELATION,
-			ConfigCaster::cast<bool>(scenesGlobalSettings.get("tesselateMeshesWithDisplacementMap",0)));
+	//ShaderManager::getInstance().setEnableShadingFeatures( SHADING_FEATURE_TESSELATION,
+	//		ConfigCaster::cast<bool>(scenesGlobalSettings.get("tesselateMeshesWithDisplacementMap",0)));
 
 	mReferenceCountThresholdForInstancedRendering =  ConfigCaster::cast<int>(scenesGlobalSettings.get("referenceCountThresholdForInstancedRendering",0));
 

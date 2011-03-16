@@ -45,6 +45,7 @@ private:
 
 
 	ShaderFeaturesGlobal parseGlobalShaderFeatureFromConfig();
+	ShadingFeatures parseSupportedShadingFeaturesFromConfig();
 
 	RenderTarget* mGlobalRenderTarget;
 	Camera* mMainCamera;

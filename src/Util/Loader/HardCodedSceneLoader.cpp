@@ -294,7 +294,7 @@ void HardCodedSceneLoader::loadMaterials()
 					),
 					myMap,
 					VisualMaterialFlags(true,false,true,true,false,false),
-					100.0f,
+					30.0f,
 					0.2f//6f
 				);
 	}//endif !raptorTessMat
@@ -436,6 +436,7 @@ void HardCodedSceneLoader::createInstancingSetup()
 	{
 		boxForInstancingGeom = new BoxGeometry("boxForInstancingGeom",Vector3D(5.0f,25.0f,25.0f),true,
 				true
+				//,Vector4D(0.25f)
 		);
 	}
 
@@ -510,6 +511,7 @@ void HardCodedSceneLoader::createInstancingSetup()
 						AmendedTransform(
 							/*instanceArmyPosOffset +*/ (instanceArmyStride * Vector3D(x,y,z))
 							//Vector3D(0.3f,0.0f,-1.0f)
+							,Vector3D(0.5f,-0.3f,0.0f), Vector3D(0,1,0),0.5
 						)
 					);
 					pvo->addSubObject(boxInstanceManager->createInstance());
@@ -633,7 +635,7 @@ void HardCodedSceneLoader::loadLightSources()
 		)
 		{
 			LightSourceManager::getInstance().createSpotLight(
-					Vector4D(70.0f,90.0f,-20.0f,1.0f),
+					Vector4D(70.0f,250.0f,-20.0f,1.0f),
 					Vector4D(-0.5f,-1.0f,-0.5f,0.0f),
 					(   //shadow casting or not depends on global shading features...
 						(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
@@ -751,7 +753,7 @@ void HardCodedSceneLoader::loadLightSources()
 						Vector4D(0.0f,30.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
 						false, //no multiple point light shadowmaps allowed due to gl3 restrictions ;)
 						Vector4D(1.0f,1.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
-						Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
+						Vector4D((1.0f-fraction)*15.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
 					);
 				}
 				else

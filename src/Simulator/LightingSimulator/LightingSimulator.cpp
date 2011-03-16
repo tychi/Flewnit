@@ -78,6 +78,7 @@ LightingSimulator::LightingSimulator(ConfigStructNode* simConfigNode)
 	mShaderManager(
 		new ShaderManager(
 			parseGlobalShaderFeatureFromConfig(),
+			parseSupportedShadingFeaturesFromConfig(),
 			Path( 	ConfigCaster::cast<String>(simConfigNode->get("generalSettings",0).
 					  get("GlobalShadingFeatures",0).get("shaderCodeDirectory",0))		)
 		)
@@ -86,6 +87,22 @@ LightingSimulator::LightingSimulator(ConfigStructNode* simConfigNode)
 {
 	//every further init in init() routine :P
 }
+
+
+ShadingFeatures LightingSimulator::parseSupportedShadingFeaturesFromConfig()
+{
+	ConfigStructNode& node = mSimConfigNode->get("generalSettings",0).
+				get("supportedShadingFeatures",0);
+
+	return ShadingFeatures(
+			( ConfigCaster::cast<bool>(node.get("directLighting",0)) ? SHADING_FEATURE_DIRECT_LIGHTING :0 )
+		| 	( ConfigCaster::cast<bool>(node.get("diffuseTexturing",0)) ? SHADING_FEATURE_DIFFUSE_TEXTURING :0 )
+		| 	( ConfigCaster::cast<bool>(node.get("normalMapping",0)) ? SHADING_FEATURE_NORMAL_MAPPING :0 )
+		| 	( ConfigCaster::cast<bool>(node.get("cubeMapping",0)) ? SHADING_FEATURE_CUBE_MAPPING :0 )
+		| 	( ConfigCaster::cast<bool>(node.get("tessellation",0)) ? SHADING_FEATURE_TESSELATION :0 )
+	);
+}
+
 
 ShaderFeaturesGlobal LightingSimulator::parseGlobalShaderFeatureFromConfig()
 {
@@ -247,6 +264,19 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 	//GUARD(glPolygonMode(GL_FRONT, GL_FILL));
     GUARD(glEnable(GL_CULL_FACE));
     //glCullFace(GL_FRONT); <-- good for skydome rendering
+
+	String polygonMode = ConfigCaster::cast<String>(
+			 mSimConfigNode->get("generalSettings",0).get("polygonMode",0)  );
+	GLenum glPolyMode = 0;
+	if(polygonMode == "POINT") { glPolyMode = GL_POINT;}
+	else {
+		if(polygonMode == "LINE") { glPolyMode = GL_LINE;}
+		else{
+			if(polygonMode == "FILL") { glPolyMode = GL_FILL;}
+			else { assert(0&&"wrong polygon mode!");}
+		}
+	}
+	GUARD(glPolygonMode(GL_FRONT_AND_BACK, glPolyMode));
 
 
 	// TODO Auto-generated destructor stub

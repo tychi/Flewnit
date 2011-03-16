@@ -182,15 +182,27 @@
 					<movementSpeed type="FLOAT" value="0.5"/>		
 				</Camera>
 				
+				<polygonMode type="STRING" value="LINE"/>
+				
+				<supportedShadingFeatures>
+				  <directLighting type="BOOL" value="false"/>
+				  <diffuseTexturing type="BOOL" value="false"/>
+				  <normalMapping type="BOOL" value="false"/>
+				  <cubeMapping type="BOOL" value="false"/>
+				  <tessellation type="BOOL" value="false"/>				
+				</supportedShadingFeatures>
+								
+
 				<GlobalShadingFeatures>
-					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS"/>
 					
 					<!-- -->
+					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS"/>
 					<lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT"/>
 					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_DEFAULT"/>
 					<!-- -->
 					
 					<!-- - ->
+					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS"/>
 					<lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_NONE"/>
 					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_NONE"/>
 					<!- - -->
@@ -220,6 +232,7 @@
 			<SimulationPipelineStage>
 				<Type type="STRING" value="ShadowMapGenerator"/>
         <shadowMapResolution type="INT" value="4096" />
+        <polygonOffset type="VEC2" x="2.5" y="5.8"/>
 			</SimulationPipelineStage> 
 			<!-- -->	
 					

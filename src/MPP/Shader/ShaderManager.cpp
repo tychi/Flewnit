@@ -26,6 +26,7 @@ namespace Flewnit {
 
 ShaderManager::ShaderManager(
 		const ShaderFeaturesGlobal& globalShaderFeatures,
+		ShadingFeatures supportedShadingFeatures,
 		Path shaderCodeDirectory )
 :
 		mShaderCodeDirectory(shaderCodeDirectory),
@@ -34,14 +35,16 @@ ShaderManager::ShaderManager(
 		mCurrentRenderingTechnique(RENDERING_TECHNIQUE_DEFAULT_LIGHTING),
 		mCurrentRenderTargetTextureType(TEXTURE_TYPE_2D),
 		mEnabledShadingFeatures(
-			ShadingFeatures(
-				  SHADING_FEATURE_DIRECT_LIGHTING
-				| SHADING_FEATURE_DIFFUSE_TEXTURING
-				| SHADING_FEATURE_NORMAL_MAPPING
-				| SHADING_FEATURE_CUBE_MAPPING
-				| ( 	(WindowManager::getInstance().getAvailableOpenGLVersion().x >=4)
-						? SHADING_FEATURE_TESSELATION:0)
-			)
+			supportedShadingFeatures
+//			ShadingFeatures(
+//				//SHADING_FEATURE_NONE
+//				  SHADING_FEATURE_DIRECT_LIGHTING
+//				| SHADING_FEATURE_DIFFUSE_TEXTURING
+//				| SHADING_FEATURE_NORMAL_MAPPING
+//				| SHADING_FEATURE_CUBE_MAPPING
+//				| ( 	(WindowManager::getInstance().getAvailableOpenGLVersion().x >=4)
+//						? SHADING_FEATURE_TESSELATION:0)
+//			)
 		)
 		//mTesselationIsEnabled(WindowManager::getInstance().getAvailableOpenGLVersion().x >=4)
 		//mIsInitializedGuard(false)
@@ -237,10 +240,13 @@ void  ShaderManager::assignShader(VisualMaterial* mat)
 	ShadingFeatures shadingFeaturesToGenerate =
 			ShadingFeatures( mat->getShadingFeatures() & (mEnabledShadingFeatures) );
 	if(
-			(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
-		||	(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION)
-		||	(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION)
-		||	(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION)
+		//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4 )
+		//&&
+		(	(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_SHADOWMAP_GENERATION)
+			||	(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_DEPTH_IMAGE_GENERATION)
+			||	(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_POSITION_IMAGE_GENERATION)
+			||	(mCurrentRenderingTechnique == RENDERING_TECHNIQUE_PRIMITIVE_ID_RASTERIZATION)
+		)
 	)
 	{
 		//mask all shading features of those "none-lighting-techniques" but tessellation

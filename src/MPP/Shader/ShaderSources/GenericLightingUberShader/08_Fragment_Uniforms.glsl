@@ -42,7 +42,7 @@
 
 
   //clamp the attenuation due to shadowmapping to [minimalshadowAttenuation, 1.0]
-  uniform float minimalshadowAttenuation = 0.2;
+  uniform float minimalshadowAttenuation = 0.1;
   //} end non-dependently generated material relevant uniforms;
 
   //----- begin lightsource interface ------------------------------------

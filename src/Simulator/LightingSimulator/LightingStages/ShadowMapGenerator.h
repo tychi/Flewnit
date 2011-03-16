@@ -26,10 +26,13 @@ public:
 	virtual void initStage()throw(SimulatorException);
 	virtual void validateStage()throw(SimulatorException) ;
 
+	void setPolygonOffset(const Vector2D& val);
+	inline const Vector2D& getPolygonOffset()const{return mPolygonOffset;}
 
 private:
 
 	int mShadowMapResolution; //shadowmap is alwayas of squared size:
+	Vector2D mPolygonOffset;
 
 };
 

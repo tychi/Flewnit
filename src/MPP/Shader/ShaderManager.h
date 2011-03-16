@@ -35,6 +35,7 @@ class ShaderManager
 public:
 
 	ShaderManager(const ShaderFeaturesGlobal& globalShaderFeatures,
+			ShadingFeatures supportedShadingFeatures,
 			Path shaderCodeDirectory = FLEWNIT_DEFAULT_SHADER_SOURCES_PATH);
 	virtual ~ShaderManager();
 
