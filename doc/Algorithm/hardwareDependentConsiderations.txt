@@ -1,0 +1,44 @@
+##begun brainstorm... but canceled at first, will be extended when/if needed
+
+Target Hardware to consider for work group/item layout and memory access patterns for coalsecing and avoidance of bank conflicts:
+---------------------------------------------------------------------------------------------------------------------------------
+  - rule of thumbs for "kernel invocation management relevant values":
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    targetNumWorkGroupsPerSMP =  
+          min(
+              maximumManageableThreadsPerSMP, 
+              //calcuate how often the shared mem. demand of one work group fits into thread-available total shared mem.
+              (totalAssignedSharedMemory - SMP_ManagementOverhead)
+              / (numWorkItemsPerWorkGroup * neededSharedMemoryPerThread)
+          )  
+  
+  
+  - notebook:
+    - Geforce GT435M:
+      - GF 108 (GF 10x is 2nd generation Fermi) architecture
+      - 2 SMP's <-- multiple of it shall correspond to number of OpenCL work groups 
+      - 48 CUDA cores per SMP <-- but still only 2 * 16 half warps scheduled; rest is scheduled in a superscalar way;
+                                  This means, that still multiple of 2*16=32 is still the number the OpenCL work items
+                                  should be a multiple of in order to fully utilize all functional units.
+      - 16 - 48 KB shared memory / SMP <--  Maximum neededSharedMemoryPerThread =
+                                            floor ( (totalAssignedSharedMemory - SMP_ManagementOverhead)
+                                                    / (numWorkItemsPerWorkGroup * targetNumWorkGroupsPerSMP))
+                                            example:
+                                            (49152 - 4096) / (256 * 2) = 88 Byte
+                                            Note that you want a big number of to-be-scheduled threads 
+                                            (numWorkItemsPerWorkGroup * targetNumWorkGroupsPerSMP) per SMP in order to
+                                            hide latency;
+      - maxManageableThreadsPerSMP = 1024 <-- due to ShaderModel 2.x (http://en.wikipedia.org/wiki/CUDA)
+                                        
+      - 16 - 48 KB L1 cache <-- TODO check performance differences
+      - 128 KB  (32K * 4Byte) registers per SMP
+      - 32 banks @ 32 bit in Shared Memory  (corresponding to one half warp) <-- keep this in mind when designing access patterns
+      - further info: http://www.anandtech.com/show/3809/nvidias-geforce-gtx-460-the-200-king/2
+      
+  - desktop (march 2011):
+    - Geforce GTX 280
+    - 30 SMP's <-- multiple of it shall correspond to number of OpenCL work groups
+    - 8 CUDA cores per SMP <--  Though only 8 threads are actually executed synchronized in parallel, the thread are organized in
+                                warps @ 32 Threads; hence, even for non-Fermi architectures, numWorkItemsPerWorkGroup should be a multiple
+                                of 32;
+

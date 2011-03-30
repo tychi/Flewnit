@@ -122,16 +122,15 @@
 				<fluidParticleMass type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
 
 				<particlesPerRigidBody type="INT" value="256" GUIVisibility="read/write" tweakConfigString="TODO"/>
-
 				<particelizeBordersOnly type="BOOL" value ="false" GUIVisibility="read" tweakConfigString="TODO"/>
 
-				<rigidBodyParticleMass type="FLOAT" value="0.5" GUIVisibility="read/write"
-					tweakConfigString="TODO"/>
+				<rigidBodyParticleMass type="FLOAT" value="0.5" GUIVisibility="read/write"	tweakConfigString="TODO"/>
 
 			</generalSettings>
 
 			<SimulationPipelineStage>
 				<Type type="STRING" value="UniformGridUpdater"/>
+				<!-- Particles are sorted accourding to a z-Curve into a Uniform Grid via Parallel Radix Sort -->
 
 			</SimulationPipelineStage>
 			
@@ -150,16 +149,31 @@
 
 			</SimulationPipelineStage>
 
+			<SimulationPipelineStage>
+				<Type type="STRING" value="ParticleViscosityComputation"/>
 
+			</SimulationPipelineStage>
+
+			<SimulationPipelineStage>
+				<Type type="STRING" value="ParticleForceComputation"/>
+
+			</SimulationPipelineStage>
+			
 
 			<SimulationPipelineStage>
 				<Type type="STRING" value="FluidParticleIntegrator"/>
-
+				<!-- 
+					Use the leap frog integration scheme to compute velocity and position
+					(in the same kernel or separated?) 
+				-->
+				
 			</SimulationPipelineStage>
 
 			<!-- 
 			<SimulationPipelineStage>
 				<Type type="STRING" value="ParticleizedRigidBodyIntegrator"/>
+				<!- - use the particles to compute a commont force and torque for its belonging rigid body,
+					align those particles to the new RB-transform afterwards - ->
 
 			</SimulationPipelineStage>
 			-->

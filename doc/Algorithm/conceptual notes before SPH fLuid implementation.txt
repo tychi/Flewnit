@@ -1,0 +1,83 @@
+Overall SPH Fluid Simulation - Conceptual Notes
+================================================
+
+TODO research:
+------------------
+  - Z-Index formula (Goswami 2010 -> Mor66)
+  
+  - first hints for parallel radix sort parallel prefix sum + parallel reduction:
+    (maybe not that complete, but the whole of all algos will be extractable from all my collected papers+
+     printed thesises + gpu gems) : 
+      - http://http.developer.nvidia.com/GPUGems3/gpugems3_ch32.html <-- basic paper for parallel scan with CUDA
+      - http://http.developer.nvidia.com/GPUGems3/gpugems3_ch39.html <-- application for broad phase coll. detection 
+      
+  - refresh knowledge about efficient atomicMin/Max/Inc etc. calculation patterns:
+    - http://supercomputingblog.com/cuda/cuda-tutorial-5-performance-of-atomics/
+    
+          
+         
+  
+  
+References for Algorithms:
+--------------------------
+  - rough voxelization per depth peeling: http://http.developer.nvidia.com/GPUGems3/gpugems3_ch29.html
+  
+ 
+ 
+ 
+ 
+Parallel Prefix Sum concepts:
+-----------------------------
+  - Parallel Prefix Sum:
+  ~~~~~~~~~~~~~~~~~~~~~~
+    - scheme: 
+      - Kernel1 :
+          - parallel scan locally on work group scale, write sum to globalScanArray:
+            -(TODO refine)
+      - Kernel2: 
+          - one single work group scans globalScanArray; (we are finished if only the total sum is of interest)
+      - Kernel3: 
+          - if total prefix sum is of interest: 
+              - launch as many work groups as in kernel 1:
+                - every work group grabs one item of globalScanArray and adds this value to every item 
+                  in its range within the actual scanResultArray;
+      
+  - Parallel Reduction:
+  ~~~~~~~~~~~~~~~~~~~~~
+    - scheme:
+      - do a parallel prefix sum (see above) in order to calculate the new array indices for each element in originalArray;
+      - Kernel4: 
+        - if(isValid(currentElement)):
+           compactedElementArray[ scanResultArray[ currentElementIndex] ] = currentElement;
+           
+  - Parallel Radix Sort:
+  ~~~~~~~~~~~~~~~~~~~~~~
+   
+    - TODO
+  
+  
+Simulation Algorithm:
+---------------------
+  Phase I: Update Accleration Structure:
+  --------------------------------------
+    - Kernel calculateZIndexKernel:
+      - calculate z-Index for each particle, write to zIndexBuffer
+    - Kernel parallelRadixSortKernel:
+      - sort particles according to z-Index via Parallel Radix Sort (TODO refine)
+    - Kernel updateUniformGridKernel:
+      - one work item per particle: set:
+          atomicMin( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].particleStartIndex, currentParticleArrayIndex);
+          atomicInc( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].numContainingParticles);
+      - (maybe to include here: TODO rigid body meta data calculation)
+    - Kernel compactUniformGridBlocksKernel:
+      - kind of parallel reduction via parallel prefix sum + split of overpopulated blocks (atomicInc?)
+        (TODO freshen up parallel prefix sum and related applications)
+      
+  Phase II: Perform SPH calculations:
+  -----------------------------------
+    (todo copy from hand written notes;)
+    (note: integration via Velocity Verlet method, as because we need explicit velocities, leap frog is not applicable,
+    i.e. two evalutations for both position and velocitiy and force have to be done per simulation step; Regarding this fact,
+    Velocity Verlet is slightly more accurate at the same computational cost; 
+    [David H. Eberly: Game Physics; page 483 f. §9.8.5 equation 9.35])
+  

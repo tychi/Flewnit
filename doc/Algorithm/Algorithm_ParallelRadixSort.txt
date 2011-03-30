@@ -1,0 +1,118 @@
+Parallel Radix Sort pseudo code:
+
+
+
+Algorithm Parallel Radix Sort:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  
+constants:
+----------
+  NUM_BANKS = (32 for fermi, 16 else)
+  WARP_SIZE = 32
+  NUM_PROCESSORS = (2 (GT435M), 30 (GTX280) or 16 (GTX 580))
+  NUM_EXECUTION_UNITS_PER_PROCESSOR = (32 for fermi (even if the GF 10x have 48, this makes besides register file size no logical difference 
+                                      (unless you want to redisign the code for easier superscalarity)), 8 else)
+  LOCAL_MEMORY_SIZE = (2^14 (16KB) to 3*2^14 (48KB) for fermi, 2^14 (16KB) else )
+  
+  NUM_BITS_TO_SORT = 24 //2^20 elements shall be enough ;(
+  NUM_RADICES = 8;
+  NUM_RADIX_COUNTER_ARRAYS = 2^NUM_RADICES;
+  NUM_SORT_PASSES =  NUM_BITS_TO_SORT / NUM_RADICES;
+  
+  NUM_KEY_ELEMENTS = 2^17; // 128k elements
+  
+  SHARED_COUNTER_GROUP_SIZE = 32;  //to save local memory (and prefix sum computation time), one element in a radix counter array 
+                             //"represents" serializedRadixCountingAmount elements of the array which is to be sorted;
+                                          
+  
+  RADIX_COUNTER_ARRAY_LENGTH = NUM_KEY_ELEMENTS / SHARED_COUNTER_GROUP_SIZE; //4096 in this example
+  
+  NUM_WORK_ITEMS = 2^8; //256 threads per block, in cuda slang ;(
+  //2^9 in this case, let's hope that 
+  //"Maximum number of resident blocks per multiprocessor" is meant "for scheduling at the same time" and not "in total"
+  NUM_WORK_GROUPS = RADIX_COUNTER_ARRAY_LENGTH / NUM_WORK_ITEMS ; //16 in this example 
+  NUM_THREAD_GROUPS_PER_WORK_GROUP = NUM_WORK_ITEMS / SHARED_COUNTER_GROUP_SIZE; //8 in this example
+  //1024 in this example; explanation
+  NUM_KEY_ELEMENTS_PER_SHARED_COUNTER_THREAD_GROUP = NUM_KEY_ELEMENTS / (NUM_WORK_GROUPS * NUM_THREAD_GROUPS_PER_WORK_GROUP); 
+ 
+  
+  #define get_group_id
+  
+input:
+------
+
+
+                                       
+ __global int* keysToSort; //size :NUM_KEY_ELEMENTS;
+ 
+ __global int* radixCounters; //array has NUM_RADIX_COUNTER_ARRAYS *RADIX_COUNTER_ARRAY_LENGTH elements, i.e. holds all counters;
+ 
+ 
+output:
+------- 
+
+  __global int* keysSorted;
+  __global int* sortedElementsOldIndex; 
+  
+
+pre conditions:
+-------------
+ - isPowerOfTwo(numWorkGroups)
+ - isPowerOfTwo(numWorkItems)
+ - numWorkGroups * numWorkItems == numElements
+ - (numWorkItems * 4 BytesPerRadixCountElement * NUM_RADIX_COUNTER_ARRAYS / serializedRadixCountingAmount ) < LOCAL_MEMORY_SIZE
+   should be really smaller THAN local mem. size, because there may be some usage of local memory for kernel management by OpenCL itself;
+   in our example for fermi: 
+
+post conditions:
+---------------
+  for each i in [0..numElements-2]: (keysSorted[i]<=keysSorted[i+1]) 
+  
+pseudo code:
+------------
+for(currentRadixSortPass=0;currentRadixSortPass<NUM_SORT_PASSES;currentRadixSortPass++)
+{
+  launch Kernel tabulateKernel
+  {
+    __local int currentBitShift =0 ;
+    __local int localRadixCounters[NUM_RADIX_COUNTER_ARRAYS][NUM_WORK_ITEMS];
+    
+    int getOriginalValue(int currentCounter)
+    {
+      return keysToSort[ 
+        //start index of current block
+        ( get_group_id(0) * get_local_size(0) * SHARED_COUNTER_GROUP_SIZE) +
+        //start index of thread group to which the thread belongs
+        (get_local_id(0) / SHARED_COUNTER_GROUP_SIZE * ) * SHARED_COUNTER_GROUP_SIZE * NUM_THREAD_GROUPS_PER_WORK_GROUP +  
+        //(NUM_THREAD_GROUPS_PER_WORK_GROUP * (get_local_id(0) / SHARED_COUNTER_GROUP_SIZE) ) +
+        //initial offset to the zero'th element belonging to an "interleaved-stored" counter-sharing element group of size SHARED_COUNTER_GROUP_SIZE
+        ( get_local_id(0) % SHARED_COUNTER_GROUP_SIZE  )
+      ];
+    }
+    
+    int getRelevantRadixValue(int originalValue)
+    {
+      //return ( (originalValue >> (currentRadixSortPass * NUM_RADICES)) & (NUM_RADIX_COUNTER_ARRAYS -1) );
+      return ( (originalValue >> (currentBitShift)) & (NUM_RADIX_COUNTER_ARRAYS -1) );
+    }
+  
+    __kernel void tabulateKernel()
+    {
+      if(get_local_id(0) == 0)
+      {
+        currentBitShift = currentRadixSortPass * NUM_RADICES;
+      }
+      barrier(CLK_LOCAL_MEM_FENCE);
+      
+      //TODO how to pragma unroll?
+      for(int currentCounter = 0; currentCounter < SHARED_COUNTER_GROUP_SIZE; currentCounter++)
+      {
+        int originalValue = getOriginalValue();
+      }
+    }
+  }
+}
+
+  
+  

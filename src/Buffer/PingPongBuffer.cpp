@@ -162,14 +162,27 @@ void PingPongBuffer::generateCL()throw(BufferException)
 void PingPongBuffer::generateCLGL()throw(BufferException)
 {}
 
+//allocator empty, as managed buffers generate and alloc themselves
+void PingPongBuffer::allocGL()throw(BufferException)
+{}
+
+//deleters empty as managed buffers delete their data store on destruction themselves
+void PingPongBuffer::freeGL()throw(BufferException)
+{}
+void PingPongBuffer::freeCL()throw(BufferException)
+{}
+
+//following function implementation seems wrong
+////alloc for the current active buffer:
+//void PingPongBuffer::allocGL()throw(BufferException)
+//{
+//	mPingPongBuffers[mCurrentActiveBufferIndex]->allocGL();
+//}
+
+
 void PingPongBuffer::bindGL()throw(BufferException)
 {mPingPongBuffers[mCurrentActiveBufferIndex]->bindGL();}
 
-//alloc for the current active buffer:
-void PingPongBuffer::allocGL()throw(BufferException)
-{
-	mPingPongBuffers[mCurrentActiveBufferIndex]->allocGL();
-}
 
 
 //write data to both buffers; if the programmaer want to write only one of the managed buffers,
@@ -200,11 +213,7 @@ void PingPongBuffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)thr
 {
 	assert("PingPongBuffer::operator=() forbidden due to too much ambiguity; assign desired pingpong managed buffers directly!"&&0);
 }
-//deleters empty as managed buffers delete their data stor on destruction themselves
-void PingPongBuffer::freeGL()throw(BufferException)
-{}
-void PingPongBuffer::freeCL()throw(BufferException)
-{}
+
 
 //void PingPongBuffer::mapGLToHost(void* data)
 //{
