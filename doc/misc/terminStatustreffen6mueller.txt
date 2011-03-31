@@ -4,15 +4,16 @@ status:
   - weitgehend das gesamte simulationskonzept im kopf, in handschriftlichen notizen und in textdateien/pseudocode, jedoch aufgrund
     der vielen konzeptionellen Interdependenzen noch nicht zum Implementieren gekommen:
       -Integrationsverfahren: Velocity Verlet <-- leap frog hinfällig wenn man explizite geschwindigkeiten braucht, VV kostet dasselbe, sei leicht genauer;
-      -hochoptimierter parallel radix sort; unsicherheit: widerspruch/fehler im Paper (gpu gemas 3 broad phase coll. detection)
+      -hochoptimierter parallel radix sort; unsicherheit: widerspruch/fehler im Paper (gpu gemas 3 broad phase coll. detection, http://http.developer.nvidia.com/GPUGems3/gpugems3_ch32.html )
       -voxelisierte rigid bodies sollen rein, sind evtl schwer in Nachhinein einzubauen... scheint nicht sooo schwer zu realisieren
       -Mathematik weitgehend nach thomas steil, der sich weitgehend an [Müller03] orientiert hat
-      -grobe simulationsstruktur an [Goswami2010] angelehnt, siehe "physics computation in uniform grid voxel chunks.txt" für Abweichungen und deren Begründungen
+      -grobe simulationsstruktur an [Goswami2010](vmml.ifi.uzh.ch/files/pdf/publications/InteractiveSPH.pdf) angelehnt, siehe "physics computation in uniform grid voxel chunks.txt" für Abweichungen und deren Begründungen
       -Viskosität und oberflächenspannung soll leicht integriert werden können, soll aber nciht das Haupt-Augenmerk bekommen
-
+      -pertikelsortierung nach http://en.wikipedia.org/wiki/Z-order_curve
       
 noch genauer zu recherchieren (wegen weitgehender unabhängigkeit von der gesamtstruktur is das bisher nicht geschehen):
-  - work effective parallel scan: vor allem die vermeidung von bank conflicts beim interleaved access schien im paper (gpu gems 3)
+  - work effective parallel scan (http://http.developer.nvidia.com/GPUGems3/gpugems3_ch39.html):
+    vor allem die vermeidung von bank conflicts beim interleaved access schien im paper (gpu gems 3)
     etwas chaotisch/mehrdeutig/obsolet, vielleicht sogar falsch; außerdem: überprüfen, ob der offset auch für 32 banks gilt 
     (ist im paper nur für 16 angegeben) 
   - Auffrischen der Erinnerung an die Visualisierung: wird wohl auf "Screen Space Fluid Rendering with Curvature Flow", 
