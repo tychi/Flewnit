@@ -1,0 +1,80 @@
+
+
+
+In "Interactive SPH Simulation and Rendering on the GPU", Goswamit et al. 2010, the authors claim to have the
+fastet parallel GPU implementation of SPH fluid simulation at that time.
+They achieve this by:
+  - carefully designed memory allocation (buffer reusage),
+  - carefully designed memory acces patterns to reduce bandwidth, enhance cache coherence and in some situations ensure coalesced access,
+  - where coalescing in their implementation is not possible, they do ping pong-buffering in CUDA and bind the read-buffer as texture
+    to take advantage of the texture cache;
+    
+Now I have the following problem: OpenCL does not allow to interpret a generic buffer as a texture; You have to decide
+if you want a texture of a generic buffer; at least the position buffer shall be later used as a generic vertex attribute buffer
+in OpenGL for rendering; Hence, the Buffers must be generic buffers and not textures;
+
+
+(There would be another solution: make all buffers textures an access them by providing "texture coordinates" in a generic attribute buffer to 
+the vertex shader; But this has also two disadvantages: 
+  1. the symmetry between the rendering-only objects and the physical objects would
+be broken and hence more special cases have to be handled 
+  2.  This is the worst problem: OpenCL has no 1D textures; this means, that one must encode 1D-semantic in 2D access patterns;
+      This can cause serious headaches and even corrup any memory-neighbourhood explicitely established via z-index sorting.
+)
+ 
+So, I cannot take advantage of the texture cache in my OpenCL implementation, and hence coalesced access to global memory is
+crucial. I cannot adopt the physics computation algorithm from [Goswami2010] for this reason;
+
+Goswami'S algorithm is structured like this (density computation taken as example):
+  {
+    Launch B' CUDA kernels with N threads each
+    foreach CUDA block
+      Determine M: max particles in neighbors
+      N: particles in current block
+      Copy its own N particles into its shared memory
+      for i = 0 to M
+        – Copy a particle from neighboring blocks 0 to 26 (one per thread) to its own shared memory
+        – syncthreads()
+        – for j = 0 to N
+        Compute new densities from new copied
+        neighbors in shared memory
+      for j = 0 to N
+        – Write updated densities to global memory
+      Make CUDA texture of newly computed densities
+  }
+  Pros: - 
+  
+  Cons:
+
+My adaption looks like this:
+  {
+    Launch B' CUDA kernels with N threads each
+    foreach (potentially split) non-empty uniform grid voxel (in parallel on work group level)
+      N= particles in current block
+      //really necessary? other work items don't need  teh "own group neighbours", as neigbours are acquired seperately; 
+      //the try to optimize one particle group global neighbour read (that of the own group) could reduce bandwidth 
+      //but makes control flow more complicated... we'll see
+      Copy its own N particles into its shared memory (in parallel on work item level) 
+      
+      for currentNeighbourCell= 0 to 26 (sequentially)
+        numParticlesInCurrentNeighbourCell = uniformGridParticleAmounts[currentNeighbourCell];
+        neighbourCellParticleStartIndex = uniformGridParticleStartIndex[currentNeighbourCell];
+        //mostly only one pass, but for highly populated voxels we have to split in order to not overflow the local memory
+        numParticleGroupsInCurrentNeighbour = numParticlesInCurrentNeighbour / numParticlesPerWorkGroup;
+        for particleGroupRunner = 0 to numParticleGroupsInCurrentNeighbour (sequentially):
+          numParticlesInCurrentNeighbourParticleGroup = numParticlesInCurrentNeighbourCell - particleClusterRunner * numParticlesPerWorkGroup;
+          if(get_local_id(0) < numParticlesInCurrentNeighbourParticleGroup){
+            //COALESCED ACCES!
+            lNeighbourParticles[get_local_id(0)]= gParticles[neighbourCellParticleStartIndex + (particleClusterRunner * numParticlesPerWorkGroup) + get_local_id(0)] ;
+          }
+          barrier(CLK_LOCAL_MEM_FENCE);
+          for j 0 to N (in parallel on work item level)
+            if(get_local_id(0) < N)
+            {
+              for neighbourParticleLocalIndex = 0 to numParticlesInCurrentNeighbourParticleGroup (sequentially):  
+                compute new densities from new copied neighbours in shared memory
+            }
+            
+      for j = 0 to N
+        – Write updated densities to global memory          
+  }

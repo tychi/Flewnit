@@ -1,1 +1,34 @@
 31.03 2011, 14 Uhr PER SKYPE Müller status 6 
+
+status:
+  - weitgehend das gesamte simulationskonzept im kopf, in handschriftlichen notizen und in textdateien/pseudocode, jedoch aufgrund
+    der vielen konzeptionellen Interdependenzen noch nicht zum Implementieren gekommen:
+      -Integrationsverfahren: Velocity Verlet <-- leap frog hinfällig wenn man explizite geschwindigkeiten braucht, VV kostet dasselbe, sei leicht genauer;
+      -hochoptimierter parallel radix sort; unsicherheit: widerspruch/fehler im Paper (gpu gemas 3 broad phase coll. detection)
+      -voxelisierte rigid bodies sollen rein, sind evtl schwer in Nachhinein einzubauen... scheint nicht sooo schwer zu realisieren
+      -Mathematik weitgehend nach thomas steil, der sich weitgehend an [Müller03] orientiert hat
+      -grobe simulationsstruktur an [Goswami2010] angelehnt, siehe "physics computation in uniform grid voxel chunks.txt" für Abweichungen und deren Begründungen
+      -Viskosität und oberflächenspannung soll leicht integriert werden können, soll aber nciht das Haupt-Augenmerk bekommen
+
+      
+noch genauer zu recherchieren (wegen weitgehender unabhängigkeit von der gesamtstruktur is das bisher nicht geschehen):
+  - work effective parallel scan: vor allem die vermeidung von bank conflicts beim interleaved access schien im paper (gpu gems 3)
+    etwas chaotisch/mehrdeutig/obsolet, vielleicht sogar falsch; außerdem: überprüfen, ob der offset auch für 32 banks gilt 
+    (ist im paper nur für 16 angegeben) 
+  - Auffrischen der Erinnerung an die Visualisierung: wird wohl auf "Screen Space Fluid Rendering with Curvature Flow", 
+    Simon Green, NVIDIA, 2008 [Green2008] hinaus laufen, denn [Goswami2010] ist zu kompliziert (3D-rasterisierung mit cuda für distance fields ohne erläuterung!)
+    Wünschenswerte erweiterung von Green (deutet er selber an): Gischt
+
+Fragen:
+  1.
+    How to ensure at least for non-surface-/non-splash- voxels that there are mostly between 27 and 32 particles/voxel?
+    (worried about bumpiness, smooth pressure gradient kernel-> interpenetration; is there a particle pressure projection? is it worth the effort? <-- suppose that not ;()
+    http://de.wikipedia.org/wiki/Dichteste_Kugelpackung
+    voxelExtends = (targetNumParticlesPerVoxel * 4 * sqrt(2) )^(1/3) * particleRadius
+    (derive from : voxelVolume = numTargetParticles * particleVolume / maxPackingDensity)
+    particlesPerVoxel < 32 --> some threads idle
+    particlesPerVoxel > 32 --> double number of work groups, many threads idle in "split" voxels;
+    
+  2.: Kann man auch Konzepte in der Ausarbeitung dokumentieren, die man aus Zeitgründen nicht implementieren konnte?
+      (ich denke an die Voxelisierung der triangle index listen für statische dreiecks-kollisions-geometrie)
+  

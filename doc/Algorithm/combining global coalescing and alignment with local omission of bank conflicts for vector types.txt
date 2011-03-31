@@ -1,0 +1,86 @@
+  - how to resolve the following issue:
+    local bank conflicts vs global memory coalescing: 
+
+ 
+       scenario 0: 
+          __global float4* gPositions; //alignment provided for cache coherence and coalescing;
+          __local float lPositons[3*NUM_WORK_ITEMS];  //"implicit float3 buffer": 
+                                                      //no bank conflicts for read access, because 
+                                                      //((3*i)%32) is "unique" for each i in [0..31];
+          
+          //now how to write stuff from global float4 to local "pseudofloat3" mem and vice versa?
+          /*
+            see OpenCL 1.0 Specification, 6.1.5 Alignment of Types, page 131ff:
+            "A built-in data type that is not a power of two bytes in size must be aligned to the next larger
+            power of two. This rule applies to built-in types only, not structs or unions.
+            The OpenCL compiler is responsible for aligning data items to the appropriate alignment as
+            required by the data type. The behavior of a direct unaligned load/store is considered to be
+            undefined, except for the vector data load and store functions defined in section 6.11.7. These
+            vector load and store functions allow you to read and write vectors types from addresses aligned
+            to the size of the vector type or the size of a scalar element of the vector type."
+           
+            The vector load/store functions are only defined for power-of-two-size vectors, i.e. no 3D vectors;
+            So we have to implement this functionality ourselves 
+                 
+          */
+          //bank conflict free write from registers to local "implicit float3" buffer
+          #define WRITE_TO_LOCAL_FLOAT3_BUFFER(localFloatBuffer, x,y,z) \
+            localFloatBuffer[3 * get_local_id(0) + 0] = x;  \
+            localFloatBuffer[3 * get_local_id(0) + 1] = y;  \
+            localFloatBuffer[3 * get_local_id(0) + 2] = z
+          
+          //bank conflict free load from local "implicit float3" buffer into a register float4:
+          #define READ_FROM_LOCAL_FLOAT3_BUFFER(localFloatBuffer, localIndex) \
+            ( (float4) \
+               (localFloatBuffer[3 * localIndex + 0 ], \
+                localFloatBuffer[3 * localIndex + 1 ], \
+                localFloatBuffer[3 * localIndex + 2 ], \
+                1.0 )                                  )
+
+          //I won't implement any arithmetic "float3" functions, as the call-by-value function style may degrade performance,
+          //AND a non-power-of-two vector size might disturb fermis new superscalar schedulers.
+          //hence, the saving of one flop may not amortize and only pullute the code readability;
+    
+          usage pattern:
+            //copy from global mem to register for coalesced and simple global mem read:
+            float4 pos = vload4( get_global_id(0) , gPositions);
+            WRITE_TO_LOCAL_FLOAT3_BUFFER(lPositions, pos.x,pos.y,pos.z);
+
+            //no bank conflicts when reading from __local memory: 3-permutation and 4Byte-alginment (instead of 16-Byte-alignment) allow that
+            //get_local_id(0)%WARP_SIZE == get_local_id(0)%32 is unique
+            //(see NVIDIA CUDA Programming guide v.3.2, page 165)
+            float4 posDependentValue = 2.0 *  READ_FROM_LOCAL_FLOAT3_BUFFER(lPositions, get_local_id(0));
+          
+          
+ ============================
+ /*
+ following obolete bad scenarios: 
+ 
+    scenario 1: 
+        __global float4* gPositions;
+        __local float4 lPositons[NUM_WORK_ITEMS];
+        //perfectly coalesced access: 32 threads grab 32*4*4 Byte --> 4* 128Byte transfers; 
+        //(128 byte is the fixed amount which will always be read by fermi devices (see NVIDIA CUDA Programming guide v.3.2, page 164)) 
+        lPositions[get_local_id(0)] = gPositions[workGroupOffset + get_local_id(0)];   
+         //two way bank conflict: half warp accesses the same bank twice:
+         //lPositions[x][2] has same bank as lPositions[x+1][0]
+        vec4 posDependentValue = 2.0 *  lPositions[get_local_id(0)];
+        
+        
+   scenario 2: 
+        __global float* gPositionsX;
+        __global float* gPositionsY;
+        __global float* gPositionsZ;
+        __local float3 lPositons[NUM_WORK_ITEMS]; 
+        <-- there is no float3! 
+       BAD SCENARIO DIDN'T FINISH
+ 
+        lPositions[get_local_id(0)][0] = gPositionsX[workGroupOffset + get_local_id(0)]; 
+        lPositions[get_local_id(0)][1] = gPositionsY[workGroupOffset + get_local_id(0)];   
+        lPositions[get_local_id(0)][2] = gPositionsZ[workGroupOffset + get_local_id(0)];     
+         //no bank conflicts when reading from __local memory: 3-permutation and 4Byte-alginment (instead of 16-Byte-alignment) allow that
+         //get_local_id(0)%WARP_SIZE == get_local_id(0)%32 is unique
+         //(see NVIDIA CUDA Programming guide v.3.2, page 165)
+        vec3 posDependentValue = 2.0 *  lPositions[get_local_id(0)];
+ 
+ */
