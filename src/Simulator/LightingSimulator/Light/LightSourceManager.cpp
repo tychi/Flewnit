@@ -22,7 +22,7 @@
 #include <sstream>
 #include "MPP/Shader/Shader.h"
 #include "Util/HelperFunctions.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 #include "Util/Log/Log.h"
 
 #include <initializer_list>

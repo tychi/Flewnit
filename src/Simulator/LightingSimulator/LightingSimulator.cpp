@@ -32,7 +32,7 @@
 #include <boost/foreach.hpp>
 
 #include <typeinfo>
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 
 
 

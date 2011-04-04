@@ -1,17 +1,23 @@
 /*
- * OpenCL_Manager.cpp
+ * ParallelComputeManager.cpp
  *
  *  Created on: Dec 19, 2010
  *      Author: tychi
  */
 
-#include "OpenCL_Manager.h"
+#include "ParallelComputeManager.h"
 
+#include "UserInterface/WindowManager/WindowManager.h"
 #include "Util/Log/Log.h"
 
+#include "boost/foreach.hpp"
+
+
 #if defined __APPLE__ || defined(MACOSX)
+
 #else
     #if defined WIN32
+
     #else
         //needed for context sharing functions
         #include <GL/glx.h>
@@ -21,21 +27,193 @@
 namespace Flewnit
 {
 
-//OpenCL_Manager::OpenCL_Manager( bool useCPU )
+
+
+ParallelComputeDeviceInfo::ParallelComputeDeviceInfo(cl::Device* device)
+: device(device)
+{
+	GUARD(device->getInfo<String>( CL_DEVICE_NAME, &deviceName));
+	GUARD(device->getInfo<String>( CL_DEVICE_VENDOR, &deviceVendor));
+	GUARD(device->getInfo<String>( CL_DRIVER_VERSION, &driverVersionString));
+	GUARD(device->getInfo<String>( CL_DEVICE_VERSION, &openCLVersionString));
+
+	GUARD(device->getInfo<cl_device_type>( CL_DEVICE_TYPE, &deviceType));
+
+	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_MAX_COMPUTE_UNITS, &maxComputeUnits));
+	GUARD(device->getInfo<size_t>( CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize));
+	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_MAX_CLOCK_FREQUENCY, &maxClockFrequencyMHz));
+	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_ADDRESS_BITS, &numAdressBits));
+
+	GUARD(device->getInfo<cl_ulong>( CL_DEVICE_MAX_MEM_ALLOC_SIZE, &maxBufferSizeByte));
+	GUARD(device->getInfo<cl_ulong>( CL_DEVICE_GLOBAL_MEM_SIZE, &globalMemorySizeByte));
+	GUARD(device->getInfo<cl_device_local_mem_type>( CL_DEVICE_LOCAL_MEM_TYPE, &localMemoryType));
+	GUARD(device->getInfo<cl_ulong>( CL_DEVICE_LOCAL_MEM_SIZE, &localMemorySizeByte));
+	GUARD(device->getInfo<cl_ulong>( CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE, &maxConstantBufferSizeByte));
+	GUARD(device->getInfo<cl_ulong>( CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, &globalCacheSizeByte));
+	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE, &globalCacheLineSizeByte));
+	GUARD(device->getInfo<cl_command_queue_properties>( CL_DEVICE_QUEUE_PROPERTIES, &queueProperties));
+
+
+	// CL_DEVICE_EXTENSIONS
+	bool nv_device_attibute_query_ExtensionSupported = false;
+	String extensionsString="";
+	GUARD(device->getInfo<String>( CL_DEVICE_EXTENSIONS, &extensionsString));
+	//clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS, sizeof(device_string), &device_string, NULL);
+	if (extensionsString != "")
+	{
+		size_t szOldPos = 0;
+		size_t szSpacePos = extensionsString.find(' ', szOldPos); // extensions string is space delimited
+		while (szSpacePos != extensionsString.npos) {
+			String subString = extensionsString.substr(szOldPos, szSpacePos- szOldPos);
+			if (strcmp("cl_nv_device_attribute_query", subString.c_str()) == 0)
+				nv_device_attibute_query_ExtensionSupported = true;
+			extensionStrings.push_back(subString);
+			do {
+				szOldPos = szSpacePos + 1;
+				szSpacePos = extensionsString.find(' ', szOldPos);
+			} while (szSpacePos == szOldPos);
+		}
+	}
+
+	if (nv_device_attibute_query_ExtensionSupported)
+	{queryNvidiaSpecificDeviceInfo();}
+	else{
+		nvidiaDeviceComputeCapability = Vector2Dui(0,0);
+		numTotalNvidiaCudaCores = 0;
+		registersPerNvidiaMultiProcessor=0;
+	}
+}
+
+
+// Beginning of GPU Architecture definitions
+void ParallelComputeDeviceInfo::queryNvidiaSpecificDeviceInfo()
+{
+	//###################################################################################
+		//the cl_ext.h for OpenCL 1.0 doesn't have the vendor specific identifiers;
+	//In order to minimize the risk of corruption/loss of synch with standard headers,
+	//the NVIDIA specifirc identifieres have been coied from the OpenCL 1.1 gl_ext.h
+
+	/******************************************
+	 * cl_nv_device_attribute_query extension *
+	 ******************************************/
+	/* cl_nv_device_attribute_query extension - no extension #define since it has no functions */
+	#ifndef CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV
+	#define CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV       0x4000
+	#endif
+	#ifndef CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV
+	#define CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV       0x4001
+	#endif
+	#ifndef CL_DEVICE_REGISTERS_PER_BLOCK_NV
+	#define CL_DEVICE_REGISTERS_PER_BLOCK_NV            0x4002
+	#endif
+	#ifndef CL_DEVICE_WARP_SIZE_NV
+	#define CL_DEVICE_WARP_SIZE_NV                      0x4003
+	#endif
+	#ifndef	CL_DEVICE_GPU_OVERLAP_NV
+	#define CL_DEVICE_GPU_OVERLAP_NV                    0x4004
+	#endif
+	#ifndef CL_DEVICE_KERNEL_EXEC_TIMEOUT_NV
+	#define CL_DEVICE_KERNEL_EXEC_TIMEOUT_NV            0x4005
+	#endif
+	#ifndef CL_DEVICE_INTEGRATED_MEMORY_NV
+	#define CL_DEVICE_INTEGRATED_MEMORY_NV              0x4006
+	#endif
+	//###################################################################################
+
+	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV, &(nvidiaDeviceComputeCapability.x)));
+	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV, &(nvidiaDeviceComputeCapability.y)));
+
+	struct SMPtoNumCudaCoreMap
+	{
+		cl_GLuint computeCapability;
+		cl_GLuint numCores;
+	};
+	SMPtoNumCudaCoreMap numCoresPerSMParray[] =
+	{ { 0x10,  8 },
+	  { 0x11,  8 },
+	  { 0x12,  8 },
+	  { 0x13,  8 },
+	  { 0x20, 32 },
+	  { 0x21, 48 },
+	  {   -1, -1 }
+	};
+	numTotalNvidiaCudaCores= -1;
+	for(int i = 0;numCoresPerSMParray[i].computeCapability != cl_GLuint(-1);i++){
+		if (numCoresPerSMParray[i].computeCapability == ((nvidiaDeviceComputeCapability.x << 4) + nvidiaDeviceComputeCapability.y) )
+		{	numTotalNvidiaCudaCores = numCoresPerSMParray[i].numCores;
+			break;
+		}
+	}
+	if(numTotalNvidiaCudaCores == cl_GLuint(-1)){
+		LOG<<ERROR_LOG_LEVEL<<"Unknown Nvidia Device Compute capability: "<<nvidiaDeviceComputeCapability.x<<"."<<nvidiaDeviceComputeCapability.y<<";\n";
+		assert(0);
+	}
+	numTotalNvidiaCudaCores *= maxComputeUnits;
+
+	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_REGISTERS_PER_BLOCK_NV, &registersPerNvidiaMultiProcessor));
+}
+// end of GPU Architecture definitions
+
+
+void ParallelComputeDeviceInfo::print()
+{
+	LOG<<INFO_LOG_LEVEL<<"deviceName:\t\t\t"<< deviceName  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"deviceVendor:\t\t\t"<< deviceVendor  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"driverVersionString:\t\t"<< driverVersionString  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"openCLVersionString:\t\t"<< openCLVersionString  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"maxComputeUnits:\t\t\t"<< maxComputeUnits  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"maxWorkGroupSize:\t\t\t"<< maxWorkGroupSize  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"maxClockFrequencyMHz:\t\t"<< maxClockFrequencyMHz  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"numAdressBits:\t\t\t"<< numAdressBits  <<"\n";
+
+	LOG<<INFO_LOG_LEVEL<<"maxBufferSizeByte:\t\t"<< maxBufferSizeByte  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"globalMemorySizeByte:\t\t\t"<< globalMemorySizeByte  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"localMemoryType:\t\t\t"<< ((localMemoryType==CL_LOCAL)?"CL_LOCAL":"CL_GLOBAL")  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"localMemorySizeByte:\t\t"<< localMemorySizeByte  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"maxConstantBufferSizeByte:\t\t"<< maxConstantBufferSizeByte  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"globalCacheSizeByte:\t\t"<< globalCacheSizeByte  <<"\n";
+	LOG<<INFO_LOG_LEVEL<<"globalCacheLineSizeByte:\t\t"<< globalCacheLineSizeByte  <<"\n";
+
+	if (queueProperties & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE)
+		LOG << INFO_LOG_LEVEL << "CL_DEVICE_QUEUE_PROPERTIES:\t"<< "CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE" << "\n";
+	if (queueProperties & CL_QUEUE_PROFILING_ENABLE)
+		LOG << INFO_LOG_LEVEL << "CL_DEVICE_QUEUE_PROPERTIES:\t"<< "CL_QUEUE_PROFILING_ENABLE" << "\n";
+
+	LOG << INFO_LOG_LEVEL << "supported OpenCL Extensions:\n";
+	BOOST_FOREACH(String extString, extensionStrings)
+	{
+		LOG << INFO_LOG_LEVEL << "\t\t" << extString << "\n";
+	}
+
+	LOG << INFO_LOG_LEVEL << "Nvidia compute capability:\t\t\t"<< nvidiaDeviceComputeCapability.x << "." << nvidiaDeviceComputeCapability.y << "\n";
+	LOG << INFO_LOG_LEVEL << "numTotalNvidiaCudaCores:\t\t\t"<< numTotalNvidiaCudaCores << "\n";
+	LOG << INFO_LOG_LEVEL << "registersPerNvidiaMultiProcessor:\t\t"<< registersPerNvidiaMultiProcessor << "\n";
+}
+
+
+
+//===================================================================================
+
+//ParallelComputeManager::ParallelComputeManager( bool useCPU )
 //{
 //
 //}
 
-OpenCL_Manager::~OpenCL_Manager()
+ParallelComputeManager::~ParallelComputeManager()
 {
-	// nothing to clean up, as no pointer members exist, and the cl-c++-binding makes the cleanup for itself;
+	delete mParallelComputeDeviceInfo;
+	// nothing else to clean up, as no pointer members exist, and the cl-c++-binding makes the cleanup for itself;
 }
 
 
-bool OpenCL_Manager::init(bool useCPU)
+bool ParallelComputeManager::init(bool useCPU)
 {
+	//we need a valid openGL context
+	assert(WindowManager::getInstance().openGLContextIsCreated());
+
 	/*
-	 * Code ideas from "Adventures with OpenCL, part2 from enja;
+	 * Code ideas from "Adventures with OpenCL", part2 from enja;
+	 *
 	 * */
 
 	std::vector<cl::Platform> platforms;
@@ -45,7 +223,7 @@ bool OpenCL_Manager::init(bool useCPU)
 	std::vector<cl::Device> devices;
 	if(useCPU)
 	{
-		LOG<<WARNING_LOG_LEVEL<<"Using CPU instead of GPU; Expect a heavy performance impact!\n";
+		LOG<<WARNING_LOG_LEVEL<<"Using CPU instead of GPU; Expect a heavy performance impact and other implementation issues like crashes! ;(\n";
 		//code crashes already here; maybe it's an nvidia driver's problem...
 		GUARD( mLastCLError = platforms[0].getDevices(CL_DEVICE_TYPE_CPU, &devices) );
 		LOG<<INFO_LOG_LEVEL<<devices.size()<<" OpenCL CPU devices found;\n";
@@ -66,6 +244,9 @@ bool OpenCL_Manager::init(bool useCPU)
 
 	mUsedDevice = devices.front();
 	int deviceType = useCPU ? CL_DEVICE_TYPE_CPU : CL_DEVICE_TYPE_GPU;
+
+	mParallelComputeDeviceInfo = new ParallelComputeDeviceInfo( &mUsedDevice );
+	mParallelComputeDeviceInfo->print();
 
 
     // Define OS-specific context properties and create the OpenCL context
@@ -125,6 +306,7 @@ bool OpenCL_Manager::init(bool useCPU)
             }
             catch (cl::Error er) {
                 printf("ERROR: %s(%s)\n", er.what(), oclErrorString(er.err()));
+                assert(0);
             }
         #endif
     #endif
@@ -135,6 +317,7 @@ bool OpenCL_Manager::init(bool useCPU)
     }
     catch (cl::Error er) {
         printf("ERROR: %s(%d)\n", er.what(), er.err());
+        assert(0);
     }
 
 
@@ -143,14 +326,14 @@ bool OpenCL_Manager::init(bool useCPU)
 
 
 //to be called by buffer implementations at the end of memory allocation;
-void OpenCL_Manager::registerSharedBuffer(cl::Memory newSharedBuffer)
+void ParallelComputeManager::registerSharedBuffer(cl::Memory newSharedBuffer)
 {
 	mRegisteredCLGLSharedBuffers.push_back(newSharedBuffer);
 	checkCLGLErrors();
 }
 
 
-void OpenCL_Manager::acquireSharedBuffersForCompute()
+void ParallelComputeManager::acquireSharedBuffersForCompute()
 {
 	//skip if not necessary;
 	if(computeIsInControl()) return;
@@ -180,7 +363,7 @@ void OpenCL_Manager::acquireSharedBuffersForCompute()
 
 }
 
-void OpenCL_Manager::acquireSharedBuffersForGraphics()
+void ParallelComputeManager::acquireSharedBuffersForGraphics()
 {
 	//skip if not necessary;
 	if(graphicsAreInControl()) return;
@@ -211,36 +394,36 @@ void OpenCL_Manager::acquireSharedBuffersForGraphics()
 }
 
 
-void OpenCL_Manager::barrierGraphics()
+void ParallelComputeManager::barrierGraphics()
 {
 	GUARD(glFinish());
 }
-void OpenCL_Manager::barrierCompute()
+void ParallelComputeManager::barrierCompute()
 {
 	GUARD(mCommandQueue.enqueueBarrier());
 }
 
 
-cl::Context& OpenCL_Manager::getCLContext()
+cl::Context& ParallelComputeManager::getCLContext()
 {
 	return mCLContext;
 }
-cl::CommandQueue& OpenCL_Manager::getCommandQueue()
+cl::CommandQueue& ParallelComputeManager::getCommandQueue()
 {
 	return mCommandQueue;
 }
 
-cl::Device& OpenCL_Manager::getUsedDevice()
+cl::Device& ParallelComputeManager::getUsedDevice()
 {
 	return mUsedDevice;
 }
-cl::Event& OpenCL_Manager::getLastEvent()
+cl::Event& ParallelComputeManager::getLastEvent()
 {
 	return mLastEvent;
 }
 
 
-void OpenCL_Manager::checkCLGLErrors()
+void ParallelComputeManager::checkCLGLErrors()
 {
 	mLastGLError = glGetError();
 	if (mLastGLError  != GL_NO_ERROR )
@@ -269,7 +452,7 @@ void OpenCL_Manager::checkCLGLErrors()
 
 // Helper function to get error string
 // *********************************************************************
-const char* OpenCL_Manager::oclErrorString(cl_int error)
+const char* ParallelComputeManager::oclErrorString(cl_int error)
 {
     static const char* errorString[] = {
         "CL_SUCCESS",
@@ -346,7 +529,7 @@ const char* OpenCL_Manager::oclErrorString(cl_int error)
 
 }
 
-const char* OpenCL_Manager::oglErrorString(GLenum error)
+const char* ParallelComputeManager::oglErrorString(GLenum error)
 {
 
 	String errorString("GL_NO_ERROR");

@@ -7,7 +7,7 @@
 
 #include "Buffer.h"
 #include "Util/Log/Log.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 
 
 
@@ -98,27 +98,27 @@ void Buffer::generateGL()throw(BufferException)
 void Buffer::generateCL()throw(BufferException)
 {
 	mComputeBufferHandle = cl::Buffer(
-			CLMANAGER->getCLContext(),
+			PARA_COMP_MANAGER->getCLContext(),
 			//TODO check performance and interface "set-ability" of CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY
 			CL_MEM_READ_WRITE,
 			mBufferInfo->bufferSizeInByte,
 			NULL,
 			//TODO check if adress of a reference is the same as the adress of a variable
-			& CLMANAGER->getLastCLError()
+			& PARA_COMP_MANAGER->getLastCLError()
 	);
 
 }
 void Buffer::generateCLGL()throw(BufferException)
 {
 	mComputeBufferHandle = cl::BufferGL(
-			CLMANAGER->getCLContext(),
+			PARA_COMP_MANAGER->getCLContext(),
 			//TODO check performance and interface "set-ability" of CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY
 			CL_MEM_READ_WRITE,
 			mGraphicsBufferHandle,
 			//TODO check if adress of a reference is the same as the adress of a variable
-			& CLMANAGER->getLastCLError()
+			& PARA_COMP_MANAGER->getLastCLError()
 	);
-	CLMANAGER->registerSharedBuffer(mComputeBufferHandle);
+	PARA_COMP_MANAGER->registerSharedBuffer(mComputeBufferHandle);
 }
 
 void Buffer::bindGL()throw(BufferException)
@@ -147,14 +147,14 @@ void Buffer::writeGL(const void* data)throw(BufferException)
 }
 void Buffer::writeCL(const void* data)throw(BufferException)
 {
-	CLMANAGER->getCommandQueue().enqueueWriteBuffer(
+	PARA_COMP_MANAGER->getCommandQueue().enqueueWriteBuffer(
 			static_cast<cl::Buffer&>(mComputeBufferHandle),
-			CLMANAGER->getBlockAfterEnqueue(),
+			PARA_COMP_MANAGER->getBlockAfterEnqueue(),
 			0,
 			mBufferInfo->bufferSizeInByte,
 			data,
 			0,
-			& CLMANAGER->getLastEvent());
+			& PARA_COMP_MANAGER->getLastEvent());
 }
 
 void Buffer::readGL(void* data)throw(BufferException)
@@ -163,14 +163,14 @@ void Buffer::readGL(void* data)throw(BufferException)
 }
 void Buffer::readCL(void* data)throw(BufferException)
 {
-	CLMANAGER->getCommandQueue().enqueueReadBuffer(
+	PARA_COMP_MANAGER->getCommandQueue().enqueueReadBuffer(
 			static_cast<cl::Buffer&>(mComputeBufferHandle),
-			CLMANAGER->getBlockAfterEnqueue(),
+			PARA_COMP_MANAGER->getBlockAfterEnqueue(),
 			0,
 			mBufferInfo->bufferSizeInByte,
 			data,
 			0,
-			& CLMANAGER->getLastEvent());
+			& PARA_COMP_MANAGER->getLastEvent());
 }
 
 void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
@@ -191,14 +191,14 @@ void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(Buff
 }
 void Buffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(BufferException)
 {
-	CLMANAGER->getCommandQueue().enqueueCopyBuffer(
+	PARA_COMP_MANAGER->getCommandQueue().enqueueCopyBuffer(
 			static_cast<cl::Buffer&>(bufferToCopyContentsFrom),
 			static_cast<cl::Buffer&>(mComputeBufferHandle),
 			0,
 			0,
 			mBufferInfo->bufferSizeInByte,
 			0,
-			& CLMANAGER->getLastEvent()
+			& PARA_COMP_MANAGER->getLastEvent()
 			);
 }
 
@@ -218,15 +218,15 @@ void Buffer::freeCL()throw(BufferException)
 //{}
 //void Buffer::mapCLToHost(void* data)
 //{
-////	CLMANAGER->getCommandQueue().enqueueMapBuffer(
+////	PARA_COMP_MANAGER->getCommandQueue().enqueueMapBuffer(
 ////			static_cast<cl::Buffer&>(mComputeBufferHandle),
-////			CLMANAGER->getBlockAfterEnqueue(),
+////			PARA_COMP_MANAGER->getBlockAfterEnqueue(),
 ////			x,
 ////			0,
 ////			mBufferInfo->bufferSizeInByte,
 ////			0,
-////			& CLMANAGER->getLastEvent(),
-////			& CLMANAGER->getLastCLError()
+////			& PARA_COMP_MANAGER->getLastEvent(),
+////			& PARA_COMP_MANAGER->getLastCLError()
 ////			);
 //}
 //void Buffer::unmapGL()

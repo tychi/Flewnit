@@ -6,7 +6,7 @@
  */
 
 #include "Texture.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 
 namespace Flewnit
 {

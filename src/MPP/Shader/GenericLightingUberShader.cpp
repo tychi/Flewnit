@@ -6,7 +6,7 @@
  */
 
 #include "GenericLightingUberShader.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 
 #include "URE.h"
 #include "Simulator/LightingSimulator/Camera/Camera.h"

@@ -55,6 +55,7 @@ if(UNIX)
 
     if(RELEASE)
         set(CMAKE_CXX_FLAGS "-O3 -msse4 -mssse3") #Optimized
+        add_definitions(-DNDEBUG)
     else()
         set(CMAKE_CXX_FLAGS "-Wall -O0 -g3") #Debug
         add_definitions(-D_DEBUG)

@@ -13,7 +13,6 @@
 
 #include "Common/FlewnitSharedDefinitions.h"
 
-//#include "Util/Time/Timer.h"
 
 
 namespace Flewnit
@@ -23,15 +22,6 @@ class FPSCounter;
 class InputInterpreter;
 
 
-//class SimulationDomainIdentifier
-//{
-//public:
-//	virtual SimulationDomain getSimDomain()const = 0;
-//
-////ad this macro to every class definition deriving from this class;
-//#define DECLARE_SIM_DOMAIN(simDomain) virtual SimulationDomain getSimDomain()const {return simDomain;}
-//
-//};
 
 //settings to configure a simulation step:
 //debug draw, time interval, etc;
@@ -73,7 +63,7 @@ class SPHFluidMechanicsSimulator;
 class SoundSimulator;
 
 class SimulationResourceManager;
-class OpenCL_Manager;
+class ParallelComputeManager;
 
 
 class SimulationPipeline;
@@ -231,7 +221,9 @@ class MPP;
 	class ShaderManager;
 	class Shader;
 
-	class OpenCLKernel;
+	class CLParams;
+	class CLKernel;
+	class CLProgram;
 
 
 }

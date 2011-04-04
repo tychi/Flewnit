@@ -7,7 +7,7 @@
 
 #include "Texture.h"
 
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 
 namespace Flewnit
 {
@@ -116,12 +116,12 @@ bool Texture3D::operator==(const BufferInterface& rhs) const
 void Texture3D::generateCLGL()throw(BufferException)
 {
 	mComputeBufferHandle = cl::Image3DGL(
-			CLMANAGER->getCLContext(),
+			PARA_COMP_MANAGER->getCLContext(),
 			CL_MEM_READ_WRITE,
 			mTextureInfoCastPtr->textureTarget,
 			0,
 			mGraphicsBufferHandle,
-			& CLMANAGER->getLastCLError()
+			& PARA_COMP_MANAGER->getLastCLError()
 	);
 }
 

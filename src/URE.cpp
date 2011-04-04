@@ -25,7 +25,7 @@
 #include "Util/Time/FPSCounter.h"
 
 
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 #include "Simulator/SimulationResourceManager.h"
 
 
@@ -88,7 +88,7 @@ URE::URE()
   mInputManager(0),
   mFPSCounter(0),
   mGUI(0),
-  mOpenCL_Manager(0),
+  mParallelComputeManager(0),
   mSimulationResourceManager(0),
 
   mGeometryConverter(0)
@@ -135,7 +135,7 @@ bool URE::init(Path& pathToGlobalConfigFile)
 	mFPSCounter = new FPSCounter();
 
 
-	mOpenCL_Manager = new OpenCL_Manager();
+	mParallelComputeManager = new ParallelComputeManager();
 
 
 	mSimulationResourceManager =  new SimulationResourceManager();
@@ -244,7 +244,7 @@ void URE::resetEngine()
 	//delete mGeometryConverter;
 
 	delete mSimulationResourceManager;
-	delete mOpenCL_Manager;
+	delete mParallelComputeManager;
 
 
 	delete mFPSCounter;

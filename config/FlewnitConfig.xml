@@ -67,11 +67,11 @@
 
 			<windowTitle type="STRING" value="Flewnit" />
 
-			<fullScreen type="BOOL" value="true"/>
+			<fullScreen type="BOOL" value="false"/>
 
 			<enforceCustomResolutionInFullScreen type="BOOL" value="false" />
 
-			<resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
+			<resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
 			<position type="VEC2I" x="400" y="100" GUIVisibility="read" tweakConfigString="TODO"/>
 			
 			<numMultiSamples type="INT" value ="2" />
@@ -196,14 +196,14 @@
 					<movementSpeed type="FLOAT" value="0.5"/>		
 				</Camera>
 				
-				<polygonMode type="STRING" value="LINE"/>
+				<polygonMode type="STRING" value="FILL"/>
 				
 				<supportedShadingFeatures>
-				  <directLighting type="BOOL" value="false"/>
-				  <diffuseTexturing type="BOOL" value="false"/>
-				  <normalMapping type="BOOL" value="false"/>
-				  <cubeMapping type="BOOL" value="false"/>
-				  <tessellation type="BOOL" value="false"/>				
+				  <directLighting type="BOOL" value="true"/>
+				  <diffuseTexturing type="BOOL" value="true"/>
+				  <normalMapping type="BOOL" value="true"/>
+				  <cubeMapping type="BOOL" value="true"/>
+				  <tessellation type="BOOL" value="true"/>				
 				</supportedShadingFeatures>
 								
 
@@ -245,8 +245,8 @@
 			<!-- -->		
 			<SimulationPipelineStage>
 				<Type type="STRING" value="ShadowMapGenerator"/>
-        <shadowMapResolution type="INT" value="4096" />
-        <polygonOffset type="VEC2" x="2.5" y="5.8"/>
+        		<shadowMapResolution type="INT" value="4096" />
+       			<polygonOffset type="VEC2" x="2.5" y="5.8"/>
 			</SimulationPipelineStage> 
 			<!-- -->	
 					

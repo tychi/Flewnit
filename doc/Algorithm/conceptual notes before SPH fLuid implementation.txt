@@ -15,6 +15,33 @@ TODO research:
     - http://supercomputingblog.com/cuda/cuda-tutorial-5-performance-of-atomics/
     
           
+ - refresh work efficient parallel prefix sum, especially the avoidance of bank conflicts:
+    ERROR in GPU gems paper:
+       1. #define NUM_BANKS 16  
+       2. #define LOG_NUM_BANKS 4  
+       3. #define CONFLICT_FREE_OFFSET(n) \  
+       4.     ((n) >> NUM_BANKS + (n) >> (2 * LOG_NUM_BANKS))  
+       
+      must be:
+       1. #define NUM_BANKS 16  
+       2. #define LOG_NUM_BANKS 4  
+       3. #define CONFLICT_FREE_OFFSET(n) \  
+       4.     ((n) >> NUM_BANKS + (n) >> (LOG_NUM_BANKS))  
+       because padding must be every 16 elements for non-fermi GPUs
+       
+       The division by 2^16 is also bullshit as we never can have more than 1024 threads on non-fermi GPUs 
+       (I dont' understand this strange offset anyway, even if n would be possible to be greater than 65k).
+       Hence:
+       1. #define NUM_BANKS 16  
+       2. #define LOG_NUM_BANKS 4  
+       3. #define CONFLICT_FREE_OFFSET(n) \  
+       4.     ( (n) >> (LOG_NUM_BANKS) )
+       
+       For Fermi GPUs:
+       1. #define NUM_BANKS 32
+       2. #define LOG_NUM_BANKS 5
+       3. #define CONFLICT_FREE_OFFSET(n) \  
+       4.     ( (n) >> (LOG_NUM_BANKS) )        
          
   
   
@@ -62,14 +89,88 @@ Simulation Algorithm:
   --------------------------------------
     - Kernel calculateZIndexKernel:
       - calculate z-Index for each particle, write to zIndexBuffer
-    - Kernel parallelRadixSortKernel:
+    - Kernel parallelRadixSortKernel (actually two kernels):
       - sort particles according to z-Index via Parallel Radix Sort (TODO refine)
+  
     - Kernel updateUniformGridKernel:
-      - one work item per particle: set:
-          atomicMin( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].particleStartIndex, currentParticleArrayIndex);
-          atomicInc( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].numContainingParticles);
+      - one work item per particle: 
+          if(globalID != 0)
+          {
+            if(sortedZIndices[globalID] != sortedZIndices[globalID -1])
+            {
+              //left index is different, i.e. here starts a new index; set the relevant start index:
+              uniGridParticleStartIndices[particleZIndex]=globalID;
+            }
+          }
+          //buffers are flushed to zero, so following is obsolete:
+          //else{
+          //  uniGridParticleStartIndices[particleZIndex]=0;
+          //}
+          
+          if(globalID != (numParticles -1))
+          {
+            if(sortedZIndices[globalID] != sortedZIndices[globalID +1])
+            {
+              //right index is different, i.e. here ends the particle list for the voxel containing this particle;
+              //set the relevant end index to globalID +1, so that the particle count can be derived by (startIndex-EndIndex)
+              //during voxel split and compression;
+              uniGridParticleEndIndices[particleZIndex]=globalID +1;
+            }
+          }
+          else{
+            uniGridParticleEndIndices[particleZIndex]=globalID +1;
+          }
+          
+          //bullsh** from Goswami paper? Seems quite unnecessary to me and wasting operations and bandwidth:
+          "Whereas the first particle in a block can
+          be determined using the atomicMin operation in CUDA, the
+          number of particles is found by incrementing a particle count
+          with atomicInc. Thus each particle updates both the starting
+          index and particle count of its block in the list B [...]"
+          //atomicMin( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].particleStartIndex, currentParticleArrayIndex);
+          //atomicInc( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].numContainingParticles);
+
       - (maybe to include here: TODO rigid body meta data calculation)
-    - Kernel compactUniformGridBlocksKernel:
+   
+   
+    - Kernel splitAndCompressUniformGridKernel:
+      //again, [Gotswamis2010] talks about atomicMin
+      - one work item per uniform grid cell:
+          input: 
+            __global int* uniGridParticleStartIndices; //size: uniformGridCellsPerDimension^3;
+            __global int* uniGridParticleEndIndices;   //size: uniformGridCellsPerDimension^3;
+          output:
+            __global int* uniGridScanResult; //size: uniformGridCellsPerDimension^3;
+            __global int* resultsOfLocalScans; //size: numWorkItems
+          local:
+            __local int localUnigridScanResult[numWorkItems];
+            
+          
+          //{ 
+          //tabulate with partially sequential stuff for "sounter sharing" in order to minimize the scan array 
+          //(and like this to reduce the kernel count from 3 to 2, because the "scan of intermediate scan results" is small enough
+          to be performed by each work group itself) and to provide better work/kernelInvocation ratio
+          for i = 0 to counterShareGroupSize :
+            calculate index after the strange sharegroup-scheme
+            int endIndex = uniGridParticleEndIndices[index];
+            if(endIndex != 0)
+            {
+              //cell not empty:
+              localUnigridScanResult[localID] = (uniGridParticleStartIndices[index] - endIndex) / maxParticlesPerCell +1;            
+            }
+          //}
+          
+          //{//scan
+          //do a local scan on localUnigridScanResult and write results to global memory
+              
+          //}
+    
+    - Kernel finishSplitAndCompressUniformGridKernel:
+        //{//scan
+        //do a "global scan" on resultsOfLocalScans (at least until get_work_group(0))and compute final split/compacting offsets
+            
+        //}
+    
       - kind of parallel reduction via parallel prefix sum + split of overpopulated blocks (atomicInc?)
         (TODO freshen up parallel prefix sum and related applications)
       

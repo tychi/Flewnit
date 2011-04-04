@@ -47,6 +47,7 @@ public:
 
 	static void windowChangeCallback(int newResX, int newResY);
 
+	virtual bool openGLContextIsCreated();
 	virtual Vector2Di getAvailableOpenGLVersion();
 
 
@@ -56,7 +57,7 @@ protected:
 	virtual void createWindow(bool fullScreen, const Vector2Di& position, const Vector2Di& resolution) ;
 
 	FPSCounter* mFPSCounter;
-
+	bool mGLContextCreatedGuard;
 
 };
 

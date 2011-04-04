@@ -31,7 +31,7 @@
 
 #ifdef FLEWNIT_USE_GLFW
 #	include <GL/glfw.h>
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 #include "Util/Time/FPSCounter.h"
 #include "Simulator/SimulationResourceManager.h"
 #include "MPP/Shader/ShaderManager.h"
@@ -105,8 +105,8 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 			polyGonOffsetUnit -= increment;
 		}
 
-		LOG<<DEBUG_LOG_LEVEL<<"polygonOffSetFactor: "<<polygonOffSetFactor
-				<<"; polyGonOffsetUnit: "<<polyGonOffsetUnit<<";\n";
+//		LOG<<DEBUG_LOG_LEVEL<<"polygonOffSetFactor: "<<polygonOffSetFactor
+//				<<"; polyGonOffsetUnit: "<<polyGonOffsetUnit<<";\n";
 		GUARD(glPolygonOffset(polygonOffSetFactor,polyGonOffsetUnit));
 	}
 
@@ -190,13 +190,21 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 	if(keyboard->getRecentKey() == GLFW_KEY_F2)
 	{
 		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_POINT));
+
+		GUARD(glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT));
+		GUARD(glEnable(GL_PROGRAM_POINT_SIZE));
+
 	}
 	if(keyboard->getRecentKey() == GLFW_KEY_F3)
 	{
+		GUARD(glDisable(GL_PROGRAM_POINT_SIZE));
+
 		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 	}
 	if(keyboard->getRecentKey() == GLFW_KEY_F4)
 	{
+		GUARD(glDisable(GL_PROGRAM_POINT_SIZE));
+
 		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	}
 

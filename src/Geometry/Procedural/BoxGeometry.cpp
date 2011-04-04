@@ -130,24 +130,24 @@ BoxGeometry::BoxGeometry(
 			indexBuffer[indexIndexBase + 4]=  vertexIndexBase + 2;
 			indexBuffer[indexIndexBase + 5]=  vertexIndexBase + 3;
 
-			LOG<<DEBUG_LOG_LEVEL<<"VERTICES OF BOX, face "<<
-					((side>0)?"positive":"negative") <<
-					(	(axis==0)
-							?" X"
-							:( (axis==1)
-								?" Y"
-								:" Z"	)    )
-
-					<< ": \n";
-			for(int i=0;i<4;i++)
-			{
-				LOG<<DEBUG_LOG_LEVEL
-						<<"Index of vertex :"<<vertexIndexBase+i
-						<<"; Vertex coords: "<<posBuffer[vertexIndexBase + i]
-						<<"; Normal: "<<normalBuffer[vertexIndexBase + i]
-						<<"; start index for face in index buffer: "<<indexIndexBase<<";\n"
-		 	    ;
-			}
+//			LOG<<DEBUG_LOG_LEVEL<<"VERTICES OF BOX, face "<<
+//					((side>0)?"positive":"negative") <<
+//					(	(axis==0)
+//							?" X"
+//							:( (axis==1)
+//								?" Y"
+//								:" Z"	)    )
+//
+//					<< ": \n";
+//			for(int i=0;i<4;i++)
+//			{
+//				LOG<<DEBUG_LOG_LEVEL
+//						<<"Index of vertex :"<<vertexIndexBase+i
+//						<<"; Vertex coords: "<<posBuffer[vertexIndexBase + i]
+//						<<"; Normal: "<<normalBuffer[vertexIndexBase + i]
+//						<<"; start index for face in index buffer: "<<indexIndexBase<<";\n"
+//		 	    ;
+//			}
 
 		}
 	}

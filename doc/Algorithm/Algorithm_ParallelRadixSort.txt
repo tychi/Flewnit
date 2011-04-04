@@ -1,5 +1,5 @@
 Parallel Radix Sort pseudo code:
-
+didn't finish this concept, as I got too detailed; Hence, i can implement it directly in openCL, that saves time ;(
 
 
 Algorithm Parallel Radix Sort:

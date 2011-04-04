@@ -9,7 +9,7 @@
 
 #include "Common/CL_GL_Common.h"
 #include "Util/Log/Log.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 
 #include "Buffer/BufferSharedDefinitions.h"
 #include "Buffer/BufferHelperUtils.h"

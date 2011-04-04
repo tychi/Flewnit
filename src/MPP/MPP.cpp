@@ -6,7 +6,9 @@
  */
 
 #include "MPP.h"
+
 #include "Simulator/SimulationResourceManager.h"
+#include "Util/Log/Log.h"
 
 namespace Flewnit
 {
@@ -20,6 +22,15 @@ MPP::MPP(String name, SimulationDomain sd)
 MPP::~MPP()
 {
 	// TODO Auto-generated destructor stub
+}
+
+//for later inspection of the final code of a stage:
+void MPP::writeToDisk(String sourceCode, Path where)
+{
+	std::fstream fileStream;
+	fileStream.open(where.string().c_str(), std::ios::out);
+	fileStream << sourceCode;
+	fileStream.close();
 }
 
 }

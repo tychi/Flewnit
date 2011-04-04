@@ -6,7 +6,7 @@
  */
 
 #include "Texture.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 #include "Simulator/SimulationResourceManager.h"
 
 namespace Flewnit
@@ -84,9 +84,9 @@ void Texture::writeCL(const void* data)throw(BufferException)
 	region[1] =	mTextureInfoCastPtr->dimensionExtends.y;
 	region[2] =	mTextureInfoCastPtr->dimensionExtends.z;
 
-	CLMANAGER->getCommandQueue().enqueueWriteImage(
+	PARA_COMP_MANAGER->getCommandQueue().enqueueWriteImage(
 			static_cast<cl::Image&>(mComputeBufferHandle),
-			CLMANAGER->getBlockAfterEnqueue(),
+			PARA_COMP_MANAGER->getBlockAfterEnqueue(),
 			origin,
 			region,
 			0,
@@ -95,7 +95,7 @@ void Texture::writeCL(const void* data)throw(BufferException)
 			//although it is const in the wrapped c-function 0_o
 			const_cast<void*>( data ),
 			0,
-			& CLMANAGER->getLastEvent()
+			& PARA_COMP_MANAGER->getLastEvent()
 	);
 }
 
@@ -124,16 +124,16 @@ void Texture::readCL(void* data)throw(BufferException)
 	region[1] =	mTextureInfoCastPtr->dimensionExtends.y;
 	region[2] =	mTextureInfoCastPtr->dimensionExtends.z;
 
-	CLMANAGER->getCommandQueue().enqueueReadImage(
+	PARA_COMP_MANAGER->getCommandQueue().enqueueReadImage(
 			static_cast<cl::Image&>(mComputeBufferHandle),
-			CLMANAGER->getBlockAfterEnqueue(),
+			PARA_COMP_MANAGER->getBlockAfterEnqueue(),
 			origin,
 			region,
 			0,
 			0,
 			data,
 			0,
-			& CLMANAGER->getLastEvent()
+			& PARA_COMP_MANAGER->getLastEvent()
 	);
 }
 
@@ -160,7 +160,7 @@ void Texture::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(Buff
 	region[1] =	mTextureInfoCastPtr->dimensionExtends.y;
 	region[2] =	mTextureInfoCastPtr->dimensionExtends.z;
 
-	CLMANAGER->getCommandQueue().enqueueCopyImage(
+	PARA_COMP_MANAGER->getCommandQueue().enqueueCopyImage(
 			//source
 			static_cast<const cl::Image&>(bufferToCopyContentsFrom),
 			//destination
@@ -169,7 +169,7 @@ void Texture::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(Buff
 			origin,
 			region,
 			0,
-			& CLMANAGER->getLastEvent()
+			& PARA_COMP_MANAGER->getLastEvent()
 	);
 }
 

@@ -7,7 +7,7 @@
 
 #include "SkyDomeShader.h"
 
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 #include "Material/VisualMaterial.h"
 #include "WorldObject/SubObject.h"
 #include "URE.h"

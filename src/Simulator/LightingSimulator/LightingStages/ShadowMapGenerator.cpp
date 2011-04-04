@@ -16,7 +16,7 @@
 #include "Simulator/SimulationResourceManager.h"
 #include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 #include "Scene/Scene.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 
 namespace Flewnit
 {

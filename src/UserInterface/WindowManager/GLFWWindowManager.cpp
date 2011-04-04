@@ -25,6 +25,7 @@ namespace Flewnit
 {
 
 GLFWWindowManager::GLFWWindowManager()
+: mGLContextCreatedGuard(false)
 {
 	init();
 
@@ -179,6 +180,8 @@ void GLFWWindowManager::cleanup()
 	delete mFPSCounter;
 
 	glfwTerminate();
+
+	mGLContextCreatedGuard = false;
 }
 
 
@@ -226,6 +229,7 @@ void GLFWWindowManager::createWindow(bool fullScreen, const Vector2Di& position,
 {
 	glfwOpenWindow(resolution.x,resolution.y,8,8,8,8,32,8,
 			fullScreen? GLFW_FULLSCREEN : GLFW_WINDOW );
+	mGLContextCreatedGuard = true;
 }
 
 void GLFWWindowManager::setWindowPosition(Vector2Di newPos)
@@ -244,6 +248,12 @@ Vector2Dui GLFWWindowManager::getWindowResolution()
 	int actualResX, actualResY;
 	glfwGetWindowSize(&actualResX,&actualResY);
 	return Vector2Dui(actualResX,actualResY);
+}
+
+
+bool GLFWWindowManager::openGLContextIsCreated()
+{
+	return mGLContextCreatedGuard;
 }
 
 Vector2Di GLFWWindowManager::getAvailableOpenGLVersion()

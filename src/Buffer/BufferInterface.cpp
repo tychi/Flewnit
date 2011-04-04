@@ -14,7 +14,7 @@
 #include "Common/Math.h"
 
 #include "Util/Log/Log.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 
 //for casting:
 ///\{
@@ -93,7 +93,7 @@ const BufferInterface& BufferInterface::operator=(const BufferInterface& rhs) th
 
 		//GL
 		if(
-			( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && CLMANAGER->graphicsAreInControl() )
+			( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && PARA_COMP_MANAGER->graphicsAreInControl() )
 			||
 			! (hasBufferInContext(OPEN_CL_CONTEXT_TYPE))
 		)
@@ -102,10 +102,10 @@ const BufferInterface& BufferInterface::operator=(const BufferInterface& rhs) th
 			//TODO uncomment when stable work is assured
 			//if(isCLGLShared())
 			{
-				CLMANAGER->acquireSharedBuffersForGraphics();
+				PARA_COMP_MANAGER->acquireSharedBuffersForGraphics();
 			}
 			//do a barrier in by all means to assure buffer integrity;
-			CLMANAGER->barrierGraphics();
+			PARA_COMP_MANAGER->barrierGraphics();
 
 			GUARD(copyGLFrom(rhs.getGraphicsBufferHandle()));
 			//return, as a shared buffer does need only copy via one context;
@@ -114,7 +114,7 @@ const BufferInterface& BufferInterface::operator=(const BufferInterface& rhs) th
 
 		//CL
 		if(
-			( hasBufferInContext(OPEN_CL_CONTEXT_TYPE) && CLMANAGER->computeIsInControl() )
+			( hasBufferInContext(OPEN_CL_CONTEXT_TYPE) && PARA_COMP_MANAGER->computeIsInControl() )
 			||
 			! (hasBufferInContext(OPEN_GL_CONTEXT_TYPE))
 		)
@@ -123,11 +123,11 @@ const BufferInterface& BufferInterface::operator=(const BufferInterface& rhs) th
 			//TODO uncomment when stable work is assured
 			//if(isCLGLShared())
 			{
-				CLMANAGER->acquireSharedBuffersForCompute();
+				PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 			}
 
 			//do a barrier in by all means to assure buffer integrity;
-			CLMANAGER->barrierCompute();
+			PARA_COMP_MANAGER->barrierCompute();
 			GUARD(copyCLFrom(rhs.getComputeBufferHandle()));
 			return *this;
 		}
@@ -150,7 +150,7 @@ void BufferInterface::bind(ContextType type)throw(BufferException)
 	{
 		if( (mBufferInfo->usageContexts & OPEN_GL_CONTEXT_TYPE_FLAG) == 0)
 		{throw(BufferException("BufferInterface::bind: GL binding requested, but this Buffer has no GL context;"));}
-		CLMANAGER->acquireSharedBuffersForGraphics();
+		PARA_COMP_MANAGER->acquireSharedBuffersForGraphics();
 		GUARD(bindGL());
 		return;
 	}
@@ -160,7 +160,7 @@ void BufferInterface::bind(ContextType type)throw(BufferException)
 				{throw(BufferException("BufferInterface::bind: CL binding requested, but this Buffer has no CL context;"));}
 		LOG<<WARNING_LOG_LEVEL<<"binding a buffer to an OpenCL context makes no big sense to me at the moment ;). Try just assuring "<<
 				"the Buffer is acquired for the CL context and it is set as a kernel argument properly;\n";
-		CLMANAGER->acquireSharedBuffersForCompute();
+		PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 		//GUARD(bindCL()); <-- bullshat :P
 		return;
 	}
@@ -268,7 +268,7 @@ void BufferInterface::setData(const void* data, ContextTypeFlags where)throw(Buf
 		//if(isCLGLShared())
 		{
 
-			CLMANAGER->acquireSharedBuffersForGraphics();
+			PARA_COMP_MANAGER->acquireSharedBuffersForGraphics();
 		}
 
 		bind(OPEN_GL_CONTEXT_TYPE);
@@ -288,7 +288,7 @@ void BufferInterface::setData(const void* data, ContextTypeFlags where)throw(Buf
 			//TODO uncomment when stable work is assured
 			//if(isCLGLShared())
 			{
-				CLMANAGER->acquireSharedBuffersForCompute();
+				PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 			}
 
 			//it is not necessary to distinguish between a cl::Buffer and a cl::BufferGL here :).
@@ -334,7 +334,7 @@ void BufferInterface::readBack()throw(BufferException)
 	transferData(false);
 
 //	if(
-//		( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && CLMANAGER->graphicsAreInControl() )
+//		( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && PARA_COMP_MANAGER->graphicsAreInControl() )
 //		||
 //		! (hasBufferInContext(OPEN_CL_CONTEXT_TYPE))
 //	)
@@ -343,7 +343,7 @@ void BufferInterface::readBack()throw(BufferException)
 //		//TODO uncomment when stable work is assured
 //		//if(isCLGLShared())
 //		{
-//			CLMANAGER->acquireSharedBuffersForGraphics();
+//			PARA_COMP_MANAGER->acquireSharedBuffersForGraphics();
 //		}
 //
 //		GUARD(readGL(mCPU_Handle));
@@ -351,7 +351,7 @@ void BufferInterface::readBack()throw(BufferException)
 //	}
 //
 //	if(
-//		( hasBufferInContext(OPEN_CL_CONTEXT_TYPE) && CLMANAGER->computeIsInControl() )
+//		( hasBufferInContext(OPEN_CL_CONTEXT_TYPE) && PARA_COMP_MANAGER->computeIsInControl() )
 //		||
 //		! (hasBufferInContext(OPEN_GL_CONTEXT_TYPE))
 //	)
@@ -360,7 +360,7 @@ void BufferInterface::readBack()throw(BufferException)
 //		//TODO uncomment when stable work is assured
 //		//if(isCLGLShared())
 //		{
-//			CLMANAGER->acquireSharedBuffersForCompute();
+//			PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 //		}
 //
 //		GUARD(readCL(mCPU_Handle));
@@ -375,7 +375,7 @@ void BufferInterface::transferData(bool fromSystemToDevice)throw(BufferException
 	assert( "CPU buffer must exist for transfer between host and device" && mCPU_Handle);
 
 	if(
-		( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && CLMANAGER->graphicsAreInControl() )
+		( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && PARA_COMP_MANAGER->graphicsAreInControl() )
 		||
 		! (hasBufferInContext(OPEN_CL_CONTEXT_TYPE))
 	)
@@ -384,7 +384,7 @@ void BufferInterface::transferData(bool fromSystemToDevice)throw(BufferException
 		//TODO uncomment when stable work is assured
 		//if(isCLGLShared())
 		{
-			CLMANAGER->acquireSharedBuffersForGraphics();
+			PARA_COMP_MANAGER->acquireSharedBuffersForGraphics();
 		}
 
 		GUARD(bindGL());
@@ -400,7 +400,7 @@ void BufferInterface::transferData(bool fromSystemToDevice)throw(BufferException
 	}
 
 	if(
-		( hasBufferInContext(OPEN_CL_CONTEXT_TYPE) && CLMANAGER->computeIsInControl() )
+		( hasBufferInContext(OPEN_CL_CONTEXT_TYPE) && PARA_COMP_MANAGER->computeIsInControl() )
 		||
 		! (hasBufferInContext(OPEN_GL_CONTEXT_TYPE))
 	)
@@ -409,7 +409,7 @@ void BufferInterface::transferData(bool fromSystemToDevice)throw(BufferException
 		//TODO uncomment when stable work is assured
 		//if(isCLGLShared())
 		{
-			CLMANAGER->acquireSharedBuffersForCompute();
+			PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 		}
 
 		if(fromSystemToDevice)

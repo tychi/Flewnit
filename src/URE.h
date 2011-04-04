@@ -118,7 +118,7 @@ private:
     GUI* 					mGUI;
 
     //cl::Context*			mOpenCLContext;
-    OpenCL_Manager* 		mOpenCL_Manager;
+    ParallelComputeManager* 		mParallelComputeManager;
     SimulationResourceManager*		mSimulationResourceManager;
 
 

@@ -12,6 +12,19 @@
 #include "Simulator/SimulationObject.h"
 
 
+//forwards for the grantle string template engine:
+class QString;
+class QVariant;
+template <class Key, class T>class QHash;
+typedef QHash<QString, QVariant> QVariantHash;
+typedef QVariantHash TemplateContextMap;
+namespace Grantlee
+{
+	class Engine;
+}
+
+
+
 namespace Flewnit
 {
 
@@ -25,6 +38,19 @@ class MPP
 public:
 	MPP(String name, SimulationDomain sd);
 	virtual ~MPP();
+
+protected:
+	virtual void build()=0;
+	virtual void setupTemplateContext(TemplateContextMap& contextMap)=0;
+	virtual void validate()throw(SimulatorException)=0;
+
+
+	//for later debugging of the final code of a stage:
+	void writeToDisk(String sourceCode, Path where);
+
+private:
+
+
 };
 
 }

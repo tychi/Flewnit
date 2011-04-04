@@ -6,7 +6,7 @@
  */
 
 #include "DepthImageGenerationShader.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 #include "WorldObject/SubObject.h"
 #include "Material/VisualMaterial.h"
 

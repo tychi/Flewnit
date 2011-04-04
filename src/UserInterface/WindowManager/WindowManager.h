@@ -28,7 +28,6 @@ public:
 	virtual ~WindowManager(){}
 
 
-
 	virtual void init() = 0 ;
 	virtual void cleanup() = 0;
 
@@ -49,6 +48,7 @@ public:
 
 	virtual void setWindowPosition(Vector2Di newPos) =0;
 
+	virtual bool openGLContextIsCreated()=0;
 	virtual Vector2Di getAvailableOpenGLVersion()=0;
 
 

@@ -9,7 +9,7 @@
 
 #include "URE.h"
 
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 #include "MPP/Shader/ShaderManager.h"
 #include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 
@@ -146,7 +146,14 @@ void Shader::generateShaderStage(ShaderStageType shaderStageType,  Grantlee::Eng
 	);
 	Grantlee::Context shaderTemplateContext(contextMap);
     String shaderSourceCode = shaderTemplate->render(&shaderTemplateContext).toStdString();
-	writeToDisk(shaderSourceCode, shaderStageType);
+
+	Path shaderPath=
+		mCodeDirectory  / Path("__generated") /
+		Path(
+			mSpecificShaderCodeSubFolderName.string()+ mLocalShaderFeatures.stringify()
+			+ String(".")+  shaderStageFileEndings[shaderStageType]
+		);
+	writeToDisk(shaderSourceCode, shaderPath);
 
     //create the fragment shader:
     mShaderStages[shaderStageType] = new ShaderStage(
@@ -155,18 +162,7 @@ void Shader::generateShaderStage(ShaderStageType shaderStageType,  Grantlee::Eng
 }
 
 
-//for later inspection of the final code of a stage:
-void Shader::writeToDisk(String sourceCode, ShaderStageType type)
-{
-	String shaderDirectory=
-		(	mCodeDirectory  / Path("__generated") /
-			  Path( mSpecificShaderCodeSubFolderName.string()+ mLocalShaderFeatures.stringify() + String(".")+  shaderStageFileEndings[type] )
-		).string() ;
-	std::fstream fileStream;
-	fileStream.open(shaderDirectory.c_str(), std::ios::out);
-	fileStream << sourceCode;
-	fileStream.close();
-}
+
 
 
 void Shader::attachCompiledStage(ShaderStageType which)
@@ -428,7 +424,7 @@ void Shader::link()
 
 
 //check compiled and linked programm for errors
-void Shader::validate()throw(BufferException)
+void Shader::validate()throw(SimulatorException)
 {
 	const int buffSize = 1000000; //yes, one million ;P
 	int shaderInfoLogSize=0;

@@ -6,7 +6,7 @@
  */
 
 #include "VertexBasedGeometry.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 #include "Buffer/BufferInterface.h"
 #include "UserInterface/WindowManager/WindowManager.h"
 #include "Util/Log/Log.h"

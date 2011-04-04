@@ -10,7 +10,7 @@
 #include "../../include/GL3/gl3.h"
 #include "Util/Log/Log.h"
 #include "Util/HelperFunctions.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 
 namespace Flewnit
 {
@@ -176,14 +176,14 @@ UniformBufferMetaInfo::UniformBufferMetaInfo( GLint numMaxArrayElements, String 
 			);
 
 
-			for(int memberRunner=0; memberRunner< mNumMemberElements; memberRunner++)
-			{
-				LOG<<DEBUG_LOG_LEVEL << String(indexQuery_C_StringArray[memberRunner])<<" ;\n";
-				LOG<<DEBUG_LOG_LEVEL <<"uniform index: "<<  currentUniformIndices[memberRunner] <<" ;\n";
-				LOG<<DEBUG_LOG_LEVEL <<"uniform offset: "<<  mBufferOffsets[arrayElementRunner][memberRunner] <<" ;\n";
-				assert( "member should be active in shader, otherwise uniform buffer filling would turn out even more complicated :@"
-						&&  ( currentUniformIndices[memberRunner] != GL_INVALID_INDEX) );
-			}
+//			for(int memberRunner=0; memberRunner< mNumMemberElements; memberRunner++)
+//			{
+//				LOG<<DEBUG_LOG_LEVEL << String(indexQuery_C_StringArray[memberRunner])<<" ;\n";
+//				LOG<<DEBUG_LOG_LEVEL <<"uniform index: "<<  currentUniformIndices[memberRunner] <<" ;\n";
+//				LOG<<DEBUG_LOG_LEVEL <<"uniform offset: "<<  mBufferOffsets[arrayElementRunner][memberRunner] <<" ;\n";
+//				assert( "member should be active in shader, otherwise uniform buffer filling would turn out even more complicated :@"
+//						&&  ( currentUniformIndices[memberRunner] != GL_INVALID_INDEX) );
+//			}
 	} //endfor
 	delete[] indexQuery_C_StringArray;
 	delete[] indexQueryStringArray;

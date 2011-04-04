@@ -14,7 +14,7 @@
 #include <boost/foreach.hpp>
 #include "Simulator/LightingSimulator/LightingStages/ShadowMapGenerator.h"
 #include "WorldObject/InstanceManager.h"
-#include "Simulator/OpenCL_Manager.h"
+#include "Simulator/ParallelComputeManager.h"
 #include "UserInterface/WindowManager/WindowManager.h"
 #include "Util/Log/Log.h"
 

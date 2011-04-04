@@ -14,18 +14,6 @@
 #include "Simulator/SimulatorForwards.h"
 
 
-class QString;
-class QVariant;
-template <class Key, class T>class QHash;
-typedef QHash<QString, QVariant> QVariantHash;
-typedef QVariantHash TemplateContextMap;
-namespace Grantlee
-{
-	class Engine;
-}
-
-
-//class GrantleeShaderFeaturesContext;
 
 namespace Flewnit
 {
@@ -112,13 +100,10 @@ public:
 	//compares path and mLocalShaderFeatures
 	virtual bool operator==(const Shader& rhs)const;
 
-
-	//void generateShaderSources();
-
 	void link();
 
 	//check compiled and linked programm for errors
-	void validate()throw(BufferException);
+	virtual void validate()throw(SimulatorException);
 
 	// update uniforms and use the shader program:
 	//pass a subobject, as the shader needs access to
@@ -141,12 +126,11 @@ protected:
 	Shader(Path codeDirectory, Path specificShaderCodeSubFolderName, const ShaderFeaturesLocal& localShaderFeatures);
 
 	//called by constructor
-	void build();
+	virtual void build();
 	//setup the context for template rendering:
-	void setupTemplateContext(TemplateContextMap& contextMap);
+	virtual void setupTemplateContext(TemplateContextMap& contextMap);
 	void generateShaderStage(ShaderStageType shaderStageType, Grantlee::Engine* templateEngine, const TemplateContextMap& contextMap);
-	//for later debugging of the final code of a stage:
-	void writeToDisk(String sourceCode, ShaderStageType type);
+
 
 	//bind G-buffer textures to output fragments;
 	//if the RenderTarget has no texture attached to with a semantics
@@ -181,29 +165,17 @@ protected:
 	void bindFloat(String uniformName, float val);
 	void bindInt(String uniformName, int val);
 
-//public:	//public for InstanceManager:
-//	void bindInstanceTransformationInfoUniformBuffer(Buffer* uniformBuffer);
-//protected:
-	//---------------------------------------------------------------------------------------
-
 
 	Path mCodeDirectory;
 	Path mSpecificShaderCodeSubFolderName;
 
 	ShaderFeaturesLocal mLocalShaderFeatures;
 
-
-	//filled by generateCustomDefines(), used for straig forward #define-string generation OR for
-	//parsing a template
-	//std::set<String> mDefinitionsSet[__NUM_CUSTOM_SHADER_DEFINITIONS__];
-
 	GLuint mGLProgramHandle;
 	ShaderStage* mShaderStages[__NUM_SHADER_STAGES__];
 
 	//to be compared to rendertarget; Initial state: all -1;
 	GLint mCurrentFragDataBindings[__NUM_TOTAL_SEMANTICS__];
-
-	//GrantleeShaderFeaturesContext* mGrantleeShaderFeaturesContext;
 };
 
 }
