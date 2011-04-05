@@ -1,3 +1,6 @@
+  
+#ifndef BANK_CONFLICTS_AVOIDANCE_INCLUDE_GUARD
+#define BANK_CONFLICTS_AVOIDANCE_INCLUDE_GUARD
   //-------------------------------------------------------------------------------------
     //bank conflict avoidance; see http://http.developer.nvidia.com/GPUGems3/gpugems3_ch39.html to get the idea,
     //though the formula seems wrong despite the correct explanation
@@ -11,5 +14,9 @@
       #define LOG2_NUMBANKS 4
     {% endifequal nvidiaComputeCapabilityMajor 1 %}
     #define CONFLICT_FREE_OFFSET(n)  ( (n) >> (LOG2_NUMBANKS) )   
-    #define CONFLICT_FREE_INDEX(n)  ( (n) + ( (n) >> (LOG2_NUMBANKS) ) )    
+    #define CONFLICT_FREE_INDEX(n)  ( (n) + ( (n) >> (LOG2_NUMBANKS) ) )
+    //same formula as above, but for readability:    
+    #define PADDED_STRIDE(size)  ( (size) + ( (size) >> (LOG2_NUMBANKS) ) )  
   //-------------------------------------------------------------------------------------
+  
+#endif //BANK_CONFLICTS_AVOIDANCE_INCLUDE_GUARD
