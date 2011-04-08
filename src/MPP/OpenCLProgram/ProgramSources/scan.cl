@@ -12,24 +12,25 @@
 
    //-------------------------------------------------------------------------------------
    //returns the total sum
-   uint scanInclusive(
+   uint scanExclusive(
       __local uint* arrayToScan, //correctly padded element input/output array
       uint numElements, 
-      uint workItemOffsetID //usually just get_local_id(0), but when scanning several small arrays within the same work group,
-                            //the work item id may be smaller in order to fit the index calculations
+      uint workItemOffsetID, //usually just get_local_id(0), but when scanning several small arrays within the same work group,
+                            //the work item id may be smaller than workItemOffsetID in order to fit the index calculations
+     
    )
    {
       //no read in, everything is at the correct place in local memory
       
-      scanInclusive_upSweep(arrayToScan, numElements, workItemOffsetID);
+      scanExclusive_upSweep(arrayToScan, numElements, workItemOffsetID);
       
-      uint totalSum = arrayToScan[ CONFLICT_FREE_INDEX(numElements - 1) ];
+      uint totalSum = arrayToScan[ CONFLICT_FREE_INDEX( numElements - 1 ) ];
       if (workItemOffsetID == 0) 
       { 
         arrayToScan[ CONFLICT_FREE_INDEX(numElements - 1) ] = 0;// clear the last element
       } 
       
-      scanInclusive_downSweep(arrayToScan, numElements, workItemOffsetID);
+      scanExclusive_downSweep(arrayToScan, numElements, workItemOffsetID);
       
       //ensure that the caller can read any value without hazard;
       barrier(CLK_LOCAL_MEM_FENCE);  
@@ -39,7 +40,7 @@
   
   
   //-------------------------------------------------------------------------------------
-  void scanInclusive_upSweep(__local uint* arrayToScan, uint numElements, uint workItemOffsetID)
+  void scanExclusive_upSweep(__local uint* arrayToScan, uint numElements, uint workItemOffsetID)
   {
       int indexOffset = 1; 
       for (
@@ -64,7 +65,7 @@
   //-------------------------------------------------------------------------------------
   
   //-------------------------------------------------------------------------------------
-  void scanInclusive_downSweep(__local uint* arrayToScan, uint numElements, uint workItemOffsetID)
+  void scanExclusive_downSweep(__local uint* arrayToScan, uint numElements, uint workItemOffsetID)
   {
       int indexOffset = numElements; 
       for (
