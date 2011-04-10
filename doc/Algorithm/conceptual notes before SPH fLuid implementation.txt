@@ -89,8 +89,11 @@ Simulation Algorithm:
   --------------------------------------
     - Kernel calculateZIndexKernel:
       - calculate z-Index for each particle, write to zIndexBuffer
-    - Kernel parallelRadixSortKernel (actually two kernels):
-      - sort particles according to z-Index via Parallel Radix Sort (TODO refine)
+    - Kernel parallelRadixSortKernel (actually three kernels):
+      - sort particles according to z-Index via Parallel Radix Sort 
+    - Kernel reorderAttributes
+         - (maybe to include here: TODO rigid body meta data calculation)
+    
   
     - Kernel updateUniformGridKernel:
       - one work item per particle: 
@@ -130,7 +133,7 @@ Simulation Algorithm:
           //atomicMin( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].particleStartIndex, currentParticleArrayIndex);
           //atomicInc( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].numContainingParticles);
 
-      - (maybe to include here: TODO rigid body meta data calculation)
+     
    
    
     - Kernel splitAndCompressUniformGridKernel:
@@ -149,7 +152,7 @@ Simulation Algorithm:
           //{ 
           //tabulate with partially sequential stuff for "sounter sharing" in order to minimize the scan array 
           //(and like this to reduce the kernel count from 3 to 2, because the "scan of intermediate scan results" is small enough
-          to be performed by each work group itself) and to provide better work/kernelInvocation ratio
+          //to be performed by each work group itself) and to provide better work/kernelInvocation ratio
           for i = 0 to counterShareGroupSize :
             calculate index after the strange sharegroup-scheme
             int endIndex = uniGridParticleEndIndices[index];
@@ -173,8 +176,6 @@ Simulation Algorithm:
     
       - kind of parallel reduction via parallel prefix sum + split of overpopulated blocks (atomicInc?)
         (TODO freshen up parallel prefix sum and related applications)
-      
-  Phase II: Perform SPH calculations:
   -----------------------------------
     (todo copy from hand written notes;)
     (note: integration via Velocity Verlet method, as because we need explicit velocities, leap frog is not applicable,

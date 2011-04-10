@@ -1,13 +1,16 @@
+#pragma OPENCL EXTENSION cl_nv_pragma_unroll : enable
+#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
+
 /*
   Work efficient parallel prefix sum (scan);
   Algoritm completely taken from http://http.developer.nvidia.com/GPUGems3/gpugems3_ch39.html
   
   There is an issue with the padding macro for bank conflict avoidance; See bankConflictsAvoidance.cl for further info
-
+  
 */
 
-{% include bankConflictsAvoidance.cl %}
 
+   {% include bankConflictsAvoidance.cl %}
 
 
    //-------------------------------------------------------------------------------------

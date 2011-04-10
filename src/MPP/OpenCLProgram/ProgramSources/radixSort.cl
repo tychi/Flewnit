@@ -1,5 +1,8 @@
 #pragma OPENCL EXTENSION cl_nv_pragma_unroll : enable
 #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
+//pragma OPENCL EXTENSION cl_khr_global_int32_extended_atomics : enable
+#pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics : enable
+//pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics : enable
 
 
 /*
@@ -11,8 +14,8 @@
   Though, there seem to be some mistakes an unnecessary bottle necks (doumentation follows);
   
   Furthermore, the parallel radix sort in the paper relies on the assumption that the radix counter arrays are that small
-  that they can be scanned by one work group (i.e. max 2048 elements @ 1024 work items, in for two elements).
-  This can - without altering the algorithm - only realized via either short element arrays (32k elements are max in the paper,
+  that they can be scanned by one work group (i.e. max 2048 elements @ 1024 work items, for two elements).
+  This can - without altering the algorithm - be only realized via either short element arrays (32k elements are max in the paper,
   but i need 256k) or via great serialization of key element count to yield short radix counter length 
   (serialization factor of 16 for 32k ky elements @ max. 1024 work items/work group --> for 256k keys, 8*16=128 elements would have 
   to be serialized; This is NOT an option!);
@@ -31,10 +34,15 @@
   
 */
 
- 
-  //target in this thesis: 2^18 = 256 k, both for numParticles and for numUniGridCells
-  #define NUM_TOTAL_ELEMENTS ( {{ numTotalElements }} )
-  #define NUM_COMPUTE_UNITS_ON_DEVICE ( {{ numComputeUnits }} )
+  //####################################################################################
+  //-------------------------------------------------------------------------------------
+  {% include common.cl %}
+  {% include bankConflictsAvoidance.cl %}   
+  {% include scan.cl %}
+  //-------------------------------------------------------------------------------------
+  //####################################################################################
+  
+
   
   //--------------------------------------------------------------------------------------
     //default: 3 * log2(uniGridNumCellsPerDimension) = 18
@@ -61,10 +69,7 @@
     #define NUM_TOTAL_RADIX_COUNTERS_PER_RADIX ( NUM_TOTAL_ELEMENTS / NUM_KEY_ELEMENTS_PER_RADIX_COUNTER )
   //-------------------------------------------------------------------------------------                                                                                        
    
-   
-  //-------------------------------------------------------------------------------------          
-  {% include bankConflictsAvoidance.cl %}          
-  //-------------------------------------------------------------------------------------          
+           
                                                                                                                                                                             
   //-------------------------------------------------------------------------------------
   //hardware dependent memory amounts determine how many radix counters a work group can own
@@ -107,12 +112,7 @@
 
 
 
-  //####################################################################################
-  //-------------------------------------------------------------------------------------
-  {% include scan.cl %}
-  {% include helpers.cl %}
-  //-------------------------------------------------------------------------------------
-  //####################################################################################
+
   
 
   //-------------------------------------------------------------------------------------
@@ -129,7 +129,7 @@
   //=====================================================================================
   //phase one out of three in a radix sort pass: tabulate and local scan
   __kernel __attribute__((reqd_work_group_size(NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
-  void radixSort_tabulate_localScan_Phase(
+  void kernel_radixSort_tabulate_localScan_Phase(
     __global uint* gKeysToSort,     //NUM_TOTAL_ELEMENTS elements
     __global uint* gLocallyScannedRadixCounters,  //NUM_RADICES_PER_PASS * NUM_TOTAL_RADIX_COUNTERS_PER_RADIX elements; (e.g. 64*64k);
                                     //is logically an array NUM_RADICES_PER_PASS radix counter arrays;
@@ -193,7 +193,7 @@
     //------------------------------------------------------------------------------------------
     
     //do the "local" radix scan on every radix, partially in parallel to use all work items:
-    #pragma unroll 
+    //TODO chek if an unroll yields better performance 
     for(uint i= 0; i < ( NUM_RADICES_PER_PASS / NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL ) ; i++)
     {
       //divide work items in several sets with interval [0..half length of one radix counter array], 
@@ -238,8 +238,8 @@
       }
       
       //write the scan results to global memory: as one work item scans two counters, it also has to write out two of them
-      #pragma unroll
       //TODO precompute some index stuff? would save calculations but disturb superscalarity... subject to experimentation
+      #pragma unroll
       for(int i=0; i<2; i++)
       {
         gLocallyScannedRadixCounters[ 
@@ -279,9 +279,10 @@
   //Because the structure of the algorithm demands that the global scan can be performed by a single work group,
   //theoretically, phase 2 can be completely performed by a single work group; But this approach woudn't scale
   //with the number of multiprocessors in a device; Hence, for perfect load balancing, we take 
-  // pow2(ceil(log2(CL_DEVICE_MAX_COMPUTE_UNITS)) work groups calced by app), 
+  //pow2(ceil(log2(CL_DEVICE_MAX_COMPUTE_UNITS))) work groups (value calced by app), 
   //i.e. the number of multiprocessors, rounded to the next power of two
-  #define NUM_GLOBAL_SCAN_WORK_GROUPS  ( NUM_COMPUTE_UNITS_ON_DEVICE )
+  #define NUM_GLOBAL_SCAN_WORK_GROUPS  ( NUM_BASE2_CEILED_COMPUTE_UNITS )
+  //#define NUM_GLOBAL_SCAN_WORK_GROUPS  ( {{ numGlobalScanWorkGroups }} )
   //default value for Geforce GT  435M (fermi) : (64 / pow2(ceil(log2( 2))) = 32
   //default value for Geforce GTX 280  (GT200) : (64 / pow2(ceil(log2(30))) = 2
   //default value for Geforce GTX 570  (fermi) : (64 / pow2(ceil(log2(15))) = 4
@@ -289,7 +290,7 @@
   #define NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP (NUM_RADICES_PER_PASS / NUM_GLOBAL_SCAN_WORK_GROUPS )
   
   __kernel __attribute__((reqd_work_group_size(NUM_GLOBAL_SCAN_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
-  void radixSort_globalScan_Phase(
+  void kernel_radixSort_globalScan_Phase(
     __global uint* gSumsOfLocalRadixCountsToBeScanned, //is the gSumsOfLocalRadixCounts from phase 1;
                                     //NUM_RADICES_PER_PASS * NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP elements (e.g. 64*512);
                                     //In phase 1, the sums of the local scans of the radix counters will be written to it;
@@ -329,7 +330,7 @@
     __local uint* lSumsOfLocalRadixCounts,   // PADDED_STRIDE( NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP ) elements,
                                     //so that one padded array to scan fits in;
                                     // example size (fermi) :  512 *(1+1/32) =  528 elements
-                                    // example size (fermi) : 1024 *(1+1/16) = 1088 elements
+                                    // example size (GT200) : 1024 *(1+1/16) = 1088 elements
                                     
    __local uint*  lSumsOfGlobalRadixCounts,  //at least NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP+1 elements (e.g. 33 for Geforce GT435M);
                                     //though we need to comupte and store only NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP, in order
@@ -358,7 +359,7 @@
       lSumsOfGlobalRadixCounts[0] = 0;
     }
     
-    #pragma unroll
+    //do not unroll, too much code
     for(int currentRadix= radixStart; currentRadix < radixEnd; currentRadix++ )
     {   
       //{ index calculation for global and local element arrays:   
@@ -420,7 +421,7 @@
   //phase three out of three in a radix sort pass: reorder
   //number of work items corremponds to that of phase one, so this is no mistake:
   __kernel __attribute__((reqd_work_group_size(NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
-  void radixSort_reorder_Phase(
+  void kernel_radixSort_reorder_Phase(
     //following key ping pong buffers: (We need ping pong buffers, because although input and output indices are a perfect permutation
     //of each other, read from and write to the same buffer would need global synchronization)
     __global uint* gKeysToSort,     //NUM_TOTAL_ELEMENTS elements; 
@@ -485,14 +486,14 @@
                                     //Similar usage as in phase 1;
                                     //Note that in constrast to phase 1, this buffer needs no padding, because there is no scan to be performed :).
                                     //Is actually an array of NUM_RADICES_PER_PASS _NON_padded radix counter arrays;
-   //NOTE:  because one work group needs only one "column" in gScannedSumsOfLocalRadixCounts and hence every needed element
-   //       must be read uncoalesced, these values won't be explicitely cached to local memory, as this would inevitably mean
-   //       the worst case bandwidth wasting 
-   //         (e.g. 64 elements * 128 bytes per cache line (fermi) = 8192 bytes for (at most) 64 * 4 bytes per value = 256 bytes needed);
-   //       Because of the often mentioned "nearly-sorted" property of the input keys, the radices of adjacent elements are highly
-   //       likely to be the same; So there may not every element in the relevant "column" beeing actually needed, saving bandwitdh;
-   //       A scenario like this _might_ profit from the 16kB L1 cache of the fermi architecture (in case a warp needs the same element
-   //       already grabbed by another warp).
+     //NOTE:  because one work group needs only one "column" in gScannedSumsOfLocalRadixCounts and hence every needed element
+     //       must be read uncoalesced, these values won't be explicitely cached to local memory, as this would inevitably mean
+     //       the worst case bandwidth wasting 
+     //         (e.g. 64 elements * 128 bytes per cache line (fermi) = 8192 bytes for (at most) 64 * 4 bytes per value = 256 bytes needed);
+     //       Because of the often mentioned "nearly-sorted" property of the input keys, the radices of adjacent elements are highly
+     //       likely to be the same; So there may not every element in the relevant "column" beeing actually needed, saving bandwitdh;
+     //       A scenario like this _might_ profit from the 16kB L1 cache of the fermi architecture (in case a warp needs the same element
+     //       already grabbed by another warp).
     __local uint*  lPartiallyScannedSumsOfGlobalRadixCounts,  //NUM_RADICES_PER_PASS elements;
                                     //copy of gPartiallyScannedSumsOfGlobalRadixCounts
     __local uint* lSumsOfPartialScansOfSumsOfGlobalRadixCounts, //PADDED_STRIDE(NUM_GLOBAL_SCAN_WORK_GROUPS) elements, e.g. 2+0=2 for GT435M
@@ -508,6 +509,7 @@
     
     //for fermi default: [0,0,0,0,1,1,1,1,2,2,2,2,...,127,127,127,127]
     //uint localRadixCounterIndexForOwnKeyElement = lwiID / NUM_KEY_ELEMENTS_PER_RADIX_COUNTER;
+    
     uint paddedLocalCopyIndex = CONFLICT_FREE_INDEX( lwiID );
     
     //{ setup the local buffers:
@@ -577,13 +579,26 @@
             
     //} //end setup of local buffers
    
-    //scan the coarsest granularity   
+   
+   
+    //{ scan the coarsest granularity   
     //default for GT435M 2/2=1; yes ,really, it is not worth such an invocation on such a device, but i wanna stay general
     //and not optimize for a single graphics card ;)
-    if(lwiID < (NUM_GLOBAL_SCAN_WORK_GROUPS/2) )
-    {
-      scanExclusive(lSumsOfPartialScansOfSumsOfGlobalRadixCounts,NUM_GLOBAL_SCAN_WORK_GROUPS, lwiID );
-    }
+          
+    //check if we even have more than one compute units, otherwise the scan would not be called and hence the first element
+    //in lSumsOfPartialScansOfSumsOfGlobalRadixCounts wouldn't be zero and corrupt the offsetting; we have to catch this situation.
+    #if NUM_GLOBAL_SCAN_WORK_GROUPS > 1
+      if( lwiID < (NUM_GLOBAL_SCAN_WORK_GROUPS/2) )
+      {
+        scanExclusive(lSumsOfPartialScansOfSumsOfGlobalRadixCounts,NUM_GLOBAL_SCAN_WORK_GROUPS, lwiID );
+      }
+    #else
+      if( lwiID == 0 )
+      {
+        lSumsOfPartialScansOfSumsOfGlobalRadixCounts[0]=0;
+      }  
+    #endif
+    //}
     
     //{
       //the first threads do the radix increment and sequential scatter to ensure that a warp doesn't diverge 
@@ -594,6 +609,7 @@
         uint valueIndex;
         uint radix;
         
+        //TODO check if unroll amortizes or not
         #pragma unroll
         for(uint i=0 ; i< NUM_KEY_ELEMENTS_PER_RADIX_COUNTER; i++ )
         {
@@ -631,5 +647,12 @@
   }
   //=====================================================================================
   
+  
+ 
+  
+  
+  
+  
+
   
   
