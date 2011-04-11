@@ -13,7 +13,8 @@
   {% endblock documentHeader %} 
 
 
-  {% block tabulationFunc %} 
+  {% block specialDefinitions %} 
+  
     //default: 32; reason:
     //  < 32  --> some threads in warp idle
     //  > 32  --> double number of simulation work groups, many threads idle in split up cells;
@@ -24,15 +25,46 @@
     //    0      residing particles --> 0 simulation work groups
     //  [ 1..32] residing particles --> 1 simulation work group
     //  [33..64] residing particles --> 2 simulation work groups etc. )
-    #define GET_NUM_SIM_WORK_GROUPS_OF_CELL( numResidingParticles ) ( ( (numResidingParticles) + (NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP-1) ) >> LOG2_NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP ) 
+    #define GET_NUM_SIM_WORK_GROUPS_OF_CELL( numResidingParticles ) ( ( (numResidingParticles) + (NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP-1) ) >> LOG2_NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP )  
+  
+    uint tabulate(uint globalIndex,  __global uint* gUniGridCells_ParticleStartIndex, __global uint* gUniGridCells_ParticleEndIndexPlus1)
+    {
+      uint endIndexPlus1 =  gUniGridCells_ParticleEndIndexPlus1[ globalIndex ];
     
-    //"grantlee override" of the tabulate macro
-    #define TABULATE( numResidingParticles ) ( GET_NUM_WORK_GROUPS_PER_CELL( numResidingParticles ) )
-    //uint tabulationFunc( uint numResidingParticles) 
-    //{
-    //  return ( ( numResidingParticles + (NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP-1) ) >> LOG2_NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP ); 
-    //}
-  {% endblock tabulationFunc %} 
+      //to be valid, the value must be at least 1, as its name indicates for non-negative numbers;
+      //an invalid end indx indicates an empty cell; Reason: in updateUniformGrid.cl, the cell entries have not been written,
+      //because there was no particle responsible for this cell; as the buffer is clreard to zero every frame, zero indicates
+      //the emptyness      
+      if(endIndexPlus1 == 0) {return 0;}
+      
+      uint numResidingParticles = endIndexPlus1 - gUniGridCells_ParticleStartIndex[ globalIndex ];
+      //do the fix for the optimization in updateUniformGrid.cl: assign the "true" number of particles: 
+      gUniGridCells_ParticleEndIndexPlus1[ globalIndex ] = numResidingParticles;
+      return GET_NUM_SIM_WORK_GROUPS_OF_CELL( numResidingParticles );
+    }
+  
+  {% endblock specialDefinitions %} 
+  
+  
+  {% block tabulationArgs%} 
+    __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements
+    __global uint* gUniGridCells_ParticleEndIndexPlus1, //NUM_TOTAL_GRID_CELLS elements
+                                               //see updateUniformGrid.cl argument list for further information about this 
+                                               //"strange" encoding of the number of particles in a cell
+  {% endblock tabulationArgs %} 
+  
+  
+  {% block tabulation %} 
+    //tabulate global values and store them to local mem for scan
+    lLocallyScannedTabulatedValues[ paddedLocalLowerIndex  ] = 
+      tabulate( globalLowerIndex, 
+                gUniGridCells_ParticleStartIndex, 
+                gUniGridCells_ParticleEndIndexPlus1  );
+    lLocallyScannedTabulatedValues[ paddedLocalHigherIndex ] =    
+      tabulate( globalHigherIndex, 
+                gUniGridCells_ParticleStartIndex, 
+                gUniGridCells_ParticleEndIndexPlus1  );
+  {% endblock tabulation %}
   
   
   {% block furtherImplementation %}
@@ -43,28 +75,28 @@
       will be written to gSumsOfPartialGlobalScans[NUM_BASE2_CEILED_COMPUTE_UNITS];
       
       Note that in contrast to kernel_scan_localPar_globalSeq, in this kernel, no sequentialization will be performed,
-      because here, it wouldn't save a kernel invokation;
+      because here, it wouldn't save a kernel invocation;
       
     */
     
     __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
     void kernel_SplitAndCompactUniformGrid(
+      __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements; to be split and compacted,too
       __global uint* gUniGridCells_NumParticles, //NUM_TOTAL_ELEMENTS  elements, to be tabulated again for split; costs extra calculations,
                                                  //but saves memory and bandwidth;
                                                  //After an entry is read to the register file, it is set to zero so that in the following frame,
                                                  //we have a fresh buffer where all empty and hence untouched cells have really a particle
                                                  //count of zero :)
-      __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements; to be split and compacted,too
       
       __global uint* gLocallyScannedTabulatedValues, //gLocallyScannedSimWorkGroupCount, NUM_TOTAL_ELEMENTS  elements 
       __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_GLOBAL_SCAN_ELEMENTS elements
       __global uint* gSumsOfPartialGlobalScans,  //at least NUM_BASE2_CEILED_COMPUTE_UNITS + 1  elements;
                                                  //+1 because this kernel writes out the total sim work group count
                                                  
-       //ping pong components of gUniGridCells_NumParticles and  gUniGridCells_ParticleStartIndex
-       // in the physics simulation phase, only "total count of simulation work groups" elements will be used                       
-      __global uint* gCompactedUniGridCells_NumParticles, 
+       //ping pong components of gUniGridCells_ParticleStartIndex and gUniGridCells_NumParticles;
+       //In the physics simulation phase, only "total count of simulation work groups" elements will be used;                     
       __global uint* gCompactedUniGridCells_ParticleStartIndex
+      __global uint* gCompactedUniGridCells_NumParticles, 
     )
     {
       __local uint lScannedSumsOfPartialGlobalScans [ PADDED_STRIDE ( NUM_BASE2_CEILED_COMPUTE_UNITS )];

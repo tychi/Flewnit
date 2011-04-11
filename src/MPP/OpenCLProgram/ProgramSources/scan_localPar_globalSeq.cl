@@ -64,22 +64,18 @@
   #define NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY (  NUM_GLOBAL_SCAN_ELEMENTS / NUM_BASE2_CEILED_COMPUTE_UNITS )
   
   
+  {% block specialDefinitions %} 
+
+  {% endblock specialDefinitions %} 
+  
   
   //=====================================================================================
-  //TODO CHANGE TOO TIRED NOW: make grantlee block
-  {% block tabulationFunc %} 
-     "pure virtual function via grantlee" : define and implement the following signature in specialized templates:
-     //uint tabulationFunc( uint );
-     #define TABULATE( value ) (value)
-  {% endblock tabulationFunc %} 
-  
-  
   __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
   void kernel_scan_localPar_globalSeq(
     
-    //TODO CHANGE TOO TIRED NOW: make grantlee block
-    __global uint* gValuesToTabulate, // gUniGridCells_NumParticles, //NUM_TOTAL_ELEMENTS  elements
-      
+    {% block tabulationArgs %} 
+      __global uint* gValuesToTabulate, //NUM_TOTAL_ELEMENTS  elements
+    {% endblock tabulationArgs %} 
       
     __global uint* gLocallyScannedTabulatedValues, //gLocallyScannedSimWorkGroupCount, NUM_TOTAL_ELEMENTS  elements 
     __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_GLOBAL_SCAN_ELEMENTS elements
@@ -117,11 +113,14 @@
     uint totalSumOfLocalScan;
     for(int localScanIntervalRunner = 0 ;  localScanIntervalRunner < NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY;  localScanIntervalRunner++)
     {      
-      //tabulate global values and store them to local mem for scan
-      //TODO CHANGE TOO TIRED NOW: make grantlee block
-      lLocallyScannedTabulatedValues[ paddedLocalLowerIndex  ] = TABULATE( gValuesToTabulate [ globalLowerIndex  ] );
-      lLocallyScannedTabulatedValues[ paddedLocalHigherIndex ] = TABULATE( gValuesToTabulate [ globalHigherIndex ] );
-      
+    
+      {% block tabulation %} 
+        //tabulate global values and store them to local mem for scan
+        lLocallyScannedTabulatedValues[ paddedLocalLowerIndex  ] = gValuesToTabulate[ globalLowerIndex  ];
+        lLocallyScannedTabulatedValues[ paddedLocalHigherIndex ] = gValuesToTabulate[ globalHigherIndex ];
+      {% endblock tabulation %} 
+    
+
       //do the local parallel scan, grab the respective total sum
       totalSumOfLocalScan =  scanExclusive(
         lLocallyScannedTabulatedValues,

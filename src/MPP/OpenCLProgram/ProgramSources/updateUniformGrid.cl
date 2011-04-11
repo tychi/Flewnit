@@ -23,16 +23,13 @@
   void kernel_updateUniformGrid(
     __global uint* gSortedZIndices, //numTotalParticles elements
     
-    //Note that in this kernel, these (usually uint-) buffers are bound as SIGNED integer buffer, because
-    //depending on the order of the global atomic inc and global atomic sub, the values can become temporaryly negative;
-    //I hope that OpenCL and the CLGL interop makes no prolems with this kind of reinterpret_cast ;(
-    __global int* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements
+
+    __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements
     
     //__global int* gUniGridCells_NumParticles //NUM_TOTAL_GRID_CELLS elements
                                                //is initialized to zero for every entry, so that unwritten values are valid for
-                                               //stream compaction scan in following kernel
-   
-   __global int* gUniGridCells_ParticleEndIndexPlus1 //NUM_TOTAL_GRID_CELLS elements
+                                               //stream compaction scan in following kernel  
+   __global uint* gUniGridCells_ParticleEndIndexPlus1 //NUM_TOTAL_GRID_CELLS elements
                                                //is actually the gUniGridCells_NumParticles buffer, but for performance reasons
                                                //(don't wanna make thousands of global atom_adds and atom_subs),
                                                //it will hold the particle end index+1 after the kernel has completed;
@@ -42,86 +39,80 @@
                                                
   )
   {
-     __local uint lSortedZIndices[NUM_MAX_WORK_ITEMS_PER_WORK_GROUP];
+    //note that we only buffer the z-indices at local memory, because we read them twice;
+    //In the worst, uncached, unoptimized case, not doing so would mean to double global memory bandwidth;
+    //On fermi devices, the 16kB L1 cache and the fact that the two reads happen im close temporal succession 
+    //might raise the possibility that performanc might be even better without the local buffering, because this way,
+    //there are fewer special cases and hence control flow divergences, and there is no synchronization needed;
+    //TODO check this out ;(
+    __local uint lSortedZIndices[NUM_MAX_WORK_ITEMS_PER_WORK_GROUP];
     
     
     uint lwiID = get_local_id(0); // short for "local work item ID"
     uint gwiID = get_global_id(0); // short for "global work item ID"
     uint groupID =  get_group_id(0);
     
-    lSortedZIndices[ get_local_id(0) ] = gSortedZIndices[ get_global_id(0) ];
+    //define some neighbouthood macros to not get confused by the indexing
+    #define GLOBAL_LEFT_INDEX  ( get_global_id(0) -1 )
+    #define LOCAL_LEFT_INDEX   ( get_local_id(0)  -1 )
+    #define GLOBAL_OWN_INDEX   ( get_global_id(0)    )
+    #define LOCAL_OWN_INDEX    ( get_local_id(0)     ) 
+    //#define GLOBAL_RIGHT_INDEX ( get_global_id(0) +1 )
+    //#define LOCAL_RIGHT_INDEX  ( get_local_id(0)  +1 )
+    
+    lSortedZIndices[ LOCAL_OWN_INDEX ] = gSortedZIndices[ GLOBAL_OWN_INDEX ];
     barrier(CLK_LOCAL_MEM_FENCE);
-    
-    
-     //TODO implement TOO TIRED NOW: (following code is bullshaat)
-    
-    
-    //leftmost local element? 
-    if(lwiID == 0)
+   
+    //{ check the special cases where no neighbours exist at all
+    //leftmost global element?
+    if(gwiID == 0)
     {
-      //leftmost global element?
-      if(gwiID == 0)
-      {
-  
-        gUniGridCells_ParticleStartIndex[ lSortedZIndices[ lwiID ] ]= gwiID;
-        atom_add(gUniGridCells_NumParticles + lSortedZIndices[ lwiID ] , (int)(gwid));      
-      }
-      else
-      {
-        //is left index different?
-        if(lSortedZIndices[ lwiID ] != lSortedZIndices[ lwiID -1 ])
-        {
-          //left index is different, i.e. here starts a new index; set the relevant start index:
-          uniGridParticleStartIndices[particleZIndex]=gwiID;
-        }
-      }
+      //index of own particle is definitely the start index of the cell it lies in:
+      //obsolete because is zero anyway:
+      //gUniGridCells_ParticleStartIndex[ lSortedZIndices[ 0 ] ]= 0; 
+      return;     
     }
-    
-    
-    
-    //not the leftmost global element? 
-    if(gwiID != 0)
+    //rightmost global element?
+    if(gwiID == (get_global_size() -1) )
     {
-      //not the leftmost local element?
-      if(lwiID != 0)
-      {
-        //is left index different?
-        if(lSortedZIndices[ lwiID ] != lSortedZIndices[ lwiID -1 ])
-        {
-          //left index is different, i.e. here starts a new index; set the relevant start index:
-          uniGridParticleStartIndices[particleZIndex]=gwiID;
-        }
-      }
+      //(index of own particle +1) is definitely the (end index +1) of the cell it lies in:
+      gUniGridCells_ParticleEndIndexPlus1[ lSortedZIndices[ LOCAL_OWN_INDEX ] ] = get_global_size();
+      return;      
     }
-          //buffers are flushed to zero, so following is obsolete:
-          //else{
-          //  uniGridParticleStartIndices[particleZIndex]=0;
-          //}
-          
-          if(gwiID != (numParticles -1))
-          {
-            if(sortedZIndices[gwiID] != sortedZIndices[gwiID +1])
-            {
-              //right index is different, i.e. here ends the particle list for the voxel containing this particle;
-              //set the relevant end index to gwiID +1, so that the particle count can be derived by (startIndex-EndIndex)
-              //during voxel split and compression;
-              uniGridParticleEndIndices[particleZIndex]=gwiID +1;
-            }
-          }
-          else{
-            uniGridParticleEndIndices[particleZIndex]=gwiID +1;
-          }
-          
-          //bullsh** from Goswami paper? Seems quite unnecessary to me and wasting operations and bandwidth:
-          "Whereas the first particle in a block can
-          be determined using the atomicMin operation in CUDA, the
-          number of particles is found by incrementing a particle count
-          with atomicInc. Thus each particle updates both the starting
-          index and particle count of its block in the list B [...]"
-          //atomicMin( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].particleStartIndex, currentParticleArrayIndex);
-          //atomicInc( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].numContainingParticles);
+    //} end check the special cases where no neighbours exist at all  
+     
+    //left and right neighbours do exist in the following code, otherwise, the particle would have been masked by the above code
+    
+    //grab left index from local memory unless it is the leftmost element in work group, then grab from global memory
+    uint leftZIndex = ( (lwiID > 0) ?  (lSortedZIndices[ LOCAL_LEFT_INDEX ]) : (gSortedZIndices[ GLOBAL_LEFT_INDEX ]) );
+    uint ownZIndex = lSortedZIndices[ LOCAL_OWN_INDEX ] ;
 
-
-  
+      
+    //is left index different?
+    if(ownZIndex != leftZIndex )
+    {
+      //left index is different, i.e. here starts a new index; 
+      //set the relevant start index of own grid cell :
+      gUniGridCells_ParticleStartIndex[ ownZIndex ]= GLOBAL_OWN_INDEX ;
+      //set the relevant (end index+1) of left neighbour grid cell :
+      gUniGridCells_ParticleEndIndexPlus1[ leftZIndex ]= GLOBAL_OWN_INDEX; 
+    }  
+    //we dont have to check inequalitity of the own z-index to its right neigbour, because when the global border cases are caught,
+    //there are as many middle-right differences as there are middle-left differences ;). Both start and end of the relevant grid cells
+    //are marked.
+    
+    /*
+      Bullsh** from Goswami paper? Seems quite unnecessary to me, and this approach wasting operations and bandwidth and
+      enforces many serializations due to the atomics:
+      "Whereas the first particle in a block can
+       be determined using the atomicMin operation in CUDA, the
+       number of particles is found by incrementing a particle count
+       with atomicInc. Thus each particle updates both the starting
+       index and particle count of its block in the list B [...]"
+       
+     My approach should be much faster, though in the subsequent "cell split and compatction" kernel,
+     we have some overhead to compensate for this optimization 
+    */
+ 
   }
   //=====================================================================================
