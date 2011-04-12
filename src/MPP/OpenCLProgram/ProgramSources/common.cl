@@ -10,9 +10,41 @@
   //      one shall try to reuse or merge some kernels just because they work on the same number of elements; This is a special case that will
   //      NOT be abused for any efforts of optimization
   #define NUM_TOTAL_ELEMENTS ( {{ numTotalElements }} )
+  
+  
+  #ifndef PI 
+    #define PI (3.141592653589793115998f)
+  #endif
+  
+  
+  #define SQUARED_LENGTH( vec ) ( vec.x * vec.x + vec.y * vec.y + vec.z * vec.z )
+  
 
   //will execute faster than de "generic" modulo operator
   #define BASE_2_MODULO (val, base2Val) ( (val) & ( (base2val) -1 ) )
+  
+  //{ see doc/Algorithm/combining global coalescing and alignment with local omission of bank conflicts for vector types.txt
+  //  for further information on the following macros   
+  //bank conflict free write from registers or global memory to local "implicit float3" buffer
+  #define WRITE_TO_LOCAL_FLOAT3_BUFFER(localFloatBuffer, float4Value) \
+    localFloatBuffer[3 * get_local_id(0) + 0] = float4Value.x;  \
+    localFloatBuffer[3 * get_local_id(0) + 1] = float4Value.y;  \
+    localFloatBuffer[3 * get_local_id(0) + 2] = float4Value.z     
+  //bank conflict free load from local "implicit float3" buffer into a register float4:
+  #define READ_VECTOR_FROM_LOCAL_FLOAT3_BUFFER(localFloatBuffer, localIndex) \
+    ( (float4) \
+      ( localFloatBuffer[3 * localIndex + 0 ], \
+        localFloatBuffer[3 * localIndex + 1 ], \
+        localFloatBuffer[3 * localIndex + 2 ], \
+        0.0 )                                  )
+  #define READ_POSITION_FROM_LOCAL_FLOAT3_BUFFER(localFloatBuffer, localIndex) \
+    ( (float4) \
+      ( localFloatBuffer[3 * localIndex + 0 ], \
+        localFloatBuffer[3 * localIndex + 1 ], \
+        localFloatBuffer[3 * localIndex + 2 ], \
+        1.0 )                                  )
+  //}
+  
   
   #define WARP_SIZE 32
   #define HALF_WARP_SIZE 16

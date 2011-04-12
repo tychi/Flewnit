@@ -31,7 +31,8 @@ VisualMaterialFlags::VisualMaterialFlags(
 		isDynamicCubeMapRenderable(isDynamicCubeMapRenderable),
 		isInstanced(isInstanced),
 		isCustomMaterial(isCustomMaterial)
-{}
+{
+}
 
 VisualMaterialFlags::VisualMaterialFlags(const VisualMaterialFlags& rhs)
 :		castsShadows(rhs.castsShadows),

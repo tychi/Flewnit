@@ -1,33 +1,13 @@
+/**
+
+  Z-index calculation program for inititial computation
+
+  During simulation, the Z-index is calculated within the integration kernel in order to save one kernal invocation
+
+*/
 
 
-//z index calculation program for inititial computation
-
-//during simulation, the z-index is calculated within the integration kernel in order to save one kernal invocation
-
-  
-//default: 64
-#define UNIGRID_NUM_CELLS_PER_DIMENSION ( {{uniGridNumCellsPerDimension}} )
-//default: 6
-#define LOG2_UNIGRID_NUM_CELLS_PER_DIMENSION ( {{log2UniGridNumCellsPerDimension}} )
-
-uint getZIndex(float4 position, float4 uniGridWorldPosLowerCorner, float inverseUniGridCellSize,  __constant uint* gridPosToZIndexLookupTable )
-{
-  //calculate floating point cell index, convert to integral type and round to nearest zero
-  int4 cell3Dindex = convert_int4_rtz( 
-    (position - uniGridWorldPosLowerCorner ) * inverseUniGridCellSize    
-  ) 
-  //repeat infinitely in order to make simulation domain infinite
-  % NUM_UNIGRID_CELLS_PER_DIMENSION ;
-  
-  return (
-    gridPosToZIndexLookupTable[ 0* UNIGRID_NUM_CELLS_PER_DIMENSION + cell3Dindex.x ]
-    |
-    gridPosToZIndexLookupTable[ 1* UNIGRID_NUM_CELLS_PER_DIMENSION + cell3Dindex.y ]
-    |
-    gridPosToZIndexLookupTable[ 2* UNIGRID_NUM_CELLS_PER_DIMENSION + cell3Dindex.z ]
-  );
-}
- 
+{% include physicsCommonFunctions.cl %} 
 
 __kernel void _initial_CalcZIndex(
   __global float4* gPositions,  //arg0
