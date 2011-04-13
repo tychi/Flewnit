@@ -51,7 +51,8 @@ My adaption looks like this:
     Launch B' CUDA kernels with N threads each
     foreach (potentially split) non-empty uniform grid voxel (in parallel on work group level)
       N= particles in current block
-      //really necessary? other work items don't need  teh "own group neighbours", as neigbours are acquired seperately; 
+      //really necessary to put to local mem? private could be sufficient?
+      //other work items don't need  the "own group neighbours", as neigbours are acquired seperately; 
       //the try to optimize one particle group global neighbour read (that of the own group) could reduce bandwidth 
       //but makes control flow more complicated... we'll see
       Copy its own N particles into its shared memory (in parallel on work item level) 
@@ -60,7 +61,7 @@ My adaption looks like this:
         numParticlesInCurrentNeighbourCell = uniformGridParticleAmounts[currentNeighbourCell];
         neighbourCellParticleStartIndex = uniformGridParticleStartIndex[currentNeighbourCell];
         //mostly only one pass, but for highly populated voxels we have to split in order to not overflow the local memory
-        numParticleGroupsInCurrentNeighbour = numParticlesInCurrentNeighbour / numParticlesPerWorkGroup;
+        numParticleGroupsInCurrentNeighbour = numParticlesInCurrentNeighbour / NUM_MAX_PARTICLES_PER_WORK_GROUP;
         for particleGroupRunner = 0 to numParticleGroupsInCurrentNeighbour (sequentially):
           numParticlesInCurrentNeighbourParticleGroup = numParticlesInCurrentNeighbourCell - particleClusterRunner * numParticlesPerWorkGroup;
           if(get_local_id(0) < numParticlesInCurrentNeighbourParticleGroup){

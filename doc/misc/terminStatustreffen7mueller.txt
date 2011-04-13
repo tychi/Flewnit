@@ -1,1 +1,51 @@
 mittwoch, 13.04. 2011, 11 Uhr PER SKYPE Müller status 7 
+
+  
+  
+Status: 
+  Fast alle OpenCL Kernels sind Implementiert, so radikal optimiert wie es mir strukturell möglich war 
+  (um bei den ersten Test keine bizarren Treiberfehler oder zusätzliche stabilitätsprobleme zu bekommen,
+   habe ich bestimmte arithmetische befehle wie native_divide() oder fast_length() noch nicht benutzt),
+   jedoch nicht nicht kompiliert geschweige denn getestet, da ich wie bei den glsl-
+  shader-templates erst durch Implementierung der Anwendungslogik auf GPU-Ebene die Strukur und nötigen Parameter der
+  C++-Framework-Implementierung ableite; Letztere liegt aufgrund der Kernel-Programmierung zur Zeit auf Eis, sollte
+  jedoch lange nicht so aufwändig sein wie das Grafik-pendant, da viele Strukturen wiederverwendbar sein sollten;
+  Wenn nichts heftiges dazwischen kommt, habe ich mittwoch oder donnerstag die Kernelprogrammierung abgeschlossen und kann wieder ans Framework
+  gehen. Dann bin ich vorsichtig zuversichtlich, dass in ein paar Tagen (ich hoffe Samstag, spätestens Sonntag) die ersten
+  partikel hageln, wenn auch ohne ausgefeiltes shading;
+  Dennoch bin ich recht besorgt, dass irgendetwas dazwischen kommt bis ende des Monats (z.B. ein unauffindbarer Bug in den Kernels aufgrund
+  von Treiberfehlern oder wegen meiner nicht vorhandenen Erfahrung der Benutzung von Profilern und speziellen debuggern) und somit all 
+  die Arbeit dann wohl bis zur Abgabe nur als Notizen, Gedanken und toten, uncompilierten Code
+  repräsentiert ist.
+  Mein Programmierstil birgt große Risiken, da ich zur Zeit nicht inkrementell entwickele und somit alle Fehler auf einmal bekommen werde
+  (sofern der nvidia compiler so nett ist, fehler zu melden, so manche bizarren hänger hatte  ich schon bei leichten modifikationen 
+  der nvidia-oclParticles-demo; Der compiler ist wirklich mit vorsicht zu genießen); 
+  Nun ja, bei den Shadern hats ja auch zumindest bei den Basis-effekten funktioniert, vielleicht ist ja auch OpenCL mit mir gnädig ;).
+  
+
+Fragen:
+  
+  1. Velocity Verlet integration braucht pro Zeitschritt zwei Geschwindigkeitswerte:
+      - vel_t_i für spätere Integration und 
+      - vel_predicted_t_i+1 (wegen Implizitheit des Verfahrens) für die viskositäts-Kraftberechnungen
+     Im bisherigen konzept waren Ping-Pong-Buffer hinreichend, um bei der nicht vorhandenen globalen Synchronisation beim Update von Werten
+     keine Seiteneffekte zu bekommen;
+     Nun müssen aber pro Frame zwei Geschwindigkeitswerte geschrieben werden, und nur ein Buffer ist "sicher, nicht von anderen partikeln
+     gelesen zu werden"; Nun legt der name "predictor-corrector" nahe, dass sobal man den korrigierten Wert errechnet hat, man 
+     eventuell einfach den vorhergeagten überschreiben kann, und alle SPH-berechnungen, die für den frame noch für andere Partikel ausstehen,
+     werden dann mit dem korrigierten wert gemacht, wo zuvor nur der vorhergesagte wert genutzt wurde;
+     On-the-fly-berechnung anhand von (posNew-posOld)/timestep bringt dasselbe problem mit sich: posNew wird irgendwann überschrieben
+     und macht damit die berechnung definitiv falsch;
+     Kann das willkürliche Überschreiben des predicted durch den corrected Value zu Instabilität führen? 
+     Wenn ja, bleibt nur
+      a: ein einfacheres Integrationsverfahren, was aber ebenfalls instabilität mit sich bringen kann
+      b: das Weglassen von Geschwindigkeitswerten bei der Kraftberechnung (d.h. keine viskositätsberechnungen) 
+         --> Laut Goswami trägt die Viskositätsberechnung allerdings erheblich zur Stabilität der Simulation bei.
+      c: ein Triple-Buffer, wo immer ein Wert pro Frame read-only ist, und die anderen beiden schreibbar;
+        --> würde neue inkonsistenz im Framework bedeuten und im Vergleich zum implementierten (wenn auch noch nicht getesteten) 
+        abstrahierten PingPongBuffer wieder einige Kapselung aufbrechen; Vom Mehrverbrauch an Speicher und Bandbreite ganz zu schweigen.
+     Alle drei Alternativen sind also eher unerfreulich;
+     
+  
+     
+  

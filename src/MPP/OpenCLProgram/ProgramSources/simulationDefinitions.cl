@@ -8,6 +8,20 @@
     #define NUM_UNIGRID_CELLS_PER_DIMENSION ( {{ numUniGridCellsPerDimension }} )
     //default: 6
     #define LOG2_NUM_UNIGRID_CELLS_PER_DIMENSION ( {{ log2NumUniGridCellsPerDimension }} )
+    
+    //default: 32; reason:
+    //  < 32  --> some threads in warp idle
+    //  > 32  --> double number of simulation work groups, many threads idle in split up cells;
+    #define NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP ( {{ numMaxParticlesPerSimulationWorkGroup }}
+    //default log2(32) = 5;
+    #define LOG2_NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP ( {{ log2NumMaxParticlesPerSimulationWorkGroup }}
+    
+    //    0      residing particles --> 0 simulation work groups
+    //  [ 1..32] residing particles --> 1 simulation work group
+    //  [33..64] residing particles --> 2 simulation work groups etc. )
+    #define GET_NUM_SIM_WORK_GROUPS_OF_CELL( numResidingParticles ) ( ( (numResidingParticles) + (NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP-1) ) >> LOG2_NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP )  
+  
+    
   //} end uniform grid definitions
   
   
@@ -36,20 +50,8 @@
   //} end SPH definitions
   
   
-  //{ rigid body definitions
-    
-    //may be at mos (1<<15)=32k; reason: rigid body ID is encoded into a short, we need an "invalid ID indicator value" 
-    //which is greater than the max. allowed value, and we wanna stick to our base 2- paradigm;
-    //Note: This thesis program is not designed for massive rigid body simulation; It is rather a funny gimmick;
-    //So use much less rigid bodies in practice than 32k ;(.
-    //#define NUM_RIGID_BODIES ( {{numRigidBodies}} )
-    //2048; reason: this is the maximum number of elements we can scan in parallel within a single work group
-    //without any "tricks"; we need the total sums of positions and velocities
-    #define NUM_MAX_PARTICLES_PER_RIGID_BODY (1<<11)
-    #define INVALID_RIGID_BODY_ID ( (ushort) (-1) )
-    #define IS_RIGID_BODY_PARTICLE ( particleRigidBodyInfo ) ( (particleRigidBodyInfo.rigidBodyID) != INVALID_RIGID_BODY_ID )
-    
-  //} end rigid body definitions
+
   
   
 #endif //FLEWNIT_CL_PROGRAMS_SIMULATION_DEFINITIONS_GUARD
+

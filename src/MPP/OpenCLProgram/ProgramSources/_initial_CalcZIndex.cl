@@ -10,13 +10,12 @@
 {% include physicsCommonFunctions.cl %} 
 
 __kernel void _initial_CalcZIndex(
-  __global float4* gPositions,  //arg0
-  __global uint* gZIndices,     //arg1
-  __constant uint* gridPosToZIndexLookupTable, //arg2
-  //calced by app to save offset calculations: worldPositionCenter - float(numCellsPerDimension)*0.5f*cellSize
-  float4 uniGridWorldPosLowerCorner, //arg3
-  float inverseUniGridCellSize //arg4
+  __constant uint* cGridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation
+  __constant SimulationParameters* cSimParams,
+  __global float4* gPositions,
+  __global uint* gZIndices,     
+
 )
 {
-  gZIndices[get_global_id(0)] = getZIndex(gPositions[get_global_id(0)],uniGridWorldPosLowerCorner,inverseUniGridCellSize, gridPosToZIndexLookupTable);
+  gZIndices[get_global_id(0)] = getZIndex(gPositions[get_global_id(0)], cSimParams, cGridPosToZIndexLookupTable);
 }

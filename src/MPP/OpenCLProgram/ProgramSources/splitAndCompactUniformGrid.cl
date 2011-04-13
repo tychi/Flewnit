@@ -14,19 +14,10 @@
 
 
   {% block specialDefinitions %} 
-  
-    //default: 32; reason:
-    //  < 32  --> some threads in warp idle
-    //  > 32  --> double number of simulation work groups, many threads idle in split up cells;
-    #define NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP ( {{ numMaxParticlesPerSimulationWorkGroup }}
-    //default log2(32) = 5;
-    #define LOG2_NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP ( {{ log2NumMaxParticlesPerSimulationWorkGroup }}
     
-    //    0      residing particles --> 0 simulation work groups
-    //  [ 1..32] residing particles --> 1 simulation work group
-    //  [33..64] residing particles --> 2 simulation work groups etc. )
-    #define GET_NUM_SIM_WORK_GROUPS_OF_CELL( numResidingParticles ) ( ( (numResidingParticles) + (NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP-1) ) >> LOG2_NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP )  
+    {% include simulationDefinitions.cl %}
   
+    
     uint tabulate(uint globalIndex,  __global uint* gUniGridCells_ParticleStartIndex, __global uint* gUniGridCells_ParticleEndIndexPlus1)
     {
       uint endIndexPlus1 =  gUniGridCells_ParticleEndIndexPlus1[ globalIndex ];
@@ -82,7 +73,7 @@
     __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
     void kernel_SplitAndCompactUniformGrid(
       __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements; to be split and compacted,too
-      __global uint* gUniGridCells_NumParticles, //NUM_TOTAL_ELEMENTS  elements, to be tabulated again for split; costs extra calculations,
+      __global uint* gUniGridCells_NumParticles, //NUM_TOTAL_GRID_CELLS  elements, to be tabulated again for split; costs extra calculations,
                                                  //but saves memory and bandwidth;
                                                  //After an entry is read to the register file, it is set to zero so that in the following frame,
                                                  //we have a fresh buffer where all empty and hence untouched cells have really a particle

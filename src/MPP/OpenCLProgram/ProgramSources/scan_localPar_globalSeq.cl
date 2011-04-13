@@ -1,9 +1,3 @@
-#pragma OPENCL EXTENSION cl_nv_pragma_unroll : enable
-#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
-//pragma OPENCL EXTENSION cl_khr_global_int32_extended_atomics : enable
-#pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics : enable
-//pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics : enable
-
 
 {% block documentHeader %}
   /**
@@ -37,7 +31,16 @@
     on "pure" implementation of the simple scan here.
 
   */
+  
 {% endblock documentHeader %}
+
+
+#pragma OPENCL EXTENSION cl_nv_pragma_unroll : enable
+#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
+//pragma OPENCL EXTENSION cl_khr_global_int32_extended_atomics : enable
+#pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics : enable
+//pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics : enable
+
 
   {% include scan.cl %}
 

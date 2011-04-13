@@ -5,11 +5,14 @@
   {% include physicsDataStructures.cl %}
   
 
-  uint getZIndex(float4 position, float4 uniGridWorldPosLowerCorner, float inverseUniGridCellSize,  __constant uint* gridPosToZIndexLookupTable )
+  uint getZIndex(
+    float4 position,
+    __constant SimulationParameters* cSimParams,
+    __constant uint* cGridPosToZIndexLookupTable )
   {
     //calculate floating point cell index, convert to integral type and round to nearest zero
     int4 cell3Dindex = convert_int4_rtz( 
-      (position - uniGridWorldPosLowerCorner ) * inverseUniGridCellSize    
+      (position - cSimParams->uniGridWorldPosLowerCorner ) *  cSimParams->inverseUniGridCellSizes    
     );
     
     //repeat infinitely in order to make simulation domain infinite
@@ -51,35 +54,41 @@
   }
   
   
-  float gradSpiky(float4 distanceVector)
+  float4 gradSpiky(float4 distanceVector)
   {
-    float distCenterToKernelBorder = length(distanceVector) - SPH_SUPPORT_RADIUS ;
+    float lenDistVec = length(distanceVector);
     //TODO use native functions when stable
-    //float distCenterToKernelBorder = sqrt( SQUARED_LENGTH(distanceVector) ) - SPH_SUPPORT_RADIUS ;
-    //float distCenterToKernelBorder = native_sqrt( SQUARED_LENGTH(distanceVector) ) - SPH_SUPPORT_RADIUS ;
-    //float distCenterToKernelBorder = fast_length( distanceVector ) - SPH_SUPPORT_RADIUS ;
+    //float lenDistVec = sqrt( SQUARED_LENGTH(distanceVector) ) ;
+    //float lenDistVec = native_sqrt( SQUARED_LENGTH(distanceVector) ) ;
+    //float lenDistVec = fast_length( distanceVector )  ;
+    
+    float distCenterToKernelBorder = SPH_SUPPORT_RADIUS - lenDistVec;
 
     //a negative value would mean that the distanceVector is longer than the support radius and hence the particles having this
     //distance don't interact with each other
     if(sqaredDistCenterToKernelBorder >= 0.0f )
     {
-        // 45 / (pi * h^6) * (h-r)^2
-        return GRAD_SPIKY_CONSTANT_TERM * distCenterToKernelBorder*distCenterToKernelBorder;
+        // 45 / (pi * h^6) * (h-|r_vec|)^2 * r_vec / |r_vec|
+        return (( GRAD_SPIKY_CONSTANT_TERM * distCenterToKernelBorder*distCenterToKernelBorder) / lenDistVec) * distanceVector; 
+        //TODO use native functions when stable
+        //return native_divide(GRAD_SPIKY_CONSTANT_TERM * distCenterToKernelBorder*distCenterToKernelBorder, lenDistVec) * distanceVector;
     }
     else
     {
-      return 0.0f;
+      return (float4) (0.0f,0.0f,0.0f,0.0f);
     }
   }
   
   
   float laplacianViscosity(float4 distanceVector)
   {
-    float distCenterToKernelBorder = length(distanceVector) - SPH_SUPPORT_RADIUS ;
+    float lenDistVec = length(distanceVector);
     //TODO use native functions when stable
-    //float distCenterToKernelBorder = sqrt( SQUARED_LENGTH(distanceVector) ) - SPH_SUPPORT_RADIUS ;
-    //float distCenterToKernelBorder = native_sqrt( SQUARED_LENGTH(distanceVector) ) - SPH_SUPPORT_RADIUS ;
-    //float distCenterToKernelBorder = fast_length( distanceVector ) - SPH_SUPPORT_RADIUS ;
+    //float lenDistVec = sqrt( SQUARED_LENGTH(distanceVector) ) ;
+    //float lenDistVec = native_sqrt( SQUARED_LENGTH(distanceVector) ) ;
+    //float lenDistVec = fast_length( distanceVector )  ;
+    
+    float distCenterToKernelBorder = SPH_SUPPORT_RADIUS - lenDistVec;
 
     //a negative value would mean that the distanceVector is longer than the support radius and hence the particles having this
     //distance don't interact with each other
