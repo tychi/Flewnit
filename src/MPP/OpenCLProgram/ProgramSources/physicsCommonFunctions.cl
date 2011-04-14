@@ -32,20 +32,22 @@
   
   //-------------------------------------------------------------------------
   
-  float poly6(float4 distanceVector)
+  float poly6(float4 distanceVector, __constant SimulationParameters* cSimParams)
   {
-    float sqaredDistCenterToKernelBorder = SQUARED_SPH_SUPPORT_RADIUS - SQUARED_LENGTH(distanceVector);
+    float sqaredDistCenterToKernelBorder = cSimParams->SPHsupportRadiusSquared - SQUARED_LENGTH(distanceVector);
     
     //a negative value would mean that the distanceVector is longer than the support radius and hence the particles having this
     //distance don't interact with each other
     if(sqaredDistCenterToKernelBorder >= 0.0f )
     {
-        // 315 / (64 pi * h^9) * (h^2-r^2)^3
-        return POLY6_CONSTANT_TERM * sqaredDistCenterToKernelBorder*sqaredDistCenterToKernelBorder*sqaredDistCenterToKernelBorder;
-      //return POLY6_CONSTANT_TERM * pown( sqaredDistCenterToKernelBorder, 3    );
-      //return POLY6_CONSTANT_TERM * powr( sqaredDistCenterToKernelBorder, 3.0f );
-      //TODO use native functions when stable
-      //return POLY6_CONSTANT_TERM * native_powr(sqaredDistCenterToKernelBorder, 3.0f );
+        return 
+          // 315 / (64 pi * h^9) * (h^2-r^2)^3
+          cSimParams->poly6KernelConstantTerm
+          * sqaredDistCenterToKernelBorder * sqaredDistCenterToKernelBorder * sqaredDistCenterToKernelBorder;
+        //* pown( sqaredDistCenterToKernelBorder, 3    );
+        // powr( sqaredDistCenterToKernelBorder, 3.0f );
+        //TODO use native functions when stable
+        //native_powr(sqaredDistCenterToKernelBorder, 3.0f );
     }
     else
     {
@@ -54,7 +56,7 @@
   }
   
   
-  float4 gradSpiky(float4 distanceVector)
+  float4 gradSpiky(float4 distanceVector, __constant SimulationParameters* cSimParams)
   {
     float lenDistVec = length(distanceVector);
     //TODO use native functions when stable
@@ -62,16 +64,28 @@
     //float lenDistVec = native_sqrt( SQUARED_LENGTH(distanceVector) ) ;
     //float lenDistVec = fast_length( distanceVector )  ;
     
-    float distCenterToKernelBorder = SPH_SUPPORT_RADIUS - lenDistVec;
+    float distCenterToKernelBorder = cSimParams->SPHsupportRadius - lenDistVec;
 
-    //a negative value would mean that the distanceVector is longer than the support radius and hence the particles having this
-    //distance don't interact with each other
-    if(sqaredDistCenterToKernelBorder >= 0.0f )
+    //a negative distCenterToKernelBorder value would mean that the distanceVector is longer than the support radius and hence the particles having this
+    //distance don't interact with each other;
+    //also catch length 0 disc vector to catch div by zero; anyway; a particle shall not push away itself ;)
+    if((distCenterToKernelBorder >= 0.0f ) &&  (lenDistVec > EPSILON) )
     {
         // 45 / (pi * h^6) * (h-|r_vec|)^2 * r_vec / |r_vec|
-        return (( GRAD_SPIKY_CONSTANT_TERM * distCenterToKernelBorder*distCenterToKernelBorder) / lenDistVec) * distanceVector; 
+        return 
+          (
+            ( cSimParams->gradientSpikyKernelConstantTerm *  distCenterToKernelBorder * distCenterToKernelBorder) 
+              / lenDistVec 
+          ) 
+          * distanceVector; 
+          
         //TODO use native functions when stable
-        //return native_divide(GRAD_SPIKY_CONSTANT_TERM * distCenterToKernelBorder*distCenterToKernelBorder, lenDistVec) * distanceVector;
+        //return 
+        //  native_divide(
+        //    ( cSimParams->gradientSpikyKernelConstantTerm *  distCenterToKernelBorder * distCenterToKernelBorder ),
+        //    lenDistVec
+        //  ) 
+        //  * distanceVector;
     }
     else
     {
@@ -80,7 +94,7 @@
   }
   
   
-  float laplacianViscosity(float4 distanceVector)
+  float laplacianViscosity(float4 distanceVector, __constant SimulationParameters* cSimParams))
   {
     float lenDistVec = length(distanceVector);
     //TODO use native functions when stable
@@ -88,14 +102,16 @@
     //float lenDistVec = native_sqrt( SQUARED_LENGTH(distanceVector) ) ;
     //float lenDistVec = fast_length( distanceVector )  ;
     
-    float distCenterToKernelBorder = SPH_SUPPORT_RADIUS - lenDistVec;
+    float distCenterToKernelBorder = cSimParams->SPHsupportRadius - lenDistVec;
 
-    //a negative value would mean that the distanceVector is longer than the support radius and hence the particles having this
-    //distance don't interact with each other
-    if(sqaredDistCenterToKernelBorder >= 0.0f )
+    //a negative distCenterToKernelBorder value would mean that the distanceVector is longer than the support radius and hence the particles having this
+    //distance don't interact with each other;
+    //don't catch length 0 disc vector; Although a particle shall not glue  itself, 
+    //this case is autimatically catches as the relative velocity to itself is also zero ;) ;)
+    if((distCenterToKernelBorder >= 0.0f ) )
     {
         // 45 / (pi * h^6) * (h-r)
-        return LAPLACIAN_VISCOSITY_CONSTANT_TERM * distCenterToKernelBorder;
+        return cSimParams->laplacianViscosityConstantTerm * distCenterToKernelBorder;
     }
     else
     {

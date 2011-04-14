@@ -49,8 +49,15 @@
 
     float4 userForcePos;
     float4 userForce;
+
     float userForceRadius;
-    float padForce1,padForce2,padForce3; //stuff to enforce alignment of following vector types independent from compiler features
+
+    float penaltyForceSpringConstant;
+    float penaltyForceDamperConstant;
+    
+    float restDensity; //stablelize the pressure gradient simulation;
+    
+    //float padForce0; //stuff to enforce 16-byte alignment of following vector types independent from compiler features
     
     //{ uniform grid params
     
@@ -61,7 +68,15 @@
     
     //}
     
+    float4 gravityAcceleration;
+
+
+    
     float timestep;
+    float inverseTimestep; //needed for velocity prediction;
+                           //as this structure is in constant memory, read speed is as fast as register read speed
+                           //and hence precomputation is a valid optimization here to replace a costly division by a cheaper multiplication;
+                          
     
     //float massPerFluidParticle; <-- obsolete, is in __constant float* cObjectMassesPerParticle, index 0
     float inverseRigidBodyParticleizationVoxelVolume;//precomputed by host; needed to get density from mass for rigid boadies;
@@ -74,12 +89,35 @@
                               //           = massPerParticle/(rigidBodyAABBVolume / numParticleizationVoxels)
                               //           = massPerParticle/particleizationVoxelVolume
                               //           = massPerParticle*inverseParticleizationVoxelVolume
-    float gravityAcceleration;
     
     
-    float penaltyForceSpringConstant;
-    float penaltyForceDamperConstant;
-   
+    //{ 
+    //  SPH definitions; refer to "Particle-Based Fluid Simulation for Interactive Applications" by Matthias Mueller et. al.
+    //  for further info;
+    
+    //must be <= uniGridCellSize; 
+    float SPHsupportRadius;
+    float SPHsupportRadiusSquared; //as this structure is in constant memory, read speed is as fast as register read speed
+                                   //and hence precomputation is a valid optimazation here to save one multiplication;
+    
+    
+    //constant terms of used SPH kernels, precomputed by app in order to save calculations in a VERY performance critical code section
+    //( 315.0f / ( 64.0f * PI * pown(SPH_SUPPORT_RADIUS, 9) ) )
+    float poly6KernelConstantTerm;
+    //( 45.0f / ( PI * pown(SPHsupportRadius,6) ) ) <-- 3 * spiky constant term; non-negative because it is the derivative 
+    //"in the direction towards the center", hence coming from positive infinity going to origin, the gradient is positive
+    //as the values become greater towards the origin;
+    float gradientSpikyKernelConstantTerm;
+    //( 45.0f / ( PI * pown(SPH_SUPPORT_RADIUS,6) ) ) <-- that this is the same value as gradientSpikyKernelConstantTerm is
+    //a "coincidence"; the true laplacian of the viscosity kernel would be 
+    //( 45.0f / ( PI * pown(SPH_SUPPORT_RADIUS,6) ) ) * (h-r  - ((h^4)/(r^3)) ) instead of
+    //( 45.0f / ( PI * pown(SPH_SUPPORT_RADIUS,6) ) ) * (h-r)                   denoted in the paper; a reason wasn't given;
+    //I can only speculate that this is a reasonable simplification to trade speed for accuracy;
+    float laplacianViscosityConstantTerm;
+
+    //} end SPH definitions
+
+    
     
     //uint numRigidBodies; //must be power of two
     
@@ -133,7 +171,8 @@
                          
   //convenience macros to handle offset stuff for rigid bodies
   //be sure to use this makro only if IS_RIGID_BODY_PARTICLE() returns true!
-   #define GET_RIGID_BODY_ID ( particleObjectInfo ) ( ( GET_OBJECT_ID(particleObjectInfo) ) - RIGID_BODY_OFFSET )
+   //#define GET_RIGID_BODY_ID ( particleObjectInfo ) ( ( GET_OBJECT_ID(particleObjectInfo) ) - RIGID_BODY_OFFSET )
+   #define GET_RIGID_BODY_ID ( particleObjectID ) ( ( particleObjectID ) - RIGID_BODY_OFFSET )
                          
 
   //(1<<11)=2048; reason: this is the maximum number of elements we can scan in parallel within a single work group
@@ -142,7 +181,8 @@
   //default: 1: if we wanna simulate different fluids types (i.e. fluid particles can have  different features),
   //we might increase this offset, but for now, let's not think about TOO much special cases/extension possibilites...
   #define RIGID_BODY_OFFSET ( 1 )
-  #define IS_RIGID_BODY_PARTICLE ( particleObjectInfo ) ( ( GET_OBJECT_ID(particleObjectInfo) ) >= RIGID_BODY_OFFSET )                       
+  //#define IS_RIGID_BODY_PARTICLE ( particleObjectInfo ) ( ( GET_OBJECT_ID(particleObjectInfo) ) >= RIGID_BODY_OFFSET )                       
+  #define IS_RIGID_BODY_PARTICLE ( particleObjectID ) ( ( particleObjectID ) >= RIGID_BODY_OFFSET )                       
  
  //}  end particle object info
  //------------------------------------------------------------------------------------------------------                      
@@ -150,8 +190,16 @@
   
  typedef struct
   {
+    //direction, direction and upVector are read back by the host to construct a transformation matrix
+    //to update both the scene graph transform ogf the rigid body object and to provide a transform for the glsl vertex shader;
     float4 centreOfMassPosition;
-    float4 direction; //influenced by angular velocity;
+    
+    float4 direction; //influenced by angular velocity:
+                      //velocityOfDirectionVector = cross(angularVelocityNew, directionOld);
+                      //directionNew = normalize(directionOld + velocityOfDirectionVector* timeStep);
+                      
+    float4 upVector;  //influenced by angular velocity;
+                      //caclulation is the same as for direction;
     
     float4 linearvelocity;
     float4 angularVelocity;

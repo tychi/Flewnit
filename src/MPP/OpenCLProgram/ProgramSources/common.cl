@@ -5,11 +5,14 @@
 
   //Possible default  values: 
   //  for particles (sorted by radix sort) target in this thesis: 2^18 = 256k;
-  //  for particles (compacted by stream compaction) target in this thesis: 64^3 = 2^18 = 256k; 
+  //  for uniform grid cells (compacted by stream compaction) target in this thesis: 64^3 = 2^18 = 256k; 
   // -->  both numParticles and numUniGridCells are usually equal to 256k; this is a coincidence and does NOT mean that
   //      one shall try to reuse or merge some kernels just because they work on the same number of elements; This is a special case that will
   //      NOT be abused for any efforts of optimization
   #define NUM_TOTAL_ELEMENTS ( {{ numTotalElements }} )
+  
+  
+  #define EPSILON (0.00001f)
   
   
   #ifndef PI 

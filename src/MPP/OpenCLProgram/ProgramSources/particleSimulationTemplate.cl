@@ -34,12 +34,12 @@
   
   __kernel 
   void 
-  {% block kernelName %}
-    kernel_updateDensity
-  {% endblock kernelName %}
+{% block kernelName %}
+
+{% endblock kernelName %}
   (
   
-    {% block constantBufferKernelArgs %} {%comment%}/*usually the same for all physics kernels*/{%endcomment%}
+{% block constantBufferKernelArgs %} {%comment%}/*usually the same for all physics kernels*/{%endcomment%}
       
       __constant SimulationParameters* cSimParams,
       __constant uint* gridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation
@@ -47,10 +47,10 @@
       //rigid bodies; this way, we can grab the masses without any branching :).      
       __constant float* cObjectMassesPerParticle, 
       
-    {% endblock constantBufferKernelArgs %}
+{% endblock constantBufferKernelArgs %}
     
     
-    {% block uniformGridBufferKernelArgs %}{%comment%}/*usually the same for all physics kernels*/{%endcomment%}
+{% block uniformGridBufferKernelArgs %}{%comment%}/*usually the same for all physics kernels*/{%endcomment%}
     
       //currentSimulationWorkGroupCount (valid) elements each, i.e. as many elements
       //as there were split and compacted uniform grid cells;                                        
@@ -61,10 +61,10 @@
       __global uint* gUniGridCells_ParticleStartIndex, 
       __global uint* gUniGridCells_NumParticles,
       
-    {% endblock uniformGridBufferKernelArgs %}
+{% endblock uniformGridBufferKernelArgs %}
     
     
-    {% block particleAttributesBufferKernelArgs %}
+{% block particleAttributesBufferKernelArgs %}
     
       //better a parameter list with in some kernels unused params than eternal confusion..
       
@@ -76,8 +76,18 @@
       __global float* gDensitiesOld,
       __global float* gDensitiesNew,
       
-      __global float4* gVelocitiesOld,
-      __global float4* gVelocitiesNew,    
+      __global float4* gCorrectedVelocitiesOld,  //corrected velocity values frome the last step read for integration of both
+                                                 //the position and the new corrected velocity;
+      __global float4* gCorrectedVelocitiesNew,  //velocity values corrected after force calculation with predicted velocities 
+                                                 //(correctedVelocityNew = correctedVelocityOld 
+                                                 //                        + halfTimeStep * (accelerationOld + accelerationNewWithPredictedVelocity)) 
+                                                 //to be written in integration kernel
+      
+      __global float4* gPredictedVelocitiesCurrent, //velocity values (predicted in the last step) read for viscosity force computation in current step;
+      __global float4* gPredictedVelocitiesFuture,  //velocity values predicted after position integration ((posNew-posOld)/timeStep) 
+                                                    //to be written in integration kernel for viscosity force computation in next step;
+                                                    //The Velocity Verlet integration scheme is implicit for velocity values,
+                                                    //hence the strange "double representation" of velocities
       
       //we store accelerations instead of forces, force densities or whatever; this is because of the velocity verlet integration,
       //we have to access each computed force value twice; so save the fetch and division by of the old density value to yield the accerleation,
@@ -87,10 +97,10 @@
 
       __global uint* gParticleObjectInfos
       
-    {% endblock particleAttributesBufferKernelArgs %}
+{% endblock particleAttributesBufferKernelArgs %}
     
     
-    {% block triangleBufferKernelArgs %}
+{% block triangleBufferKernelArgs %}
     
       {% if useStaticTriangleCollisionMesh %}
         //__global uint* gUniGridCells_TriangleStartIndex, 
@@ -99,7 +109,7 @@
                                         //triangle best and do calculations most efficent
       {% endif %}
       
-    {% endblock triangleBufferKernelArgs %}
+{% endblock triangleBufferKernelArgs %}
   )
   {
   
@@ -114,97 +124,126 @@
     uint numParticlesInOwnGroup = gUniGridCells_NumParticles[ groupID ];
     uint ownGlobalAttributeIndex = gUniGridCells_ParticleStartIndex[ groupID ] + lwiID;
 
-    {% block initOwnParticleAttribs %} 
-      /*alloc local mem for neighbrours, grab needed attributes for own particles, store them to private mem*/
+    /*alloc local mem for neighbrours, grab needed attributes for own particles, store them to private mem*/  
+    float4 ownPosition;
+    __local float4 lCurrentNeighbourPositions[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ];
+    uint ownParticleObjectID;
+    __local uint lCurrentNeighbourParticleObjectIDs[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ];
+   
       
-      __local float4 lCurrentNeighbourPositions[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ];
-      __local uint lCurrentNeighbourParticleObjectInfos[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ];
+{% block kernelDependentParticleAttribsMalloc %} 
+  {% comment %} pattern:
+    for each needed attribute: 
+      <attribute type> own<attribute name singular>;
+      optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ]; 
+  {% endcomment %}
+
       
-      float4 ownPosition;
-      float ownDensity;
+{% endblock kernelDependentParticleAttribsMalloc %}
       
-      if(lwiID < numParticlesInOwnGroup )
-      {
-        ownPosition = gPositionsOld[ ownGlobalAttributeIndex ];
-        ownDensity = 0.0f;
-      } 
       
-    {% endblock initOwnParticleAttribs %}
+    if(lwiID < numParticlesInOwnGroup )
+    {
+      ownPosition = gPositionsOld[ ownGlobalAttributeIndex ];
+      ownParticleObjectID = GET_OBJECT_ID( gParticleObjectInfos[ ownGlobalAttributeIndex ] );
+        
+        
+{% block kernelDependentOwnParticleAttribsInit %} 
      
-     
-      float4 posIneighbour = ownPosition - cSimParams->uniGridCellSizes;
+{% endblock kernelDependentOwnParticleAttribsInit %}
+    
+        
+    } 
+    float4 posInNeighbour = ownPosition - cSimParams->uniGridCellSizes;
+    //iterate over all 3^3=27 neigbour voxels, includin the own one:
+    #pragma unroll
+    for(int x=-1;x<=1;x++)
+    {
       #pragma unroll
-      for(int x=-1;x<=1;x++)
+      for(int y=-1;y<=1;y++)
       {
-        neigbourPointer.x += cSimParams->uniGridCellSizes.x;
         #pragma unroll
-        for(int y=-1;y<=1;y++)
-        {
-          neigbourPointer.y += cSimParams->uniGridCellSizes.y;
-          #pragma unroll
-          for(int z=-1;z<=1;z++)
+        for(int z=-1;z<=1;z++)
+        {            
+          //get the "modulo" z-index, i.e border cells will interact with the border cells on the opposite side;
+          //we accept this performance penalty, as we get en unlimited simulation domain this way, though performance
+          //drastically decreases when particle are not all in "one rest group" of the uniform grid, because then,
+          //particles land in the same "buckets" which aren't spacially adjacent, hence such calculations are in vain;
+          uint neighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
+          uint numRemainingNeighbourParticlesToInteract = gUniGridCells_NumParticles[ neighbourZIndex ];
+          
+          if(numRemainingNeighbourParticlesToInteract > 0)
           {
-            neigbourPointer.z += cSimParams->uniGridCellSizes.z;
-            
-            //get the "modulo" z-index, i.e border cells will interact with the border cells on the opposite side;
-            //we accept this performance penalty, as we get en unlimited simulation domain this way, though performance
-            //drastically decreases when particle are not all in "one rest group" of the uniform grid, because then,
-            //particles land in the same "buckets" which aren't spacially adjacent, hence such calculations are in vain;
-            uint neighbourZIndex = getZIndex( posIneighbour, cSimParams, cGridPosToZIndexLookupTable );
-            uint numRemainingNeighbourParticlesToInteract = gUniGridCells_NumParticles[ neighbourZIndex ];
-            
-            if(numRemainingNeighbourParticlesToInteract > 0)
-            {
-              uint neighbourParticleStartIndex = gUniGridCells_ParticleStartIndex[ neighbourZIndex ];
-              uint numNeighbourSimWorkGroups = GET_NUM_SIM_WORK_GROUPS_OF_CELL( numRemainingNeighbourParticlesToInteract ); 
-              for(uint simGroupRunner=0; simGroupRunner < numNeighbourSimWorkGroups; simGroupRunner++ )
-              {       
-     
-     
-                {% block performSPHCalculations %}
-                
-                  //grab all neighbours in particle stride
-                  if(lwiID < numRemainingNeighbourParticlesToInteract)
-                  {
-                    lCurrentNeighbourPositions[ lwiID ] = gPositionsOld[ neighbourParticleStartIndex + lwiID ];
-                    lCurrentNeighbourParticleObjectInfos[ lwiID ] = gParticleObjectInfos[ neighbourParticleStartIndex + lwiID ];
-                  }//end if(lwiID < numRemainingNeighbourParticlesToInteract)  
-                  barrier(CLK_LOCAL_MEM_FENCE);
+            uint neighbourParticleStartIndex = gUniGridCells_ParticleStartIndex[ neighbourZIndex ];
+            uint numNeighbourSimWorkGroups = GET_NUM_SIM_WORK_GROUPS_OF_CELL( numRemainingNeighbourParticlesToInteract ); 
+            for(uint simGroupRunner=0; simGroupRunner < numNeighbourSimWorkGroups; simGroupRunner++ )
+            {       
+              //grab all neighbours in particle stride
+              if(lwiID < numRemainingNeighbourParticlesToInteract)
+              {
+                lCurrentNeighbourPositions[ lwiID ] = gPositionsOld[ neighbourParticleStartIndex + lwiID ];
+                lCurrentNeighbourParticleObjectIDs[ lwiID ] = GET_OBJECT_ID( gParticleObjectInfos[ neighbourParticleStartIndex + lwiID ] );
+                 
                   
-                  //for each particle in own simulation group in parallel do...
-                  if(lwiID < numParticlesInOwnGroup)
-                  {    
-                    //accum SPH calculations
-                    for(uint interactingLocalIndex=0; interactingLocalIndex < numRemainingNeighbourParticlesToInteract; interactingLocalIndex++ )
-                    {
+{% block kernelDependentNeighbourParticleAttribsDownload %} 
+  {% comment %}
+    pattern:  lCurrentNeighbour<attribute name plural>[ lwiID ] = g<attribute name singular>Old[ neighbourParticleStartIndex + lwiID ]; 
+  {% endcomment %}
+                  
+
                       
-                    }
-                  }
-               
-                {% endblock performSPHCalculations %}
-     
-     
+{% endblock kernelDependentNeighbourParticleAttribsDownload %}                 
+                 
+                 
+              } //end if(lwiID < numRemainingNeighbourParticlesToInteract)  
+              barrier(CLK_LOCAL_MEM_FENCE);
+                  
+              //for each particle in own simulation group in parallel do...
+              if(lwiID < numParticlesInOwnGroup)
+              {    
+                //accum SPH calculations
+                for(uint interactingLocalIndex=0; interactingLocalIndex < numRemainingNeighbourParticlesToInteract; interactingLocalIndex++ )
+                {
+                    
+                    
+{% block performSPHCalculations %}
+//----------------------------------------------------------------------------------------------------
+  {% comment %}
+    the core of the physics simulation: accumulate all relevant values (density, pressure force, viscosity force etc ...)
+  {% endcomment %}
+  
+//----------------------------------------------------------------------------------------------------
+{% endblock performSPHCalculations %}
+
+
+                }  //end accum SPH calculations
                 neighbourParticleStartIndex += NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP;
                 numRemainingNeighbourParticlesToInteract -= NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP
               }  //end for simGroupRunner     
             }//endif(numRemainingNeighbourParticlesToInteract >0)
+            posInNeighbour.z += cSimParams->uniGridCellSizes.z;
           }  //end for z
+          posInNeighbour.y += cSimParams->uniGridCellSizes.y;
         }  //end for y
-      } //end for z
+        posInNeighbour.x += cSimParams->uniGridCellSizes.x;
+      } //end for x
 
      
-     {% block processSPHResults %}
+{% block processSPHResults %}
       
-      TODO CONTINUE
       
-     {% endblock processSPHResults %}
+{% endblock processSPHResults %}
      
      
-     {% block uploadUpdatedParticleAttribs %}
+     
+{% block uploadUpdatedParticleAttribs %}
+  {% comment %}
+    pattern:  g<attribute name plural>New[ lwiID ] = own<attribute name singular>;
+  {% endcomment %}
       
-      TODO CONTINUE
-      
-     {% endblock uploadUpdatedParticleAttribs %}
+
+{% endblock uploadUpdatedParticleAttribs %}
+  
   
   }
   

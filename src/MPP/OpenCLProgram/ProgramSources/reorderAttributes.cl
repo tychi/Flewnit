@@ -15,8 +15,12 @@
     __global float4* gPositionsOld,
     __global float4* gPositionsReordered,
     
-    __global float4* gVelocitiesOld,
-    __global float4* gVelocitiesReordered,
+    //__global float4* gVelocitiesOld,
+    //__global float4* gVelocitiesReordered,
+    __global float4* gCorrectedVelocitiesOld,
+    __global float4* gCorrectedVelocitiesReordered, 
+    __global float4* gPredictedVelocitiesOld, 
+    __global float4* gPredictedVelocitiesReordered, 
     
     __global uint* gParticleObjectInfosOld,
     __global uint* gParticleObjectInfosReordered,
@@ -29,10 +33,12 @@
     uint gwiID = get_global_id(0);
     uint oldIndex = gReorderedOldIndices[ get_global_id(0) ];
     
-    gPositionsReordered[ gwiID ] =  gPositionsOld[ oldIndex  ];
-    gVelocitiesReordered[ gwiID ] =  gVelocitiesOld[ oldIndex  ];
+    gPositionsReordered[ gwiID ] =  gPositionsOld[ oldIndex ];
     
-    uint particleObjectInfo =  gParticleObjectInfosOld[ oldIndex  ];
+    gCorrectedVelocitiesReordered[ gwiID ] =  gCorrectedVelocitiesOld[ oldIndex ];
+    gPredictedVelocitiesReordered[ gwiID ] =  gPredictedVelocitiesOld[ oldIndex ];
+    
+    uint particleObjectInfo =  gParticleObjectInfosOld[ oldIndex ];
     gParticleObjectInfosReordered[ gwiID ] = particleObjectInfo;
 
     {% if rigidBodySimulation %}
