@@ -43,9 +43,11 @@
       
       __constant SimulationParameters* cSimParams,
       __constant uint* gridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation
-      //RIGID_BODY_OFFSET + numRigidBodies elements; contains masses of the fluid particles, then the masses of the respective
-      //rigid bodies; this way, we can grab the masses without any branching :).      
-      __constant float* cObjectMassesPerParticle, 
+      //RIGID_BODY_OFFSET + numRigidBodies elements; contains (amongs other properties) the masses of the fluid particles, 
+      //then the masses of the respective rigid bodies; this way, we can grab the masses without any branching :).      
+      //__constant float* cObjectMassesPerParticle, 
+      __constant ObjectGenericFeatures* cObjectGenericFeatures,
+      __constant UserForceControlPoint* cUserForceControlPoints, //cSimParams->numUserForceControlPoints elements
       
 {% endblock constantBufferKernelArgs %}
     
@@ -71,12 +73,20 @@
       __global float4* gPositionsOld,
       __global float4* gPositionsNew,
       
+      __global uint* gZindicesNew,
+      
       //let's make the argument list ready for the risky optimization of "deferred densitiy usage" to save the density kernel invocation,
       //memory transfer and control flow overhead;
-      __global float* gDensitiesOld,
-      __global float* gDensitiesNew,
+      //TODO maybe store  representing volume instead of densitiy here to compatc the SPH-term mass/density (mass(mass/volume)) to volume;
+      //this would have the drawback of one more division for pressure computation and one more multiplication for acceleration computation
+      //and one more division per particle densityx computation;
+      //the net win, assumindg that viscosity is computed, would be that viscosity computation would have one less division per SPH computation;
+      //for pressure compuatation, pros and cons cancel each other nearly out (cons slightly prevail)
+      //--> check rather later, don't obfuscate the application logic too much for now 
+      __global float* gDensitiesOld, //read
+      __global float* gDensitiesNew, //maybe write when doing "deferred density" optimization; else unused;
       
-      __global float4* gCorrectedVelocitiesOld,  //corrected velocity values frome the last step read for integration of both
+      __global float4* gCorrectedVelocitiesOld,  //corrected velocity values from the last step read for integration of both
                                                  //the position and the new corrected velocity;
       __global float4* gCorrectedVelocitiesNew,  //velocity values corrected after force calculation with predicted velocities 
                                                  //(correctedVelocityNew = correctedVelocityOld 
@@ -153,7 +163,8 @@
 {% endblock kernelDependentOwnParticleAttribsInit %}
     
         
-    } 
+    }//end if(lwiID < numParticlesInOwnGroup )
+     
     float4 posInNeighbour = ownPosition - cSimParams->uniGridCellSizes;
     //iterate over all 3^3=27 neigbour voxels, includin the own one:
     #pragma unroll
@@ -227,23 +238,32 @@
         }  //end for y
         posInNeighbour.x += cSimParams->uniGridCellSizes.x;
       } //end for x
-
+      
+      if(lwiID < numParticlesInOwnGroup )
+      {
      
 {% block processSPHResults %}
-      
-      
+  {% comment %}
+    evalute SPH results: add force densities together compute collision forces with static geometry, trnasform to acceleration, 
+    add gravity...
+  {% endcomment %}      
 {% endblock processSPHResults %}
-     
-     
-     
+
+{% block integrate %}
+  {% comment %}
+    calculate new positions and velocites from new accelerations and old poistions and velocities;
+  {% endcomment %}          
+{% endblock integrate %}
+
+{% block calcZIndex %}      
+{% endblock calcZIndex %}
+
 {% block uploadUpdatedParticleAttribs %}
   {% comment %}
     pattern:  g<attribute name plural>New[ lwiID ] = own<attribute name singular>;
-  {% endcomment %}
-      
-
+  {% endcomment %} 
 {% endblock uploadUpdatedParticleAttribs %}
-  
-  
+      
+      } //end if(lwiID < numParticlesInOwnGroup )
   }
   

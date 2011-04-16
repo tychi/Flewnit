@@ -1,4 +1,5 @@
   
+  {% extends particleSimulationTemplate.cl %}
   
   {% block documentHeader %}
     /**
@@ -28,15 +29,15 @@
         optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ]; 
     {% endcomment %}
                   
-          float ownDensity;
+    float ownDensity;
         
   {% endblock kernelDependentParticleAttribsMalloc %}
 
 
   {% block kernelDependentOwnParticleAttribsInit %} 
           
-            //init to zero because the SPH calculations accumulate stuff in this variable;
-            ownDensity = 0.0f;
+    //init to zero because the SPH calculations accumulate stuff in this variable;
+    ownDensity = 0.0f;
        
   {% endblock kernelDependentOwnParticleAttribsInit %}
 
@@ -53,8 +54,8 @@
   {% endblock kernelDependentNeighbourParticleAttribsDownload %} 
 
 
-{% block performSPHCalculations %}
-//----------------------------------------------------------------------------------------------------
+  {% block performSPHCalculations %}
+  //----------------------------------------------------------------------------------------------------
                       /* 
                         Compute only SPH-density for fluid particles; Imagine a object consisting of Blumb within a Hydrogen cloud:
                         The density of the Hydrogen gas is NOT increased by the proximity of plumb!
@@ -64,47 +65,46 @@
                         yields pressure gradients pointing towards the rigid body for fluid particles slightly further away
                         from the rigid body,  )
                       */
-                      if( ! IS_RIGID_BODY_PARTICLE( lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ) )
+                      if( BELONGS_TO_FLUID( lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ) )
                       {
                         ownDensity +=
                           //mass 
-                          cObjectMassesPerParticle [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ]
+                          cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].mass
                           //* kernel
                           * poly6( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams )
                           ;
                       }
                     }
-//----------------------------------------------------------------------------------------------------
-{% endblock performSPHCalculations %}
-
+  //----------------------------------------------------------------------------------------------------
+  {% endblock performSPHCalculations %}
 
 
     
-    
-    
-    {% block processSPHResults %}
+  {% block processSPHResults %}
       
       /*empty for density caculations*/
       
-    {% endblock processSPHResults %}
+  {% endblock processSPHResults %}
      
      
      
-    {% block uploadUpdatedParticleAttribs %}
-      {% comment %}
-        pattern:  g<attribute name plural>New[ lwiID ] = own<attribute name singular>;
-      {% endcomment %}
+  {% block uploadUpdatedParticleAttribs %}
+    {% comment %}
+      pattern:  g<attribute name plural>New[ lwiID ] = own<attribute name singular>;
+    {% endcomment %}
       
-      if( ! IS_RIGID_BODY_PARTICLE( ownParticleObjectID  ) )
-      {
-        gDensitiesNew[ ownGlobalAttributeIndex ] = ownDensity;      
-      }
-      else
-      {
-        gDensitiesNew[ ownGlobalAttributeIndex ] =
-          cObjectMassesPerParticle[ ownParticleObjectID ]
-          //see member definition of the SimulationParameters structure for further info on this value 
-          * cSimParams->inverseRigidBodyParticleizationVoxelVolume ;
-      }
+    if( BELONGS_TO_FLUID( ownParticleObjectID  ) )
+    {
+      gDensitiesNew[ ownGlobalAttributeIndex ] = ownDensity;      
+    }
+    else
+    {
+      //must be rigid body particle;
+      gDensitiesNew[ ownGlobalAttributeIndex ] =  cObjectGenericFeatures[ ownParticleObjectID ].restDensity;
+      //see member definition of the SimulationParameters structure for further info on this value 
+      //* cSimParams->inverseRigidBodyParticleizationVoxelVolume ;
+    }
 
-    {% endblock uploadUpdatedParticleAttribs %}
+  {% endblock uploadUpdatedParticleAttribs %}
+  
+  

@@ -15,5 +15,19 @@
       )
       {
       
+      
+      
+      
+      
+                            //float lengthAngVel= length(angularVelocity);
+                      //float4 angVelNorm= angularVelocity/lengthAngVel;
+                      //float rotationAngleRadians = lengthAngVel * timeStep;
+                      //transformationMatrix= constructTransfPormationMatrix(
+                      //  centreOfMassPosNew, normalize(angularVelocity), length(angularVelocity)*timeStep );
+                      //directionNew,  = transformationMatrix * directionOld;
+                      //float4 particleRealitveWorldPosOld =  (float4)((particleWorldPosOld.xyz - centreOfMassPosOld.xyz), 1.0f);
+                      //particleWorldposNew = transformationMatrix * ( particleRealitveWorldPosOld );
+      
+      
       }
 

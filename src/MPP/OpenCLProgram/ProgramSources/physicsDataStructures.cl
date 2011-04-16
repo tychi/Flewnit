@@ -34,9 +34,54 @@
 
   typedef struct 
   {
-    float4 min;
-    float4 max;
+    float4 minPos;
+    float4 maxPos;
   } AABB;
+  
+  
+  typedef struct 
+  {
+    float massPerParticle;
+    float restDensity; //is always the density for rigid bodies, 
+                       //is rest density for pressure compuation to numerically stablelize the pressure gradient compuation;
+    float gasConstant; //for pressure computation, (physically plausible only for fluids, 
+                       //but used to calculate pressure for ANY particle during simulation; this "dirty" way, one can adjust the repulsion force
+                       //for rigid bodies seperately);
+    float viscosity;   //only relevant for fluids
+  } ObjectGenericFeatures;
+  
+  
+  typedef struct
+  {
+  
+    float4 forceOriginWorldPos; //where is  the control point?
+     
+    float influenceRadius; //how big shall be the region where the force has influence? 
+                            //(we don't wanna attract objects over an infinite distance
+    float squaredInfluenceRadius;
+    float inverseSquaredInfluenceRadius;
+     
+    float intensity; //positive: push away; negative: pull towards origin;
+     
+     
+    uint targetObjectID; //object which is influence by the force; a certain rigid body or a certain fluid object; 
+     
+     //uint alignmentPad00;
+     
+     //following applies only to rigid bodies: a control point has an "appliance point" 
+     //(german: Angriffspunkt; don't know exact translation) and a radius around this appliance point;
+     //This way, we can precisely control position an orientation of rigid bodies;#
+     //Note: I always keep in mind that I'd love to implement a canoue-paddle simulation in the long term;
+     //      We could control the paddle with four control points; Those control points are set according to
+     //       The WiiMote's accelerations sensors; 
+     //float4 forceApplianceRelativePos;
+     //float forceApplianceRadius;
+     
+     uint alignmentPad10; uint alignmentPad11; uint alignmentPad12;
+     //structure implicitely aligned to 64 bytes;
+     
+  } UserForceControlPoint;
+  
  
   /**
     SimulationParameters structure; Passed via a buffer to __constant memory at every physics kernel invocation;
@@ -47,32 +92,25 @@
     AABB simulationDomainBorders; //as long i have no triangle-collision-mesh functionality, i have to keep the particles
                                   //in a lame box ;(
 
-    float4 userForcePos;
-    float4 userForce;
+    float4 gravityAcceleration; //gravity is an acceleration, yields different forces depending on mass, hence must be passed as gravity;
+    
 
-    float userForceRadius;
-
-    float penaltyForceSpringConstant;
-    float penaltyForceDamperConstant;
-    
-    float restDensity; //stablelize the pressure gradient simulation;
-    
-    //float padForce0; //stuff to enforce 16-byte alignment of following vector types independent from compiler features
-    
     //{ uniform grid params
-    
     //calced by app to save offset calculations: worldPositionCenter - (( (float)(numCellsPerDimension) )*0.5f) * uniGridCellSizes
     float4 uniGridWorldPosLowerCorner;
     float4 uniGridCellSizes;
     float4 inverseUniGridCellSizes;
-    
     //}
     
-    float4 gravityAcceleration;
+    uint numUserForceControlPoints;
+    
 
-
+    float penaltyForceSpringConstant;
+    float penaltyForceDamperConstant;    
+    
     
     float timestep;
+    float squaredTimestep;
     float inverseTimestep; //needed for velocity prediction;
                            //as this structure is in constant memory, read speed is as fast as register read speed
                            //and hence precomputation is a valid optimization here to replace a costly division by a cheaper multiplication;
@@ -90,6 +128,11 @@
                               //           = massPerParticle/particleizationVoxelVolume
                               //           = massPerParticle*inverseParticleizationVoxelVolume
     
+    
+    //float padForce0; //stuff to enforce 16-byte alignment of following vector types independent from compiler features
+
+
+
     
     //{ 
     //  SPH definitions; refer to "Particle-Based Fluid Simulation for Interactive Applications" by Matthias Mueller et. al.
@@ -117,8 +160,6 @@
 
     //} end SPH definitions
 
-    
-    
     //uint numRigidBodies; //must be power of two
     
   } SimulationParameters;
@@ -183,6 +224,10 @@
   #define RIGID_BODY_OFFSET ( 1 )
   //#define IS_RIGID_BODY_PARTICLE ( particleObjectInfo ) ( ( GET_OBJECT_ID(particleObjectInfo) ) >= RIGID_BODY_OFFSET )                       
   #define IS_RIGID_BODY_PARTICLE ( particleObjectID ) ( ( particleObjectID ) >= RIGID_BODY_OFFSET )                       
+  #define IS_FLUID_PARTICLE ( particleObjectID ) ( ( particleObjectID ) < RIGID_BODY_OFFSET )
+     
+  #define BELONGS_TO_FLUID      ( particleObjectID ) ( ( particleObjectID ) <  RIGID_BODY_OFFSET )
+  #define BELONGS_TO_RIGID_BODY ( particleObjectID ) ( ( particleObjectID ) >= RIGID_BODY_OFFSET )      
  
  //}  end particle object info
  //------------------------------------------------------------------------------------------------------                      
@@ -190,14 +235,29 @@
   
  typedef struct
   {
+    //for a simulation where we need to exact control over a rigid body (e.g. when we want to paddle in the water to move a canoe),
+    //trying this via applying forces to certain points/regions might become quite messy;
+    //therefor,the host know a target position and orientation th rigid body shall converge to;
+    //The host takes the angle between the current direction and the target direction, multiplicates it with a time dependent constant,
+    //and and rotates the current direction and current up vector around the cross product of the current and target correction by the time dependent 
+    //angle portion;
+    //same procuedure is done with the rotated dir and up for the up-vector;
+    //the final resulting "interpolated target dir and up" are put intor a rotation matrix; target position is also 
+    //interpolated and put into the matrix;
+    //accumulating this matrix in the cl kernel with the "physics dependent on the fly calculated"matrix yields the final transformations matrix,
+    //with which are all relatvie RB-particles are transformed.
+    float16 correctiveTransformationMatrix; 
+    
     //direction, direction and upVector are read back by the host to construct a transformation matrix
     //to update both the scene graph transform ogf the rigid body object and to provide a transform for the glsl vertex shader;
     float4 centreOfMassPosition;
     
-    float4 direction; //influenced by angular velocity:
-                      //velocityOfDirectionVector = cross(angularVelocityNew, directionOld);
-                      //directionNew = normalize(directionOld + velocityOfDirectionVector* timeStep);
-                      
+    float4 direction; //rotated around angular velocity by  length(angularVelocity)*timeStep radians;
+                      //transformationMatrix= constructTransfPormationMatrix(
+                      //  centreOfMassPosNew, normalize(angularVelocity), length(angularVelocity)*timeStep );
+                      //directionNew,  = transformationMatrix * directionOld;
+                      //n.b.:(applxy same transform on all old particle relative values);
+
     float4 upVector;  //influenced by angular velocity;
                       //caclulation is the same as for direction;
     
