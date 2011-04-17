@@ -305,6 +305,7 @@
 
 
   {% block calcZIndex %}  
+    //TODO check if an "if(BELONGS_TO_FLUID(particleObjectID))" performs better or worse;
     uint zIndexNew = getZIndex(ownPositionNew, cSimParams, cGridPosToZIndexLookupTable);
   {% endblock calcZIndex %}
      

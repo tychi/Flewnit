@@ -1,4 +1,8 @@
 /*
+
+  physicsDataStructures.cl
+
+  
   This source file is both included by the C++ Application and by the OpenCL kernels;
   Hence, some conditional compilation must be done to mask incompatible code segments;
   
@@ -24,8 +28,7 @@
   
 #else //FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 
-  {% include common.cl %}
-  {% include simulationDefinitions.cl %}
+
   
 #endif //FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
   
@@ -48,6 +51,7 @@
                        //but used to calculate pressure for ANY particle during simulation; this "dirty" way, one can adjust the repulsion force
                        //for rigid bodies seperately);
     float viscosity;   //only relevant for fluids
+    
   } ObjectGenericFeatures;
   
   
@@ -55,9 +59,10 @@
   {
   
     float4 forceOriginWorldPos; //where is  the control point?
-     
-    float influenceRadius; //how big shall be the region where the force has influence? 
-                            //(we don't wanna attract objects over an infinite distance
+    
+    //how big shall be the region where the force has influence? 
+    //(we don't wanna attract objects over an infinite distance 
+    //float influenceRadius;  <-- actually not even needed
     float squaredInfluenceRadius;
     float inverseSquaredInfluenceRadius;
      
@@ -66,21 +71,72 @@
      
     uint targetObjectID; //object which is influence by the force; a certain rigid body or a certain fluid object; 
      
-     //uint alignmentPad00;
-     
-     //following applies only to rigid bodies: a control point has an "appliance point" 
-     //(german: Angriffspunkt; don't know exact translation) and a radius around this appliance point;
-     //This way, we can precisely control position an orientation of rigid bodies;#
-     //Note: I always keep in mind that I'd love to implement a canoue-paddle simulation in the long term;
-     //      We could control the paddle with four control points; Those control points are set according to
-     //       The WiiMote's accelerations sensors; 
-     //float4 forceApplianceRelativePos;
-     //float forceApplianceRadius;
-     
-     uint alignmentPad10; uint alignmentPad11; uint alignmentPad12;
-     //structure implicitely aligned to 64 bytes;
+
+     //structure implicitely aligned to 2*(4*4)=32 bytes;
      
   } UserForceControlPoint;
+  
+  
+  
+   typedef struct
+  {
+    //for a simulation where we need to exact control over a rigid body (e.g. when we want to paddle in the water to move a canoe),
+    //trying this via applying forces to certain points/regions might become quite messy;
+    //therefor,the host know a target position and orientation th rigid body shall converge to;
+    //The host takes the angle between the current direction and the target direction, multiplicates it with a time dependent constant,
+    //and and rotates the current direction and current up vector around the cross product of the current and target correction by the time dependent 
+    //angle portion;
+    //same procuedure is done with the rotated dir and up for the up-vector;
+    //the final resulting "interpolated target dir and up" are put intor a rotation matrix; target position is also 
+    //interpolated and put into the matrix;
+    //accumulating this matrix in the cl kernel with the "physics dependent on the fly calculated"matrix yields the final transformations matrix,
+    //with which are all relatvie RB-particles are transformed.
+    float16 correctiveTransformationMatrix; 
+    
+    //direction, direction and upVector are read back by the host to construct a transformation matrix
+    //to update both the scene graph transform ogf the rigid body object and to provide a transform for the glsl vertex shader;
+    float4 centreOfMassPosition;
+    
+    float4 direction; //rotated around angular velocity by  length(angularVelocity)*timeStep radians;
+                      //transformationMatrix= constructTransfPormationMatrix(
+                      //  centreOfMassPosNew, normalize(angularVelocity), length(angularVelocity)*timeStep );
+                      //directionNew,  = transformationMatrix * directionOld;
+                      //n.b.:(applxy same transform on all old particle relative values);
+
+    float4 upVector;  //influenced by angular velocity;
+                      //caclulation is the same as for direction;
+    
+    float4 linearVelocity;
+    float4 angularVelocity;
+    
+    
+    float massPerParticle;    //will also be in gObjectParticleMasses
+    float densityPerParticle; //precomputed by host; doesn't depend on particle count; 
+                              //some kind of massPerParticle*(numParticleizationVoxels/rigidBodyAABBVolume)
+                              //           = massPerParticle/(rigidBodyAABBVolume / numParticleizationVoxels)
+                              //           = massPerParticle/particleizationVoxelVolume
+                              //           = massPerParticle*inverseParticleizationVoxelVolume
+                              
+    uint numContainingParticles;
+    float inverseNumContainingParticles;
+    
+    //1/(sum( length(centreOfMassRelParticlePos)^2 )); Needed for angular vel. approximation; precomputed by host
+    float inverseTotalSquaredDistancesFromCenterOfMass; 
+
+    //uint ID; unneeded as implcitely encoded in position in gRigidBodies; 
+             //start index in gRigidBodyIndices = ID*;
+             //gRigidBodyIndices holds for all particles belonging to a rigid body (and NOT the fluid)
+             //a list of indices where a particle is in the buffers for physical attributes;
+             //due to movement an z-Index curve, the particles belonging to a distinct rigid body
+             //are not guaranteed to be adjacent in the physical attribute buffer;
+             //gRigidBodyIndices provides tracking functionality to directly acces any particle needed for rigid body 
+             //computations;
+             
+    //TODO adjust padding to align to 128 bytes 
+        
+  } RigidBody;
+  
+  
   
  
   /**
@@ -233,58 +289,9 @@
  //------------------------------------------------------------------------------------------------------                      
    
   
- typedef struct
-  {
-    //for a simulation where we need to exact control over a rigid body (e.g. when we want to paddle in the water to move a canoe),
-    //trying this via applying forces to certain points/regions might become quite messy;
-    //therefor,the host know a target position and orientation th rigid body shall converge to;
-    //The host takes the angle between the current direction and the target direction, multiplicates it with a time dependent constant,
-    //and and rotates the current direction and current up vector around the cross product of the current and target correction by the time dependent 
-    //angle portion;
-    //same procuedure is done with the rotated dir and up for the up-vector;
-    //the final resulting "interpolated target dir and up" are put intor a rotation matrix; target position is also 
-    //interpolated and put into the matrix;
-    //accumulating this matrix in the cl kernel with the "physics dependent on the fly calculated"matrix yields the final transformations matrix,
-    //with which are all relatvie RB-particles are transformed.
-    float16 correctiveTransformationMatrix; 
-    
-    //direction, direction and upVector are read back by the host to construct a transformation matrix
-    //to update both the scene graph transform ogf the rigid body object and to provide a transform for the glsl vertex shader;
-    float4 centreOfMassPosition;
-    
-    float4 direction; //rotated around angular velocity by  length(angularVelocity)*timeStep radians;
-                      //transformationMatrix= constructTransfPormationMatrix(
-                      //  centreOfMassPosNew, normalize(angularVelocity), length(angularVelocity)*timeStep );
-                      //directionNew,  = transformationMatrix * directionOld;
-                      //n.b.:(applxy same transform on all old particle relative values);
 
-    float4 upVector;  //influenced by angular velocity;
-                      //caclulation is the same as for direction;
-    
-    float4 linearvelocity;
-    float4 angularVelocity;
-    
-    uint numContainingParticles;
-    
-    float massPerParticle;    //will also be in gObjectParticleMasses
-    float densityPerParticle; //precomputed by host; doesn't depend on particle count; 
-                              //some kind of massPerParticle*(numParticleizationVoxels/rigidBodyAABBVolume)
-                              //           = massPerParticle/(rigidBodyAABBVolume / numParticleizationVoxels)
-                              //           = massPerParticle/particleizationVoxelVolume
-                              //           = massPerParticle*inverseParticleizationVoxelVolume
-    
-    float inverseTotalSquaredDistancesFromCenterOfMass; //needed for angular vel. approximation; precomputed by host
-
-    //uint ID; unneeded as implcitely encoded in position in gRigidBodies; 
-             //start index in gRigidBodyIndices = ID*;
-             //gRigidBodyIndices holds for all particles belonging to a rigid body (and NOT the fluid)
-             //a list of indices where a particle is in the buffers for physical attributes;
-             //due to movement an z-Index curve, the particles belonging to a distinct rigid body
-             //are not guaranteed to be adjacent in the physical attribute buffer;
-             //gRigidBodyIndices provides tracking functionality to directly acces any particle needed for rigid body 
-             //computations;
-        
-  } RigidBody;
+  
+  
   
   /**
     For time pressure reasons, i have to skip consideration about triangle data structures and related computations;

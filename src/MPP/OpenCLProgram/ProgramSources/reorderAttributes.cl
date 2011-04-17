@@ -7,7 +7,7 @@
                    Cons: modularization broken due to mix up of generic sorting and physics simulation specific code                  
   */
   
-  {% include physicsDataStructures.cl %}
+  {% include "physicsDataStructures.cl" %}
   
   __kernel void kernel_reorderPhysicalAttributes(
     __global uint* gReorderedOldIndices,

@@ -1,9 +1,3 @@
-#pragma OPENCL EXTENSION cl_nv_pragma_unroll : enable
-#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
-//pragma OPENCL EXTENSION cl_khr_global_int32_extended_atomics : enable
-#pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics : enable
-//pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics : enable
-
 
 /*
 
@@ -34,11 +28,17 @@
   
 */
 
+#pragma OPENCL EXTENSION cl_nv_pragma_unroll : enable
+#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
+//pragma OPENCL EXTENSION cl_khr_global_int32_extended_atomics : enable
+#pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics : enable
+//pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics : enable
+
+
+
   //####################################################################################
   //-------------------------------------------------------------------------------------
-  {% include common.cl %}
-  {% include bankConflictsAvoidance.cl %}   
-  {% include scan.cl %}
+  {% include "scan.cl" %}
   //-------------------------------------------------------------------------------------
   //####################################################################################
   
@@ -73,14 +73,14 @@
                                                                                                                                                                             
   //-------------------------------------------------------------------------------------
   //hardware dependent memory amounts determine how many radix counters a work group can own
-    {% ifequal nvidiaComputeCapabilityMajor 2 %}
+    {% ifequal nvidiaComputeCapabilityMajor "2" %}
       //take 32 kB of 48kB available
       #define LOCAL_MEM_FOR_RADIX_COUNTERS (32768)
-    {% endifequal nvidiaComputeCapabilityMajor 2 %}
-    {% ifequal nvidiaComputeCapabilityMajor 1 %}
+    {% endifequal %}
+    {% ifequal nvidiaComputeCapabilityMajor "1" %}
       //take 8kB of 16kB available
       #define LOCAL_MEM_FOR_RADIX_COUNTERS (8192)
-    {% endifequal nvidiaComputeCapabilityMajor 1 %}
+    {% endifequal %}
     //for fermi architectures, this should be 2^15 Bytes / (2^2 BytesPerCounter * 2^6 radix counter arrays) = 2^7 = 128
     //for GT200 architectures, this should be 2^13 Bytes / (2^2 BytesPerCounter * 2^6 radix counter arrays) = 2^5 =  32
     #define NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ( LOCAL_MEM_FOR_RADIX_COUNTERS / ( 4 * NUM_RADICES_PER_PASS ) )
@@ -153,14 +153,17 @@
                                     //              128 byte cache lines where we need only NUM_RADICES_PER_PASS*4 byte is not that likely to happen 
                                     //              during simulation
                                     //In phase 3, it serves as "global" offset for the own radix 
-
-    __local uint* lRadixCounters,   //NUM_RADICES_PER_PASS * PADDED_STRIDE( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP )  elements; 
-                                    //(e.g. 64*(128+4)=8448 elements for fermi. 64*(32+2)=2176 elements for GT200 );
-                                    //is actually an array of NUM_RADICES_PER_PASS padded radix counter arrays;
     
     uint numPass
   )
   {
+    //(e.g. 64*(128+4)=8448 elements for fermi. 64*(32+2)=2176 elements for GT200 );
+    //is logically an array of NUM_RADICES_PER_PASS padded radix counter arrays;
+    __local uint lRadixCounters[ NUM_RADICES_PER_PASS * PADDED_STRIDE( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) ]; 
+                                   
+  
+    __local uint lTotalRadixSum;
+  
     uint lwiID = get_local_id(0); // short for "local work item ID"
     uint localPaddedCounterIndex = lwiID / NUM_KEY_ELEMENTS_PER_RADIX_COUNTER;
     localPaddedCounterIndex += CONFLICT_FREE_OFFSET(localPaddedCounterIndex );
@@ -214,10 +217,11 @@
         + ( lwiID << 1 ) / ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ); 
 
       
-      uint totalRadixSum  = 
         scanExclusive(
           //calculate the pointer to the first element in the "array of radix counter arrays"
           lRadixCounters + radixToScan * PADDED_STRIDE( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  ), 
+          //grab the total sum
+          & lTotalRadixSum,
           //as many elements to scan as we have radix counter elements per radix
           NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP, 
           //communicate the stride [0.. half size of one radix counter array] to the scan function so that it can operate
@@ -234,7 +238,7 @@
           radixToScan * NUM_TABULATE_WORK_GROUPS
           //entry in counter array corresponds to work group
           + get_group_id(0)
-        ] = totalRadixSum;
+        ] = lTotalRadixSum;
       }
       
       //write the scan results to global memory: as one work item scans two counters, it also has to write out two of them
@@ -326,27 +330,30 @@
                                     // *** (worst case: size 32 for GTX280 with its 30 multiprocessors,
                                     //Fermi devices have at most 16 multiprocessors (GTX580), instead 4 to 6 times the 
                                     //execution units count per Multiprocessor)
-    
-    __local uint* lSumsOfLocalRadixCounts,   // PADDED_STRIDE( NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP ) elements,
-                                    //so that one padded array to scan fits in;
-                                    // example size (fermi) :  512 *(1+1/32) =  528 elements
-                                    // example size (GT200) : 1024 *(1+1/16) = 1088 elements
-                                    
-   __local uint*  lSumsOfGlobalRadixCounts,  //at least NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP+1 elements (e.g. 33 for Geforce GT435M);
-                                    //though we need to comupte and store only NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP, in order
-                                    //to keep control flow and business logic simple (i.e. to not corrupt the structure of the
-                                    //_ex_clusive scan), one value past the actual array length will be written; this saves a
-                                    //costly if-statement within the scan loop.
-                                    //A _sequential_ scan will be performed, as the different radix counter arrays are scanned
-                                    //consecutively; one work item has to grab the total sum of each global radix scan,
-                                    //add the sums of the previous global radix scans and write the result to the appropriate element
-                                    //in the local array; The final result will be a partial scan on the total radix sums on
-                                    //which one work group has worked on. (The final scan will be done in phase 3, as global synch is needed)
-                                    //Note: because of the sequential scan, this array needs no padding (besides the one additinal element), 
-                                    //becaus no bank conflicts can occur.  
+   
     uint numPass
   )
   {
+     //One padded array to scan must fit in;
+     // example size (fermi) :  512 *(1+1/32) =  528 elements
+     // example size (GT200) : 1024 *(1+1/16) = 1088 elements
+     __local uint lSumsOfLocalRadixCounts[ PADDED_STRIDE( NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP ) ];
+     
+     // (e.g. 33 elements for Geforce GT435M);
+     //Although we need to comupte and store only NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP, in order
+     //to keep control flow and business logic simple (i.e. to not corrupt the structure of the
+     //_ex_clusive scan), one value past the actual array length will be written; this saves a
+     //costly if-statement within the scan loop.
+     //A _sequential_ scan will be performed, as the different radix counter arrays are scanned
+     //consecutively; one work item has to grab the total sum of each global radix scan,
+     //add the sums of the previous global radix scans and write the result to the appropriate element
+     //in the local array; The final result will be a partial scan on the total radix sums on
+     //which one work group has worked on. (The final scan will be done in phase 3, as global synch is needed)
+     //Note: because of the sequential scan, this array needs no padding (besides the one additinal element), 
+     //becaus no bank conflicts can occur.  
+     __local uint  lSumsOfGlobalRadixCounts[ NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP + 1 ];
+  
+  
     uint lwiID = get_local_id(0); // short for "local work item ID"
     uint groupID = get_group_id(0);
     
@@ -382,9 +389,9 @@
       lSumsOfLocalRadixCounts[ localLowerIndex  ] =   gSumsOfLocalRadixCountsToBeScanned[ globalLowerIndex  ];
       lSumsOfLocalRadixCounts[ localHigherIndex ] =   gSumsOfLocalRadixCountsToBeScanned[ globalHigherIndex ];
       
-      uint totalRadixSum  = 
         scanExclusive(
-          lSumsOfLocalRadixCounts, 
+          lSumsOfLocalRadixCounts,
+          & lTotalRadixSum, 
           //as many elements to scan as we have radix counter elements per radix
           NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP, 
           lwiID
@@ -395,7 +402,7 @@
         uint localIndexSumsOfGlobalRadix = currentRadix - radixStart;
         //sequential scan of the total count of each radix ocurrence;
         lSumsOfGlobalRadixCounts[localIndexSumsOfGlobalRadix + 1 ] = 
-            lSumsOfGlobalRadixCounts[ localIndexSumsOfGlobalRadix ] + totalRadixSum;
+            lSumsOfGlobalRadixCounts[ localIndexSumsOfGlobalRadix ] + lTotalRadixSum;
       }
       
       //write back coalesced to global memory
@@ -474,35 +481,41 @@
                                     // *** (worst case: size 32 for GTX280 with its 30 multiprocessors,
                                     //Fermi devices have at most 16 multiprocessors (GTX580), instead 4 to 6 times the 
                                     //execution units count per Multiprocessor)
-                                    
-    //locally cached keys 'n values because of otherwise uncoalesced global memory access 
-    //due to serialization of scatter and radix counter incrementation                                    
-    __local uint* lKeysToSort,     //PADDED_STRIDE( NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP ) elements; (padding due to interleaved reads)    
-    __local uint* lValueIndices,   //PADDED_STRIDE( NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP ) elements; (padding due to interleaved reads)
-           
-                                    
-    __local uint* lLocallyScannedRadixCounters,  //NUM_RADICES_PER_PASS * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  elements;  
-                                    //(e.g. 64*(128)=8192 elements for fermi. 64*(32)=2048 elements for GT200 );
-                                    //Similar usage as in phase 1;
-                                    //Note that in constrast to phase 1, this buffer needs no padding, because there is no scan to be performed :).
-                                    //Is actually an array of NUM_RADICES_PER_PASS _NON_padded radix counter arrays;
-     //NOTE:  because one work group needs only one "column" in gScannedSumsOfLocalRadixCounts and hence every needed element
-     //       must be read uncoalesced, these values won't be explicitely cached to local memory, as this would inevitably mean
-     //       the worst case bandwidth wasting 
-     //         (e.g. 64 elements * 128 bytes per cache line (fermi) = 8192 bytes for (at most) 64 * 4 bytes per value = 256 bytes needed);
-     //       Because of the often mentioned "nearly-sorted" property of the input keys, the radices of adjacent elements are highly
-     //       likely to be the same; So there may not every element in the relevant "column" beeing actually needed, saving bandwitdh;
-     //       A scenario like this _might_ profit from the 16kB L1 cache of the fermi architecture (in case a warp needs the same element
-     //       already grabbed by another warp).
-    __local uint*  lPartiallyScannedSumsOfGlobalRadixCounts,  //NUM_RADICES_PER_PASS elements;
-                                    //copy of gPartiallyScannedSumsOfGlobalRadixCounts
-    __local uint* lSumsOfPartialScansOfSumsOfGlobalRadixCounts, //PADDED_STRIDE(NUM_GLOBAL_SCAN_WORK_GROUPS) elements, e.g. 2+0=2 for GT435M
-                                    //copy of gSumsOfPartialScansOfSumsOfGlobalRadixCounts, so that it can be scanned;
-                              
-                                    
+                                                                
     uint numPass
   )
   {
+    __local uint lDummyScanTotalSum; //unused, but checking for a NULL pointer is too costly; let's pass this to scanExclusive();
+    
+    //locally cached keys 'n values because of otherwise uncoalesced global memory access 
+    //due to serialization of scatter and radix counter incrementation                                    
+    __local uint lKeysToSort  [ PADDED_STRIDE( NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP ) ]; //padding due to interleaved reads
+    __local uint lValueIndices[ PADDED_STRIDE( NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP ) ]; //padding due to interleaved reads
+           
+                           
+    //Similar usage as in phase 1;
+    //Note that in constrast to phase 1, this buffer needs no padding, because there is no scan to be performed :).
+    //Is logically an array of NUM_RADICES_PER_PASS _NON_padded radix counter arrays;
+    //(has e.g. 64*(128)=8192 elements for fermi. 64*(32)=2048 elements for GT200 );
+    //NOTE:  because one work group needs only one "column" in gScannedSumsOfLocalRadixCounts and hence every needed element
+    //       must be read uncoalesced, these values won't be explicitely cached to local memory, as this would inevitably mean
+    //       the worst case bandwidth wasting 
+    //         (e.g. 64 elements * 128 bytes per cache line (fermi) = 8192 bytes for (at most) 64 * 4 bytes per value = 256 bytes needed);
+    //       Because of the often mentioned "nearly-sorted" property of the input keys, the radices of adjacent elements are highly
+    //       likely to be the same; So there may not every element in the relevant "column" beeing actually needed, saving bandwitdh;
+    //       A scenario like this _might_ profit from the 16kB L1 cache of the fermi architecture (in case a warp needs the same element
+    //       already grabbed by another warp).
+    __local uint lLocallyScannedRadixCounters[ NUM_RADICES_PER_PASS * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ];
+    
+    //copy of gPartiallyScannedSumsOfGlobalRadixCountsb because of the NUM_KEY_ELEMENTS_PER_RADIX_COUNTER reads
+    __local uint lPartiallyScannedSumsOfGlobalRadixCounts[ NUM_RADICES_PER_PASS ];
+    
+    // e.g. 2+0=2 elements for GT435M
+    //copy of gSumsOfPartialScansOfSumsOfGlobalRadixCounts, so that it can be scanned;
+    __local uint lSumsOfPartialScansOfSumsOfGlobalRadixCounts[ PADDED_STRIDE( NUM_GLOBAL_SCAN_WORK_GROUPS ) ];
+    
+    
+  
     uint lwiID = get_local_id(0); // short for "local work item ID"
     uint gwiID = get_global_id(0); // short for "global work item ID"
     uint groupID =  get_group_id(0);
@@ -590,7 +603,7 @@
     #if NUM_GLOBAL_SCAN_WORK_GROUPS > 1
       if( lwiID < (NUM_GLOBAL_SCAN_WORK_GROUPS/2) )
       {
-        scanExclusive(lSumsOfPartialScansOfSumsOfGlobalRadixCounts,NUM_GLOBAL_SCAN_WORK_GROUPS, lwiID );
+        scanExclusive(lSumsOfPartialScansOfSumsOfGlobalRadixCounts, & lDummyScanTotalSum, NUM_GLOBAL_SCAN_WORK_GROUPS, lwiID );
       }
     #else
       if( lwiID == 0 )

@@ -22,8 +22,8 @@
 
 
 {% block inclusions %}
-  {% include physicsDataStructures.cl %}
-  {% include physicsCommonFunctions.cl %}
+  {% include "physicsDataStructures.cl" %}
+  {% include "physicsCommonFunctions.cl" %}
 {% endblock inclusions %}
 
 

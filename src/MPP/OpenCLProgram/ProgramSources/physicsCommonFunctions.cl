@@ -2,7 +2,8 @@
 #ifndef FLEWNIT_CL_PROGRAMS_PHYSICS_COMMON_FUNCTIONS_GUARD
 #define FLEWNIT_CL_PROGRAMS_PHYSICS_COMMON_FUNCTIONS_GUARD
 
-  {% include physicsDataStructures.cl %}
+  {% include "common.cl" %}
+  {% include "physicsDataStructures.cl" %}
   
 
   uint getZIndex(

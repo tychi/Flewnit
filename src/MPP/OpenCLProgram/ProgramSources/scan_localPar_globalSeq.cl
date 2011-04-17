@@ -3,8 +3,8 @@
   /**
     Generic template for the work efficient an further optimized parallel prefix sum on an array of values generated
     by tabluation of an input array;
-    Will be specialized by compactAndSplitUniformGrid.cl to perform a stream compatction on the uniform grid
-    to throw out empty cells;
+    Will be specialized by compactAndSplitUniformGrid.cl to perform a stream compaction on the uniform grid
+    to throw out empty cells and split overpopulated cells;
     
     There are many structural and algorithmical parallels to radix Sort.
     Scan is kind of a radix sort with only one "radix" to count, namely the tabulated value.
@@ -42,7 +42,7 @@
 //pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics : enable
 
 
-  {% include scan.cl %}
+  {% include "scan.cl" %}
 
  
   //default: 1024
@@ -59,7 +59,7 @@
   //(stand: april 2011)).
   //This is why in this implementation, it is tried to to several parallel "local scans" sequentially and accumulate the respective total
   //sums to yield a "partial global scan";
-  //This way, we save the "global scan phase" and reduce the kernel invoactions per stream compatction from 3 to 2 :).
+  //This way, we save the "global scan phase" and reduce the kernel invoactions per stream compaction from 3 to 2 :).
   //default values:
   // Geforce GT  435 M: 128/ 2=64
   // Geforce GTX 280  : 128/32= 4
@@ -91,6 +91,8 @@
     //one more item for the total sum; keeps sequential scan on global elements simpler;
     __local uint lPartiallyGloballyScannedTabulatedValues [ NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY + 1 ];
     
+    __local uint lTotalSumOfLocalScan;
+    
     uint lwiID = get_local_id(0); // short for "local work item ID"
     uint gwiID = get_global_id(0); // short for "global work item ID"
     uint groupID =  get_group_id(0);
@@ -113,7 +115,6 @@
                 //actually: +(NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP/2)
       + lwiID + NUM_WORK_ITEMS_PER_WORK_GROUP ;
       
-    uint totalSumOfLocalScan;
     for(int localScanIntervalRunner = 0 ;  localScanIntervalRunner < NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY;  localScanIntervalRunner++)
     {      
     
@@ -125,8 +126,9 @@
     
 
       //do the local parallel scan, grab the respective total sum
-      totalSumOfLocalScan =  scanExclusive(
+      scanExclusive(
         lLocallyScannedTabulatedValues,
+        & lTotalSumOfLocalScan,
         NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP,
         lwiID );
       
@@ -138,7 +140,7 @@
       {
         //sequential "global scan" on sums of parallel local scans: 
         lPartiallyGloballyScannedTabulatedValues[ localScanIntervalRunner + 1] = 
-          lPartiallyGloballyScannedTabulatedValues[ localScanIntervalRunner ] + totalSumOfLocalScan;
+          lPartiallyGloballyScannedTabulatedValues[ localScanIntervalRunner ] + lTotalSumOfLocalScan;
       }  
       
       globalLowerIndex  +=  NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP;

@@ -15,7 +15,7 @@
 
   {% block specialDefinitions %} 
     
-    {% include simulationDefinitions.cl %}
+    {% include "simulationDefinitions.cl" %}
   
     
     uint tabulate(uint globalIndex,  __global uint* gUniGridCells_ParticleStartIndex, __global uint* gUniGridCells_ParticleEndIndexPlus1)
