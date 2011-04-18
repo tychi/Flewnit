@@ -79,24 +79,30 @@
   
   
    typedef struct
-  {
-    //for a simulation where we need to exact control over a rigid body (e.g. when we want to paddle in the water to move a canoe),
-    //trying this via applying forces to certain points/regions might become quite messy;
-    //therefor,the host know a target position and orientation th rigid body shall converge to;
-    //The host takes the angle between the current direction and the target direction, multiplicates it with a time dependent constant,
-    //and and rotates the current direction and current up vector around the cross product of the current and target correction by the time dependent 
-    //angle portion;
-    //same procuedure is done with the rotated dir and up for the up-vector;
-    //the final resulting "interpolated target dir and up" are put intor a rotation matrix; target position is also 
-    //interpolated and put into the matrix;
-    //accumulating this matrix in the cl kernel with the "physics dependent on the fly calculated"matrix yields the final transformations matrix,
-    //with which are all relatvie RB-particles are transformed.
+  {    
+    //Non-physical hack to control a rigid body without making it to a "total kinetic object"; It is kind of a hybrid this way;
+    //host computes: 
+    //      correctiveTransformationMatrix =
+    //        translateTowardsTargetPos() * rotateTowardsTargetDir() * rotateTowardsTargetUp();
+    //kernel computes: 
+    //      rotationMatrix =  rotationalPart(correctiveTransformationMatrix) * rotate(norm(angVel),length(angVel)*timestep);
+    //      newRBWorldPos = newCentreOfMassPos + translationalPart(correctiveTransformationMatrix);
+    //      particleNewWorldPos = 
+    //        newRBWorldPos +
+    //        (rotationMatrix * particleRelativeOldPos);
+    //      newRBDirection = 
+    //        rotationMatrix * oldRBDirection;
+    //      newRBUp = 
+    //       rotationMatrix * oldRBUp;
+    //The host can then read back the structure and build the final trnasformation matrix for scenegraph and graphics
+    //from centreOfMassPosition, direction and upVector;
     float16 correctiveTransformationMatrix; 
     
     //direction, direction and upVector are read back by the host to construct a transformation matrix
     //to update both the scene graph transform ogf the rigid body object and to provide a transform for the glsl vertex shader;
     float4 centreOfMassPosition;
     
+    //dirction and up vector needed as input to form the orthogonal base 
     float4 direction; //rotated around angular velocity by  length(angularVelocity)*timeStep radians;
                       //transformationMatrix= constructTransfPormationMatrix(
                       //  centreOfMassPosNew, normalize(angularVelocity), length(angularVelocity)*timeStep );
@@ -160,7 +166,6 @@
     
     uint numUserForceControlPoints;
     
-
     float penaltyForceSpringConstant;
     float penaltyForceDamperConstant;    
     
@@ -172,6 +177,7 @@
                            //and hence precomputation is a valid optimization here to replace a costly division by a cheaper multiplication;
                           
     
+    //uint numRigidBodies; //should be power of two
     //float massPerFluidParticle; <-- obsolete, is in __constant float* cObjectMassesPerParticle, index 0
     float inverseRigidBodyParticleizationVoxelVolume;//precomputed by host; needed to get density from mass for rigid boadies;
                               //precondition: The volume represented by a rigid body particle is the same for ALL rigid bodies!
@@ -183,11 +189,6 @@
                               //           = massPerParticle/(rigidBodyAABBVolume / numParticleizationVoxels)
                               //           = massPerParticle/particleizationVoxelVolume
                               //           = massPerParticle*inverseParticleizationVoxelVolume
-    
-    
-    //float padForce0; //stuff to enforce 16-byte alignment of following vector types independent from compiler features
-
-
 
     
     //{ 
@@ -216,7 +217,7 @@
 
     //} end SPH definitions
 
-    //uint numRigidBodies; //must be power of two
+   
     
   } SimulationParameters;
  

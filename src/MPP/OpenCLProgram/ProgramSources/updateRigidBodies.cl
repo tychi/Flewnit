@@ -6,6 +6,8 @@
     Formulas are taken from the Diploma thesis of Thomas Steil, "Efficient Methods for Computational Fluid Dynamics and Interactions",
     §3.2.4 "Rigid bodies in particle system";
     
+    IMPORTANT: pass numArraysToScanInParallel = 9 to grantlee, else not all attributes and dimensions will be summed up
+    
   */
 
   
@@ -16,7 +18,8 @@
   //pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics : enable    
       
     
-   {% include "scan.cl" %}
+  {% include "scan.cl" %}
+  {% include "matrixMath.cl" %}
    
   //hardware dependent memory amounts determine how many radix counters a work group can own
   {% ifequal nvidiaComputeCapabilityMajor "2" %}
@@ -34,18 +37,7 @@
   #define NUM_WORK_ITEMS_PER_WORK_GROUP ( NUM_MAX_PARTICLES_PER_RIGID_BODY / 2 )
      
    
-   
-   #define CALCULATE_TOTAL_VECTOR_SUM( localSumVecAsArray, particleAttribLowerIndex, particleAttribHigherIndex ) \
-      lScanArray[ particleLocalLowerIndex ] = particleAttribLowerIndex.x; \
-      lScanArray[ particleLocalHigherIndex ] = particleAttribHigherIndex.x; \
-      scanExclusive_upSweep(lScanArray, &(localSumVecAsArray[0]),  NUM_MAX_PARTICLES_PER_RIGID_BODY, lwiID); \
-      lScanArray[ particleLocalLowerIndex ] = particleAttribLowerIndex.y; \
-      lScanArray[ particleLocalHigherIndex ] = particleAttribHigherIndex.y; \
-      scanExclusive_upSweep(lScanArray, &(localSumVecAsArray[1]),  NUM_MAX_PARTICLES_PER_RIGID_BODY, lwiID); \
-      lScanArray[ particleLocalLowerIndex ] = particleAttribLowerIndex.z; \
-      lScanArray[ particleLocalHigherIndex ] = particleAttribHigherIndex.z; \
-      scanExclusive_upSweep(lScanArray, &(localSumVecAsArray[2]),  NUM_MAX_PARTICLES_PER_RIGID_BODY, lwiID)
-      
+
   enum MacroscopicRBFeatures
   {
     CENTRE_OF_MASS_POSITION_X,
@@ -86,17 +78,15 @@
   {
     //used 9 times for a "half scan"
     __local float lScanArray[ PADDED_STRIDE( NUM_MACROSCOPIC_RB_PHYSICAL_QUANTITIES * NUM_MAX_PARTICLES_PER_RIGID_BODY ) ];
-    
+    //9 elements holding the total sums of world positions, linear and angular velocities after "multi-array-scan"
     __local float lMacroscopicPhysicalAttributes[ NUM_MACROSCOPIC_RB_PHYSICAL_QUANTITIES ];
+    
+    __local float16 finalRotationMatrix;
+    __local float16 tempRotationMatrix;
     
     __local RigidBody lRigidBody;
     
-    //__local float lCentreOfMassPositionNew[4]; //to be filled by the total sums of the position scans, 
-                                             //then divided by particle count of the RB;
-    //__local float lLinearVelocityNew[4];       //to be filled by the total sums of the position scans, 
-                                             //then divided by particle count of the RB;
-    //__local float lAngularVelocityNew[4];       //to be filled by the total sums of the position scans, 
-                                             //then divided by particle count of the RB;                                             
+                                           
 
     
     uint lwiID = get_local_id(0); // short for "local work item ID"
@@ -105,31 +95,41 @@
     
     
     //{ grab rigid body to local memory in a hacky and hence hopefully efficient way ;) :
-      TODO
+      if( lwiID < sizeof(RigidBody)/4 )
+      {
+        ( (__local uint* ) ( & ( lRigidBody ) ) )
+              [ lwiID ]  
+          =  
+        ( (__global uint*) ( & ( gRigidBodies[ groupID ] ) ) )
+              [ lwiID ] ;
+      } 
     //}    
     
-    uint particleGlobalLowerIndex  = gRigidBodyParticleIndexTable[ groupID * NUM_MAX_PARTICLES_PER_RIGID_BODY 
-                                                                   + lwiID ];
-    uint particleGlobalHigherIndex = gRigidBodyParticleIndexTable[ groupID * NUM_MAX_PARTICLES_PER_RIGID_BODY 
-                                                                   lwiID + (NUM_MAX_PARTICLES_PER_RIGID_BODY/2) ];
-    
+    //-------------------------------------------------------------------------------------------------------    
     uint particleLocalLowerIndex = CONFLICT_FREE_INDEX( lwiID );
     uint particleLocalHigherIndex = CONFLICT_FREE_INDEX( lwiID + (NUM_MAX_PARTICLES_PER_RIGID_BODY/2) );
-
     
-    //Because we have only up to 2^15=32k 32bit-registers per multiprocessor (even on fermi devices),
-    //There are at most 2^15/groupSize= 2^15/2^10=32 registers available per work item;
-    //Therefore, we have to reuse registers as much as possible to omit register spiilling to global memory,
-    //which would completely ruin performance; Alone tho below 4 varibles consume 16 registers, i.e. at least the half
-    //of all available space; So despit my usual style to name variables as precisely as possible and rely on the compiler
-    //to rename registers automatically, I design the algorithm for explicit reusal, as this is supposedly the bottlenck of this kernel;
+    uint particleGlobalLowerIndex;
+    uint particleGlobalHigherIndex;
+    //-------------------------------------------------------------------------------------------------------
+    
+    //-------------------------------------------------------------------------------------------------------
     float4 particlePosLowerIndex;
     float4 particlePosHigherIndex;
+    
     float4 particleVelLowerIndex;
     float4 particleVelHigherIndex;
+    //-------------------------------------------------------------------------------------------------------
+    
     
     if( lwiID < lRigidBody.numContainingParticles )
     {   
+      particleGlobalLowerIndex  = gRigidBodyParticleIndexTable[ groupID * NUM_MAX_PARTICLES_PER_RIGID_BODY 
+                                                                + lwiID ];
+      particleGlobalHigherIndex = gRigidBodyParticleIndexTable[ groupID * NUM_MAX_PARTICLES_PER_RIGID_BODY 
+                                                                + lwiID + (NUM_MAX_PARTICLES_PER_RIGID_BODY/2) ];
+    
+    
       //grab the new positions resulting from particle integration to get the new centre of mass   
       particlePosLowerIndex = gParticlePositionsNew[ particleGlobalLowerIndex ]; 
       particlePosHigherIndex = gParticlePositionsNew[ particleGlobalHigherIndex ]; 
@@ -147,63 +147,168 @@
       particleVelHigherIndex = (float4) (0.0f,0.0f,0.0f,0.0f);
     }
     
-    //{ calculate total position and velocity sums for centre of mass position and new linear velocity of rigid body 
-    //(division by particle count comes later to save an "if")
-      CALCULATE_TOTAL_VECTOR_SUM( lCentreOfMassPositionNew, particlePosLowerIndex, particlePosHigherIndex );
-      CALCULATE_TOTAL_VECTOR_SUM( lLinearVelocityNew      , particleVelLowerIndex, particleVelHigherIndex );
-    //} 
-    
-    
-    //we now need the relatively rotated particle positions and the angular velocities:
+    //reorder new world positions into "multiscan array" for scanning each dimension seperately 
+    //to yield the new centre of mass position; 
+    lScanArray[ PADDED_STRIDE( CENTRE_OF_MASS_POSITION_X * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalLowerIndex ] = 
+      particlePosLowerIndex.x;
+    lScanArray[ PADDED_STRIDE( CENTRE_OF_MASS_POSITION_X * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalHigherIndex ] = 
+      particlePosHigherIndex.x;
+    lScanArray[ PADDED_STRIDE( CENTRE_OF_MASS_POSITION_Y * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalLowerIndex ] = 
+      particlePosLowerIndex.y;
+    lScanArray[ PADDED_STRIDE( CENTRE_OF_MASS_POSITION_Y * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalHigherIndex ] = 
+      particlePosHigherIndex.y;
+    lScanArray[ PADDED_STRIDE( CENTRE_OF_MASS_POSITION_Z * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalLowerIndex ] = 
+      particlePosLowerIndex.z;
+    lScanArray[ PADDED_STRIDE( CENTRE_OF_MASS_POSITION_Z * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalHigherIndex ] = 
+      particlePosHigherIndex.z;
+      
+    //reorder new corrected linear velocities into "multiscan array" for scanning each dimension seperately
+    //to yield the new linear velocity; 
+    lScanArray[ PADDED_STRIDE( LINEAR_VELOCITY_X * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalLowerIndex ] = 
+      particleVelLowerIndex.x;
+    lScanArray[ PADDED_STRIDE( LINEAR_VELOCITY_X * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalHigherIndex ] = 
+      particleVelHigherIndex.x;
+    lScanArray[ PADDED_STRIDE( LINEAR_VELOCITY_Y * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalLowerIndex ] = 
+      particleVelLowerIndex.y;
+    lScanArray[ PADDED_STRIDE( LINEAR_VELOCITY_Y * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalHigherIndex ] = 
+      particleVelHigherIndex.y;
+    lScanArray[ PADDED_STRIDE( LINEAR_VELOCITY_Z * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalLowerIndex ] = 
+      particleVelLowerIndex.z;
+    lScanArray[ PADDED_STRIDE( LINEAR_VELOCITY_Z * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalHigherIndex ] = 
+      particleVelHigherIndex.z;  
+       
+    float4 particleRelativeOldPosLowerIndex;
+    float4 particleRelativeOldPosHigherIndex;
+
+    //we now need the relative and rotated particle positions from the previous pass and the angular velocities:
     if( lwiID < lRigidBody.numContainingParticles )
     {      
       //relative positions from last simulation pass (better do some on-the-fly calculations than wasting memory and bandwidth and
       //destroying particle element buffer symmetry^^)
-      particlePosLowerIndex = gParticlePositionsOld[ particleGlobalLowerIndex ] - lRigidBody.centreOfMassPosition ; 
-      particlePosHigherIndex = gParticlePositionsOld[ particleGlobalHigherIndex ] - lRigidBody.centreOfMassPosition ; 
+      particlePosLowerIndex = gParticlePositionsOld[ particleGlobalLowerIndex ];
+      particlePosHigherIndex = gParticlePositionsOld[ particleGlobalHigherIndex ];
+      
+      particleRelativeOldPosLowerIndex = particlePosLowerIndex  - lRigidBody.centreOfMassPosition ; 
+      particleRelativeOldPosHigherIndex = particlePosHigherIndex - lRigidBody.centreOfMassPosition ; 
+      
+      
       //angular velocity of particle: relative position x linear velocity;
-      particleVelLowerIndex = cross( particlePosLowerIndex, particleVelLowerIndex );
-      particleVelHigherIndex = cross( particlePosHigherIndex, particleVelHigherIndex );
+      particleVelLowerIndex = cross( particleRelativeOldPosLowerIndex, particleVelLowerIndex );
+      particleVelHigherIndex = cross( particleRelativeOldPosHigherIndex, particleVelHigherIndex );
     } //no else here, stays zero ;)
     
-    //{ calculate total angular velocity sums for new angular velocity of rigid body 
-    //(division by particle count comes later)
-      CALCULATE_TOTAL_VECTOR_SUM( lAngularVelocityNew, particleVelLowerIndex, particleVelHigherIndex );
-    //} end calculate new centre of mass position
-      
+    //reorder new corrected  angular velocities into "multiscan array" for scanning each dimension seperately
+    //to yield the new angular velocity; 
+    lScanArray[ PADDED_STRIDE( ANGULAR_VELOCITY_X * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalLowerIndex ] = 
+      particleVelLowerIndex.x;
+    lScanArray[ PADDED_STRIDE( ANGULAR_VELOCITY_X * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalHigherIndex ] = 
+      particleVelHigherIndex.x;
+    lScanArray[ PADDED_STRIDE( ANGULAR_VELOCITY_Y * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalLowerIndex ] = 
+      particleVelLowerIndex.y;
+    lScanArray[ PADDED_STRIDE( ANGULAR_VELOCITY_Y * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalHigherIndex ] = 
+      particleVelHigherIndex.y;
+    lScanArray[ PADDED_STRIDE( ANGULAR_VELOCITY_Z * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalLowerIndex ] = 
+      particleVelLowerIndex.z;
+    lScanArray[ PADDED_STRIDE( ANGULAR_VELOCITY_Z * NUM_MAX_PARTICLES_PER_RIGID_BODY ) + particleLocalHigherIndex ] = 
+      particleVelHigherIndex.z;  
+
     
-      if( lwiID < 3 )
+    scanExclusive_upSweep(lScanArray, lMacroscopicPhysicalAttributes,  NUM_MAX_PARTICLES_PER_RIGID_BODY, lwiID);
+    
+    
+    
+   //----------------------------------------------------------------
+   //We now have the macroscopic pos. and vel. values;
+   //We have to construct a rotation matrix now to restore the old relative positions according to the new macroscpic features;
+   //otherwise, the RB-particle cloud would dissipate just like the fluid particles;
+   if( lwiID == 0 )
+   {
+     //no need for synch yet, as work item 0 has done all the "total sum" stuff;
+     //note; instead of using 3 thread to parllize the below downscale, I rather save one if() statement;
+     //and do alltransformations matrix building with one single work item;
+     
+
+     //overwrite the old values, we don't need them anymore, an save register usage this way;
+     
+     //newRBWorldPos = newCentreOfMassPos + translationalPart(correctiveTransformationMatrix);
+     lRigidBody.centreOfMassPosition = (float4) (
+       lMacroscopicPhysicalAttributes[ CENTRE_OF_MASS_POSITION_X ] * lRigidBody.inverseNumContainingParticles, 
+       lMacroscopicPhysicalAttributes[ CENTRE_OF_MASS_POSITION_Y ] * lRigidBody.inverseNumContainingParticles, 
+       lMacroscopicPhysicalAttributes[ CENTRE_OF_MASS_POSITION_Z ] * lRigidBody.inverseNumContainingParticles,
+       0.0f
+     )
+     //add the translational part of the corrective matrix; see declaration comments for further info;
+     + lRigidBody.correctiveTransformationMatrix.scdef;
+     ;
+     lRigidBody.linearVelocity = (float4) (
+       lMacroscopicPhysicalAttributes[ LINEAR_VELOCITY_X ]  * lRigidBody.inverseNumContainingParticles, 
+       lMacroscopicPhysicalAttributes[ LINEAR_VELOCITY_Y ]  * lRigidBody.inverseNumContainingParticles, 
+       lMacroscopicPhysicalAttributes[ LINEAR_VELOCITY_Z ]  * lRigidBody.inverseNumContainingParticles,
+       0.0f     
+     );
+    lRigidBody.angularVelocity = (float4) (
+       lMacroscopicPhysicalAttributes[ ANGULAR_VELOCITY_X ]  * lRigidBody.inverseTotalSquaredDistancesFromCenterOfMass, 
+       lMacroscopicPhysicalAttributes[ ANGULAR_VELOCITY_Y ]  * lRigidBody.inverseTotalSquaredDistancesFromCenterOfMass, 
+       lMacroscopicPhysicalAttributes[ ANGULAR_VELOCITY_Z ]  * lRigidBody.inverseTotalSquaredDistancesFromCenterOfMass,
+       0.0f     
+     ); 
+      
+      
+     float lengthAngVel= length(lRigidBody.angularVelocity);
+     float4 rotationAxis = lRigidBody.angularVelocity / lengthAngVel;
+     float rotationAngleRadians = lengthAngVel * cSimParams->timestep;
+     //rotationMatrix =  rotationalPart(correctiveTransformationMatrix) * rotate(norm(angVel),length(angVel)*timestep);
+     constructRotationMatrix( & tempRotationMatrix, rotationAxis, rotationAngleRadians );
+     //take rotation only
+     matrixMult3x3( & finalRotationMatrix, & lRigidBody.correctiveTransformationMatrix, & tempRotationMatrix );
+     
+     lRigidBody.direction = matrixMult3x3Vec(&finalRotationMatrix,lRigidBody.direction);
+     lRigidBody.upVector =  matrixMult3x3Vec(&finalRotationMatrix,lRigidBody.upVector);
+  }
+      
+  //synch so that every thread can read the updated RB values;
+  barrier(CLK_LOCAL_MEM_FENCE);
+  
+     
+  if( lwiID < lRigidBody.numContainingParticles )
+  {    
+    gParticleCorrectedVelocities[ particleGlobalLowerIndex ] = 
+      lRigidBody.linearVelocity + cross(lRigidBody.angularVelocity, particleRelativeOldPosLowerIndex);
+    gParticleCorrectedVelocities[ particleGlobalHigherIndex ] = 
+      lRigidBody.linearVelocity + cross(lRigidBody.angularVelocity, particleRelativeOldPosHigherIndex);
+
+    //pray for automatic register renaming, otherwise, we ahve the danger of spiiling to global mem!
+    float4 particleNewPosLowerIndex =  
+      lRigidBody.centreOfMassPosition + matrixMult3x3Vec(&finalRotationMatrix, particleRelativeOldPosLowerIndex);
+    float4 particleNewPosHigherIndex =  
+      lRigidBody.centreOfMassPosition + matrixMult3x3Vec(&finalRotationMatrix, particleRelativeOldPosHigherIndex);
+      
+    gParticlePositionsNew[ particleGlobalLowerIndex ] = particleNewPosLowerIndex;
+    gParticlePositionsNew[ particleGlobalHigherIndex ] = particleNewPosHigherIndex;
+   
+    //update also predicted values; don't corrupt the integration scheme ;P
+    gParticlePredictedVelocities[ particleGlobalLowerIndex ] = 
+        ( particleNewPosLowerIndex - particlePosLowerIndex ) * cSimParams->inverseTimestep;
+    gParticlePredictedVelocities[ particleGlobalHigherIndex ] = 
+        ( particleNewPosHigherIndex - particlePosHigherIndex ) * cSimParams->inverseTimestep;
+    
+   }
+    
+    
+   //{ upload rigid body to global memory in a hacky and hence hopefully efficient way ;) :
+      if( lwiID < sizeof(RigidBody)/4 )
       {
-        //divide sum of world positions and linear velocites by the sum of all particles belonging to the RB;
-        lCentreOfMassPositionNew[ lwiID ] *= lRigidBody.inverseNumContainingParticles;        
-        lLinearVelocityNew[ lwiID ]       *= lRigidBody.inverseNumContainingParticles;
-        // lAngularVelocityNew = sumAllAngVels / (sum( length(centreOfMassRelParticlePos)^2 ));
-        //TODO in host from time to time read back particle buffers and reset particle positions according to 
-        //"original distance to centre of mass", because numeric errors 
-        //(by rotations, additionas and subtractions from different centres of masses etc) will most probably accumulate
-        //and cause particle cloud and the macroscopic body, i.e the render model the to get out of synch;
-        //plus, the particle cloud will deform itself more and more;
-        lAngularVelocityNew[ lwiID ]      *= lRigidBody.inverseTotalSquaredDistancesFromCenterOfMass;
-      }      
-      //synch so that every thread can read the updated RB values;
-      barrier(CLK_LOCAL_MEM_FENCE);  
-      
-      
-      //----------------------------------------------------------------
-      //We now have the macroscopic pos. and vel. values;
-      //We have to construct a rotation matrix now to restore the old relative positions according to the new macroscpic features;
-      //otherwise, the RB-particle cloud would dissipate just like the fluid particles;
-      if( lwiID == 0 )
-      {
-        float lengthAngVel= length(lAngularVelocityNew);
-float4 angVelNorm= angularVelocity/lengthAngVel;
-float rotationAngleRadians = lengthAngVel * timeStep;
-transformationMatrix= constructTransfPormationMatrix(
-centreOfMassPosNew, normalize(angularVelocity), length(angularVelocity)*timeStep );
-directionNew,  = transformationMatrix * directionOld;
-float4 particleRealitveWorldPosOld =  (float4)((particleWorldPosOld.xyz - centreOfMassPosOld.xyz), 1.0f);
-particleWorldposNew = transformationMatrix * ( particleRealitveWorldPosOld );
-      
+        ( (__global uint*) ( & ( gRigidBodies[ groupID ] ) ) )
+              [ lwiID ]  
+          =  
+        ( (__local uint* ) ( & ( lRigidBody ) ) )
+              [ lwiID ] ;
+      } 
+   //}  
+    
+    
+    
+    
       
   }
 
