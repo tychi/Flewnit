@@ -257,7 +257,7 @@ void  ShaderManager::assignShader(VisualMaterial* mat)
 
 	if(mat->getType() == VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING)
 	{
-		//for skydom, cube mapping must always be enabled, no matter what the gloabe state says ;(
+		//for skydome, cube mapping must always be enabled, no matter what the gloable state says ;(
 		reinterpret_cast<unsigned int&>(shadingFeaturesToGenerate) |=
 			SHADING_FEATURE_CUBE_MAPPING;
 	}
@@ -378,6 +378,7 @@ Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 		newShader = new DepthImageGenerationShader(
 				mShaderCodeDirectory,
 				sfl.renderingTechnique,
+				sfl.visualMaterialType,
 				sfl.renderTargetTextureType,
 				((sfl.shadingFeatures & SHADING_FEATURE_TESSELATION) !=0),
 				sfl.instancedRendering

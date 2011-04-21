@@ -147,25 +147,25 @@ String ShaderFeaturesLocal::stringify()const
 
 	switch (visualMaterialType) {
 		case VISUAL_MATERIAL_TYPE_NONE:
-			returnString.append("_MatNone");
+			returnString.append("_MatTypeNone");
 			break;
 		case VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING:
 			returnString.append("_MatDefaultLighting");
 			break;
 		case VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING:
-			returnString.append("_MatSkyDome");
+			returnString.append("_MatTypeSkyDome");
 			break;
 //		case VISUAL_MATERIAL_TYPE_PRIMITIVE_ID_RENDERING:
 //			returnString.append("_MatPrimID");
 //			break;
 		case VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY:
-			returnString.append("_MatPureDebugDraw");
+			returnString.append("_MatTypePureDebugDraw");
 			break;
 		case VISUAL_MATERIAL_TYPE_GAS_RENDERING:
-			returnString.append("_MatGas");
+			returnString.append("_MatTypeGas");
 			break;
 		case VISUAL_MATERIAL_TYPE_LIQUID_RENDERING:
-			returnString.append("_MatLiquid");
+			returnString.append("_MatTypeLiquid");
 			break;
 //		case VISUAL_MATERIAL_TYPE_INSTANCED:
 //			returnString.append("_MatInstanced");

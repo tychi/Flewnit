@@ -180,6 +180,12 @@ void VisualMaterial::activate(
 	if( castedStage->getRenderingTechnique() == RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL )
 		{assert(! isTransparent());}
 
+	//draw debug stuff as lines!
+	if(mType == VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY)
+	{
+		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+	}
+
 	// starting real functionality from here on:
 	if(isInstanced())
 	{
@@ -201,7 +207,11 @@ void VisualMaterial::deactivate(
 		SimulationPipelineStage* currentStage,
 		SubObject* currentUsingSuboject) throw(SimulatorException)
 {
-	//do nothing in this base class;
+	//undo line draw mode for debug stuff
+	if(mType == VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY)
+	{
+		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+	}
 }
 
 

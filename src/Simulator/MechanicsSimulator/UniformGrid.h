@@ -5,12 +5,17 @@
  *      Author: tychi
  */
 
-#ifndef UNIFORMGRID_H_
-#define UNIFORMGRID_H_
+#pragma once
 
-namespace Flewnit {
+#include "WorldObject/WorldObject.h"
 
-class UniformGrid {
+
+namespace Flewnit
+{
+
+class UniformGrid
+	: public WorldObject
+{
 public:
 	UniformGrid();
 	virtual ~UniformGrid();
@@ -18,4 +23,3 @@ public:
 
 }
 
-#endif /* UNIFORMGRID_H_ */

@@ -282,7 +282,10 @@ void HardCodedSceneLoader::loadMaterials()
 				myMap[ENVMAP_SEMANTICS] = envMapTex;
 
 				raptorTessMat = new VisualMaterial("raptorTessMat",
-					//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+
+					//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY,
+					//SHADING_FEATURE_NONE,
+
 					VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
 					ShadingFeatures(
 							SHADING_FEATURE_DIRECT_LIGHTING
@@ -294,6 +297,7 @@ void HardCodedSceneLoader::loadMaterials()
 					),
 					myMap,
 					VisualMaterialFlags(true,false,true,true,false,false),
+					//VisualMaterialFlags(true,false,true,true,false,true),
 					30.0f,
 					0.2f//6f
 				);

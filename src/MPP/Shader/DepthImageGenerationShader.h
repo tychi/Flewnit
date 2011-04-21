@@ -22,6 +22,7 @@ class DepthImageGenerationShader
 public:
 	DepthImageGenerationShader(Path codeDirectory,
 			RenderingTechnique renderingTechnique,
+			VisualMaterialType visMatType,
 			TextureType renderTargetTextureType,
 			bool forTessellation,
 			bool instancedRendering);

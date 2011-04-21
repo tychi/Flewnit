@@ -18,6 +18,7 @@ namespace Flewnit {
 DepthImageGenerationShader::DepthImageGenerationShader(
 		Path codeDirectory,
 		RenderingTechnique renderingTechnique,
+		VisualMaterialType visMatType,
 		TextureType renderTargetTextureType,
 		bool forTessellation,
 		bool instancedRendering)
@@ -29,7 +30,7 @@ DepthImageGenerationShader::DepthImageGenerationShader(
 				ShaderFeaturesLocal(
 						renderingTechnique,
 						renderTargetTextureType,
-						VISUAL_MATERIAL_TYPE_NONE,
+						visMatType,//VISUAL_MATERIAL_TYPE_NONE,
 						forTessellation ? SHADING_FEATURE_TESSELATION : SHADING_FEATURE_NONE,
 						instancedRendering)
 		)

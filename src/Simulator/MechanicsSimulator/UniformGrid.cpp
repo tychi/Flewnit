@@ -9,13 +9,13 @@
 
 namespace Flewnit {
 
-UniformGrid::UniformGrid() {
-	// TODO Auto-generated constructor stub
-
-}
-
-UniformGrid::~UniformGrid() {
-	// TODO Auto-generated destructor stub
-}
+//UniformGrid::UniformGrid() {
+//	// TODO Auto-generated constructor stub
+//
+//}
+//
+//UniformGrid::~UniformGrid() {
+//	// TODO Auto-generated destructor stub
+//}
 
 }
