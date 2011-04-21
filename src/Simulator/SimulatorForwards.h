@@ -59,7 +59,7 @@ class SimulatorInterface;
 class LightingSimulator;
 //class FluidMechanicsSimulator;
 //class MechanicsSimulator;
-class SPHFluidMechanicsSimulator;
+class MechanicsSimulator;
 class SoundSimulator;
 
 class SimulationResourceManager;

@@ -110,7 +110,7 @@
 		<!--  -->
 
 		<Simulator>
-			<Type type="STRING" value="SPHFluidMechanicsSimulator"/>
+			<Type type="STRING" value="MechanicsSimulator"/>
 
 			<generalSettings>
 

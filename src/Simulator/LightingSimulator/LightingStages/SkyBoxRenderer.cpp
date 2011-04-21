@@ -39,17 +39,18 @@
 //	return true;
 //}
 //
-//void SkyBoxRenderer::initStage()throw(SimulatorException)
+//bool SkyBoxRenderer::initStage()throw(SimulatorException)
 //{
 //	assert(0 && "here is the skybox renderer; implement me, or comment me out from config file; i'm not ready to be used yet ;)");
-//
+//	return true;
 //}
 //
-//void SkyBoxRenderer::validateStage()throw(SimulatorException)
+//bool SkyBoxRenderer::validateStage()throw(SimulatorException)
 //{
 //	assert(0 && "here is the skybox renderer; implement me, or comment me out from config file; i'm not ready to be used yet ;)");
 //
 //	//no dependencies;
+//	return true;
 //}
 //
 //

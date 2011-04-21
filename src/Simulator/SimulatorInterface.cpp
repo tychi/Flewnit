@@ -8,7 +8,7 @@
 #include "SimulatorInterface.h"
 
 //must be include for casting functions ;(
-#include "SPHFluidMechanicsSimulator/SPHFluidMechanicsSimulator.h"
+#include "MechanicsSimulator/MechanicsSimulator.h"
 #include "LightingSimulator/LightingSimulator.h"
 #include "SoundSimulator/SoundSimulator.h"
 
@@ -18,7 +18,7 @@
 #include "SimulationPipelineStage.h"
 
 #include <boost/foreach.hpp>
-#include "Simulator/SPHFluidMechanicsSimulator/SPHFluidMechanicsSimulator.h"
+#include "Simulator/MechanicsSimulator/MechanicsSimulator.h"
 #include "Simulator/LightingSimulator/LightingSimulator.h"
 
 namespace Flewnit
@@ -48,9 +48,9 @@ SimulationPipelineStage* SimulatorInterface::getStage(String name)const // throw
 	return 0;
 }
 
-bool SimulatorInterface::isSPHFluidMechanicsSimulator()const
+bool SimulatorInterface::isMechanicsSimulator()const
 {
-	return (dynamic_cast<const SPHFluidMechanicsSimulator*>(this) != 0 );
+	return (dynamic_cast<const MechanicsSimulator*>(this) != 0 );
 }
 bool SimulatorInterface::isLightingSimulator()const
 {
@@ -63,16 +63,16 @@ bool SimulatorInterface::isSoundSimulator()const
 
 
 //casting functions, assert(0) if wrong casted ;(
-SPHFluidMechanicsSimulator* SimulatorInterface::toSPHFluidMechanicsSimulator() throw(SimulatorException)
+MechanicsSimulator* SimulatorInterface::toMechanicsSimulator() throw(SimulatorException)
 {
-	SPHFluidMechanicsSimulator* casted = dynamic_cast< SPHFluidMechanicsSimulator* > (this);
+	MechanicsSimulator* casted = dynamic_cast< MechanicsSimulator* > (this);
 	if(casted)
 	{
 		return casted;
 	}
 	else
 	{
-		throw(SimulatorException(String("bad cast to SPHFluidMechanicsSimulator* !")));
+		throw(SimulatorException(String("bad cast to MechanicsSimulator* !")));
 		//assert("Bad cast of SimulatorInterface!" && 0);
 	}
 }
@@ -108,9 +108,9 @@ SoundSimulator*SimulatorInterface:: toSoundSimulator() throw(SimulatorException)
 SimulatorInterface* SimulatorInterface::create(ConfigStructNode* simConfigNode) throw(SimulatorException)
 {
 	String simulatorType = ConfigCaster::cast<String>(simConfigNode->get("Type",0));
-	if(simulatorType  == "SPHFluidMechanicsSimulator")
+	if(simulatorType  == "MechanicsSimulator")
 	{
-		return new SPHFluidMechanicsSimulator(simConfigNode);
+		return new MechanicsSimulator(simConfigNode);
 	}
 
 	if(simulatorType == "LightingSimulator")

@@ -41,7 +41,7 @@ ShadowMapGenerator::~ShadowMapGenerator()
 }
 
 
-void ShadowMapGenerator::initStage()throw(SimulatorException)
+bool ShadowMapGenerator::initStage()throw(SimulatorException)
 {
 	assert("need shadow map generation stage only if shadowing is desired from the lighting stages :@"
 			&& (ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
@@ -94,13 +94,14 @@ void ShadowMapGenerator::initStage()throw(SimulatorException)
 	//app has no interruption due to late shader generation:
 	ShaderManager::getInstance().setRenderingScenario(this);
 
-
+	return true;
 
 }
 
-void ShadowMapGenerator::validateStage()throw(SimulatorException)
+bool ShadowMapGenerator::validateStage()throw(SimulatorException)
 {
 	//no dependencies;
+	return true;
 }
 
 

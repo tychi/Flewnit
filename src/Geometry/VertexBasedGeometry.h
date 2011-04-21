@@ -26,6 +26,7 @@ public:
 	VertexBasedGeometry(String name, GeometryRepresentation geoRep);
 	//constructor for patch-based tesselation geometry
 	//VertexBasedGeometry(String name, GLint verticesPerPatch);
+
 	virtual ~VertexBasedGeometry();
 
 	//the semantics of the buffer is readable from its bufferInfo

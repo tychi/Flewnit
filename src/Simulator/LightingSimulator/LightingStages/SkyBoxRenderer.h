@@ -24,8 +24,8 @@
 //	virtual ~SkyBoxRenderer();
 //
 //	virtual bool stepSimulation() throw(SimulatorException);
-//	virtual void initStage()throw(SimulatorException);
-//	virtual void validateStage()throw(SimulatorException);
+//	virtual bool initStage()throw(SimulatorException);
+//	virtual bool validateStage()throw(SimulatorException);
 //
 //	//override to look for the skybox in the scene graph;
 //	//virtual void visitSceneNode(SceneNode* node);

@@ -47,9 +47,10 @@ public:
 	virtual void visitSceneNode(SceneNode* node);
 
 	virtual bool stepSimulation() throw(SimulatorException)  =0;
-	virtual void initStage()throw(SimulatorException) = 0;
-	virtual void validateStage()throw(SimulatorException) = 0;
+	virtual bool initStage()throw(SimulatorException) = 0;
+	virtual bool validateStage()throw(SimulatorException) = 0;
 
+	//NULL if rendering to screen;
 	inline RenderTarget* getUsedRenderTarget()const{return mUsedRenderTarget;}
 	inline const VisualMaterialFlags& getMaterialFlagMask()const{return mMaterialFlagMask;}
 

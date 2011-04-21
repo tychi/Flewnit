@@ -50,12 +50,17 @@ public:
 	//check if pipeline stages are compatible to each other (also to those stages form other simulators (they might have to interact!))
 	virtual bool validatePipeLine() throw(SimulatorException) =0;
 
-	bool isSPHFluidMechanicsSimulator()const;
+	//non-pure virtual, as not every simulator needs this functionality
+	virtual bool validateSimulationStepResults(){return true;}
+	virtual bool profileAndOptimizeSettings(){return true;}
+	virtual bool profilePerformance(){return true;}
+
+	bool isMechanicsSimulator()const;
 	bool isLightingSimulator()const;
 	bool isSoundSimulator()const;
 
 	//casting functions, throw exception if wrong casted ;(
-	SPHFluidMechanicsSimulator* toSPHFluidMechanicsSimulator()throw(SimulatorException) ;
+	MechanicsSimulator* toMechanicsSimulator()throw(SimulatorException) ;
 	LightingSimulator* toLightingSimulator()throw(SimulatorException) ;
 	SoundSimulator* toSoundSimulator()throw(SimulatorException) ;
 };

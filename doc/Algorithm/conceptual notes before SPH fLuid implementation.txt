@@ -87,95 +87,57 @@ Simulation Algorithm:
 ---------------------
   Phase I: Update Accleration Structure:
   --------------------------------------
-    - Kernel calculateZIndexKernel:
-      - calculate z-Index for each particle, write to zIndexBuffer
+  
+    (( only initially, usually done in integration kernel: 
+      - Kernel calculateZIndexKernel:
+        - calculate z-Index for each particle, write to zIndexBuffer ))
+    
     - Kernel parallelRadixSortKernel (actually three kernels):
       - sort particles according to z-Index via Parallel Radix Sort 
+      
     - Kernel reorderAttributes
-         - (maybe to include here: TODO rigid body meta data calculation)
+         - (included here: rigid body meta data calculation (backtracking of changing particle positions in reordered array) )
     
   
-    - Kernel updateUniformGridKernel:
-      - one work item per particle: 
-          if(globalID != 0)
-          {
-            if(sortedZIndices[globalID] != sortedZIndices[globalID -1])
-            {
-              //left index is different, i.e. here starts a new index; set the relevant start index:
-              uniGridParticleStartIndices[particleZIndex]=globalID;
-            }
-          }
-          //buffers are flushed to zero, so following is obsolete:
-          //else{
-          //  uniGridParticleStartIndices[particleZIndex]=0;
-          //}
-          
-          if(globalID != (numParticles -1))
-          {
-            if(sortedZIndices[globalID] != sortedZIndices[globalID +1])
-            {
-              //right index is different, i.e. here ends the particle list for the voxel containing this particle;
-              //set the relevant end index to globalID +1, so that the particle count can be derived by (startIndex-EndIndex)
-              //during voxel split and compression;
-              uniGridParticleEndIndices[particleZIndex]=globalID +1;
-            }
-          }
-          else{
-            uniGridParticleEndIndices[particleZIndex]=globalID +1;
-          }
-          
-          //bullsh** from Goswami paper? Seems quite unnecessary to me and wasting operations and bandwidth:
-          "Whereas the first particle in a block can
-          be determined using the atomicMin operation in CUDA, the
-          number of particles is found by incrementing a particle count
-          with atomicInc. Thus each particle updates both the starting
-          index and particle count of its block in the list B [...]"
-          //atomicMin( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].particleStartIndex, currentParticleArrayIndex);
-          //atomicInc( uniformGrid[getUniformGridArrayIndex(currentParticle.zIndex)].numContainingParticles);
-
+    - Kernel updateUniformGrid
+      - for each grid cell (initialized to contain zero particles) in parallel:
+        - if cell not empty: 
+            - write out (particle start index) and (particle end index +1); reason: much more efficient on current hardware
+              than atomic writes for "direct" particle count write-out; "fix" the side effects of this optimization in next kernel
      
-   
-   
-    - Kernel splitAndCompressUniformGridKernel:
-      //again, [Gotswamis2010] talks about atomicMin
-      - one work item per uniform grid cell:
-          input: 
-            __global int* uniGridParticleStartIndices; //size: uniformGridCellsPerDimension^3;
-            __global int* uniGridParticleEndIndices;   //size: uniformGridCellsPerDimension^3;
-          output:
-            __global int* uniGridScanResult; //size: uniformGridCellsPerDimension^3;
-            __global int* resultsOfLocalScans; //size: numWorkItems
-          local:
-            __local int localUnigridScanResult[numWorkItems];
-            
+     
+    //split and compress unifiorm grid 
+      - Kernel scan_localPar_globalSeq 
+          - tabulate: 0 particles --> 0; 1..32 paricles -->1 etc.; 
+            Do the "fix" of the optimization in the updateUniformGrid kernel within the tabulation function: 
+            instead of reading numParticles directly, we have to compute it:
+            numParticles = (partEndIndexPlus1>0) ? (partEndIndexPlus1-partStartIndex) : 0; 
+            and write it back;
+          - nearly-global scan on tabulated values; 
           
-          //{ 
-          //tabulate with partially sequential stuff for "sounter sharing" in order to minimize the scan array 
-          //(and like this to reduce the kernel count from 3 to 2, because the "scan of intermediate scan results" is small enough
-          //to be performed by each work group itself) and to provide better work/kernelInvocation ratio
-          for i = 0 to counterShareGroupSize :
-            calculate index after the strange sharegroup-scheme
-            int endIndex = uniGridParticleEndIndices[index];
-            if(endIndex != 0)
-            {
-              //cell not empty:
-              localUnigridScanResult[localID] = (uniGridParticleStartIndices[index] - endIndex) / maxParticlesPerCell +1;            
-            }
-          //}
-          
-          //{//scan
-          //do a local scan on localUnigridScanResult and write results to global memory
-              
-          //}
+      - Kernel splitAndCompactUniformGrid:
+          - finish global scan
+          - compact:  0 particles --> don't write out; 
+                     >0 particles --> write out at scan offset, numParticles/maxPartsPerCell elements,
+                                      adjust particle count and particles start index
+                             
+    //actual SPH physics simulation:                                      
+      - Kernel updateDensity;
+     
+      (( only initially: Kernel _initial_updateForce_integrate_calcZIndex;
+         do reuse all code from updateForce_integrate_calcZIndex kernel but the integration code; we need a simplified first integraation step
+         to initialize for the "dual valued" Velocity Verlet integration scheme))
+      - Kernel updateForce_integrate_calcZIndex;
+        do every particle-related SPH stuff but the density: force calculations, integration, z index calculation;
+        
+    //Rigid body extra treatment:
+      - Kernel updateRigidBodies;
+      
     
-    - Kernel finishSplitAndCompressUniformGridKernel:
-        //{//scan
-        //do a "global scan" on resultsOfLocalScans (at least until get_work_group(0))and compute final split/compacting offsets
-            
-        //}
     
-      - kind of parallel reduction via parallel prefix sum + split of overpopulated blocks (atomicInc?)
-        (TODO freshen up parallel prefix sum and related applications)
+    
+    
+
   -----------------------------------
     (todo copy from hand written notes;)
     (note: integration via Velocity Verlet method, as because we need explicit velocities, leap frog is not applicable,

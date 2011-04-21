@@ -23,8 +23,8 @@ public:
 
 
 	virtual bool stepSimulation() throw(SimulatorException);
-	virtual void initStage()throw(SimulatorException);
-	virtual void validateStage()throw(SimulatorException) ;
+	virtual bool initStage()throw(SimulatorException);
+	virtual bool validateStage()throw(SimulatorException) ;
 
 	void setPolygonOffset(const Vector2D& val);
 	inline const Vector2D& getPolygonOffset()const{return mPolygonOffset;}

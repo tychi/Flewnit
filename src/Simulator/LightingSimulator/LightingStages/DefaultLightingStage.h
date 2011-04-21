@@ -27,8 +27,8 @@ public:
 	virtual ~DefaultLightingStage();
 
 	virtual bool stepSimulation() throw(SimulatorException);
-	virtual void initStage()throw(SimulatorException);
-	virtual void validateStage()throw(SimulatorException);
+	virtual bool initStage()throw(SimulatorException);
+	virtual bool validateStage()throw(SimulatorException);
 
 };
 

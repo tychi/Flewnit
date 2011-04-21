@@ -67,19 +67,23 @@ bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
 	return true;
 }
 
-void DefaultLightingStage::initStage()throw(SimulatorException)
+bool DefaultLightingStage::initStage()throw(SimulatorException)
 {
 
 	//cause shader generation now:
 	ShaderManager::getInstance().setRenderingScenario(this);
 
+	return true;
+
 }
 
-void DefaultLightingStage::validateStage()throw(SimulatorException)
+bool DefaultLightingStage::validateStage()throw(SimulatorException)
 {
 	//shadowmap generator as dependency, but that comes later; TODO
 
 	//TODO assert that no deferred stage exists;
+
+	return true;
 }
 
 }

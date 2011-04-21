@@ -29,7 +29,7 @@
 #include "Simulator/SimulationResourceManager.h"
 
 
-#include "Simulator/SPHFluidMechanicsSimulator/SPHFluidMechanicsSimulator.h"
+#include "Simulator/MechanicsSimulator/MechanicsSimulator.h"
 #include "Simulator/LightingSimulator/LightingSimulator.h"
 #include "Simulator/SoundSimulator/SoundSimulator.h"
 

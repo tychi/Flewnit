@@ -1,3 +1,4 @@
+
 {% extends scan_localPar_globalSeq.cl %}
 
   {% block documentHeader %} 
@@ -13,10 +14,7 @@
   {% endblock documentHeader %} 
 
 
-  {% block specialDefinitions %} 
-    
-    {% include "simulationDefinitions.cl" %}
-  
+  {% block specialDefinitions %}   
     
     uint tabulate(uint globalIndex,  __global uint* gUniGridCells_ParticleStartIndex, __global uint* gUniGridCells_ParticleEndIndexPlus1)
     {
@@ -71,7 +69,7 @@
     */
     
     __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
-    void kernel_SplitAndCompactUniformGrid(
+    void kernel_splitAndCompactUniformGrid(
       __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements; to be split and compacted,too
       __global uint* gUniGridCells_NumParticles, //NUM_TOTAL_GRID_CELLS  elements, to be tabulated again for split; costs extra calculations,
                                                  //but saves memory and bandwidth;

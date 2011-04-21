@@ -27,8 +27,8 @@ public:
 	virtual ~SimulationPipelineStage();
 
 	virtual bool stepSimulation() throw(SimulatorException)  =0;
-	virtual void initStage()throw(SimulatorException) = 0;
-	virtual void validateStage()throw(SimulatorException) = 0;
+	virtual bool initStage()throw(SimulatorException) = 0;
+	virtual bool validateStage()throw(SimulatorException) = 0;
 
 	virtual void visitSceneNode(SceneNode* node)=0;
 
@@ -36,6 +36,11 @@ public:
 	//acessor to the different buffers, if subsequent stages need them
 	//returns NULL if Buffer with specified name does not exist
 	BufferInterface* getRenderingResult(BufferSemantics what);
+
+	//non-pure virtual, as not every simulation stage needs this functionality
+	virtual bool validateSimulationStepResults(){return true;}
+	virtual bool profileAndOptimizeSettings(){return true;}
+	virtual bool profilePerformance(){return true;}
 
 protected:
 	ConfigStructNode* mSimConfigNode;
