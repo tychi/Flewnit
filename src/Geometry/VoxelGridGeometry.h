@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "Geometry.h"
+#include "BufferBasedGeometry.h"
 
 #include "Common/Math.h"
 

@@ -21,7 +21,8 @@ namespace Flewnit
 class SceneNodeVisitor
 {
 public:
-	virtual void visitSceneNode(SceneNode* node)=0;
+	//none-pure, not every inheriting class actually need scene node access;
+	virtual void visitSceneNode(SceneNode* node){};
 };
 
 

@@ -23,7 +23,7 @@ namespace Flewnit
 
 //TODO init according to config file
 SimulationResourceManager::SimulationResourceManager() :
-	mScene(new Scene())
+	mScene(new SceneGraph())
 {
 
 }
@@ -68,7 +68,7 @@ SimulationResourceManager::~SimulationResourceManager()
 }
 
 
-Scene* SimulationResourceManager::getScene()const
+SceneGraph* SimulationResourceManager::getSceneGraph()const
 {
 	return mScene;
 }

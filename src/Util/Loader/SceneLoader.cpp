@@ -12,7 +12,7 @@
 
 #include "Util/Loader/LoaderHelper.h"
 #include "Simulator/SimulationResourceManager.h"
-#include "Scene/Scene.h"
+#include "Scene/SceneGraph.h"
 
 #include <assimp.hpp>
 #include <aiScene.h>
@@ -43,7 +43,7 @@ SceneLoader::SceneLoader(ConfigStructNode& scenesGlobalSettings, ConfigStructNod
 	mReferenceCountThresholdForInstancedRendering =  ConfigCaster::cast<int>(scenesGlobalSettings.get("referenceCountThresholdForInstancedRendering",0));
 
 	mRootSceneNode = parseSceneNode(sceneConfig.get("SceneNode",0));
-	SimulationResourceManager::getInstance().getScene()->root().addChild(mRootSceneNode);
+	SimulationResourceManager::getInstance().getSceneGraph()->root().addChild(mRootSceneNode);
 
 	if(initialize)
 	{

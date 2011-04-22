@@ -9,13 +9,13 @@
 
 namespace Flewnit {
 
-MechanicalMaterial::MechanicalMaterial() {
-	// TODO Auto-generated constructor stub
-
-}
-
-MechanicalMaterial::~MechanicalMaterial() {
-	// TODO Auto-generated destructor stub
-}
+//MechanicalMaterial::MechanicalMaterial() {
+//	// TODO Auto-generated constructor stub
+//
+//}
+//
+//MechanicalMaterial::~MechanicalMaterial() {
+//	// TODO Auto-generated destructor stub
+//}
 
 }

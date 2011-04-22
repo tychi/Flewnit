@@ -31,7 +31,7 @@ public:
 
 
 
-	Scene* getScene()const;
+	SceneGraph* getSceneGraph()const;
 
 
 	//when a Simulation pass nears its end, it should let do the instance managers the
@@ -46,10 +46,12 @@ public:
 	//automatically called by BufferInterface constructor
 	void registerBufferInterface(BufferInterface* bi);
 	BufferInterface* getBufferInterface(String name);
-	//be very careful with this function, as ther may be serveral references
-	//and I don't work with smart pointers; so do a manual deletion only if you are absolutely sure
-	//that the buffer is't used by other objects;
+	//be very careful with this function, as there may be several references
+	//and I (unfortunately!) don't work with smart pointers;
+	//So do a manual deletion only if you are absolutely sure
+	//that the buffer isn't used by other objects; This is true for all other shared objects
 	//void deleteBufferInterface(BufferInterface* bi);
+
 	void registerTexture(Texture* tex);
 	Texture* getTexture(String name);
 	//void deleteTexture(Texture* tex);
@@ -72,7 +74,7 @@ private:
 	friend class URE;
 
 
-	Scene* mScene;
+	SceneGraph* mScene;
 
 
 	std::map<String, InstanceManager*> mInstanceManagers;

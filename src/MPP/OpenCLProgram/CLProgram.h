@@ -61,12 +61,14 @@ namespace Flewnit
 
 	};
 
+
+
 	class CLKernel
 		:public BasicObject
 	{
 		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
-		CLKernel(CLProgram* owningProgram, String kernelName);
+		CLKernel(CLProgram* owningProgram, String kernelName, CLParams* mParams);
 		~CLKernel();
 		void validate()throw(BufferException);
 
@@ -120,7 +122,7 @@ namespace Flewnit
 
 		cl::Program mCLProgram;
 
-		CLParams* mParams;
+		//CLParams* mParams;
 		std::map<String, CLKernel*> mKernels;
 
 	};

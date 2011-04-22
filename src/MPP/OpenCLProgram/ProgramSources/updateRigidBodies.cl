@@ -21,19 +21,7 @@
   {% include "scan.cl" %}
   {% include "matrixMath.cl" %}
    
-  //hardware dependent memory amounts determine how many radix counters a work group can own
-  {% ifequal nvidiaComputeCapabilityMajor "2" %}
-    //reason: 48kB local memory available; 9 "half scans" to do; we need 
-    //PADDED_STRIDE( NUM_MAX_PARTICLES_PER_RIGID_BODY * 4 * 9) bytes for this "multiple scan array";
-    //with NUM_MAX_PARTICLES_PER_RIGID_BODY == 1024, this yields 38016 bytes <-- fits;
-    #define NUM_MAX_PARTICLES_PER_RIGID_BODY (1024)
-  {% endifequal %}
-  {% ifequal nvidiaComputeCapabilityMajor "1" %}
-    //reason: 16kB local memory available; 9 "half scans" to do; we need 
-    //PADDED_STRIDE( NUM_MAX_PARTICLES_PER_RIGID_BODY * 4 * 9) bytes for this "multiple scan array";
-    //with NUM_MAX_PARTICLES_PER_RIGID_BODY == 256, this yields 9792 bytes <-- fits;
-     #define NUM_MAX_PARTICLES_PER_RIGID_BODY (256)
-  {% endifequal %}
+  
   #define NUM_WORK_ITEMS_PER_WORK_GROUP ( NUM_MAX_PARTICLES_PER_RIGID_BODY / 2 )
      
    

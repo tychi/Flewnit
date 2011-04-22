@@ -30,7 +30,7 @@ public:
 	virtual bool initStage()throw(SimulatorException) = 0;
 	virtual bool validateStage()throw(SimulatorException) = 0;
 
-	virtual void visitSceneNode(SceneNode* node)=0;
+	virtual void visitSceneNode(SceneNode* node){}
 
 
 	//acessor to the different buffers, if subsequent stages need them

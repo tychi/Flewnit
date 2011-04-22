@@ -20,10 +20,12 @@
 
 #ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 
-  namespace cl {
+  namespace CLshare
+  {
     
     //provide typename compatibility;
     typedef Flewnit::Vector4D float4;
+    typedef Flewnit::Matrix4x4 float16;
     typedef unsigned int uint;
   
 #else //FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
@@ -116,6 +118,9 @@
     float4 angularVelocity;
     
     
+    float4 friction; //unused yet; maybe useful for collision with static geometry;
+    
+    
     float massPerParticle;    //will also be in gObjectParticleMasses
     float densityPerParticle; //precomputed by host; doesn't depend on particle count; 
                               //some kind of massPerParticle*(numParticleizationVoxels/rigidBodyAABBVolume)
@@ -124,6 +129,8 @@
                               //           = massPerParticle*inverseParticleizationVoxelVolume
                               
     uint numContainingParticles;
+    
+    
     float inverseNumContainingParticles;
     
     //1/(sum( length(centreOfMassRelParticlePos)^2 )); Needed for angular vel. approximation; precomputed by host
@@ -140,7 +147,7 @@
              
     //TODO adjust padding to align to 128 bytes 
         
-  } RigidBody;
+  } ParticleizedRigidBody;
   
   
   
@@ -151,18 +158,20 @@
   */
   typedef struct  
   {
-    AABB simulationDomainBorders; //as long i have no triangle-collision-mesh functionality, i have to keep the particles
-                                  //in a lame box ;(
-
-    float4 gravityAcceleration; //gravity is an acceleration, yields different forces depending on mass, hence must be passed as gravity;
-    
-
     //{ uniform grid params
     //calced by app to save offset calculations: worldPositionCenter - (( (float)(numCellsPerDimension) )*0.5f) * uniGridCellSizes
     float4 uniGridWorldPosLowerCorner;
     float4 uniGridCellSizes;
     float4 inverseUniGridCellSizes;
     //}
+
+
+    AABB simulationDomainBorders; //as long i have no triangle-collision-mesh functionality, i have to keep the particles
+                                  //in a lame box ;(
+
+    float4 gravityAcceleration; //gravity is an acceleration, yields different forces depending on mass, hence must be passed as gravity;
+    
+
     
     uint numUserForceControlPoints;
     
@@ -170,53 +179,43 @@
     float penaltyForceDamperConstant;    
     
     
-    float timestep;
-    float squaredTimestep;
-    float inverseTimestep; //needed for velocity prediction;
-                           //as this structure is in constant memory, read speed is as fast as register read speed
-                           //and hence precomputation is a valid optimization here to replace a costly division by a cheaper multiplication;
-                          
     
-    //uint numRigidBodies; //should be power of two
-    //float massPerFluidParticle; <-- obsolete, is in __constant float* cObjectMassesPerParticle, index 0
-    float inverseRigidBodyParticleizationVoxelVolume;//precomputed by host; needed to get density from mass for rigid boadies;
-                              //precondition: The volume represented by a rigid body particle is the same for ALL rigid bodies!
-                              //              This is a reaonable demand, because small volumes laed to "oversampling" and overpopulated
-                              //              Uniform grid voxels, and large volumes cause the rigid body to be penetrated by fluid
-                              //              particles; Unless you wanna simulate a sponge, this behaviour is not desired;
-                              //Usage:
-                              //rigidBodyDensity=  massPerParticle*(numParticleizationVoxels/rigidBodyAABBVolume)
-                              //           = massPerParticle/(rigidBodyAABBVolume / numParticleizationVoxels)
-                              //           = massPerParticle/particleizationVoxelVolume
-                              //           = massPerParticle*inverseParticleizationVoxelVolume
+    
 
     
     //{ 
     //  SPH definitions; refer to "Particle-Based Fluid Simulation for Interactive Applications" by Matthias Mueller et. al.
     //  for further info;
     
-    //must be <= uniGridCellSize; 
-    float SPHsupportRadius;
-    float SPHsupportRadiusSquared; //as this structure is in constant memory, read speed is as fast as register read speed
-                                   //and hence precomputation is a valid optimazation here to save one multiplication;
-    
-    
-    //constant terms of used SPH kernels, precomputed by app in order to save calculations in a VERY performance critical code section
-    //( 315.0f / ( 64.0f * PI * pown(SPH_SUPPORT_RADIUS, 9) ) )
-    float poly6KernelConstantTerm;
-    //( 45.0f / ( PI * pown(SPHsupportRadius,6) ) ) <-- 3 * spiky constant term; non-negative because it is the derivative 
-    //"in the direction towards the center", hence coming from positive infinity going to origin, the gradient is positive
-    //as the values become greater towards the origin;
-    float gradientSpikyKernelConstantTerm;
-    //( 45.0f / ( PI * pown(SPH_SUPPORT_RADIUS,6) ) ) <-- that this is the same value as gradientSpikyKernelConstantTerm is
-    //a "coincidence"; the true laplacian of the viscosity kernel would be 
-    //( 45.0f / ( PI * pown(SPH_SUPPORT_RADIUS,6) ) ) * (h-r  - ((h^4)/(r^3)) ) instead of
-    //( 45.0f / ( PI * pown(SPH_SUPPORT_RADIUS,6) ) ) * (h-r)                   denoted in the paper; a reason wasn't given;
-    //I can only speculate that this is a reasonable simplification to trade speed for accuracy;
-    float laplacianViscosityConstantTerm;
+      //must be <= uniGridCellSize; 
+      float SPHsupportRadius;
+      float SPHsupportRadiusSquared; //as this structure is in constant memory, read speed is as fast as register read speed
+                                     //and hence precomputation is a valid optimazation here to save one multiplication;
+      
+      
+      //constant terms of used SPH kernels, precomputed by app in order to save calculations in a VERY performance critical code section
+      //( 315.0f / ( 64.0f * PI * pown(SPH_SUPPORT_RADIUS, 9) ) )
+      float poly6KernelConstantTerm;
+      //( 45.0f / ( PI * pown(SPHsupportRadius,6) ) ) <-- 3 * spiky constant term; non-negative because it is the derivative 
+      //"in the direction towards the center", hence coming from positive infinity going to origin, the gradient is positive
+      //as the values become greater towards the origin;
+      float gradientSpikyKernelConstantTerm;
+      //( 45.0f / ( PI * pown(SPH_SUPPORT_RADIUS,6) ) ) <-- that this is the same value as gradientSpikyKernelConstantTerm is
+      //a "coincidence"; the true laplacian of the viscosity kernel would be 
+      //( 45.0f / ( PI * pown(SPH_SUPPORT_RADIUS,6) ) ) * (h-r  - ((h^4)/(r^3)) ) instead of
+      //( 45.0f / ( PI * pown(SPH_SUPPORT_RADIUS,6) ) ) * (h-r)                   denoted in the paper; a reason wasn't given;
+      //I can only speculate that this is a reasonable simplification to trade speed for accuracy;
+      float laplacianViscosityConstantTerm;
 
     //} end SPH definitions
 
+
+
+    float timestep;
+    float squaredTimestep;
+    float inverseTimestep; //needed for velocity prediction;
+                           //as this structure is in constant memory, read speed is as fast as register read speed
+                           //and hence precomputation is a valid optimization here to replace a costly division by a cheaper multiplication;
    
     
   } SimulationParameters;
@@ -266,25 +265,8 @@
   #define SET_PARTICLE_ID(particleObjectInfo, particleID) \
     particleObjectInfo = (particleObjectInfo & OBJECT_ID_BIT_MASK )\
                          +particleID
-                         
-  //convenience macros to handle offset stuff for rigid bodies
-  //be sure to use this makro only if IS_RIGID_BODY_PARTICLE() returns true!
-   //#define GET_RIGID_BODY_ID ( particleObjectInfo ) ( ( GET_OBJECT_ID(particleObjectInfo) ) - RIGID_BODY_OFFSET )
-   #define GET_RIGID_BODY_ID ( particleObjectID ) ( ( particleObjectID ) - RIGID_BODY_OFFSET )
-                         
-
-  //(1<<11)=2048; reason: this is the maximum number of elements we can scan in parallel within a single work group
-  //without any "tricks"; we need the total sums of positions and velocities
-  #define NUM_MAX_PARTICLES_PER_RIGID_BODY (1<<11)
-  //default: 1: if we wanna simulate different fluids types (i.e. fluid particles can have  different features),
-  //we might increase this offset, but for now, let's not think about TOO much special cases/extension possibilites...
-  #define RIGID_BODY_OFFSET ( 1 )
-  //#define IS_RIGID_BODY_PARTICLE ( particleObjectInfo ) ( ( GET_OBJECT_ID(particleObjectInfo) ) >= RIGID_BODY_OFFSET )                       
-  #define IS_RIGID_BODY_PARTICLE ( particleObjectID ) ( ( particleObjectID ) >= RIGID_BODY_OFFSET )                       
-  #define IS_FLUID_PARTICLE ( particleObjectID ) ( ( particleObjectID ) < RIGID_BODY_OFFSET )
-     
-  #define BELONGS_TO_FLUID      ( particleObjectID ) ( ( particleObjectID ) <  RIGID_BODY_OFFSET )
-  #define BELONGS_TO_RIGID_BODY ( particleObjectID ) ( ( particleObjectID ) >= RIGID_BODY_OFFSET )      
+                        
+ 
  
  //}  end particle object info
  //------------------------------------------------------------------------------------------------------                      
@@ -310,7 +292,7 @@
   
   
 #ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
-  } //end namespace cl 
+  } //end namespace CLshare 
 #endif //FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
   
   

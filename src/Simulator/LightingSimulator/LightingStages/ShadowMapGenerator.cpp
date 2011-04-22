@@ -137,7 +137,7 @@ bool ShadowMapGenerator::stepSimulation() throw(SimulatorException)
 	//traverse the scene; like the DefaultLightingStage, we can re-use the
 	//void LightingSimStageBase::visitSceneNode(SceneNode* node) routine, as the
 	//masking of the VisualMAterialType flags is still sufficient
-	SimulationResourceManager::getInstance().getScene()->traverse(this);
+	SimulationResourceManager::getInstance().getSceneGraph()->traverse(this);
 
 	SimulationResourceManager::getInstance().executeInstancedRendering(this);
 

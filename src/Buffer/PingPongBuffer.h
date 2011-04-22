@@ -28,14 +28,14 @@ public:
 protected:
 
 	BufferInterface* mPingPongBuffers[2];
-	int mRecentlyUpdatedBufferIndex;
-	int mCurrentActiveBufferIndex;
+	int mInactiveBufferIndex;
+	int mActiveBufferIndex;
 
 
 public:
 	void toggleBuffers();
-	BufferInterface* getRecentlyUpdatedBuffer()const;
-	BufferInterface* getCurrentActiveBuffer()const;
+	BufferInterface* getActiveBuffer()const;
+	BufferInterface* getInactiveBuffer()const;
 
 
 

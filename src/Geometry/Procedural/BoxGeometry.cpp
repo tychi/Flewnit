@@ -13,12 +13,13 @@ namespace Flewnit {
 
 BoxGeometry::BoxGeometry(
 		String name,
-		const Vector3D& halfextends,
+		const Vector3D& halfExtends,
 		bool addTangents,
 		bool patchRepresentation,
 		const Vector4D& texcoordScale)
 : VertexBasedGeometry(name,
-		patchRepresentation ? VERTEX_BASED_TRIANGLE_PATCHES : VERTEX_BASED_TRIANGLES)
+		patchRepresentation ? VERTEX_BASED_TRIANGLE_PATCHES : VERTEX_BASED_TRIANGLES),
+		mHalfExtends(halfExtends)
   {
 	BufferInfo bufferi(
 			name + String("BoxGeometryPositionBuffer"),
@@ -95,28 +96,28 @@ BoxGeometry::BoxGeometry(
 			int indexIndexBase = 12* axis + 6*(1-(side+1)/2);
 
 			//lower left
-			posBuffer[vertexIndexBase + 0] 		= Vector4D( (normal + left + down)* halfextends, 1 );
+			posBuffer[vertexIndexBase + 0] 		= Vector4D( (normal + left + down)* halfExtends, 1 );
 			normalBuffer[vertexIndexBase + 0]	= Vector4D( normal, 0 );
 			if(addTangents){
 				tangentBuffer[vertexIndexBase+0]= Vector4D( tangent, 0 );
 			}
 			tcBuffer[vertexIndexBase + 0]		= Vector4D(0,0,0, 0 ) * texcoordScale;
 			//lower right
-			posBuffer[vertexIndexBase + 1] 		= Vector4D( (normal - left + down)* halfextends , 1 );
+			posBuffer[vertexIndexBase + 1] 		= Vector4D( (normal - left + down)* halfExtends , 1 );
 			normalBuffer[vertexIndexBase + 1]	= Vector4D( normal, 0 );
 			if(addTangents){
 				tangentBuffer[vertexIndexBase+1]= Vector4D( tangent, 0 );
 			}
 			tcBuffer[vertexIndexBase + 1]		= Vector4D(1,0,0, 0 )* texcoordScale;
 			//upper right
-			posBuffer[vertexIndexBase + 2] 		= Vector4D( (normal - left - down)* halfextends , 1 );
+			posBuffer[vertexIndexBase + 2] 		= Vector4D( (normal - left - down)* halfExtends , 1 );
 			normalBuffer[vertexIndexBase + 2]	= Vector4D( normal, 0 );
 			if(addTangents){
 				tangentBuffer[vertexIndexBase+2]= Vector4D( tangent, 0 );
 			}
 			tcBuffer[vertexIndexBase + 2]		= Vector4D(1,1,0, 0 )* texcoordScale;
 			//upper left
-			posBuffer[vertexIndexBase + 3] 		= Vector4D( (normal + left - down)* halfextends , 1 );
+			posBuffer[vertexIndexBase + 3] 		= Vector4D( (normal + left - down)* halfExtends , 1 );
 			normalBuffer[vertexIndexBase + 3]	= Vector4D( normal, 0 );
 			if(addTangents){
 				tangentBuffer[vertexIndexBase+3]= Vector4D( tangent, 0 );

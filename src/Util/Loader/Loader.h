@@ -23,7 +23,7 @@ namespace Flewnit
 class Config;
 class ConfigStructNode;
 class GUIParams;
-class Scene;
+class SceneGraph;
 
 class Loader : public BasicObject
 {

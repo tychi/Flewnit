@@ -10,7 +10,7 @@
 #include "Util/Loader/Loader.h"
 
 #include "URE.h"
-#include "Scene/Scene.h"
+#include "Scene/SceneGraph.h"
 #include "Simulator/SimulationResourceManager.h"
 #include "Simulator/LightingSimulator/Light/LightSourceManager.h"
 #include "Util/HelperFunctions.h"

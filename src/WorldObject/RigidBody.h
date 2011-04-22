@@ -5,17 +5,35 @@
  *      Author: tychi
  */
 
-#ifndef RIGIDBODY_H_
-#define RIGIDBODY_H_
+#pragma once
 
-namespace Flewnit {
+#include "WorldObject/WorldObject.h"
 
-class RigidBody {
+
+namespace Flewnit
+{
+
+class RigidBody
+	: public WorldObject
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
-	RigidBody();
+	RigidBody(String name, const AmendedTransform& localtransform);
 	virtual ~RigidBody();
+
+protected:
+
+	Vector4D linearVelocity;
+    Vector4D angularVelocity;
+    //to be synch'ed with scenegraph transform (maybe with a scale and centgre of mass-position-offset)
+    //after every simulation step
+    AmendedTransform mMechanicalWorldTransform;
+
+    //WorldObject::mGlobalTransform =
+    //		MechanicalMaterial::mMechanicalWorldTransform * translate(- mLocalCentreOfMass);
+    //
+    Vector4D mLocalCentreOfMass;
 };
 
-}
 
-#endif /* RIGIDBODY_H_ */
+}

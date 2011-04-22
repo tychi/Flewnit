@@ -249,11 +249,17 @@
   {% endcomment %}      
 {% endblock processSPHResults %}
 
+
+  //integrat only for valid particles, rest MUST stay at zero to not corrupt scans in rigid body calculations
+  if(! IS_INVALID_PARTICLE(ownParticleObjectID) )
+  {
 {% block integrate %}
   {% comment %}
     calculate new positions and velocites from new accelerations and old poistions and velocities;
   {% endcomment %}          
 {% endblock integrate %}
+  } // end if(! IS_INVALID_PARTICLE() )
+
 
 {% block calcZIndex %}      
 {% endblock calcZIndex %}

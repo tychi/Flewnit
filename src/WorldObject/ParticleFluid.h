@@ -5,17 +5,30 @@
  *      Author: tychi
  */
 
-#ifndef PARTICLEFLUID_H_
-#define PARTICLEFLUID_H_
+#pragma once
 
-namespace Flewnit {
 
-class ParticleFluid {
+#include "WorldObject/WorldObject.h"
+
+#define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+#include "MPP/OpenCLProgram/ProgramSources/physicsDataStructures.cl"
+#undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+
+
+namespace Flewnit
+{
+
+class ParticleFluid
+	: public WorldObject
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
-	ParticleFluid();
+	ParticleFluid(ConfigStructNode* simConfigNode);
 	virtual ~ParticleFluid();
+
+
 };
+
 
 }
 
-#endif /* PARTICLEFLUID_H_ */

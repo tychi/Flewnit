@@ -5,16 +5,17 @@
  *      Author: tychi
  */
 
-#include "ParticleFluidMechanics.h"
+#include "ParticleFluidMechanicsStage.h"
 
-namespace Flewnit {
+namespace Flewnit
+{
 
-ParticleFluidMechanics::ParticleFluidMechanics() {
+ParticleFluidMechanicsStage::ParticleFluidMechanicsStage() {
 	// TODO Auto-generated constructor stub
 
 }
 
-ParticleFluidMechanics::~ParticleFluidMechanics() {
+ParticleFluidMechanicsStage::~ParticleFluidMechanicsStage() {
 	// TODO Auto-generated destructor stub
 }
 

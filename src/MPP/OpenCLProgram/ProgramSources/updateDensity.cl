@@ -99,7 +99,7 @@
     }
     else
     {
-      //must be rigid body particle;
+      //must be rigid body  or invalid particle;
       gDensitiesNew[ ownGlobalAttributeIndex ] =  cObjectGenericFeatures[ ownParticleObjectID ].restDensity;
       //see member definition of the SimulationParameters structure for further info on this value 
       //* cSimParams->inverseRigidBodyParticleizationVoxelVolume ;

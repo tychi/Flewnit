@@ -21,7 +21,7 @@ class BoxGeometry
 public:
 	BoxGeometry(
 			String name,
-			const Vector3D& halfextends,
+			const Vector3D& halfExtends,
 			bool addTangents,
 			//set default draw mode to patches (for tesselation) instead of triangles
 			bool patchRepresentation = false,
@@ -30,8 +30,12 @@ public:
 
 	virtual ~BoxGeometry();
 
+	inline const Vector3D& getHalfextends()const{return mHalfExtends;}
+
 private:
 
+
+	Vector3D mHalfExtends;
 };
 
 }

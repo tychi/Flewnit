@@ -18,8 +18,8 @@ PingPongBuffer::PingPongBuffer(String name,BufferInterface* ping, BufferInterfac
 :
 //tak BufferInfo from one of the Managed Buffers
 BufferInterface(ping->getBufferInfo()),
-mRecentlyUpdatedBufferIndex(0),
-mCurrentActiveBufferIndex(1)
+mInactiveBufferIndex(0),
+mActiveBufferIndex(1)
 {
 	//alloc new one, as we need its info for tracking purposes till the end,
 	//when the managed buffers are already deleted;
@@ -45,16 +45,16 @@ mCurrentActiveBufferIndex(1)
 	}
 
 
-	mPingPongBuffers[mRecentlyUpdatedBufferIndex] = ping;
-	mPingPongBuffers[mCurrentActiveBufferIndex] = pong;
+	mPingPongBuffers[mInactiveBufferIndex] = ping;
+	mPingPongBuffers[mActiveBufferIndex] = pong;
 }
 
 PingPongBuffer::~PingPongBuffer()
 {
 	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Destroying PingPongBuffer named "<<mBufferInfo->name<<" ;\n";
 
-	delete mPingPongBuffers[mRecentlyUpdatedBufferIndex];
-	delete mPingPongBuffers[mCurrentActiveBufferIndex];
+	delete mPingPongBuffers[mInactiveBufferIndex];
+	delete mPingPongBuffers[mActiveBufferIndex];
 
 	//omit a free() call by the bufferinterface destructor as members of this class were only references
 	mCPU_Handle=0;
@@ -66,26 +66,26 @@ PingPongBuffer::~PingPongBuffer()
 
 void PingPongBuffer::toggleBuffers()
 {
-	mRecentlyUpdatedBufferIndex =  	(mRecentlyUpdatedBufferIndex +1) %2;
-	mCurrentActiveBufferIndex =  	(mCurrentActiveBufferIndex +1) 	%2;
+	mInactiveBufferIndex =  	(mInactiveBufferIndex +1) %2;
+	mActiveBufferIndex =  	(mActiveBufferIndex +1) 	%2;
 	getHandlesFromCurrentActiveBuffer();
 }
 
 void PingPongBuffer::getHandlesFromCurrentActiveBuffer()
 {
-	mCPU_Handle= mPingPongBuffers[mCurrentActiveBufferIndex]->getCPUBufferHandle();
-	mGraphicsBufferHandle=  mPingPongBuffers[mCurrentActiveBufferIndex]->getGraphicsBufferHandle();
-	mComputeBufferHandle=  mPingPongBuffers[mCurrentActiveBufferIndex]->getComputeBufferHandle();
+	mCPU_Handle= mPingPongBuffers[mActiveBufferIndex]->getCPUBufferHandle();
+	mGraphicsBufferHandle=  mPingPongBuffers[mActiveBufferIndex]->getGraphicsBufferHandle();
+	mComputeBufferHandle=  mPingPongBuffers[mActiveBufferIndex]->getComputeBufferHandle();
 }
 
-BufferInterface* PingPongBuffer::getRecentlyUpdatedBuffer()const
+BufferInterface* PingPongBuffer::getInactiveBuffer()const
 {
-	return mPingPongBuffers[mRecentlyUpdatedBufferIndex];
+	return mPingPongBuffers[mInactiveBufferIndex];
 }
 
-BufferInterface* PingPongBuffer::getCurrentActiveBuffer()const
+BufferInterface* PingPongBuffer::getActiveBuffer()const
 {
-	return mPingPongBuffers[mCurrentActiveBufferIndex];
+	return mPingPongBuffers[mActiveBufferIndex];
 }
 
 void PingPongBuffer::checkPingPongError() const
@@ -112,11 +112,11 @@ bool PingPongBuffer::operator==(const BufferInterface& rhs) const
 	if(!castedPtr) return false;
 
 	//ok, it is a ping pong buffer; now compare the pings and pongs to each other (comparing twice is redundant, but ... :P)
-	return ( 	*(mPingPongBuffers[mRecentlyUpdatedBufferIndex])
-			==  *(castedPtr->getRecentlyUpdatedBuffer()) )
+	return ( 	*(mPingPongBuffers[mInactiveBufferIndex])
+			==  *(castedPtr->getInactiveBuffer()) )
 			&&
-		   ( 	*(mPingPongBuffers[mCurrentActiveBufferIndex])
-			==  *(castedPtr->getCurrentActiveBuffer()) )
+		   ( 	*(mPingPongBuffers[mActiveBufferIndex])
+			==  *(castedPtr->getActiveBuffer()) )
 	;
 }
 
@@ -181,7 +181,7 @@ void PingPongBuffer::freeCL()throw(BufferException)
 
 
 void PingPongBuffer::bindGL()throw(BufferException)
-{mPingPongBuffers[mCurrentActiveBufferIndex]->bindGL();}
+{mPingPongBuffers[mActiveBufferIndex]->bindGL();}
 
 
 
@@ -189,21 +189,21 @@ void PingPongBuffer::bindGL()throw(BufferException)
 //he will have to get them directly
 void PingPongBuffer::writeGL(const void* data)throw(BufferException)
 {
-	mPingPongBuffers[mCurrentActiveBufferIndex]->writeGL(data);
+	mPingPongBuffers[mActiveBufferIndex]->writeGL(data);
 	//mPingPongBuffers[1]->writeGL(data);
 }
 void PingPongBuffer::writeCL(const void* data)throw(BufferException)
 {
-	mPingPongBuffers[mCurrentActiveBufferIndex]->writeCL(data);
+	mPingPongBuffers[mActiveBufferIndex]->writeCL(data);
 	//mPingPongBuffers[1]->writeCL(data);
 }
 void PingPongBuffer::readGL(void* data)throw(BufferException)
 {
-	mPingPongBuffers[mCurrentActiveBufferIndex]->readGL(data);
+	mPingPongBuffers[mActiveBufferIndex]->readGL(data);
 }
 void PingPongBuffer::readCL(void* data)throw(BufferException)
 {
-	mPingPongBuffers[mCurrentActiveBufferIndex]->readCL(data);
+	mPingPongBuffers[mActiveBufferIndex]->readCL(data);
 }
 void PingPongBuffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
 {

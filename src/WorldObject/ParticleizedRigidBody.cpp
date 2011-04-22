@@ -1,20 +1,20 @@
 /*
- * ParticleManager.cpp
+ * ParticleizedRigidBody.cpp
  *
  *  Created on: Apr 21, 2011
  *      Author: tychi
  */
 
-#include "ParticleManager.h"
+#include "ParticleizedRigidBody.h"
 
 namespace Flewnit {
 
-ParticleManager::ParticleManager() {
+ParticleizedRigidBody::ParticleizedRigidBody() {
 	// TODO Auto-generated constructor stub
 
 }
 
-ParticleManager::~ParticleManager() {
+ParticleizedRigidBody::~ParticleizedRigidBody() {
 	// TODO Auto-generated destructor stub
 }
 

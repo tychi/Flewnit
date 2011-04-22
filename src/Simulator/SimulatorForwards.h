@@ -63,11 +63,21 @@ class MechanicsSimulator;
 class SoundSimulator;
 
 class SimulationResourceManager;
+
+
 class ParallelComputeManager;
 
 
-class SimulationPipeline;
+//class SimulationPipeline;
 class SimulationPipelineStage;
+
+	class LightingSimStageBase;
+		class DefaultLightingStage;
+		class ShadowMapGenerator;
+
+	class ParticleFluidMechanicsStage;
+
+
 //class LightingPipelineStage;
 //class SPHFluidPipelineStage;
 //required features a pipeline stage needs fulfilled from the rest of the simulators/pipelines to work properly
@@ -131,26 +141,33 @@ class RenderTarget;
 
 ///\brief Scene/WorldObject forwards;
 ///\{
-class Scene;
-class SceneNode;
+class SceneRepresentation;
+	class SceneGraph;
+		class SceneNode;
+	class ParticleSceneRepresentation;
+	class VoxelSceneRepresentation;
+	class PrimitiveSceneRepresentation;
+
 //WorldObject is derived from SceneNode
 class WorldObject;
-class	PureVisualObject;
-class 	SkyDome;
+	class PureVisualObject; //pure visual object without mechanical interference
+	class 	SkyDome;
+
+
 ///\{ following: concrete WorldObjects with different purpose:
 class Camera;
 
 //
-class LightSource;
 class LightSourceManager;
-class 	PointLight;
-//SpotLight is a Specialization of PointLight;
-class	SpotLight;
+	class LightSource;
+		class 	PointLight;
+		//SpotLight is a Specialization of PointLight;
+		class	SpotLight;
 
-class PureVisualObject; //pure visual object without mechanical interference
 
-class ParticleFluid; //the most important WorldObject in this Thesis :);
-class VoxelFluid; //irrelevant in this thesis
+class Fluid;
+	class ParticleFluid; //the most important WorldObject in this thesis :);
+	class VoxelFluid; //irrelevant in this thesis
 
 class RigidBody; //configurable or derivable to TriangleRB or ParticleizedRB ..t.b.d...
 class 	PrimitiveBasedRigidBody; //Convex hull, capsule etc.. won't be thought about during this thesis,

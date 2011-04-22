@@ -17,7 +17,7 @@
   Hence, I had to adopt some elements of the algorithms;
     - use of atomic_inc() instead of explicit serialization
     - local scan of the local radix counters already in the tabulation phase, so that the "global scan" in phase 2
-      reduces its element count to NUM_TABULATE_WORK_GROUPS
+      reduces its element count to NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE
 
   
   I don't try to enforce template usage at the moment; It rather confuses than helps me with structuring at the moment; 
@@ -64,7 +64,7 @@
     // default proposal (fermi): 4; 
     // default proposal (GT200): <8>; 
     //this way, we need...
-    #define NUM_KEY_ELEMENTS_PER_RADIX_COUNTER ( {{numElementsPerRadixCounter }} )
+    #define NUM_KEY_ELEMENTS_PER_RADIX_COUNTER ( {{ numElementsPerRadixCounter }} )
     //... "only" 256k / 4<16> = 64k<16k> radix counters per radix;
     #define NUM_TOTAL_RADIX_COUNTERS_PER_RADIX ( NUM_TOTAL_ELEMENTS / NUM_KEY_ELEMENTS_PER_RADIX_COUNTER )
   //-------------------------------------------------------------------------------------                                                                                        
@@ -98,15 +98,15 @@
     //one work item per key element, to that each work item can copy a key to __local memory
     //default (fermi): 128 radix counters per radix * 4 elements per radix counter = 512
     //default (GT200):  32 radix counters per radix * 8 elements per radix counter = 256
-    #define NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER)
+    #define NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER)
     //define explicitely the numbers of elements per tabulation work group: default: same as number of work items per work group
-    #define NUM_TABULATE_ELEMENTS_PER_WORK_GROUP (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER)
+    #define NUM_ELEMENTS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER)
     //default (fermi) : 2^18/( 2^7 * 2^2) = 2^9 = 512
     //default (GT200) : 2^18/( 2^5 * 2^3) = 2^10 = 1024
-    #define NUM_TABULATE_WORK_GROUPS ( NUM_TOTAL_ELEMENTS  / (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER) )
+    #define NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE ( NUM_TOTAL_ELEMENTS  / (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER) )
     
  
-    #define NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL ( (2*NUM_TABULATE_ELEMENTS_PER_WORK_GROUP ) / NUM_LOCAL_RADIX_COUNTER_ELEMENTS )
+    #define NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL ( (2*NUM_ELEMENTS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE ) / NUM_LOCAL_RADIX_COUNTER_ELEMENTS )
   //-------------------------------------------------------------------------------------
 
 
@@ -128,7 +128,7 @@
 
   //=====================================================================================
   //phase one out of three in a radix sort pass: tabulate and local scan
-  __kernel __attribute__((reqd_work_group_size(NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
+  __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE,1,1))) 
   void kernel_radixSort_tabulate_localScan_Phase(
     __global uint* gKeysToSort,     //NUM_TOTAL_ELEMENTS elements
     __global uint* gLocallyScannedRadixCounters,  //NUM_RADICES_PER_PASS * NUM_TOTAL_RADIX_COUNTERS_PER_RADIX elements; (e.g. 64*64k);
@@ -136,14 +136,14 @@
                                     //In phase 1 (tabulation and local scan), the results of local scans of the counters 
                                     //  are written to this array;
                                     //In phase 3, it serves as "local" offset for the own radix 
-    __global uint* gSumsOfLocalRadixCounts, // NUM_RADICES_PER_PASS * NUM_TABULATE_WORK_GROUPS  elements (e.g. 64 * 512);
+    __global uint* gSumsOfLocalRadixCounts, // NUM_RADICES_PER_PASS * NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE  elements (e.g. 64 * 512);
                                     //In phase 1, the sums of the local scans of the radix counters will be written to it;
                                     //In phase 2, each of these NUM_RADICES_PER_PASS counter arrays will be scanned
                                     //  to yield the "own radix offsets" to be added to the final reorder-offset
                                     //  SUGGESTION: for read coalescing purposes in phase 3, the scan results of this array 
                                     //              should be written back TRANSPOSED in phase 2 
                                     //              (i.e. logically, it would not be an array of NUM_RADICES_PER_PASS counter arrays 
-                                    //              anymore, but an array of NUM_TABULATE_WORK_GROUPS counter set arrays).
+                                    //              anymore, but an array of NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE counter set arrays).
                                     //              But as a matrix transpose memory access patterns are only efficient if there
                                     //              are at least as many coloumns as the cache line is big, and as due to big row lenghts
                                     //              there don't fit many columns into the local memory, a transposition seems not a good option;
@@ -173,7 +173,7 @@
     #pragma unroll
     for ( uint offset =0; 
           offset < PADDED_STRIDE(NUM_LOCAL_RADIX_COUNTER_ELEMENTS); 
-          offset += PADDED_STRIDE(NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP)
+          offset += PADDED_STRIDE(NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE)
     )
     {
       lRadixCounters[offset + localPaddedCounterIndex] = 0;
@@ -235,7 +235,7 @@
       {
         gSumsOfLocalRadixCounts[
           //select the counter array for the recently scanned radix counte array
-          radixToScan * NUM_TABULATE_WORK_GROUPS
+          radixToScan * NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE
           //entry in counter array corresponds to work group
           + get_group_id(0)
         ] = lTotalRadixSum;
@@ -277,33 +277,33 @@
   //Elements to scan in phase 2 is the same as there were work groups in phase 1
   //reason:   In phase 2, the results of the local radix counter scans of phase 1 are scanned, so we have to sum up 
   //          one element per phase 1 work group;
-   #define NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP ( NUM_TABULATE_WORK_GROUPS )
+   #define NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE ( NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE )
   //half as many work items per work group as there are elements to scan
-  #define NUM_GLOBAL_SCAN_WORK_ITEMS_PER_WORK_GROUP ( NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP >> 1 )
+  #define NUM_WORK_ITEMS_PER_WORK_GROUP__GLOBAL_SCAN_PHASE ( NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE >> 1 )
   //Because the structure of the algorithm demands that the global scan can be performed by a single work group,
   //theoretically, phase 2 can be completely performed by a single work group; But this approach woudn't scale
   //with the number of multiprocessors in a device; Hence, for perfect load balancing, we take 
   //pow2(ceil(log2(CL_DEVICE_MAX_COMPUTE_UNITS))) work groups (value calced by app), 
   //i.e. the number of multiprocessors, rounded to the next power of two
-  #define NUM_GLOBAL_SCAN_WORK_GROUPS  ( NUM_BASE2_CEILED_COMPUTE_UNITS )
-  //#define NUM_GLOBAL_SCAN_WORK_GROUPS  ( {{ numGlobalScanWorkGroups }} )
+  #define NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE  ( NUM_BASE2_CEILED_COMPUTE_UNITS )
+  //#define NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE  ( {{ numGlobalScanWorkGroups }} )
   //default value for Geforce GT  435M (fermi) : (64 / pow2(ceil(log2( 2))) = 32
   //default value for Geforce GTX 280  (GT200) : (64 / pow2(ceil(log2(30))) = 2
   //default value for Geforce GTX 570  (fermi) : (64 / pow2(ceil(log2(15))) = 4
   //default value for Geforce GTX 580  (fermi) : (64 / pow2(ceil(log2(16))) = 4
-  #define NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP (NUM_RADICES_PER_PASS / NUM_GLOBAL_SCAN_WORK_GROUPS )
+  #define NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE (NUM_RADICES_PER_PASS / NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE )
   
-  __kernel __attribute__((reqd_work_group_size(NUM_GLOBAL_SCAN_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
+  __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP__GLOBAL_SCAN_PHASE,1,1))) 
   void kernel_radixSort_globalScan_Phase(
     __global uint* gSumsOfLocalRadixCountsToBeScanned, //is the gSumsOfLocalRadixCounts from phase 1;
-                                    //NUM_RADICES_PER_PASS * NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP elements (e.g. 64*512);
+                                    //NUM_RADICES_PER_PASS * NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE elements (e.g. 64*512);
                                     //In phase 1, the sums of the local scans of the radix counters will be written to it;
                                     //In phase 2, each of these NUM_RADICES_PER_PASS counter arrays will be scanned
                                     //  to yield the "own radix offsets" to be added to the final reorder-offset
                                     //  SUGGESTION: for read coalescing purposes in phase 3, the scan results of this array 
                                     //              should be written back TRANSPOSED in phase 2 
                                     //              (i.e. logically, it would not be an array of NUM_RADICES_PER_PASS counter arrays 
-                                    //              anymore, but an array of NUM_TABULATE_WORK_GROUPS counter set arrays).
+                                    //              anymore, but an array of NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE counter set arrays).
                                     //              But as a matrix transpose memory access patterns are only efficient if there
                                     //              are at least as many coloumns as the cache line is big, and as due to big row lenghts
                                     //              there don't fit many columns into the local memory, a transposition seems not a good option;
@@ -315,11 +315,11 @@
                                     //In phase 3, it serves as "global" offset for the own radix 
     __global uint* gPartiallyScannedSumsOfGlobalRadixCounts, //NUM_RADICES_PER_PASS elements (e.g. 64); 
                                     //In phase 2, the total sum of each radix counter array will be calculated,
-                                    //  then a partial scan (NUM_RADICES_PER_PASS / NUM_GLOBAL_SCAN_WORK_GROUPS), e.g. (64/2)=32
-                                    //  will be performed by the NUM_GLOBAL_SCAN_WORK_GROUPS and uploaded to this array
+                                    //  then a partial scan (NUM_RADICES_PER_PASS / NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE), e.g. (64/2)=32
+                                    //  will be performed by the NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE and uploaded to this array
                                     //In phase 3, this array is completely read to shared memory, and "the rest" of the scan is performed,
-                                    //  namely NUM_GLOBAL_SCAN_WORK_GROUPS are scanned
-   __global uint* gSumsOfPartialScansOfSumsOfGlobalRadixCounts, //NUM_GLOBAL_SCAN_WORK_GROUPS elements used (e.g. 2 for geforce GT 435M);
+                                    //  namely NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE are scanned
+   __global uint* gSumsOfPartialScansOfSumsOfGlobalRadixCounts, //NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE elements used (e.g. 2 for geforce GT 435M);
                                     //Naming of all those buffers for  scans of scans of scans becomes weird at the latest now; 
                                     //This buffer represents the fourth and most coarse layer of "counter" granularity; 
                                     //Each work group of phase 2 sets 
@@ -337,10 +337,10 @@
      //One padded array to scan must fit in;
      // example size (fermi) :  512 *(1+1/32) =  528 elements
      // example size (GT200) : 1024 *(1+1/16) = 1088 elements
-     __local uint lSumsOfLocalRadixCounts[ PADDED_STRIDE( NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP ) ];
+     __local uint lSumsOfLocalRadixCounts[ PADDED_STRIDE( NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE ) ];
      
      // (e.g. 33 elements for Geforce GT435M);
-     //Although we need to comupte and store only NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP, in order
+     //Although we need to comupte and store only NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE, in order
      //to keep control flow and business logic simple (i.e. to not corrupt the structure of the
      //_ex_clusive scan), one value past the actual array length will be written; this saves a
      //costly if-statement within the scan loop.
@@ -351,14 +351,14 @@
      //which one work group has worked on. (The final scan will be done in phase 3, as global synch is needed)
      //Note: because of the sequential scan, this array needs no padding (besides the one additinal element), 
      //becaus no bank conflicts can occur.  
-     __local uint  lSumsOfGlobalRadixCounts[ NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP + 1 ];
+     __local uint  lSumsOfGlobalRadixCounts[ NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE + 1 ];
   
   
     uint lwiID = get_local_id(0); // short for "local work item ID"
     uint groupID = get_group_id(0);
     
-    uint radixStart = groupID *   NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP;
-    uint radixEnd   = groupID * ( NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP +1 );
+    uint radixStart = groupID *   NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE;
+    uint radixEnd   = groupID * ( NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE +1 );
     
     if(lwiID == 0)
     {
@@ -372,17 +372,17 @@
       //{ index calculation for global and local element arrays:   
       uint globalLowerIndex = 
           //select the counter array for the recently scanned radix counter array
-          currentRadix * NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP
+          currentRadix * NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE
           //entry in counter array corresponds to work item
           + lwiID;
       //TODO optimize for super scalarity: better repeat calculations instead of provoḱing a read-after-write-hazard?
-      //uint globalHigherIndex = globalLowerIndex + (NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP/2);
-      uint globalHigherIndex =  currentRadix * NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP
+      //uint globalHigherIndex = globalLowerIndex + (NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE/2);
+      uint globalHigherIndex =  currentRadix * NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE
           //entry in counter array corresponds to work item + half the size of array to scan
-          + lwiID + (NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP/2);
+          + lwiID + (NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE/2);
       
       uint localLowerIndex  = CONFLICT_FREE_INDEX( lwiID );
-      uint localHigherIndex = CONFLICT_FREE_INDEX( lwiID + (NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP/2) );
+      uint localHigherIndex = CONFLICT_FREE_INDEX( lwiID + (NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE/2) );
       //}
      
       //read coalesced from global memory
@@ -393,7 +393,7 @@
           lSumsOfLocalRadixCounts,
           & lTotalRadixSum, 
           //as many elements to scan as we have radix counter elements per radix
-          NUM_GLOBAL_SCAN_ELEMENTS_TO_SCAN_PER_WORK_GROUP, 
+          NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE, 
           lwiID
         );
         
@@ -413,7 +413,7 @@
    
     //in the end, write the results of the scan of the work-group-assigned interval of the total radix sums
     //back to global memory:
-    if(lwiID < NUM_GLOBAL_SCAN_RADICES_PER_WORK_GROUP)
+    if(lwiID < NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE)
     {
       gPartiallyScannedSumsOfGlobalRadixCounts[radixStart + lwiID] = lSumsOfGlobalRadixCounts[lwiID];
     }
@@ -427,7 +427,7 @@
   //=====================================================================================
   //phase three out of three in a radix sort pass: reorder
   //number of work items corremponds to that of phase one, so this is no mistake:
-  __kernel __attribute__((reqd_work_group_size(NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
+  __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE,1,1))) 
   void kernel_radixSort_reorder_Phase(
     //following key ping pong buffers: (We need ping pong buffers, because although input and output indices are a perfect permutation
     //of each other, read from and write to the same buffer would need global synchronization)
@@ -440,7 +440,7 @@
                                     //the keys are needed to determine the start and end object within a cell.
 
     //following value ping pong buffers:                                                                 
-    __global uint* gValueIndices,   //NUM_TOTAL_ELEMENTS elements; 
+    __global uint* gOldIndices,   //NUM_TOTAL_ELEMENTS elements; 
                                     //Because there are several radix sort passes needed
                                     //until a high-bit key array is completely sorted, it would be madness to reorder (and hence scatter uncoalesced) 
                                     //EVERY value associated to this key (e.g. position vectors, velocity vectors etc.)
@@ -452,7 +452,7 @@
                                     //a relatively great amount of coalescing is still implicitely provided.
                                     //In first radix sort pass, this array is unused and get_global_id(0) is taken instead as initial
                                     //index.                                  
-    __global uint* gReorderedValueIndices,//NUM_TOTAL_ELEMENTS elements;   
+    __global uint* gReorderedOldIndices,//NUM_TOTAL_ELEMENTS elements;   
 
 
     
@@ -462,15 +462,15 @@
                                     //In phase 1 (tabulation and local scan), the results of local scans of the counters (stride e.g. 128 for fermi)
                                     //  are written to this array;
                                     //In phase 3, it serves as "local" offset for the own radix 
-    __global uint* gScannedSumsOfLocalRadixCounts, //is the gSumsOfLocalRadixCountsToBeScanned from phase 2, NUM_TABULATE_WORK_GROUPS elements
+    __global uint* gScannedSumsOfLocalRadixCounts, //is the gSumsOfLocalRadixCountsToBeScanned from phase 2, NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE elements
                                     //In phase 3, it serves as "global" offset for the own radix 
     __global uint* gPartiallyScannedSumsOfGlobalRadixCounts, //NUM_RADICES_PER_PASS elements (e.g. 64); 
                                     //In phase 2, the total sum of each radix counter array will be calculated,
-                                    //  then a partial scan (NUM_RADICES_PER_PASS / NUM_GLOBAL_SCAN_WORK_GROUPS), e.g. (64/2)=32
-                                    //  will be performed by the NUM_GLOBAL_SCAN_WORK_GROUPS and uploaded to this array
+                                    //  then a partial scan (NUM_RADICES_PER_PASS / NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE), e.g. (64/2)=32
+                                    //  will be performed by the NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE and uploaded to this array
                                     //In phase 3, this array is completely read to shared memory, and "the rest" of the scan is performed,
-                                    //  namely NUM_GLOBAL_SCAN_WORK_GROUPS are scanned   
-    __global uint* gSumsOfPartialScansOfSumsOfGlobalRadixCounts, //NUM_GLOBAL_SCAN_WORK_GROUPS elements used (e.g. 2 for geforce GT 435M);
+                                    //  namely NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE are scanned   
+    __global uint* gSumsOfPartialScansOfSumsOfGlobalRadixCounts, //NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE elements used (e.g. 2 for geforce GT 435M);
                                     //Naming of all those buffers for  scans of scans of scans becomes weird at the latest now; 
                                     //This buffer represents the fourth and most coarse layer of "counter" granularity; 
                                     //Each work group of phase 2 sets 
@@ -489,8 +489,8 @@
     
     //locally cached keys 'n values because of otherwise uncoalesced global memory access 
     //due to serialization of scatter and radix counter incrementation                                    
-    __local uint lKeysToSort  [ PADDED_STRIDE( NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP ) ]; //padding due to interleaved reads
-    __local uint lValueIndices[ PADDED_STRIDE( NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP ) ]; //padding due to interleaved reads
+    __local uint lKeysToSort  [ PADDED_STRIDE( NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE ) ]; //padding due to interleaved reads
+    __local uint lOldIndices[ PADDED_STRIDE( NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE ) ]; //padding due to interleaved reads
            
                            
     //Similar usage as in phase 1;
@@ -512,7 +512,7 @@
     
     // e.g. 2+0=2 elements for GT435M
     //copy of gSumsOfPartialScansOfSumsOfGlobalRadixCounts, so that it can be scanned;
-    __local uint lSumsOfPartialScansOfSumsOfGlobalRadixCounts[ PADDED_STRIDE( NUM_GLOBAL_SCAN_WORK_GROUPS ) ];
+    __local uint lSumsOfPartialScansOfSumsOfGlobalRadixCounts[ PADDED_STRIDE( NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE ) ];
     
     
   
@@ -535,18 +535,18 @@
       if(numPass == 0)
       {
         //initial pass: value index corresponds to global work item id :)
-        lValueIndices[ paddedLocalCopyIndex ] = gwiID;
+        lOldIndices[ paddedLocalCopyIndex ] = gwiID;
       }else
       {
         //non-initial pass: old indices have already been subverted by previous scatters; grab those from buffer;
-        lValueIndices[ paddedLocalCopyIndex ] = gValueIndices[groupID];
+        lOldIndices[ paddedLocalCopyIndex ] = gOldIndices[gwiID];
       }
         
       //for fermi default: 4* [0..128]
       uint localRadixCounterCopyIndex = BASE_2_MODULO( lwiID, NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP );
       #pragma unroll
       //default fermi:  8192/512=16
-      for(uint i= 0; i < ( NUM_LOCAL_RADIX_COUNTER_ELEMENTS / NUM_TABULATE_WORK_ITEMS_PER_WORK_GROUP ) ; i++)
+      for(uint i= 0; i < ( NUM_LOCAL_RADIX_COUNTER_ELEMENTS / NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE ) ; i++)
       {
         //radix in whose copy the current work item will participate = 
         uint radixToCopy = 
@@ -581,7 +581,7 @@
         lPartiallyScannedSumsOfGlobalRadixCounts[lwiID] = gPartiallyScannedSumsOfGlobalRadixCounts[lwiID];
       }
       //-------------------------------------------------
-      if(lwiID < NUM_GLOBAL_SCAN_WORK_GROUPS )
+      if(lwiID < NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE )
       {
         //padded copy due to scanning
         lSumsOfPartialScansOfSumsOfGlobalRadixCounts[ paddedLocalCopyIndex ] = gSumsOfPartialScansOfSumsOfGlobalRadixCounts[lwiID];
@@ -600,10 +600,10 @@
           
     //check if we even have more than one compute units, otherwise the scan would not be called and hence the first element
     //in lSumsOfPartialScansOfSumsOfGlobalRadixCounts wouldn't be zero and corrupt the offsetting; we have to catch this situation.
-    #if NUM_GLOBAL_SCAN_WORK_GROUPS > 1
-      if( lwiID < (NUM_GLOBAL_SCAN_WORK_GROUPS/2) )
+    #if NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE > 1
+      if( lwiID < (NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE/2) )
       {
-        scanExclusive(lSumsOfPartialScansOfSumsOfGlobalRadixCounts, & lDummyScanTotalSum, NUM_GLOBAL_SCAN_WORK_GROUPS, lwiID );
+        scanExclusive(lSumsOfPartialScansOfSumsOfGlobalRadixCounts, & lDummyScanTotalSum, NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE, lwiID );
       }
     #else
       if( lwiID == 0 )
@@ -619,7 +619,7 @@
       if(lwiID < NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP)
       {
         uint key;
-        uint valueIndex;
+        uint oldIndex;
         uint radix;
         
         //TODO check if unroll amortizes or not
@@ -631,16 +631,16 @@
           uint localpaddedElementIndex = CONFLICT_FREE_INDEX( localElementIndex );
                   
           key = lKeysToSort[ localpaddedElementIndex ];
-          valueIndex = lValueIndices[ localpaddedElementIndex ]; 
+          oldIndex = lOldIndices[ localpaddedElementIndex ]; 
           radix = getRadix( key,numPass);
           
           uint newIndexInSortedArray =
             //offset by the "scan of the partial scans of the total radix counts":
-            lSumsOfPartialScansOfSumsOfGlobalRadixCounts[ CONFLICT_FREE_INDEX (  radix  / NUM_GLOBAL_SCAN_WORK_GROUPS ) ] 
+            lSumsOfPartialScansOfSumsOfGlobalRadixCounts[ CONFLICT_FREE_INDEX (  radix  / NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE ) ] 
             //offset by the "partial scans of the total radix counts":
             + lPartiallyScannedSumsOfGlobalRadixCounts [ radix ]
             //offset by the "global radix count" for the current radix:
-            + gScannedSumsOfLocalRadixCounts[ radix * NUM_TABULATE_WORK_GROUPS + groupID ]
+            + gScannedSumsOfLocalRadixCounts[ radix * NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE + groupID ]
             //offset by the "local radix count" for the current radix and increment the radix counter
             //so that the following key/value pair of the element group sharing the same counter with possibly the same radix
             //is offset one position further than the preceding one:
@@ -652,7 +652,7 @@
             
             //and, at last, after in total around 800 lines of code and comments, do the SCATTER!!!1
             gReorderedKeys[newIndexInSortedArray] = key;
-            gReorderedValueIndices[newIndexInSortedArray] = valueIndex;
+            gReorderedOldIndices[newIndexInSortedArray] = oldIndex;
         }
       }
     //}

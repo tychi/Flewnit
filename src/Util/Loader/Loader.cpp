@@ -15,7 +15,7 @@
 
 #include "URE.h"
 #include "Simulator/SimulationResourceManager.h"
-#include "Scene/Scene.h"
+#include "Scene/SceneGraph.h"
 //#include "Util/HelperFunctions.h"
 #include "Buffer/BufferHelperUtils.h"
 #include "Buffer/Texture.h"
@@ -54,7 +54,7 @@ Loader::~Loader()
 void Loader::loadScene()
 {
 	ConfigStructNode& scenesConfigNode = URE_INSTANCE->getConfig().root().get("scenes",0);
-	SceneNode& rootSceneNode = SimulationResourceManager::getInstance().getScene()->root();
+	SceneNode& rootSceneNode = SimulationResourceManager::getInstance().getSceneGraph()->root();
 
 	if( scenesConfigNode.get("scenesGlobalSettings",0).childExists("environmentMap",0) )
 	{

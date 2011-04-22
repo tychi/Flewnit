@@ -5,12 +5,18 @@
  *      Author: tychi
  */
 
-#ifndef PARTICLEIZEDRIGIDBODYMECHANICALMATERIAL_H_
-#define PARTICLEIZEDRIGIDBODYMECHANICALMATERIAL_H_
+#pragma once
 
-namespace Flewnit {
+#include "MechanicalMaterial.h"
 
-class ParticleizedRigidBodyMechanicalMaterial {
+
+
+namespace Flewnit
+{
+
+class ParticleizedRigidBodyMechanicalMaterial
+	: public MechanicalMaterial
+{
 public:
 	ParticleizedRigidBodyMechanicalMaterial();
 	virtual ~ParticleizedRigidBodyMechanicalMaterial();
@@ -18,4 +24,3 @@ public:
 
 }
 
-#endif /* PARTICLEIZEDRIGIDBODYMECHANICALMATERIAL_H_ */

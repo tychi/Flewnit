@@ -1,5 +1,5 @@
 /*
- * Scene.h
+ * SceneGraph.h
  *
  *  Created on: Dec 21, 2010
  *      Author: tychi
@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "Common/BasicObject.h"
 
+#include "SceneRepresentation.h"
 #include "SceneNode.h"
 
 namespace Flewnit
@@ -16,16 +16,16 @@ namespace Flewnit
 
 
 
-class Scene
-: public BasicObject
+class SceneGraph
+: public SceneRepresentation
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 
 
 public:
-	Scene();
+	SceneGraph();
 
-	virtual ~Scene();
+	virtual ~SceneGraph();
 
 	SceneNode & root(){return *mRootNode;}
 

@@ -60,7 +60,7 @@ bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
 	//update the uniform buffers of the light sources and the shadow map matrices
 	LightSourceManager::getInstance().updateLightSourcesUniformBuffer();
 
-	SimulationResourceManager::getInstance().getScene()->traverse(this);
+	SimulationResourceManager::getInstance().getSceneGraph()->traverse(this);
 
 	SimulationResourceManager::getInstance().executeInstancedRendering(this);
 
