@@ -27,8 +27,13 @@ public:
 
 	//the semantics of the buffer is readable from its bufferInfo
 	//non-pure virtual, as it must be overridden by VertexBasedGeometry to register
-	//to the VBO
-	virtual void setAttributeBuffer(BufferInterface* buffi) throw(BufferException);
+	//to the VBO;
+	//The BufferSemantics param is used for "unsetting" functionality: pass a null pointer and the
+	//desired semantics to "unset"; When passing a non-null pointerm the second param is ignored,
+	//because the semantics can be read directly from the buffer itself.
+	virtual void setAttributeBuffer(BufferInterface* buffi, BufferSemantics bs = INVALID_SEMANTICS) throw(BufferException);
+
+
 
 
 	//can return NULL pointer if buffer is not registered for the given semantics

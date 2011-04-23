@@ -84,6 +84,10 @@ public:
     inline int getNumSimulators()const{return mSimulators.size();}
     inline const FPSCounter* getFPSCounter()const{return mFPSCounter;}
 
+    inline bool doValidateSimulationStepResults()const{return mDoValidateSimulationStepResults;}
+    inline bool doProfileAndOptimizeSettings()const{return mDoProfileAndOptimizeSettings;}
+    inline bool doProfilePerformance()const{return mDoProfilePerformance;}
+
     SimulatorInterface* getSimulator(SimulationDomain sd)const throw(SimulatorException);
 
     //intitialization per config won't be realized via annoying pointer passing to the constructors of all classes;
@@ -108,6 +112,10 @@ private:
 
     bool 					mCorrectlyInitializedGuard;
     bool					mMainLoopQuitRequested;
+
+	bool mDoValidateSimulationStepResults;
+	bool mDoProfileAndOptimizeSettings;
+	bool mDoProfilePerformance;
 
     Config*					mConfig;
     Loader*					mLoader;

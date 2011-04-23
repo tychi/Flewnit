@@ -82,6 +82,10 @@ URE::URE()
 //: BASIC_OBJECT_CONSTRUCTOR(URE, "URESingletonInstance", "do the unified Rendering")
 : mCorrectlyInitializedGuard(false),
   mMainLoopQuitRequested(false),
+  mDoValidateSimulationStepResults(false),
+  mDoProfileAndOptimizeSettings(false),
+  mDoProfilePerformance(false),
+
   mConfig(0),
   mLoader(0),
   mWindowManager(0),
@@ -140,6 +144,15 @@ bool URE::init(Path& pathToGlobalConfigFile)
 
 	mSimulationResourceManager =  new SimulationResourceManager();
 
+	if(mConfig->root().childExists("generalSettings",0))
+	{
+		mDoValidateSimulationStepResults = ConfigCaster::cast<bool>
+			(mConfig->root().get("generalSettings",0).get("doValidateSimulationStepResults",0) );
+		mDoProfileAndOptimizeSettings = ConfigCaster::cast<bool>
+			(mConfig->root().get("generalSettings",0).get("doProfileAndOptimizeSettings",0) );
+		mDoProfilePerformance = ConfigCaster::cast<bool>
+			(mConfig->root().get("generalSettings",0).get("doProfilePerformance",0) );
+	}
 
 
 	if(mConfig->root().childExists("simulators",0))

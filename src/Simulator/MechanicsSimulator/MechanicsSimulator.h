@@ -64,9 +64,9 @@ public:
 	//const SPHFluidSettings& getSPHFluidSettings()const{return *mSPHFluidSettings;}
 
 
-	virtual bool validateSimulationStepResults();
-	virtual bool profileAndOptimizeSettings();
-	virtual bool profilePerformance();
+//	virtual bool validateSimulationStepResults();
+//	virtual bool profileAndOptimizeSettings();
+//	virtual bool profilePerformance();
 
 private:
 

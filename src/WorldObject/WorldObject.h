@@ -38,7 +38,9 @@ public:
 	std::vector<SubObject*>& getSubObjects(SimulationDomain whichDomain);
 
 	//in which of the lists it will be inserted is determined by the SimulationDomain flag of the subObject;
-	void addSubObject(SubObject* so);
+	//is virtual as some derived world objects might do some compatibility checks etc.
+	//beforre calling the super implementation
+	virtual void addSubObject(SubObject* so)throw(SimulatorException);
 
 
 

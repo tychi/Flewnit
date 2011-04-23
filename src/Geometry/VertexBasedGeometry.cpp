@@ -16,10 +16,14 @@ namespace Flewnit
 {
 
 VertexBasedGeometry::VertexBasedGeometry(String name, GeometryRepresentation geoRep)
-: BufferBasedGeometry(name, geoRep), mIndexBuffer(0)
+: BufferBasedGeometry(name, geoRep), mIndexBuffer(0),
+  	  mOffsetStart(0), mIndexCount(0),
+  	  mOldVBOBinding(0), mBindSaveCallCounter(0),
+  	  mAnyAttribBufferIsPingPong(false)
 {
 	GUARD( glGenVertexArrays(1, &mGLVBO));
-	bind();
+
+	bindSafe();
 
 	if(	(geoRep == VERTEX_BASED_TRIANGLE_PATCHES)||
 		(geoRep == VERTEX_BASED_QUAD_PATCHES)||
@@ -27,6 +31,8 @@ VertexBasedGeometry::VertexBasedGeometry(String name, GeometryRepresentation geo
 	{
 		setUpPatchRepresentationState();
 	}
+
+	unBindSave();
 }
 
 //VertexBasedGeometry::VertexBasedGeometry(String name, GLint verticesPerPatch)
@@ -39,6 +45,8 @@ VertexBasedGeometry::VertexBasedGeometry(String name, GeometryRepresentation geo
 
 void VertexBasedGeometry::setUpPatchRepresentationState()
 {
+	bindSafe();
+
 	if(WindowManager::getInstance().getAvailableOpenGLVersion().x < 4)
 	{
 
@@ -82,12 +90,14 @@ void VertexBasedGeometry::setUpPatchRepresentationState()
 
 	validateBufferIntegrity();
 	GUARD(glPatchParameteri(GL_PATCH_VERTICES, numVerticesPerPatch));
+
+	unBindSave();
 }
 
 
 VertexBasedGeometry::~VertexBasedGeometry()
 {
-	bind();
+	bindSafe();
 	for(int i=0; i< __NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__;i++)
 	{
 		if(mAttributeBuffers[i])
@@ -95,7 +105,7 @@ VertexBasedGeometry::~VertexBasedGeometry()
 			GUARD(glDisableVertexAttribArray(static_cast<GLuint>(mAttributeBuffers[i]->getBufferInfo().bufferSemantics)));
 		}
 	}
-	unbind();
+	unBindSave();
 
 	GUARD(glDeleteVertexArrays(1,&mGLVBO));
 }
@@ -110,102 +120,165 @@ void  VertexBasedGeometry::unbind()
 	GUARD( glBindVertexArray(0) );
 }
 
-
-void VertexBasedGeometry::setAttributeBuffer(BufferInterface* buffi) throw(BufferException)
+void  VertexBasedGeometry::bindSafe()
 {
-	bind();
-	BufferBasedGeometry::setAttributeBuffer(buffi);
-	validateBufferIntegrity();
+	GLint currentVBOBinding;
+	//wtf, the GL_VERTEX_ARRAY_BINDING cap is documented nowhere!
+	//let's hope this works
+	GUARD( glGetIntegerv(GL_VERTEX_ARRAY_BINDING , &currentVBOBinding) );
+	mBindSaveCallCounter++;
 
-	buffi->bind(OPEN_GL_CONTEXT_TYPE);
-
-
-	//Convention for the BufferElementInfo of a Buffer designated to be an attribute buffer:
-		//if internal GPU data type is int or uint, it will always be handled as integer attributes,
-		//unless the normalization flag is set; Note especcially that non-normalized int-to-float
-		//conversions aren't supported this way; This is on purpose, as
-		//	1.: I don't see any advantage in reading unnormalized integer values and convert
-		//		them to float;
-		//	2.: Control flow and usage flags to be tracked are less complex;
-		//if one wants save memory, then the GL_HALF data type shall be used
-		//(though I didn't test it in the glm library)
-	GLenum elementTypeGL= GL_FLOAT;
-	if(buffi->getBufferInfo().elementInfo.internalGPU_DataType != GPU_DATA_TYPE_FLOAT){
-		if(buffi->getBufferInfo().elementInfo.internalGPU_DataType == GPU_DATA_TYPE_UINT){
-			switch(buffi->getBufferInfo().elementInfo.bitsPerChannel)
-			{
-			case 8:  elementTypeGL= GL_UNSIGNED_BYTE; 	break;
-			case 16: elementTypeGL= GL_UNSIGNED_SHORT;	break;
-			case 32: elementTypeGL= GL_UNSIGNED_INT;	break;
-			default: throw(BufferException("bad bits per channel")); break;
-			}
-		}else{ //must be signed int
-			switch(buffi->getBufferInfo().elementInfo.bitsPerChannel)
-			{
-			case 8:  elementTypeGL= GL_BYTE; 	break;
-			case 16: elementTypeGL= GL_SHORT;	break;
-			case 32: elementTypeGL= GL_INT;		break;
-			default: throw(BufferException("bad bits per channel")); break;
-			}
-		}
-	} else //end "not float"
+	if( ( (GLuint)(currentVBOBinding) ) != mGLVBO )
 	{
-		switch(buffi->getBufferInfo().elementInfo.bitsPerChannel)
-		{
-		case 8:  throw(BufferException("there is no 8 bit floating point type"));  	break;
-		case 16: elementTypeGL= GL_HALF_FLOAT;	break;
-		case 32: elementTypeGL= GL_FLOAT;		break;
-		case 64: throw(BufferException("double precision floating point not supported (yet);"));		break;
-		default: throw(BufferException("bad bits per channel")); break;
-		}
+		mOldVBOBinding = currentVBOBinding;
+		GUARD( glBindVertexArray(mGLVBO) );
 	}
+}
+void  VertexBasedGeometry::unBindSave()
+{
+	mBindSaveCallCounter--;
 
-
-
-	if(
-		(buffi->getBufferInfo().elementInfo.internalGPU_DataType==GPU_DATA_TYPE_FLOAT)
-		||
-		(buffi->getBufferInfo().elementInfo.normalizeIntegralValuesFlag)
-	)
+	//only restore old binding if unbindSave() has been calls as often as bindSave();
+	if(  mBindSaveCallCounter == 0 )
 	{
-		GUARD(
-			glVertexAttribPointer(
-				static_cast<GLuint> (buffi->getBufferInfo().bufferSemantics),
-				buffi->getBufferInfo().elementInfo.numChannels,
-				elementTypeGL,
-				buffi->getBufferInfo().elementInfo.normalizeIntegralValuesFlag,
-				0,
-				0
-			)
-		);
+		GUARD( glBindVertexArray( (GLuint)(mOldVBOBinding) ) );
 	}
-	else //"real" integer stuff, both concerning storage and lookup
-	{
-		GUARD(
-			glVertexAttribIPointer(
-				static_cast<GLuint> (buffi->getBufferInfo().bufferSemantics),
-				buffi->getBufferInfo().elementInfo.numChannels,
-				elementTypeGL,
-				0,
-				0
-			)
-		);
-	}
-
-
-
-	GUARD (glEnableVertexAttribArray(static_cast<GLuint> (buffi->getBufferInfo().bufferSemantics)) );
-
-	unbind();
+	//GUARD( glBindVertexArray(0) );
 }
 
-void VertexBasedGeometry::setIndexBuffer(BufferInterface* buffi) throw(BufferException)
+
+
+
+void VertexBasedGeometry::setAttributeBuffer(BufferInterface* buffi, BufferSemantics bs) throw(BufferException)
 {
+	bindSafe();
+
+	BufferBasedGeometry::setAttributeBuffer(buffi);
+
+	//validateBufferIntegrity();
+
+	if(buffi)
+	{
+		mAnyAttribBufferIsPingPong = (mAnyAttribBufferIsPingPong || buffi->isPingPongBuffer() );
+
+		buffi->bind(OPEN_GL_CONTEXT_TYPE);
+
+
+		//Convention for the BufferElementInfo of a Buffer designated to be an attribute buffer:
+			//if internal GPU data type is int or uint, it will always be handled as integer attributes,
+			//unless the normalization flag is set; Note especcially that non-normalized int-to-float
+			//conversions aren't supported this way; This is on purpose, as
+			//	1.: I don't see any advantage in reading unnormalized integer values and convert
+			//		them to float;
+			//	2.: Control flow and usage flags to be tracked are less complex;
+			//if one wants save memory, then the GL_HALF data type shall be used
+			//(though I didn't test it in the glm library)
+		GLenum elementTypeGL= GL_FLOAT;
+		if(buffi->getBufferInfo().elementInfo.internalGPU_DataType != GPU_DATA_TYPE_FLOAT){
+			if(buffi->getBufferInfo().elementInfo.internalGPU_DataType == GPU_DATA_TYPE_UINT){
+				switch(buffi->getBufferInfo().elementInfo.bitsPerChannel)
+				{
+				case 8:  elementTypeGL= GL_UNSIGNED_BYTE; 	break;
+				case 16: elementTypeGL= GL_UNSIGNED_SHORT;	break;
+				case 32: elementTypeGL= GL_UNSIGNED_INT;	break;
+				default: throw(BufferException("bad bits per channel")); break;
+				}
+			}else{ //must be signed int
+				switch(buffi->getBufferInfo().elementInfo.bitsPerChannel)
+				{
+				case 8:  elementTypeGL= GL_BYTE; 	break;
+				case 16: elementTypeGL= GL_SHORT;	break;
+				case 32: elementTypeGL= GL_INT;		break;
+				default: throw(BufferException("bad bits per channel")); break;
+				}
+			}
+		} else //end "not float"
+		{
+			switch(buffi->getBufferInfo().elementInfo.bitsPerChannel)
+			{
+			case 8:  throw(BufferException("there is no 8 bit floating point type"));  	break;
+			case 16: elementTypeGL= GL_HALF_FLOAT;	break;
+			case 32: elementTypeGL= GL_FLOAT;		break;
+			case 64: throw(BufferException("double precision floating point not supported (yet);"));		break;
+			default: throw(BufferException("bad bits per channel")); break;
+			}
+		}
+
+
+
+		if(
+			(buffi->getBufferInfo().elementInfo.internalGPU_DataType==GPU_DATA_TYPE_FLOAT)
+			||
+			(buffi->getBufferInfo().elementInfo.normalizeIntegralValuesFlag)
+		)
+		{
+			GUARD(
+				glVertexAttribPointer(
+					static_cast<GLuint> (buffi->getBufferInfo().bufferSemantics),
+					buffi->getBufferInfo().elementInfo.numChannels,
+					elementTypeGL,
+					buffi->getBufferInfo().elementInfo.normalizeIntegralValuesFlag,
+					0, //no stride, tightly packed
+					0 //no offset to currently bound GL_ARRAY_BUFFER
+				)
+			);
+		}
+		else //"real" integer stuff, both concerning storage and lookup
+		{
+			GUARD(
+				glVertexAttribIPointer(
+					static_cast<GLuint> (buffi->getBufferInfo().bufferSemantics),
+					buffi->getBufferInfo().elementInfo.numChannels,
+					elementTypeGL,
+					0, //no stride, tightly packed
+					0 //no offset to currently bound GL_ARRAY_BUFFER
+				)
+			);
+		}
+
+
+		GUARD (glEnableVertexAttribArray(static_cast<GLuint> (buffi->getBufferInfo().bufferSemantics)) );
+
+	}
+	else
+	{
+		//unset attribute semantics
+		GUARD ( glDisableVertexAttribArray( bs ) );
+	}
+
+	unBindSave();
+}
+
+void VertexBasedGeometry::setIndexBuffer(
+	BufferInterface* buffi,
+	//values for shared usage of index buffers, like for different fluids
+	//indexCount = 0 indicates that no offset shall be used, so that the whole
+	//attribute buffer shall be taken
+	unsigned int offsetStart,
+	unsigned int indexCount
+	) throw(BufferException)
+{
+	bindSafe();
+
+	mOffsetStart = offsetStart;
+	mIndexCount = indexCount;
+
 	mIndexBuffer = buffi;
+
+
+	if(buffi)
+	{
+		buffi->bind(OPEN_GL_CONTEXT_TYPE);
+	}
+	else
+	{
+		//unbind index buffer
+		GUARD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0));
+	}
+
 	validateBufferIntegrity();
 
-	bind();
-	buffi->bind(OPEN_GL_CONTEXT_TYPE);
+	unBindSave();
 
 }
 
@@ -216,13 +289,43 @@ BufferInterface* VertexBasedGeometry::getIndexBuffer()
 	return mIndexBuffer;
 }
 
+
+void void VertexBasedGeometry::rebindPingPongBuffers()
+{
+	bindSafe();
+
+	if(mAnyAttribBufferIsPingPong)
+	{
+		for(unsigned int i=0; i< __NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__;i++)
+		{
+			if( mAttributeBuffers[i] && mAttributeBuffers[i]->isPingPongBuffer())
+			{
+				//re-set stuff if contents have been toggled an odd number of times
+				//since the last draw call ;(
+				setAttributeBuffer(mAttributeBuffers[i]);
+			}
+		}
+	}
+
+	if(mIndexBuffer && mIndexBuffer->isPingPongBuffer())
+	{
+		//re-set stuff if contents have been toggled an odd number of times
+		//since the last draw call ;(
+		mIndexBuffer->bind(OPEN_GL_CONTEXT_TYPE);
+	}
+
+	unBindSave();
+}
+
 void VertexBasedGeometry::draw(
 			//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
 			unsigned int numInstances,
 			GeometryRepresentation desiredGeomRep)
 
 {
-	bind();
+	bindSafe();
+
+	rebindPingPongBuffers();
 
 
 	GeometryRepresentation currentGeomRep;
@@ -277,14 +380,74 @@ void VertexBasedGeometry::draw(
 	}
 
 
-	GUARD( glDrawElementsInstanced(drawType,mIndexBuffer->getBufferInfo().numElements,GL_UNSIGNED_INT,0,numInstances) );
+	if(mIndexBuffer)
+	{
+		//use index buffer, i.e. the glDrawElementsXY() functions
 
-	unbind();
+		if(mIndexCount == 0)
+		{
+			GUARD(
+				glDrawElementsInstanced(
+						drawType,
+						mIndexBuffer->getBufferInfo().numElements,
+						GL_UNSIGNED_INT,
+						0,
+						numInstances
+				)
+			);
+		}
+		else
+		{
+			//new version to support index buffer sharing (e.g. for multiple fluids etc)
+			GUARD(
+				glDrawElementsInstancedBaseVertex(
+					drawType,
+					mIndexCount,
+					GL_UNSIGNED_INT,
+					0,
+					numInstances,
+					mOffsetStart
+				)
+			);
+		}
+	}
+	else
+	{
+		//don't use index buffer, i.e. use the glDrawArraysXY() functions
+		if(mIndexCount == 0)
+		{
+			//draw in whole range, from zero to element count of position buffer
+			GUARD(
+				glDrawArraysInstanced(
+					drawType,
+					0,
+					mAttributeBuffers[POSITION_SEMANTICS]->getBufferInfo().numElements,
+					numInstances)
+			);
+		}
+		else
+		{
+			//draw in restricted range
+			GUARD(
+				glDrawArraysInstanced(
+					drawType,
+					mOffsetStart,
+					mIndexCount,
+					numInstances)
+			);
+		}
+
+	}
+
+	unBindSave();
+
 }
 
 
 void VertexBasedGeometry::validateBufferIntegrity()throw(BufferException)
 {
+	assert(	mOffsetStart + mIndexCount <= mIndexBuffer->getBufferInfo().numElements);
+
 	assert(
 			getGeometryRepresentation()==VERTEX_BASED_POINT_CLOUD ||
 			getGeometryRepresentation()==VERTEX_BASED_LINES ||

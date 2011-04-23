@@ -34,6 +34,11 @@ RenderTarget::RenderTarget(
 		int numArrayLayers
 )
 : mName(name),
+
+  mOldReadBufferBinding(0),
+  mOldDrawBufferBinding(0),
+  mBindSaveCallCounter(0),
+
   mDepthBufferFlags(dbf),
   //the following two components play no role if NO_RENDERBUFFER, hence the comparison to only DEPTH_RENDER_BUFFER is correct
   mDepthAndOrStencilAttachmentPoint(
@@ -940,36 +945,41 @@ void RenderTarget::detachDepthBuffer()
 
 void RenderTarget::bindSave()
 {
+	GLint currentReadBufferBinding, currentDrawBufferBinding;
+
 	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING,
-					&mOldReadBufferBinding);
+					&currentReadBufferBinding);
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING,
-					&mOldDrawBufferBinding);
+					&currentDrawBufferBinding);
+
+	mBindSaveCallCounter++;
 
 	if(
-		( mIsReadFrameBuffer && ( (GLuint)mOldReadBufferBinding != mFBO ) )
+		( mIsReadFrameBuffer    && ( (GLuint)(currentReadBufferBinding) != mFBO ) )
 		||
-		(!mIsReadFrameBuffer && ( (GLuint)mOldDrawBufferBinding != mFBO ) )
+		( (!mIsReadFrameBuffer) && ( (GLuint)(currentDrawBufferBinding) != mFBO ) )
 	)
 	{
+		mOldReadBufferBinding = mIsReadFrameBuffer ? currentReadBufferBinding : mOldReadBufferBinding;
+		mOldDrawBufferBinding = mIsReadFrameBuffer ? mOldDrawBufferBinding    : currentDrawBufferBinding ;
 		bind(mIsReadFrameBuffer);
 	}
 }
 void RenderTarget::unbindSave()
 {
-	if(
-		( mIsReadFrameBuffer && ( (GLuint)mOldReadBufferBinding != mFBO ) )
-	)
+	mBindSaveCallCounter--;
+
+	//only restore old binding if unbindSave() has been calls as often as bindSave();
+	if( ( mBindSaveCallCounter == 0) && mIsReadFrameBuffer )
 	{
 		glBindFramebuffer(GL_READ_FRAMEBUFFER,
-				mOldReadBufferBinding);
+				(GLuint) (mOldReadBufferBinding) );
 	}
 
-	if(
-		(!mIsReadFrameBuffer && ( (GLuint)mOldDrawBufferBinding != mFBO ) )
-	)
+	if( ( mBindSaveCallCounter == 0) && (!mIsReadFrameBuffer) )
 	{
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER,
-				mOldDrawBufferBinding);
+				(GLuint) (mOldDrawBufferBinding) );
 	}
 }
 

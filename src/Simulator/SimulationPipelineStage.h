@@ -38,9 +38,9 @@ public:
 	BufferInterface* getRenderingResult(BufferSemantics what);
 
 	//non-pure virtual, as not every simulation stage needs this functionality
-	virtual bool validateSimulationStepResults(){return true;}
-	virtual bool profileAndOptimizeSettings(){return true;}
-	virtual bool profilePerformance(){return true;}
+//	virtual bool validateSimulationStepResults(){return true;}
+//	virtual bool profileAndOptimizeSettings(){return true;}
+//	virtual bool profilePerformance(){return true;}
 
 protected:
 	ConfigStructNode* mSimConfigNode;

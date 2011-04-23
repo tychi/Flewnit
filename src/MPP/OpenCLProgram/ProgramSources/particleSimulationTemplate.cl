@@ -69,11 +69,13 @@
 {% block particleAttributesBufferKernelArgs %}
     
       //better a parameter list with in some kernels unused params than eternal confusion..
+      __global uint* gParticleObjectInfos,
+
+      __global uint* gZindicesNew,
       
       __global float4* gPositionsOld,
       __global float4* gPositionsNew,
       
-      __global uint* gZindicesNew,
       
       //let's make the argument list ready for the risky optimization of "deferred densitiy usage" to save the density kernel invocation,
       //memory transfer and control flow overhead;
@@ -103,9 +105,8 @@
       //we have to access each computed force value twice; so save the fetch and division by of the old density value to yield the accerleation,
       //we store the acceleration directly ;).
       __global float4* gAccelerationsOld,
-      __global float4* gAccelerationsNew,
+      __global float4* gAccelerationsNew
 
-      __global uint* gParticleObjectInfos
       
 {% endblock particleAttributesBufferKernelArgs %}
     

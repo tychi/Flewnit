@@ -5,6 +5,7 @@
  *      Author: tychi
  *
  *  Base class for all kinds of data Acceleration structures;
+ *  Has no functionality; Just for structuring concepts;
  */
 
 
@@ -36,8 +37,7 @@ namespace Flewnit
 		virtual ~AccelerationStructure();
 
 		//throws exception if scene representation is not compatible
-		virtual void update(SceneRepresentation* sceneRep)
-			throw(SimulatorException) = 0;
+		//virtual void update(SceneRepresentation* sceneRep) throw(SimulatorException) = 0;
 
 	private:
 

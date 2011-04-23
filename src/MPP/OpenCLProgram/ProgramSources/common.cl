@@ -28,11 +28,11 @@
   //we need this value to determine the number of work groups for kernels, which can be theoretically performced by a single work group
   //without considerable memory or performance bottle necks; To use all cumpute units of a system anyway, the number of work groups 
   //for those algorithms will be set to this value;
-  #define NUM_BASE2_CEILED_COMPUTE_UNITS ( {{ numBase2CeiledComputeUnits }} )
+  #define NUM_COMPUTE_UNITS_BASE2_CEILED ( {{ numComputeUnits_Base2Ceiled }} )
   
  //default: 1024; reason: maximum base 2 - work item count per work group; We wanna stick to base 2 as it fits best the hardware, many algorithms
  //and allows some optimized arithmetics (e.g. modulo, integer division) and as it keeps application logic simple
-  #define NUM_MAX_WORK_ITEMS_PER_WORK_GROUP (1024)
+  #define NUM_MAX_WORK_ITEMS_PER_WORK_GROUP ( {{ numMaxWorkItems_Base2Floored }} )
   //--------------------------------------------------------
   
   

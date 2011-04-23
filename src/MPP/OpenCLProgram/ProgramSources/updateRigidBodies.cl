@@ -47,20 +47,23 @@
   updateRigidBodies
   (
     __constant SimulationParameters* cSimParams,
+    __constant ObjectGenericFeatures* cObjectGenericFeatures,
+
+    __global uint* gParticleIndexTable, //for finding the particles belonging to the current rigid body
         
+    //TODO replace one of the buffers with relative rigid-body-only position buffers
     __global float4* gParticlePositionsOld, //the positions not refreshed by particle integration of current path,
                                             //hence (gParticlePositionsOld[index] - rigidBody.oldCentreOfMass) encodes the rotated 
                                             //relative position of a particle from the previous pass
     __global float4* gParticlePositionsNew, //read for new centre of mass computation and written 
                                             //for new-RB-transform-alligned particle world positions;
-    __global uint* gZindicesNew,
-        
+
     __global float4* gParticleCorrectedVelocities,
+    
     __global float4* gParticlePredictedVelocities,
         
         
-    __global RigidBody* gRigidBodies,
-    __global uint* gRigidBodyParticleIndexTable, //numRigidBodies * NUM_MAX_PARTICLES_PER_RIGID_BODY elements
+    __global ParticleRigidBody* gRigidBodies,
        
   )
   {
@@ -72,18 +75,18 @@
     __local float16 finalRotationMatrix;
     __local float16 tempRotationMatrix;
     
-    __local RigidBody lRigidBody;
+    __local ParticleRigidBody lRigidBody;
     
                                            
 
     
     uint lwiID = get_local_id(0); // short for "local work item ID"
     uint gwiID = get_global_id(0); // short for "global work item ID"
-    uint groupID =  get_group_id(0);
+    uint groupID =  get_group_id(0); //group ID equvalent to rigid body ID in this kernel
     
     
     //{ grab rigid body to local memory in a hacky and hence hopefully efficient way ;) :
-      if( lwiID < sizeof(RigidBody)/4 )
+      if( lwiID < sizeof(ParticleRigidBody)/4 )
       {
         ( (__local uint* ) ( & ( lRigidBody ) ) )
               [ lwiID ]  
@@ -112,10 +115,18 @@
     
     if( lwiID < lRigidBody.numContainingParticles )
     {   
-      particleGlobalLowerIndex  = gRigidBodyParticleIndexTable[ groupID * NUM_MAX_PARTICLES_PER_RIGID_BODY 
-                                                                + lwiID ];
-      particleGlobalHigherIndex = gRigidBodyParticleIndexTable[ groupID * NUM_MAX_PARTICLES_PER_RIGID_BODY 
-                                                                + lwiID + (NUM_MAX_PARTICLES_PER_RIGID_BODY/2) ];
+      //particleGlobalLowerIndex  = gParticleIndexTable[ groupID * NUM_MAX_PARTICLES_PER_RIGID_BODY
+      particleGlobalLowerIndex  = gParticleIndexTable[
+                                  //group ID equivalent to rigid body ID in this kernel 
+          cObjectGenericFeatures[ groupID +  RIGID_BODY_OBJECT_START_INDEX ].offsetInIndexTableBuffer
+          + lwiID 
+        ];
+      //particleGlobalHigherIndex = gParticleIndexTable[ groupID * NUM_MAX_PARTICLES_PER_RIGID_BODY                                                                     
+      particleGlobalHigherIndex = gParticleIndexTable[
+                                  //group ID equivalent to rigid body ID in this kernel 
+          cObjectGenericFeatures[ groupID +  RIGID_BODY_OBJECT_START_INDEX ].offsetInIndexTableBuffer
+          + lwiID + (NUM_MAX_PARTICLES_PER_RIGID_BODY/2) 
+        ];
     
     
       //grab the new positions resulting from particle integration to get the new centre of mass   
@@ -284,7 +295,7 @@
     
     
    //{ upload rigid body to global memory in a hacky and hence hopefully efficient way ;) :
-      if( lwiID < sizeof(RigidBody)/4 )
+      if( lwiID < sizeof(ParticleRigidBody)/4 )
       {
         ( (__global uint*) ( & ( gRigidBodies[ groupID ] ) ) )
               [ lwiID ]  

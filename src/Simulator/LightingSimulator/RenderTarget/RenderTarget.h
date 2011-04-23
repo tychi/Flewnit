@@ -131,10 +131,11 @@ private:
 	void validateMembers()throw(BufferException);
 	void validateTexture(Texture* tex, bool isDepthTex)throw(BufferException);
 
-	void bindSave();
-	void unbindSave();
 	GLint mOldReadBufferBinding;
 	GLint mOldDrawBufferBinding;
+	GLint mBindSaveCallCounter;
+	void bindSave();
+	void unbindSave();
 
 	String mName;
 

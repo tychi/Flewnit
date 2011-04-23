@@ -73,19 +73,20 @@
       __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements; to be split and compacted,too
       __global uint* gUniGridCells_NumParticles, //NUM_TOTAL_GRID_CELLS  elements, to be tabulated again for split; costs extra calculations,
                                                  //but saves memory and bandwidth;
-                                                 //After an entry is read to the register file, it is set to zero so that in the following frame,
+      __global uint* gUniGridCells_NumParticles_Reset, //inactive ping pong component of gUniGridCells_NumParticles;
+                                                 // it is set to zero so that in the following frame,
                                                  //we have a fresh buffer where all empty and hence untouched cells have really a particle
                                                  //count of zero :)
       
-      __global uint* gLocallyScannedTabulatedValues, //gLocallyScannedSimWorkGroupCount, NUM_TOTAL_ELEMENTS  elements 
-      __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_GLOBAL_SCAN_ELEMENTS elements
-      __global uint* gSumsOfPartialGlobalScans,  //at least NUM_BASE2_CEILED_COMPUTE_UNITS + 1  elements;
-                                                 //+1 because this kernel writes out the total sim work group count
-                                                 
        //ping pong components of gUniGridCells_ParticleStartIndex and gUniGridCells_NumParticles;
        //In the physics simulation phase, only "total count of simulation work groups" elements will be used;                     
       __global uint* gCompactedUniGridCells_ParticleStartIndex
       __global uint* gCompactedUniGridCells_NumParticles, 
+
+      __global uint* gLocallyScannedTabulatedValues, //gLocallyScannedSimWorkGroupCount, NUM_TOTAL_ELEMENTS  elements 
+      __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_ELEMENTS__GLOBAL_SCAN elements
+      __global uint* gSumsOfPartialGlobalScans,  //at least NUM_BASE2_CEILED_COMPUTE_UNITS + 1  elements;
+                                                 //+1 because this kernel writes out the total sim work group count                                                 
     )
     {
       __local uint lScannedSumsOfPartialGlobalScans [ PADDED_STRIDE ( NUM_BASE2_CEILED_COMPUTE_UNITS )];
@@ -131,7 +132,7 @@
       //because we have twice as much elements as work items (due to the scan stuff), we have also to compact two elements per work item:
       //TODO check if unroll amortizes or not
           
-      uint globalIndex =  groupID * NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP + lwiID ;
+      uint globalIndex =  groupID * NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN + lwiID ;
       uint groupOffset = 
            //default values:
            // Geforce GT  435 M: [0..128]/64=[0.. 1]
@@ -141,11 +142,12 @@
           +
           gPartiallyGloballyScannedTabulatedValues[ groupID ];
       #pragma unroll
-      for(uint i=0 ; i< 2; i++ )
+      for(uint i=0 ; i < 2; i++ )
       {
+       //reset this buffer to zero; see comment in arument list for more information;
+       gUniGridCells_NumParticles_Reset[ globalIndex ] = 0;
+      
         uint currentNumResidentParticles =  gUniGridCells_NumParticles[  globalIndex ];
-        //reset to zero; see comment in arument list for more information;
-        gUniGridCells_NumParticles[  globalIndex ] = 0;
         
         //write out only non-empty grid cells!
         if(currentNumResidentParticles > 0)
@@ -175,7 +177,7 @@
            
         }//endif(currentNumResidentParticles >0)
         
-        globalIndex += (NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP/2);
+        globalIndex += (NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN/2);
       }
         
     

@@ -48,10 +48,10 @@
   //default: 1024
   #define NUM_WORK_ITEMS_PER_WORK_GROUP ( NUM_MAX_WORK_ITEMS_PER_WORK_GROUP )
   //default: 2048; one work item can scan up to two elements
-  #define NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP ( 2 * NUM_WORK_ITEMS_PER_WORK_GROUP )
+  #define NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN ( 2 * NUM_WORK_ITEMS_PER_WORK_GROUP )
 
   //default 2^18/2^11=2^7 = 128
-  #define NUM_GLOBAL_SCAN_ELEMENTS (  NUM_TOTAL_ELEMENTS / NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP  )
+  #define NUM_ELEMENTS__GLOBAL_SCAN (  NUM_TOTAL_ELEMENTS / NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN  )
   
   //Target: keep "scan hierarchies" as flat as possible,
   //so that in the best case, we can safe a "global scan phase", because there are only a few elements left to be scanned
@@ -64,7 +64,7 @@
   // Geforce GT  435 M: 128/ 2=64
   // Geforce GTX 280  : 128/32= 4
   // Geforce GTX 570  : 128/16= 8 
-  #define NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY (  NUM_GLOBAL_SCAN_ELEMENTS / NUM_BASE2_CEILED_COMPUTE_UNITS )
+  #define NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY (  NUM_ELEMENTS__GLOBAL_SCAN / NUM_BASE2_CEILED_COMPUTE_UNITS )
   
   
   {% block specialDefinitions %} 
@@ -80,14 +80,14 @@
       __global uint* gValuesToTabulate, //NUM_TOTAL_ELEMENTS  elements
     {% endblock tabulationArgs %} 
       
-    __global uint* gLocallyScannedTabulatedValues, //gLocallyScannedSimWorkGroupCount, NUM_TOTAL_ELEMENTS  elements 
-    __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_GLOBAL_SCAN_ELEMENTS elements
+    __global uint* gLocallyScannedTabulatedValues, //NUM_TOTAL_ELEMENTS  elements 
+    __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_ELEMENTS__GLOBAL_SCAN elements
     __global uint* gSumsOfPartialGlobalScans,  //at least NUM_BASE2_CEILED_COMPUTE_UNITS + 1  elements;
                                                //+1 because the kernel finishing the "total scan" may wanna write out
                                                //the total sum
   )
   {
-    __local uint lLocallyScannedTabulatedValues [ PADDED_STRIDE(  NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP ) ];
+    __local uint lLocallyScannedTabulatedValues [ PADDED_STRIDE(  NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN ) ];
     //one more item for the total sum; keeps sequential scan on global elements simpler;
     __local uint lPartiallyGloballyScannedTabulatedValues [ NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY + 1 ];
     
@@ -98,7 +98,7 @@
     uint groupID =  get_group_id(0);
     
     uint paddedLocalLowerIndex = CONFLICT_FREE_INDEX( get_local_id(0) );
-                                                                        //actually: +(NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP/2)
+                                                                        //actually: +(NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN/2)
     uint paddedLocalHigherIndex = CONFLICT_FREE_INDEX( get_local_id(0) + NUM_WORK_ITEMS_PER_WORK_GROUP );
     
     if(lwiID == 0)
@@ -108,11 +108,11 @@
     }
     
     uint globalLowerIndex = 
-      groupID * NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY * NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP
+      groupID * NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY * NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN
       + lwiID ;
     uint globalHigherIndex = 
-      groupID * NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY * NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP
-                //actually: +(NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP/2)
+      groupID * NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY * NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN
+                //actually: +(NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN/2)
       + lwiID + NUM_WORK_ITEMS_PER_WORK_GROUP ;
       
     for(int localScanIntervalRunner = 0 ;  localScanIntervalRunner < NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY;  localScanIntervalRunner++)
@@ -129,7 +129,7 @@
       scanExclusive(
         lLocallyScannedTabulatedValues,
         & lTotalSumOfLocalScan,
-        NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP,
+        NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN,
         lwiID );
       
       //write local scan results to global memory
@@ -143,8 +143,8 @@
           lPartiallyGloballyScannedTabulatedValues[ localScanIntervalRunner ] + lTotalSumOfLocalScan;
       }  
       
-      globalLowerIndex  +=  NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP;
-      globalHigherIndex +=  NUM_LOCAL_SCAN_ELEMENTS_PER_WORK_GROUP;
+      globalLowerIndex  +=  NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN;
+      globalHigherIndex +=  NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN;
             
     }//end sequential partial scan of parallel local scans
     

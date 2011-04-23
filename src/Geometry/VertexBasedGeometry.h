@@ -34,16 +34,27 @@ public:
 	//to the VBO
 	//Convention for the BufferElementInfo of a Buffer designated to be an attribute buffer:
 	//if internal GPU data type is int or uint, it will always be handled as integer attributes,
-	//unless the normalization flag is set; Note especcially that non-normalized int-to-float
+	//unless the normalization flag is set; Note especially that non-normalized int-to-float
 	//conversions aren't supported this way; This is on purpose, as
 	//	1.: I don't see any advantage in reading unnormalized integer values and convert
 	//		them to float;
 	//	2.: Control flow and usage flags to be tracked are less complex;
 	//if one wants save memory, then the GL_HALF data type shall be used
-	//(though I didn't test it in the glm library)
-	virtual void setAttributeBuffer(BufferInterface* buffi) throw(BufferException);
+	//(though I didn't test it in the glm library);
+	//The BufferSemantics param is used for "unsetting" functionality: pass a null pointer and the
+	//desired semantics to "unset"; When passing a non-null pointerm the second param is ignored,
+	//because the semantics can be read directly from the buffer itself.
+	virtual void setAttributeBuffer(BufferInterface* buffi, BufferSemantics bs = INVALID_SEMANTICS) throw(BufferException);
 
-	void setIndexBuffer(BufferInterface* buffi) throw(BufferException);
+	void setIndexBuffer(
+		BufferInterface* buffi,
+		//values for shared usage of index buffers, like for different fluids
+		//indexCount = 0 indicates that no offset shall be used, so that the whole
+		//attribute buffer shall be taken
+		unsigned int offsetStart =0,
+		unsigned int indexCount =0
+	) throw(BufferException);
+
 	//returns NULL if index buffer doesn't exist;
 	BufferInterface* getIndexBuffer();
 
@@ -51,6 +62,7 @@ public:
 				//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
 				unsigned int numInstances,
 				GeometryRepresentation desiredGeomRep);
+
 
 
 protected:
@@ -66,13 +78,24 @@ private:
 	GLuint mGLVBO;
 
 	BufferInterface* mIndexBuffer;
-
+	//to support index buffer sharing (e.g. for multiple fluids etc):
+	unsigned int mOffsetStart;
+	unsigned int mIndexCount;
 
 	void bind();
 	void unbind();
 
-//	void bindSafe();
-//	void unBindSave();
+	GLint mOldVBOBinding;
+	int mBindSaveCallCounter;
+	void bindSafe();
+	void unBindSave();
+
+	//when using ping pong buffers as attribute buffers, toggling the buffers will not update
+	//the bindings to the VBO; this has to be done explicitely; this routine is called from
+	//draw();
+	bool mAnyAttribBufferIsPingPong;
+	void rebindPingPongBuffers();
+
 };
 
 }

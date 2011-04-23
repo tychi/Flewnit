@@ -165,9 +165,8 @@ class LightSourceManager;
 		class	SpotLight;
 
 
-class Fluid;
-	class ParticleFluid; //the most important WorldObject in this thesis :);
-	class VoxelFluid; //irrelevant in this thesis
+class ParticleFluid; //the most important WorldObject in this thesis :);
+class VoxelFluid; //irrelevant in this thesis
 
 class RigidBody; //configurable or derivable to TriangleRB or ParticleizedRB ..t.b.d...
 class 	PrimitiveBasedRigidBody; //Convex hull, capsule etc.. won't be thought about during this thesis,

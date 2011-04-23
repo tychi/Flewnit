@@ -43,7 +43,7 @@ std::vector<SubObject*>& WorldObject::getSubObjects(SimulationDomain whichDomain
 }
 
 //in which of the lists it will be inserted is determined by the SimulationDomain flag of the subObject;
-void WorldObject::addSubObject(SubObject* so)
+void WorldObject::addSubObject(SubObject* so)throw(SimulatorException)
 {
 	mPhysicalReps[so->getSimDomain()].push_back(so);
 	so->setOwningWorldObject(this);

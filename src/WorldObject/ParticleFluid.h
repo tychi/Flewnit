@@ -18,12 +18,27 @@
 namespace Flewnit
 {
 
+struct FluidConstructionInfo
+{
+	unsigned int numParticles; //should be power of two
+
+	CLshare::ObjectGenericFeatures fluidFeatures;
+
+	CLshare::AABB spawnVolume;
+
+	Vector4D color; //transparency in alpha channel
+	float refractivity;
+	float sprayGenerationSpeed;
+};
+
+
+
 class ParticleFluid
 	: public WorldObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
-	ParticleFluid(ConfigStructNode* simConfigNode);
+	ParticleFluid(ParticleSceneRepresentation*);
 	virtual ~ParticleFluid();
 
 

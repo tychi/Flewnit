@@ -50,10 +50,10 @@ public:
 	//check if pipeline stages are compatible to each other (also to those stages form other simulators (they might have to interact!))
 	virtual bool validatePipeLine() throw(SimulatorException) =0;
 
-	//non-pure virtual, as not every simulator needs this functionality
-	virtual bool validateSimulationStepResults(){return true;}
-	virtual bool profileAndOptimizeSettings(){return true;}
-	virtual bool profilePerformance(){return true;}
+//	//non-pure virtual, as not every simulator needs this functionality
+//	virtual bool validateSimulationStepResults(){return true;}
+//	virtual bool profileAndOptimizeSettings(){return true;}
+//	virtual bool profilePerformance(){return true;}
 
 	bool isMechanicsSimulator()const;
 	bool isLightingSimulator()const;

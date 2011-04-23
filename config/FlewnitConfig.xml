@@ -5,6 +5,12 @@
 	<!-- convention: lower case names for everythin but proper names and class names -->
 
 	<generalSettings>		
+
+	    <doValidateSimulationStepResults type="BOOL" value="false" />		
+	    <doProfileAndOptimizeSettings type="BOOL" value="false" />		
+	    <doProfilePerformance type="BOOL" value="false" />		
+	
+	
 		<!--
 		<pathToData type="STRING" value="." />
 		<simulationPipelineConfig type="STRING" value="SimulationPipeLineConfig.xml"/>
@@ -27,7 +33,7 @@
 		<Scene>
 		  <Type type="STRING" value="HardCodedScene"/>
 
-  		<SceneNode>
+  		  <SceneNode>
 			  <Type type="STRING" value="PURE_NODE"/>
 			  <name type="STRING" value="hardCodedSceneRootNode" />
 			  
@@ -35,7 +41,7 @@
 			  <direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
 			  <up type="VEC3" x="0.0" y="1.0" z="0.0" />				
 			  <scale type="FLOAT" value="1.0"/>	
-      </SceneNode>  
+     	  </SceneNode>  
       
 		</Scene>
 

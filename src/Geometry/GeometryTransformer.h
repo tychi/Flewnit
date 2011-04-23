@@ -91,11 +91,12 @@ public:
 	 * "procedural" box generator to test rigid body stuff without working voxelization of arbitrary
 	 * watertight meshes;
 	 * */
-	ParticleizedRigidBody* createBoxParticleizedRigidBody(
+	ParticleRigidBody* createBoxParticleizedRigidBody(
 			BoxGeometry* boxGeomToParticleize, //usually a VertexBasedGeometry to be voxelized
 										//and then transformed in to a particle cloud
 			VisualMaterial* visMat,
-			ParticleizedRigidBodyMechanicalMaterial* ptclRBMechMat,
+
+			ParticleRigidBodyMechMat* ptclRBMechMat,
 			//caution: read out this value  from
 			//ParticleSceneRepresentation::mVoxelSideLengthRepresentedByRigidBodyParticle,
 			//because this must be the same for all particleized rigid objects

@@ -69,35 +69,35 @@ bool MechanicsSimulator::validatePipeLine() throw(SimulatorException)
 
 
 
-bool MechanicsSimulator::validateSimulationStepResults()
-{
-	bool succes= true;
-	BOOST_FOREACH(SimulationPipelineStage* stage, mSimStages)
-	{
-		succes = stage->validateSimulationStepResults();
-	}
-	return succes;
-}
-
-bool MechanicsSimulator::profileAndOptimizeSettings()
-{
-	bool succes= true;
-	BOOST_FOREACH(SimulationPipelineStage* stage, mSimStages)
-	{
-		succes = stage->profileAndOptimizeSettings();
-	}
-	return succes;
-}
-
-bool MechanicsSimulator::profilePerformance()
-{
-	bool succes= true;
-	BOOST_FOREACH(SimulationPipelineStage* stage, mSimStages)
-	{
-		succes = stage->profilePerformance();
-	}
-	return succes;
-}
+//bool MechanicsSimulator::validateSimulationStepResults()
+//{
+//	bool succes= true;
+//	BOOST_FOREACH(SimulationPipelineStage* stage, mSimStages)
+//	{
+//		succes = stage->validateSimulationStepResults();
+//	}
+//	return succes;
+//}
+//
+//bool MechanicsSimulator::profileAndOptimizeSettings()
+//{
+//	bool succes= true;
+//	BOOST_FOREACH(SimulationPipelineStage* stage, mSimStages)
+//	{
+//		succes = stage->profileAndOptimizeSettings();
+//	}
+//	return succes;
+//}
+//
+//bool MechanicsSimulator::profilePerformance()
+//{
+//	bool succes= true;
+//	BOOST_FOREACH(SimulationPipelineStage* stage, mSimStages)
+//	{
+//		succes = stage->profilePerformance();
+//	}
+//	return succes;
+//}
 
 
 

@@ -49,10 +49,18 @@
     float massPerParticle;
     float restDensity; //is always the density for rigid bodies, 
                        //is rest density for pressure compuation to numerically stablelize the pressure gradient compuation;
-    float gasConstant; //for pressure computation, (physically plausible only for fluids, 
-                       //but used to calculate pressure for ANY particle during simulation; this "dirty" way, one can adjust the repulsion force
-                       //for rigid bodies seperately);
+    float gasConstant; //temperature dependent value for pressure computation, 
+                       //(physically plausible only for fluids, 
+                       //but used to calculate pressure for ANY particle during simulation;
+
     float viscosity;   //only relevant for fluids
+    
+    //as fluids can have different particle amounts, on-the-fly-computation of the offset gets hard,
+    //as it depends on the particle count of the objects with lower ObjectID;
+    //so lets store this offset here;
+    uint offsetInIndexTableBuffer;
+    
+    uint padTo2,padTo3,padTo4;
     
   } ObjectGenericFeatures;
   
@@ -80,7 +88,7 @@
   
   
   
-   typedef struct
+  typedef struct
   {    
     //Non-physical hack to control a rigid body without making it to a "total kinetic object"; It is kind of a hybrid this way;
     //host computes: 
@@ -147,7 +155,7 @@
              
     //TODO adjust padding to align to 128 bytes 
         
-  } ParticleizedRigidBody;
+  } ParticleRigidBody;
   
   
   

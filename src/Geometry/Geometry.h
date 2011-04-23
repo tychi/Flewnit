@@ -101,7 +101,7 @@ public:
 	virtual void draw(
 			//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
 			unsigned int numInstances=1,
-			GeometryRepresentation desiredGeomRep = DEFAULT_GEOMETRY_REPRESENTATION) =0;
+			GeometryRepresentation desiredGeomRep = DEFAULT_GEOMETRY_REPRESENTATION ) = 0;
 
 protected:
 	GeometryRepresentation mGeometryRepresentation;

@@ -67,6 +67,20 @@ private:
 		//for GT200 and G80: 	 8192 ( 8kB out of 16kB available);
 		unsigned int mLocalMemForRadixCounters;
 
+		//pow2(ceil(log2(CL_DEVICE_MAX_COMPUTE_UNITS)));
+		//e.g.: 15 compute units --> log2(15)= 3.9 -->ceil(3.9)=4 --> pow2(4)= 16
+		//value needed to do a good work balancing on the openCL device:
+		//use all compute units, but do as much as possible per compute unit to reduce
+		//management overhead; As we completely work on base2-sizes, we need to
+		//ceil ne number of available compute units to the next power of two;
+		//Otherwise a device like the Geforce GTX570 with its 15 compute units
+		//would use only 8 of them;
+		//TODO check:
+		//	if there are slightly less than a power of two number of compute units,
+		//	(of all things applying to the "high end" devices GTX570 (15 SMP's) and GTX280 (30 SMP's))
+		//	there will be very few work groups left in the end, while the rest of the compute units is
+		//  in idle; maybe a base2-floored amount of work items, doiung the doubled work,
+		//  would perform even better in this case; Is subject to experimentation;
 		unsigned int mNumComputeUnits_Base2Ceiled;
 
 		//( mLocalMemForRadixCounters / ( 4 Byte * mNumRadicesPerPass ) )
