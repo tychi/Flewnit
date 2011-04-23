@@ -22,6 +22,7 @@
 #include "Geometry/Procedural/BoxGeometry.h"
 #include "WorldObject/InstanceManager.h"
 #include "WorldObject/SkyDome.h"
+#include "Material/DebugDrawVisualMaterial.h"
 
 
 
@@ -281,7 +282,8 @@ void HardCodedSceneLoader::loadMaterials()
 				}
 				myMap[ENVMAP_SEMANTICS] = envMapTex;
 
-				raptorTessMat = new VisualMaterial("raptorTessMat",
+				raptorTessMat =
+				new VisualMaterial("raptorTessMat",
 
 					//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY,
 					//SHADING_FEATURE_NONE,
@@ -301,6 +303,9 @@ void HardCodedSceneLoader::loadMaterials()
 					30.0f,
 					0.2f//6f
 				);
+
+
+
 	}//endif !raptorTessMat
 
 	Material* bunnyDecalMat = SimulationResourceManager::getInstance().getMaterial("bunnyDecalMat");
@@ -308,19 +313,22 @@ void HardCodedSceneLoader::loadMaterials()
 	{
 		std::map<BufferSemantics,Texture*> myMap;
 		myMap[DIFFUSE_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("bunnyDecalTex");
-		bunnyDecalMat = new VisualMaterial("bunnyDecalMat",
-			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
-			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
-			ShadingFeatures(
-					SHADING_FEATURE_DIRECT_LIGHTING
-					| SHADING_FEATURE_DIFFUSE_TEXTURING
-			),
-			myMap,
-			//SHADING_FEATURE_DIRECT_LIGHTING,
-			VisualMaterialFlags(true,false,true,true,false,false),
-			1000.0f,
-			0.5f
-		);
+		bunnyDecalMat =
+			new DebugDrawVisualMaterial("bunnyDecalMat", Vector4D(0,1,0,1),false, VERTEX_BASED_LINES);
+
+//			new VisualMaterial("bunnyDecalMat",
+//				//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+//				VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+//				ShadingFeatures(
+//						SHADING_FEATURE_DIRECT_LIGHTING
+//						| SHADING_FEATURE_DIFFUSE_TEXTURING
+//				),
+//				myMap,
+//				//SHADING_FEATURE_DIRECT_LIGHTING,
+//				VisualMaterialFlags(true,false,true,true,false,false),
+//				1000.0f,
+//				0.5f
+//			);
 	}//endif !bunnyDecalMat
 
 

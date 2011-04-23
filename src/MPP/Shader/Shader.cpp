@@ -908,6 +908,7 @@ void Shader::setupMaterialUniforms(VisualMaterial* visMat)
 
 		bindFloat("shininess",visMat->getShininess());
 		bindFloat("reflectivity",visMat->getReflectivity());
+		bindVector4D("color",visMat->getColor());
 
 		if( ((visMat->getShadingFeatures() & SHADING_FEATURE_DIFFUSE_TEXTURING ) !=0 )
 			&& (ShaderManager::getInstance().shadingFeaturesAreEnabled(SHADING_FEATURE_DIFFUSE_TEXTURING))

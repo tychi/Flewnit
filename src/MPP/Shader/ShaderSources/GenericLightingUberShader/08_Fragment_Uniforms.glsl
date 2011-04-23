@@ -1,6 +1,10 @@
 {%comment%}
   GLSL Shader Template: uniforms and uniform buffers:
-  applicable to following stages: fragment     {%endcomment%} 
+  applicable to following stages: fragment     
+  
+{%endcomment%} 
+
+  uniform vec4 color = vec4(1.0,1.0,0.1,0.0); //some funny debug draw color^^
   
   uniform vec2 tangensCamFov = vec2 ( {{tangensCamFovHorizontal}}, {{tangensCamFovVertical}}   ); //for position calculation from pure linear depth value;
 	uniform vec2 cotangensCamFov= vec2 ( {{cotangensCamFovHorizontal}}, {{cotangensCamFovVertical}}   ); //for texcoord calculation from viewspace position value;/inverso of tanget, pass from outside to save calculations

@@ -38,7 +38,7 @@ void main()
 {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING  or RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL or RENDERING_TECHNIQUE_DEFERRED_LIGHTING %}
   
   {% if VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY %}
-    outFFinalLuminance = vec4(1.0,0.0,1.0,0.0); //some funny debug draw color^^
+    outFFinalLuminance =  color;
     return;
   {% else %} {% if VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING %}
     {% if not SHADING_FEATURE_CUBE_MAPPING %} what the f***, add a cube map! {% endif %}
@@ -58,7 +58,7 @@ void main()
       {%comment%} get the fragment values in the classical way {%endcomment%}
       vec3 normalVN = getNormal(0); //sampleindex zero, as no multisampling is used
       vec4 fragmentColor =  {% if SHADING_FEATURE_DIFFUSE_TEXTURING %}  texture(decalTexture,input.texCoords.xy);
-                            {% else %} vec4(1.0,1.0,1.0,1.0);
+                            {% else %} color;
                             {% endif %}  
     {% endif %}
     //} //end codeFragment_initNonDefLightingSampleValues

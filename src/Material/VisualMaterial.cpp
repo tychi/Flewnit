@@ -84,7 +84,8 @@ VisualMaterial::VisualMaterial(
 			const std::map<BufferSemantics, Texture*>& textures,
 			const VisualMaterialFlags& visualMaterialFlags,
 			float shininess,
-			float reflectivity
+			float reflectivity,
+			const Vector4D& color
 			)
 : 	Material(name, VISUAL_SIM_DOMAIN),
 	mType(type),
@@ -93,7 +94,8 @@ VisualMaterial::VisualMaterial(
 
 	mCurrentlyUsedShader(0),
 	mShininess(shininess),
-	mReflectivity(reflectivity)
+	mReflectivity(reflectivity),
+	mColor(color)
 {
 	mTextures = textures;
 
@@ -107,10 +109,31 @@ VisualMaterial::VisualMaterial(
     	}
     }
 
+//    assert("use DebugDrawVisualMaterial instead of setting the flag in super class!"
+//    	&& (mType != VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY)	);
+
 	validateTextures();
 
 	ShaderManager::getInstance().registerVisualMaterial(this);
 }
+
+
+VisualMaterial::VisualMaterial(	String name, bool isInstanced, const Vector4D& debugDrawColor)
+: Material(name, VISUAL_SIM_DOMAIN),
+	mType(VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY),
+	mShadingFeatures(SHADING_FEATURE_NONE),
+	mVisMatFlags(VisualMaterialFlags(true,false,true,true,isInstanced,false)),
+
+	mCurrentlyUsedShader(0),
+	mShininess(1.0f),
+	mReflectivity(1.0f),
+	mColor(debugDrawColor)
+
+{
+	ShaderManager::getInstance().registerVisualMaterial(this);
+}
+
+
 
 VisualMaterial::~VisualMaterial()
 {
@@ -180,11 +203,11 @@ void VisualMaterial::activate(
 	if( castedStage->getRenderingTechnique() == RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL )
 		{assert(! isTransparent());}
 
-	//draw debug stuff as lines!
-	if(mType == VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY)
-	{
-		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
-	}
+//	//draw debug stuff as lines!
+//	if(mType == VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY)
+//	{
+//		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+//	}
 
 	// starting real functionality from here on:
 	//TODO instanced masking maybe is omittable, as nothing is drawn,
@@ -203,17 +226,18 @@ void VisualMaterial::activate(
 		mCurrentlyUsedShader->use(currentUsingSuboject);
 	}
 
+
 }
 
 void VisualMaterial::deactivate(
 		SimulationPipelineStage* currentStage,
 		SubObject* currentUsingSuboject) throw(SimulatorException)
 {
-	//undo line draw mode for debug stuff
-	if(mType == VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY)
-	{
-		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
-	}
+//	//undo line draw mode for debug stuff
+//	if(mType == VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY)
+//	{
+//		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+//	}
 }
 
 

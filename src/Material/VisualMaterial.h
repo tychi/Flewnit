@@ -14,6 +14,9 @@
 
 #include "Simulator/SimulatorMetaInfo.h"
 
+#define FLEWNIT_DEFAULT_COLOR (Vector4D(1.0f,0.0f,0.0f,1.0f))
+
+
 namespace Flewnit
 {
 
@@ -77,12 +80,13 @@ public:
 			const std::map<BufferSemantics, Texture*>& textures,
 			const VisualMaterialFlags& visualMaterialFlags,
 			float shininess = 100.0f,
-			float reflectivity = 0.25f
+			float reflectivity = 0.25f,
+			const Vector4D& color = FLEWNIT_DEFAULT_COLOR
 			);
 
 protected:
 	//for DebugDrawMaterial
-	VisualMaterial(	String name, const Vector4D& debugDrawColor);
+	VisualMaterial(	String name, bool isInstanced, const Vector4D& debugDrawColor);
 public:
 
 	virtual ~VisualMaterial();
@@ -115,6 +119,7 @@ public:
 	inline bool isCustomMaterial()const{return mVisMatFlags.isCustomMaterial;}
 
 
+
 	//calls validateTextures(); Map semantics key of texture in the texture map will be
 	//tex->getBufferInfo().bufferSemantics, i.e. implcitely set
 	void setTexture(Texture* tex);
@@ -128,6 +133,8 @@ public:
 
 	inline float getShininess()const{return mShininess;}
 	inline float getReflectivity()const{return mReflectivity;}
+	inline const Vector4D getColor()const{return mColor;}
+
 	inline Shader* getCurrentlyUsedShader()const{return mCurrentlyUsedShader;}
 
 private:
@@ -157,6 +164,8 @@ private:
 
 	float mShininess;
 	float mReflectivity;
+
+	Vector4D mColor; //only used when texturing disable or debug drawing;
 
 };
 

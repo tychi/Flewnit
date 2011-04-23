@@ -116,7 +116,8 @@ private:
 
 
 	friend VisualMaterial::VisualMaterial(String,VisualMaterialType,ShadingFeatures,const std::map<BufferSemantics, Texture*>&,
-			const VisualMaterialFlags&, float, float); //registerToShaderManager();
+			const VisualMaterialFlags&, float, float, const Vector4D&); //registerToShaderManager();
+	friend VisualMaterial::VisualMaterial(	String name, bool isInstanced, const Vector4D& debugDrawColor);
 	friend VisualMaterial::~VisualMaterial();//unregisterFromShaderManager();
 	void registerVisualMaterial(VisualMaterial* mat);
 	void unregisterVisualMaterial(VisualMaterial* mat);
