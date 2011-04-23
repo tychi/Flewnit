@@ -10,8 +10,9 @@
 namespace Flewnit
 {
 
-	AccelerationStructure::AccelerationStructure(AccelerationStructureType type)
-	: mAccelerationStructureType(type)
+	AccelerationStructure::AccelerationStructure(String name, AccelerationStructureType type)
+	: 		WorldObject(name,SPATIAL_DATA_STRUCTURE_OBJECT),
+			mAccelerationStructureType(type)
 	{
 		// TODO Auto-generated constructor stub
 

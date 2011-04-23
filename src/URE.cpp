@@ -33,6 +33,7 @@
 #include "Simulator/LightingSimulator/LightingSimulator.h"
 #include "Simulator/SoundSimulator/SoundSimulator.h"
 
+#include "Util/Loader/LoaderHelper.h"
 
 
 
@@ -82,9 +83,11 @@ URE::URE()
 //: BASIC_OBJECT_CONSTRUCTOR(URE, "URESingletonInstance", "do the unified Rendering")
 : mCorrectlyInitializedGuard(false),
   mMainLoopQuitRequested(false),
+
   mDoValidateSimulationStepResults(false),
   mDoProfileAndOptimizeSettings(false),
   mDoProfilePerformance(false),
+  mDoDebugDraw(false),
 
   mConfig(0),
   mLoader(0),
@@ -95,7 +98,7 @@ URE::URE()
   mParallelComputeManager(0),
   mSimulationResourceManager(0),
 
-  mGeometryConverter(0)
+  mGeometryTransformer(0)
 {
 //	mSimulators[MECHANICAL_SIM_DOMAIN]=0;
 //	mSimulators[VISUAL_SIM_DOMAIN]=0;
@@ -152,6 +155,9 @@ bool URE::init(Path& pathToGlobalConfigFile)
 			(mConfig->root().get("generalSettings",0).get("doProfileAndOptimizeSettings",0) );
 		mDoProfilePerformance = ConfigCaster::cast<bool>
 			(mConfig->root().get("generalSettings",0).get("doProfilePerformance",0) );
+
+		mDoDebugDraw = ConfigCaster::cast<bool>
+		(mConfig->root().get("generalSettings",0).get("doDebugDraw",0) );
 	}
 
 

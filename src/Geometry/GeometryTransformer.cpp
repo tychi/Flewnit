@@ -7,6 +7,9 @@
 
 #include "GeometryTransformer.h"
 
+namespace Flewnit
+{
+
 GeometryTransformer::GeometryTransformer() {
 	// TODO Auto-generated constructor stub
 
@@ -14,4 +17,7 @@ GeometryTransformer::GeometryTransformer() {
 
 GeometryTransformer::~GeometryTransformer() {
 	// TODO Auto-generated destructor stub
+}
+
+
 }

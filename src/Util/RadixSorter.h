@@ -12,6 +12,7 @@
 
 #include "Common/BasicObject.h"
 
+#include "Simulator/SimulatorForwards.h"
 
 namespace Flewnit
 {
@@ -19,6 +20,7 @@ namespace Flewnit
 class RadixSorter
  : public BasicObject
 {
+	 FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
 	RadixSorter(
 		unsigned int numElements,
@@ -27,8 +29,7 @@ public:
 
 		//implementation dependent stuff, default values indicate that optimal
 		//(e.g. hardware dependent) values shall be chosen automatically
-		unsigned int numElementsPerRadixCounter = 0,
-
+		unsigned int numElementsPerRadixCounter = 0
 	);
 
 	virtual ~RadixSorter();

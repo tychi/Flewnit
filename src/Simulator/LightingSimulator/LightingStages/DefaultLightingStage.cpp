@@ -10,7 +10,7 @@
 #include "MPP/Shader/ShaderManager.h"
 #include "Simulator/SimulationResourceManager.h"
 
-#include "Scene/Scene.h"
+#include "Scene/SceneGraph.h"
 
 #include "Util/Log/Log.h"
 #include "Simulator/LightingSimulator/Light/LightSourceManager.h"

@@ -122,15 +122,18 @@ void  VertexBasedGeometry::unbind()
 
 void  VertexBasedGeometry::bindSafe()
 {
-	GLint currentVBOBinding;
+	//GLint currentVBOBinding;
 	//wtf, the GL_VERTEX_ARRAY_BINDING cap is documented nowhere!
 	//let's hope this works
-	GUARD( glGetIntegerv(GL_VERTEX_ARRAY_BINDING , &currentVBOBinding) );
+	//GUARD( glGetIntegerv(GL_VERTEX_ARRAY_BINDING , &currentVBOBinding) );
+
 	mBindSaveCallCounter++;
 
-	if( ( (GLuint)(currentVBOBinding) ) != mGLVBO )
+	//if( ( (GLuint)(currentVBOBinding) ) != mGLVBO )
+	if(mBindSaveCallCounter == 1)
 	{
-		mOldVBOBinding = currentVBOBinding;
+		//mOldVBOBinding = currentVBOBinding;
+		GUARD( glGetIntegerv(GL_VERTEX_ARRAY_BINDING , &mOldVBOBinding) );
 		GUARD( glBindVertexArray(mGLVBO) );
 	}
 }
@@ -290,7 +293,7 @@ BufferInterface* VertexBasedGeometry::getIndexBuffer()
 }
 
 
-void void VertexBasedGeometry::rebindPingPongBuffers()
+void VertexBasedGeometry::rebindPingPongBuffers()
 {
 	bindSafe();
 
@@ -446,7 +449,10 @@ void VertexBasedGeometry::draw(
 
 void VertexBasedGeometry::validateBufferIntegrity()throw(BufferException)
 {
-	assert(	mOffsetStart + mIndexCount <= mIndexBuffer->getBufferInfo().numElements);
+	if(mIndexBuffer)
+	{
+		assert(	mOffsetStart + mIndexCount <= mIndexBuffer->getBufferInfo().numElements);
+	}
 
 	assert(
 			getGeometryRepresentation()==VERTEX_BASED_POINT_CLOUD ||

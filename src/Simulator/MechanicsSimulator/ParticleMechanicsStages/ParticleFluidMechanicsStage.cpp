@@ -10,13 +10,13 @@
 namespace Flewnit
 {
 
-ParticleFluidMechanicsStage::ParticleFluidMechanicsStage() {
-	// TODO Auto-generated constructor stub
-
-}
-
-ParticleFluidMechanicsStage::~ParticleFluidMechanicsStage() {
-	// TODO Auto-generated destructor stub
-}
+//ParticleFluidMechanicsStage::ParticleFluidMechanicsStage() {
+//	// TODO Auto-generated constructor stub
+//
+//}
+//
+//ParticleFluidMechanicsStage::~ParticleFluidMechanicsStage() {
+//	// TODO Auto-generated destructor stub
+//}
 
 }

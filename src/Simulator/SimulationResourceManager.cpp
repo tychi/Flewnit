@@ -6,7 +6,7 @@
  */
 
 #include "SimulationResourceManager.h"
-#include "Scene/Scene.h"
+#include "Scene/SceneGraph.h"
 
 #include "WorldObject/InstanceManager.h"
 #include "Material/Material.h"

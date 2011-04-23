@@ -18,6 +18,8 @@
 namespace Flewnit
 {
 
+
+
 class FPSCounter;
 class InputInterpreter;
 
@@ -43,9 +45,15 @@ class WindowManager;
 class GUI;
 class InputManager;
 
+
+//{
+class RadixSorter;
+//}
+
 ///\brief Converter forwards;
 ///\{
-class GeometryConverter;
+class GeometryTransformer;
+
 class MeshVoxelizer;
 class VoxelParticelizer;
 class DistanceFieldRasterizer;
@@ -169,16 +177,21 @@ class ParticleFluid; //the most important WorldObject in this thesis :);
 class VoxelFluid; //irrelevant in this thesis
 
 class RigidBody; //configurable or derivable to TriangleRB or ParticleizedRB ..t.b.d...
-class 	PrimitiveBasedRigidBody; //Convex hull, capsule etc.. won't be thought about during this thesis,
-								 //even though this may lead to more design flaws...
-class 	TriangleBasedRigidBody;	 //see above, no further thought about this
-class 	ParticleizedRigidBody;	 //will maybe implemented later...
+class 	ParticleRigidBody;
+
+class 	PrimitiveRigidBody; //Convex hull, capsule etc.. won't be thought about during this thesis,
+							//even though this may lead to more design flaws...
+class 	TriangleRigidBody;	 //see above, no further thought about this
 
 class StaticObject;	//triangles specially sorted and accessed in the mechanical domain for efficient
 					//collision detection via OpenCL
-class UniformGrid; //in "virtual reality" logic, not a WorldObject;
+
+class AccelerationStructure;
+class  	UniformGrid; //in "virtual reality" logic, not a WorldObject;
 					//but because of its buffers and debug draw stuff,
 					//it fits the structure of a WorldObject;
+class 	KDTree;  //won't be thought about during this thesis...
+class 	BVH;    //won't be thought about during this thesis...
 ///\}
 
 
@@ -220,8 +233,16 @@ class		GenericBufferVoxelGridGeometry;
 class		UniformGridImplicitVoxelGridGeometry;
 
 class Material;
+class   VisualMaterialFlags;
 class	VisualMaterial;
-class VisualMaterialFlags;
+class   	SkyDomeMaterial;
+class 		DebugDrawVisualMaterial;
+class   	ParticleLiquidVisualMaterial;
+class MechanicalMaterial;
+class 	ParticleRigidBodyMechMat;
+class	ParticleFluidMechMat;
+
+
 //to be continued;
 
 //following obsolete

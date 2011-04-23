@@ -54,7 +54,7 @@ public:
 	 *
 	 *	NOTE: not implemented yet (april 21, 2011) TODO
 	 * */
-	ParticleizedRigidBody* particleizeGeometry(
+	ParticleRigidBody* particleizeGeometry(
 			Geometry* geomToParticleize, //usually a VertexBasedGeometry to be voxelized
 										//and then transformed in to a particle cloud
 			float massPerParticle,
@@ -62,7 +62,8 @@ public:
 			//ParticleSceneRepresentation::mVoxelSideLengthRepresentedByRigidBodyParticle,
 			//because this must be the same for all particleized rigid objects
 			//for stability and performance reasons;
-			float sideLengthOfOneVoxel
+			float sideLengthOfOneVoxel,
+			uint numMaxParticles
 	 	 ) throw(BufferException);
 
 
@@ -104,6 +105,9 @@ public:
 			float sideLengthOfOneVoxel
 	 	 ) throw(BufferException);
 
+private:
+
+	//TODO some render targets etc..
 
 };
 

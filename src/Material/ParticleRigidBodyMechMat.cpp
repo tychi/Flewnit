@@ -12,13 +12,13 @@
 
 namespace Flewnit {
 
-ParticleRigidBodyMechMat::ParticleRigidBodyMechMat() {
-	// TODO Auto-generated constructor stub
-
-}
-
-ParticleRigidBodyMechMat::~ParticleRigidBodyMechMat() {
-	// TODO Auto-generated destructor stub
-}
+//ParticleRigidBodyMechMat::ParticleRigidBodyMechMat() {
+//	// TODO Auto-generated constructor stub
+//
+//}
+//
+//ParticleRigidBodyMechMat::~ParticleRigidBodyMechMat() {
+//	// TODO Auto-generated destructor stub
+//}
 
 }

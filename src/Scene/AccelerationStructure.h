@@ -11,9 +11,13 @@
 
 #pragma once
 
-#include "Common/BasicObject.h"
+
+#include "WorldObject/WorldObject.h"
+
 
 #include "Simulator/SimulatorMetaInfo.h"
+
+
 
 namespace Flewnit
 {
@@ -28,12 +32,12 @@ namespace Flewnit
 
 
 	class AccelerationStructure
-	 : public BasicObject
+	 : public WorldObject //derive from WorldObject to be debug-drawable!
 	{
 		 FLEWNIT_BASIC_OBJECT_DECLARATIONS
 
 	public:
-		AccelerationStructure(AccelerationStructureType type);
+		AccelerationStructure(String name, AccelerationStructureType type);
 		virtual ~AccelerationStructure();
 
 		//throws exception if scene representation is not compatible

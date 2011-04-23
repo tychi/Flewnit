@@ -9,15 +9,15 @@
 
 namespace Flewnit {
 
-ParticleSceneRepresentation::ParticleSceneRepresentation()
-: SceneRepresentation(PARTICLE_SCENE_REPRESENTATION)
-{
-	// TODO Auto-generated constructor stub
-
-}
-
-ParticleSceneRepresentation::~ParticleSceneRepresentation() {
-	// TODO Auto-generated destructor stub
-}
+//ParticleSceneRepresentation::ParticleSceneRepresentation()
+//: SceneRepresentation(PARTICLE_SCENE_REPRESENTATION)
+//{
+//	// TODO Auto-generated constructor stub
+//
+//}
+//
+//ParticleSceneRepresentation::~ParticleSceneRepresentation() {
+//	// TODO Auto-generated destructor stub
+//}
 
 }

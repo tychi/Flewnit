@@ -80,6 +80,11 @@ public:
 			float reflectivity = 0.25f
 			);
 
+protected:
+	//for DebugDrawMaterial
+	VisualMaterial(	String name, const Vector4D& debugDrawColor);
+public:
+
 	virtual ~VisualMaterial();
 
 	//check for equality in order to check if a material with the desired properties
@@ -152,57 +157,9 @@ private:
 
 	float mShininess;
 	float mReflectivity;
+
 };
 
-
-
-class SkyDomeMaterial
-: public VisualMaterial
-{
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-
-public:
-
-	SkyDomeMaterial(String name, Texture2DCube* cubeTex);
-	virtual ~SkyDomeMaterial();
-
-	//check for equality in order to check if a material with the desired properties
-	//(shader feature set and textures) already exists in the ResourceManager;
-	virtual bool operator==(const Material& rhs) const;
-
-	virtual void activate(
-			SimulationPipelineStage* currentStage,
-			SubObject* currentUsingSuboject) throw(SimulatorException);
-	virtual void deactivate(SimulationPipelineStage* currentStage,
-			SubObject* currentUsingSuboject) throw(SimulatorException);
-};
-
-
-
-//we'll see if we need an actual debug draw material or if it is handled by the visual mat..
-
-
-
-class LiquidVisualMaterial
-: public VisualMaterial
-{
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-public:
-
-	//will be extended when needed
-	LiquidVisualMaterial(String name);
-	virtual ~LiquidVisualMaterial();
-
-	//check for equality in order to check if a material with the desired properties
-	//(shader feature set and textures) already exists in the ResourceManager;
-	virtual bool operator==(const Material& rhs) const;
-
-	virtual void activate(
-			SimulationPipelineStage* currentStage,
-			SubObject* currentUsingSuboject) throw(SimulatorException);
-	virtual void deactivate(SimulationPipelineStage* currentStage,
-			SubObject* currentUsingSuboject) throw(SimulatorException);
-};
 
 
 }

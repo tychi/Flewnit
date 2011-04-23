@@ -9,6 +9,8 @@
 	    <doValidateSimulationStepResults type="BOOL" value="false" />		
 	    <doProfileAndOptimizeSettings type="BOOL" value="false" />		
 	    <doProfilePerformance type="BOOL" value="false" />		
+	    
+	    <doDebugDraw type="BOOL" value="true" />		
 	
 	
 		<!--

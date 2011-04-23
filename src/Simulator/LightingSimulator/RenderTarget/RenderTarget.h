@@ -131,13 +131,14 @@ private:
 	void validateMembers()throw(BufferException);
 	void validateTexture(Texture* tex, bool isDepthTex)throw(BufferException);
 
+	String mName;
+
 	GLint mOldReadBufferBinding;
 	GLint mOldDrawBufferBinding;
 	GLint mBindSaveCallCounter;
 	void bindSave();
 	void unbindSave();
 
-	String mName;
 
 	//In case of deferred rendering we need several textures for writing and reading
 	//available in every simulation stage. Hence, a Rendertarget in this framework is

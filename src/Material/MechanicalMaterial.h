@@ -27,7 +27,7 @@ public:
 	MechanicalMaterial(String name, float mass);
 	MechanicalMaterial(String name, float mass, float friction, float restitution);
 
-	virtual ~MechanicalMaterial(String name, float mass);
+	virtual ~MechanicalMaterial();
 
 	virtual bool operator==(const Material& rhs) const = 0;
 

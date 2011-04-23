@@ -77,7 +77,7 @@ public:
 
 
     inline GUI* getGUI()const{return mGUI;}
-    inline GeometryConverter* getGeometryConverter()const{return mGeometryConverter;}
+    inline GeometryTransformer* getGeometryConverter()const{return mGeometryTransformer;}
     inline Loader* getLoader()const{return mLoader;}
     inline WindowManager* getWindowManager()const{return mWindowManager;}
     inline SimulationResourceManager* getSimulationResourceManager()const{return mSimulationResourceManager;}
@@ -87,6 +87,7 @@ public:
     inline bool doValidateSimulationStepResults()const{return mDoValidateSimulationStepResults;}
     inline bool doProfileAndOptimizeSettings()const{return mDoProfileAndOptimizeSettings;}
     inline bool doProfilePerformance()const{return mDoProfilePerformance;}
+    inline bool doDebugDraw()const{return mDoDebugDraw;}
 
     SimulatorInterface* getSimulator(SimulationDomain sd)const throw(SimulatorException);
 
@@ -110,12 +111,13 @@ private:
     //bool buildSimulationPipeLine(boost::filesystem::path pathToPipelineConfigFile);
 
 
-    bool 					mCorrectlyInitializedGuard;
-    bool					mMainLoopQuitRequested;
+    bool mCorrectlyInitializedGuard;
+    bool mMainLoopQuitRequested;
 
 	bool mDoValidateSimulationStepResults;
 	bool mDoProfileAndOptimizeSettings;
 	bool mDoProfilePerformance;
+	bool mDoDebugDraw;
 
     Config*					mConfig;
     Loader*					mLoader;
@@ -135,7 +137,7 @@ private:
 
 
 
-	GeometryConverter* 		mGeometryConverter;
+	GeometryTransformer* 		mGeometryTransformer;
 
 
 };

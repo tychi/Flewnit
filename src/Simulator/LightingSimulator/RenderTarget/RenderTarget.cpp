@@ -16,6 +16,7 @@
 
 
 #include "Buffer/Texture.h"
+#include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
 
 
 
@@ -67,6 +68,14 @@ RenderTarget::RenderTarget(
   mColorRenderingEnabled(true)
 
 {
+//	//init old bindings;
+//	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING,
+//					&mOldReadBufferBinding);
+//	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING,
+//					&mOldDrawBufferBinding);
+
+
+
 	for(int i= 0 ; i < __NUM_TOTAL_SEMANTICS__; i++)
 	{
 		mOwnedTexturePool[i] = 0;
@@ -945,25 +954,35 @@ void RenderTarget::detachDepthBuffer()
 
 void RenderTarget::bindSave()
 {
-	GLint currentReadBufferBinding, currentDrawBufferBinding;
-
-	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING,
-					&currentReadBufferBinding);
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING,
-					&currentDrawBufferBinding);
+	//static GLint currentReadBufferBinding;
+	//static GLint currentDrawBufferBinding;
 
 	mBindSaveCallCounter++;
 
-	if(
-		( mIsReadFrameBuffer    && ( (GLuint)(currentReadBufferBinding) != mFBO ) )
-		||
-		( (!mIsReadFrameBuffer) && ( (GLuint)(currentDrawBufferBinding) != mFBO ) )
-	)
+	if( mBindSaveCallCounter == 1)
 	{
-		mOldReadBufferBinding = mIsReadFrameBuffer ? currentReadBufferBinding : mOldReadBufferBinding;
-		mOldDrawBufferBinding = mIsReadFrameBuffer ? mOldDrawBufferBinding    : currentDrawBufferBinding ;
+		GUARD( glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &mOldReadBufferBinding) );
+		GUARD( glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &mOldDrawBufferBinding) );
+
+//		GUARD( glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &currentReadBufferBinding) );
+//		GUARD( glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &currentDrawBufferBinding) );
+//
+//		if(     mIsReadFrameBuffer   && ( (GLuint)(currentReadBufferBinding) != mFBO ) )
+//		{
+//			mOldReadBufferBinding = currentReadBufferBinding;
+//		}
+//
+//		if( ( ! mIsReadFrameBuffer ) && ( (GLuint)(currentDrawBufferBinding) != mFBO ) )
+//		{
+//			mOldDrawBufferBinding = currentDrawBufferBinding;
+//		}
+
+		//mOldReadBufferBinding = mIsReadFrameBuffer ? currentReadBufferBinding : mOldReadBufferBinding;
+		//mOldDrawBufferBinding = mIsReadFrameBuffer ? mOldDrawBufferBinding    : currentDrawBufferBinding ;
 		bind(mIsReadFrameBuffer);
 	}
+
+	//bind(mIsReadFrameBuffer);
 }
 void RenderTarget::unbindSave()
 {
@@ -981,6 +1000,9 @@ void RenderTarget::unbindSave()
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER,
 				(GLuint) (mOldDrawBufferBinding) );
 	}
+
+	//glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
+	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
 }
 
 bool RenderTarget::depthTestEnabled()

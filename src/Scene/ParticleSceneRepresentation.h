@@ -59,15 +59,14 @@ public:
 
 	inline ParticleFluid* getFluid(ID fluidId )const
 		{ assert(fluidId < mParticleFluids.size()); return mParticleFluids[fluidId];}
-	inline ParticleFluid* getRigidBody(ID rbId )const
+	inline ParticleRigidBody* getRigidBody(ID rbId )const
 		{ assert(rbId < mParticleRigidBodies.size()); return mParticleRigidBodies[rbId];}
 
 private:
 
-	friend void UniformGrid::update(SceneRepresentation*);
-	//called by UniformGrid::update(SceneRepresentation* sceneRep);
-	//precondition: z-Index sort has already been performed, so that
-	//mOldIndicesPiPoBuffer can be used to reorder the rest;
+	//precondition: UniformGrid::sort() has already been called for this step,
+	//		 		i.e. z-Index sort has already been performed, so that
+	//mOldIndicesPiPoBuffer can be used to reorder the attributes;
 	void reorderAttributes();
 
 	//take all "pure particle buffers" (except predicted velocities, this buffer is only needed for CL integration ),

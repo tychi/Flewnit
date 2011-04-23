@@ -6,13 +6,15 @@
  */
 
 #include "SkyDome.h"
+
+#include "Material/SkyDomeMaterial.h"
 #include "Util/Loader/Loader.h"
 #include "Simulator/SimulationResourceManager.h"
 #include "WorldObject/SubObject.h"
-#include "Material/VisualMaterial.h"
 #include "Geometry/Procedural/BoxGeometry.h"
 #include "URE.h"
 #include "Buffer/Texture.h"
+
 
 namespace Flewnit {
 

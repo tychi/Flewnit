@@ -7,8 +7,10 @@
 
 #pragma once
 
-#include "Common/Singleton.h"
+
 #include "AccelerationStructure.h"
+#include "WorldObject/WorldObject.h"
+
 #include "SceneRepresentation.h"
 
 
@@ -62,7 +64,8 @@ public:
 	void splitAndCompactCells( Buffer* startIndicesCompacted, Buffer* elementCountsCompatced);
 
 	//throw exception if no buffers are allocated for the specified element type
-	UniformGridBuffers& getUniformGridBuffers(SceneRepresentationType elementType)throw(BufferException);
+	inline Buffer* getStartIndices()const{return mStartIndices;}
+	inline PingPongBuffer* getlementCounts()const{return mElementCounts;}
 
 
 private:

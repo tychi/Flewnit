@@ -9,13 +9,13 @@
 
 namespace Flewnit {
 
-ParticleFluid::ParticleFluid() {
-	// TODO Auto-generated constructor stub
-
-}
-
-ParticleFluid::~ParticleFluid() {
-	// TODO Auto-generated destructor stub
-}
+//ParticleFluid::ParticleFluid() {
+//	// TODO Auto-generated constructor stub
+//
+//}
+//
+//ParticleFluid::~ParticleFluid() {
+//	// TODO Auto-generated destructor stub
+//}
 
 }

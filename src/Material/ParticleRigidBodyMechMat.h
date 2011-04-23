@@ -25,7 +25,7 @@ public:
 		String name, float totalMass, float density,
 		float friction = 0.5f, float restitution=0.5f);
 
-	virtual ~ParticleRigidBodyMechMat(String name, float mass);
+	virtual ~ParticleRigidBodyMechMat();
 
 	virtual bool operator==(const Material& rhs) const;
 

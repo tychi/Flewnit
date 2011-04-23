@@ -68,7 +68,7 @@ typedef boost::filesystem::path Path;
 typedef float 				Scalar;
 typedef std::string 		String;
 //for "invalid ID" tagging, we use -1, so we typedef the ID stuff to int instead of insigned int
-typedef int 				ID;
+typedef unsigned int		ID;
 typedef unsigned int		uint;
 //#define List std::vector
 //#define Map std::map

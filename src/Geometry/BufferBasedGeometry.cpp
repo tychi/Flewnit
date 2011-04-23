@@ -31,7 +31,14 @@ BufferBasedGeometry::~BufferBasedGeometry()
 
 void BufferBasedGeometry::setAttributeBuffer(BufferInterface* buffi, BufferSemantics bs) throw(BufferException)
 {
-	mAttributeBuffers[buffi->getBufferInfo().bufferSemantics] = buffi;
+	if(buffi)
+	{
+		mAttributeBuffers[buffi->getBufferInfo().bufferSemantics] = buffi;
+	}
+	else
+	{
+		mAttributeBuffers[bs] = 0;
+	}
 	validateBufferIntegrity();
 }
 
