@@ -51,7 +51,13 @@
 
     __global uint* gParticleIndexTable, //for finding the particles belonging to the current rigid body
         
+        
+ ###################       
     //TODO replace one of the buffers with relative rigid-body-only position buffers
+    TODO TODO TODO IMPORTANT!!111
+ #################   
+    
+    
     __global float4* gParticlePositionsOld, //the positions not refreshed by particle integration of current path,
                                             //hence (gParticlePositionsOld[index] - rigidBody.oldCentreOfMass) encodes the rotated 
                                             //relative position of a particle from the previous pass
@@ -62,8 +68,10 @@
     
     __global float4* gParticlePredictedVelocities,
         
-        
+    //numRigidBodies elements    
     __global ParticleRigidBody* gRigidBodies,
+    //numRigidBodies * NUM_MAX_PARTICLES_PER_RIGID_BODY elements
+    __global float4* gRigidBodyRelativePositions
        
   )
   {

@@ -90,23 +90,11 @@
   
   typedef struct
   {    
-    //Non-physical hack to control a rigid body without making it to a "total kinetic object"; It is kind of a hybrid this way;
-    //host computes: 
-    //      correctiveTransformationMatrix =
-    //        translateTowardsTargetPos() * rotateTowardsTargetDir() * rotateTowardsTargetUp();
-    //kernel computes: 
-    //      rotationMatrix =  rotationalPart(correctiveTransformationMatrix) * rotate(norm(angVel),length(angVel)*timestep);
-    //      newRBWorldPos = newCentreOfMassPos + translationalPart(correctiveTransformationMatrix);
-    //      particleNewWorldPos = 
-    //        newRBWorldPos +
-    //        (rotationMatrix * particleRelativeOldPos);
-    //      newRBDirection = 
-    //        rotationMatrix * oldRBDirection;
-    //      newRBUp = 
-    //       rotationMatrix * oldRBUp;
-    //The host can then read back the structure and build the final trnasformation matrix for scenegraph and graphics
-    //from centreOfMassPosition, direction and upVector;
-    float16 correctiveTransformationMatrix; 
+    //read/write
+    float16 transformationMatrix;
+    //TODO think about this...
+//        TODO TODO TODO IMPORTANT!!111
+    float16 correctiveTransformationMatrix;
     
     //direction, direction and upVector are read back by the host to construct a transformation matrix
     //to update both the scene graph transform ogf the rigid body object and to provide a transform for the glsl vertex shader;

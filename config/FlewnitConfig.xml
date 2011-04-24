@@ -82,7 +82,7 @@
 			<resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
 			<position type="VEC2I" x="400" y="100" GUIVisibility="read" tweakConfigString="TODO"/>
 			
-			<numMultiSamples type="INT" value ="2" />
+			<numMultiSamples type="INT" value ="4" />
 			
 		</windowSettings>
 		
@@ -120,72 +120,49 @@
 		<Simulator>
 			<Type type="STRING" value="MechanicsSimulator"/>
 
-			<generalSettings>
 
-				<targetMinSimulationStepsPerSecond type="INT" value="60" GUIVisibility="read/write"	tweakConfigString="TODO"/>
-				<numFluidParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
-				<particleRadius type="FLOAT" value="1.0"		GUIVisibility="read/write" tweakConfigString="TODO"/>
-
-
-				<fluidParticleMass type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-
-				<particlesPerRigidBody type="INT" value="256" GUIVisibility="read/write" tweakConfigString="TODO"/>
-				<particelizeBordersOnly type="BOOL" value ="false" GUIVisibility="read" tweakConfigString="TODO"/>
-
-				<rigidBodyParticleMass type="FLOAT" value="0.5" GUIVisibility="read/write"	tweakConfigString="TODO"/>
-
-			</generalSettings>
-
-			<SimulationPipelineStage>
-				<Type type="STRING" value="UniformGridUpdater"/>
-				<!-- Particles are sorted accourding to a z-Curve into a Uniform Grid via Parallel Radix Sort -->
-
-			</SimulationPipelineStage>
 			
-
-
-
-			<!-- the following  two stages two could be joined in trade of stability/accuracy-->
+			
+			
 			
 			<SimulationPipelineStage>
-				<Type type="STRING" value="ParticleDensityComputation"/>
-
-			</SimulationPipelineStage>
-			
-			<SimulationPipelineStage>
-				<Type type="STRING" value="ParticlePressureComputation"/>
-
-			</SimulationPipelineStage>
-
-			<SimulationPipelineStage>
-				<Type type="STRING" value="ParticleViscosityComputation"/>
-
-			</SimulationPipelineStage>
-
-			<SimulationPipelineStage>
-				<Type type="STRING" value="ParticleForceComputation"/>
-
-			</SimulationPipelineStage>
-			
-
-			<SimulationPipelineStage>
-				<Type type="STRING" value="FluidParticleIntegrator"/>
-				<!-- 
-					Use the leap frog integration scheme to compute velocity and position
-					(in the same kernel or separated?) 
-				-->
+				<Type type="STRING" value="ParticleMechanicsStage"/>
 				
-			</SimulationPipelineStage>
+				<generalSettings>
 
-			<!-- 
-			<SimulationPipelineStage>
-				<Type type="STRING" value="ParticleizedRigidBodyIntegrator"/>
-				<!- - use the particles to compute a commont force and torque for its belonging rigid body,
-					align those particles to the new RB-transform afterwards - ->
+				  <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
+				  <SPHSupportRadius type="FLOAT" value="1.5"		GUIVisibility="read/write" tweakConfigString="TODO"/>
+ 
+          <numMaxFluids type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!-- zero is a legitimate value to indicate that no rigid bodies are wanted -->
+          <numMaxRigidBodies type="INT" value="0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!-- be careful with this value: the maximum may be hardware/implementation dependent and hence may be clamped;
+               GT200: max 256; Fermi: Max 1024; reason: scarce local memory, hence value reloading for greater particle counts; -->
+				  <numMaxParticlesPerRigidBody type="INT" value="1024" GUIVisibility="read/write" tweakConfigString="TODO"/>
 
-			</SimulationPipelineStage>
-			-->
+
+
+				  <particleMass type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+
+
+				  <particleMass type="FLOAT" value="0.5" GUIVisibility="read/write"	tweakConfigString="TODO"/>
+
+
+
+          <!--
+				  <targetMinSimulationStepsPerSecond type="INT" value="60" GUIVisibility="read/write"	tweakConfigString="TODO"/>
+				  <particelizeBordersOnly type="BOOL" value ="false" GUIVisibility="read" tweakConfigString="TODO"/>
+          -->
+			  </generalSettings>
+			  
+			  <!-- it may be no good style  to scatter the scene definitions, but time pressure forces me to do so ;( -->
+			  <particleScene>
+
+        </particleScene>
 			
+			
+			</SimulationPipelineStage>
+
 
 
 

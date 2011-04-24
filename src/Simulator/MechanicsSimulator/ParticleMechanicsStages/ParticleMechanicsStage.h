@@ -1,5 +1,5 @@
 /*
- * ParticleFluidMechanicsStage.h
+ * ParticleMechanicsStage.h
  *
  * Mechanical Simulations on particle-based objects are performed here
  * with OpenCL;
@@ -39,14 +39,32 @@
 namespace Flewnit
 {
 
-class ParticleFluidMechanicsStage
+class ParticleMechanicsStage
 	: public SimulationPipelineStage
 {
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
-	ParticleFluidMechanicsStage(ConfigStructNode* simConfigNode);
-	virtual ~ParticleFluidMechanicsStage();
+
+	ParticleMechanicsStage(ConfigStructNode* simConfigNode);
+	virtual ~ParticleMechanicsStage();
+
+	virtual bool stepSimulation() throw(SimulatorException);
+	virtual bool initStage()throw(SimulatorException);
+	virtual bool validateStage()throw(SimulatorException);
+
+
+	inline ParticleSceneRepresentation* getParticleSceneRepresentation()const{return mParticleSceneRepresentation;}
 
 private:
+
+	//{ Buffers flushed to CL device at beginning of eacht simulations step
+	Buffer* mSimulationParametersBuffer;
+
+	uint mNumMaxUserForceControlPoints;
+	Buffer* mUserForceControlPointBuffer;
+	//}
+
+
 
 	//There could come to one's mind to manage Scene representations and accell.
 	//structures other than the classic scene graph also centrally by the
@@ -57,16 +75,18 @@ private:
 	//		  of same type but in different usage combinations;
 	//		  This would become way too complicated and it won't be used anyway in the
 	//		  near future;
+	//--> This stage maintains its own scene representation
+	ParticleSceneRepresentation* mParticleSceneRepresentation;
 
 	UniformGrid* mParticleUniformGrid;
 	//for later ;)
 	//UniformGrid* mStaticTriangleUniformGrid;
+	UniformGridBufferSet* mSplitAndCompactedUniformGridCells;
+	//value implying how many work groups we need for SPH particle physics simulation Kernels;
+	unsigned int mNumCurrentSplitAndCompactedUniformGridCells;
 
-	Buffer* mParticleStartIndices_CompactedUniGridCells;
-	Buffer* mParticleCounts_CompactedUniGridCells;
 
 
-	ParticleSceneRepresentation* mParticleSceneRepresentation;
 
 };
 

@@ -15,7 +15,7 @@
 #include "Common/FlewnitSharedDefinitions.h"
 #include "Simulator/SimulatorForwards.h"
 
-
+#include "CLKernelArguments.h"
 
 namespace Flewnit
 {
@@ -41,8 +41,8 @@ namespace Flewnit
 		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
 		CLParams(
-				cl_GLuint numElements,
-				cl_GLuint targetNumWorkItemsPerWorkGroup //not guaranteed not to be altered by calculateOptimalParameters()
+			cl_GLuint numElements,
+			cl_GLuint targetNumWorkItemsPerWorkGroup //not guaranteed not to be altered by calculateOptimalParameters()
 		);
 		virtual ~CLParams(){}
 
@@ -77,7 +77,7 @@ namespace Flewnit
 
 
 		//work group/item dimensions/size etc are taken from CLParams;
-		void run();
+		cl::Event run(std::vector<cl::Event>& EventsToWaitFor);
 
 	protected:
 		//make sure the kernels' signature fits exactly the type, number and order of values

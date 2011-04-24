@@ -73,10 +73,6 @@
       __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements; to be split and compacted,too
       __global uint* gUniGridCells_NumParticles, //NUM_TOTAL_GRID_CELLS  elements, to be tabulated again for split; costs extra calculations,
                                                  //but saves memory and bandwidth;
-      __global uint* gUniGridCells_NumParticles_Reset, //inactive ping pong component of gUniGridCells_NumParticles;
-                                                 // it is set to zero so that in the following frame,
-                                                 //we have a fresh buffer where all empty and hence untouched cells have really a particle
-                                                 //count of zero :)
       
        //ping pong components of gUniGridCells_ParticleStartIndex and gUniGridCells_NumParticles;
        //In the physics simulation phase, only "total count of simulation work groups" elements will be used;                     
@@ -143,10 +139,7 @@
           gPartiallyGloballyScannedTabulatedValues[ groupID ];
       #pragma unroll
       for(uint i=0 ; i < 2; i++ )
-      {
-       //reset this buffer to zero; see comment in arument list for more information;
-       gUniGridCells_NumParticles_Reset[ globalIndex ] = 0;
-      
+      {      
         uint currentNumResidentParticles =  gUniGridCells_NumParticles[  globalIndex ];
         
         //write out only non-empty grid cells!

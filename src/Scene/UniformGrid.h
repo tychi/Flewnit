@@ -22,6 +22,31 @@
 namespace Flewnit
 {
 
+class UniformGridBufferSet
+	 : public BasicObject
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+
+	UniformGridBufferSet(unsigned int numCellsPerDimension);
+	virtual ~UniformGridBufferSet();
+
+	//Before calling UniformGrid::updateCells(), the element counts mus be zero everywhere;
+	//this is why we have to clear the buffer before;
+	//The returned event is needed for the kernel_updateUniformGrid to wait for the transfer to finish;
+	cl::Event clearElementCounts();
+
+	inline Buffer* getStartIndices()const{return  mStartIndices;}
+	inline Buffer* getElementCounts()const{return mElementCounts;}
+
+private:
+
+	//Buffers with numCellsPerDimension^3 elements of type uint
+	Buffer* mStartIndices;
+	Buffer* mElementCounts;
+
+};
+
 
 
 class UniformGrid
@@ -53,19 +78,25 @@ public:
 		unsigned int numMaxElementsPerSimulationWorkGroup
 	);
 
-
 	virtual ~UniformGrid();
 
-	//just passes sort request to mRadixSorter;
-	void sort(PingPongBuffer* zIndicesKeyBuffer, PingPongBuffer* oldIndicesBuffer);
-
-	void updateCells(PingPongBuffer* sortedZIndicesKeyBuffer, PingPongBuffer* reorderedOldIndicesBuffer);
-
-	void splitAndCompactCells( Buffer* startIndicesCompacted, Buffer* elementCountsCompatced);
 
 	//throw exception if no buffers are allocated for the specified element type
-	inline Buffer* getStartIndices()const{return mStartIndices;}
-	inline PingPongBuffer* getlementCounts()const{return mElementCounts;}
+	inline UniformGridBufferSet* getBufferSet()const{return mUniformGridBufferSet;}
+
+
+
+	//updates mUniformGridBufferSet according to sortedZIndicesKeyBuffer;
+	//there is an optimazation so that after returning,
+	//this buffer mUniformGridBufferSet->mElementCounts contains (particleEndIndex+1);
+	//this is "fixed" within splitAndCompactCells();
+	//see updateUniformGrid.cl and splitAndCompactUniformGrid.cl for further info
+	void updateCells(PingPongBuffer* sortedZIndicesKeyBuffer);
+	//returns the number of non-empty split cells;
+	//(this value implies to the ParticleMechanicsStage
+	//how many work groups it must launch for SPH particle physics simulation Kernels)
+	unsigned int splitAndCompactCells(UniformGridBufferSet* compactionResultBufferSet);
+
 
 
 private:
@@ -75,17 +106,10 @@ private:
 	Vector4D mExtendsOfOneCell;
 
 
-	unsigned int mNumMaxContainingElements;
-	RadixSorter* mRadixSorter;
+	UniformGridBufferSet* mUniformGridBufferSet;
 
-	//Buffers with mNumCellsPerDimension^3 elements of type uint
-	Buffer* mStartIndices;
-	//must be ping pong, because one buffer needs to be cleared while the other is compacted,
-	//because ther is only one non-generic kernel where work items are directly associated with
-	//uniform grid cells; To ensure a valid state before only partial updating is done in the following
-	//frame, we need one buffer for neighbour lookup and one to be cleared for next frame;
-	//don't forget toggle;
-	PingPongBuffer* mElementCounts;
+
+
 	CLProgram* mCLProgram_UpdateUniformGrid;
 
 	//{ scan and split stuff
@@ -108,4 +132,17 @@ private:
 };
 
 }
+
+//legacy code TODO delete
+
+//note: following obsolete; i rather do a memset to zero and an upload during radix sort;
+//as modern GPUs support kernel execution while memory transfers, this should not be a problem,
+//and it makes buffer organization more consistant
+
+//must be ping pong, because one buffer needs to be cleared while the other is compacted,
+//because ther is only one non-generic kernel where work items are directly associated with
+//uniform grid cells; To ensure a valid state before only partial updating is done in the following
+//frame, we need one buffer for neighbour lookup and one to be cleared for next frame;
+//don't forget toggle;
+//PingPongBuffer* mElementCounts;
 

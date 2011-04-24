@@ -95,8 +95,9 @@ public:
 	ParticleRigidBody* createBoxParticleizedRigidBody(
 			BoxGeometry* boxGeomToParticleize, //usually a VertexBasedGeometry to be voxelized
 										//and then transformed in to a particle cloud
-			VisualMaterial* visMat,
 
+			VisualMaterial* visMat,
+			uint numMaxParticles,
 			ParticleRigidBodyMechMat* ptclRBMechMat,
 			//caution: read out this value  from
 			//ParticleSceneRepresentation::mVoxelSideLengthRepresentedByRigidBodyParticle,

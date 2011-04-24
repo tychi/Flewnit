@@ -65,8 +65,6 @@ class TriangleIndexBufferGenerator;
 class SimulatorInterface;
 
 class LightingSimulator;
-//class FluidMechanicsSimulator;
-//class MechanicsSimulator;
 class MechanicsSimulator;
 class SoundSimulator;
 
@@ -80,11 +78,12 @@ class ParallelComputeManager;
 class SimulationPipelineStage;
 
 	class LightingSimStageBase;
-		class DefaultLightingStage;
 		class ShadowMapGenerator;
+		class DefaultLightingStage;
+		//to be continued..
 
-	class ParticleFluidMechanicsStage;
-
+	class ParticleMechanicsStage;
+	//to be continued...
 
 //class LightingPipelineStage;
 //class SPHFluidPipelineStage;
@@ -190,6 +189,7 @@ class AccelerationStructure;
 class  	UniformGrid; //in "virtual reality" logic, not a WorldObject;
 					//but because of its buffers and debug draw stuff,
 					//it fits the structure of a WorldObject;
+	class UniformGridBufferSet;
 class 	KDTree;  //won't be thought about during this thesis...
 class 	BVH;    //won't be thought about during this thesis...
 ///\}
@@ -258,7 +258,7 @@ class MPP;
 	class ShaderManager;
 	class Shader;
 
-	class CLParams;
+	class CLKernelArguments;
 	class CLKernel;
 	class CLProgram;
 

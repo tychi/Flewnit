@@ -35,7 +35,8 @@ public:
 
 	//acessor to the different buffers, if subsequent stages need them
 	//returns NULL if Buffer with specified name does not exist
-	BufferInterface* getRenderingResult(BufferSemantics what);
+	//none-pure virtual for special treatment in some stages
+	virtual BufferInterface* getRenderingResult(BufferSemantics what);
 
 	//non-pure virtual, as not every simulation stage needs this functionality
 //	virtual bool validateSimulationStepResults(){return true;}

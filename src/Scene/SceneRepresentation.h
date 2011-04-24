@@ -12,6 +12,11 @@
  *	 by a UniformGrid AccelerationStructure;
  *
  *
+ * Note: One could design every concrete Scene representation as Singleton;
+ * 		 Considering that one could have several nested simulation domains (e.g. a dungeon within
+ * 		 a world), there might be need for several instances;
+ *
+ *
  *  Created on: Apr 21, 2011
  *      Author: tychi
  *
