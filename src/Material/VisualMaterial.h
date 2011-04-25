@@ -81,6 +81,7 @@ public:
 			const VisualMaterialFlags& visualMaterialFlags,
 			float shininess = 100.0f,
 			float reflectivity = 0.25f,
+			//only used when having no diffuse texture;
 			const Vector4D& color = FLEWNIT_DEFAULT_COLOR
 			);
 
@@ -133,7 +134,7 @@ public:
 
 	inline float getShininess()const{return mShininess;}
 	inline float getReflectivity()const{return mReflectivity;}
-	inline const Vector4D getColor()const{return mColor;}
+	inline const Vector4D getColor()const{return mDiffuseColor;}
 
 	inline Shader* getCurrentlyUsedShader()const{return mCurrentlyUsedShader;}
 
@@ -165,7 +166,7 @@ private:
 	float mShininess;
 	float mReflectivity;
 
-	Vector4D mColor; //only used when texturing disable or debug drawing;
+	Vector4D mDiffuseColor; //only used when texturing disable or debug drawing;
 
 };
 

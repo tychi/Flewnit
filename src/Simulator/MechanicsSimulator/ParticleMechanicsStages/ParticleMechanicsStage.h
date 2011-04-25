@@ -65,7 +65,6 @@ private:
 	//}
 
 
-
 	//There could come to one's mind to manage Scene representations and accell.
 	//structures other than the classic scene graph also centrally by the
 	//SimulationResourceManager;
@@ -78,13 +77,14 @@ private:
 	//--> This stage maintains its own scene representation
 	ParticleSceneRepresentation* mParticleSceneRepresentation;
 
-	UniformGrid* mParticleUniformGrid;
-	//for later ;)
-	//UniformGrid* mStaticTriangleUniformGrid;
-	UniformGridBufferSet* mSplitAndCompactedUniformGridCells;
-	//value implying how many work groups we need for SPH particle physics simulation Kernels;
-	unsigned int mNumCurrentSplitAndCompactedUniformGridCells;
-
+	//{
+		UniformGrid* mParticleUniformGrid;
+		//for later ;)
+		//UniformGrid* mStaticTriangleUniformGrid;
+		UniformGridBufferSet* mSplitAndCompactedUniformGridCells;
+		//value implying how many work groups we need for SPH particle physics simulation Kernels;
+		unsigned int mNumCurrentSplitAndCompactedUniformGridCells;
+	//}
 
 
 

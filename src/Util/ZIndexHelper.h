@@ -34,7 +34,6 @@ public:
 private:
 
 	Buffer* mZIndexLookupTable;
-
 	CLProgram* mCLProgram_initial_CalcZIndex;
 };
 

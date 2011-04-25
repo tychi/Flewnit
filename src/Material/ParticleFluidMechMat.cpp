@@ -9,13 +9,6 @@
 
 namespace Flewnit {
 
-ParticleFluidMechMat::ParticleFluidMechMat() {
-	// TODO Auto-generated constructor stub
 
-}
-
-ParticleFluidMechMat::~ParticleFluidMechMat() {
-	// TODO Auto-generated destructor stub
-}
 
 }

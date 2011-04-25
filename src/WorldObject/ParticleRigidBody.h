@@ -49,7 +49,7 @@ protected:
 		unsigned int mParticleRigidBodyID;
 		unsigned int mOffsetInIndexTableBuffer;
 
-    //to be synch'ed with scenegraph transform (maybe with a scale and centgre of mass-position-offset)
+    //to be synch'ed with scenegraph transform (maybe with a scale and centre of mass-position-offset)
     //after every simulation step
     AmendedTransform mMechanicalWorldTransform;
 

@@ -68,10 +68,9 @@ public:
 //	};
 
 	UniformGrid(
-		unsigned int numMaxContainingElements, //param needed for radix sort;
 		unsigned int numCellsPerDimension,
 
-		Vector4D centerPosition,
+		Vector4D minCornerPosition,
 		Vector4D extendsOfOneCell,
 		//GPU-relevant "chunk-ization" size, denoting the max. element count processed
 		//by on work group; default: 32
@@ -102,14 +101,11 @@ public:
 private:
 
 	unsigned int mNumCellsPerDimension; //usually 64
-	Vector4D mCenterPosition;
+	Vector4D mMinCornerPosition;
 	Vector4D mExtendsOfOneCell;
 
 
 	UniformGridBufferSet* mUniformGridBufferSet;
-
-
-
 	CLProgram* mCLProgram_UpdateUniformGrid;
 
 	//{ scan and split stuff
@@ -133,16 +129,4 @@ private:
 
 }
 
-//legacy code TODO delete
-
-//note: following obsolete; i rather do a memset to zero and an upload during radix sort;
-//as modern GPUs support kernel execution while memory transfers, this should not be a problem,
-//and it makes buffer organization more consistant
-
-//must be ping pong, because one buffer needs to be cleared while the other is compacted,
-//because ther is only one non-generic kernel where work items are directly associated with
-//uniform grid cells; To ensure a valid state before only partial updating is done in the following
-//frame, we need one buffer for neighbour lookup and one to be cleared for next frame;
-//don't forget toggle;
-//PingPongBuffer* mElementCounts;
 

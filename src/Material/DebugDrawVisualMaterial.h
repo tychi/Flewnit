@@ -24,6 +24,8 @@ public:
 			//must be VERTEX_BASED_POINT_CLOUD or VERTEX_BASED_LINES or VERTEX_BASED_TRIANGLES
 			GeometryRepresentation geomRepToDraw = VERTEX_BASED_LINES  );
 
+	virtual ~DebugDrawVisualMaterial();
+
 	//check for equality in order to check if a material with the desired properties
 	//(shader feature set and textures) already exists in the ResourceManager;
 	virtual bool operator==(const Material& rhs) const;
@@ -34,7 +36,6 @@ public:
 	virtual void deactivate(SimulationPipelineStage* currentStage,
 			SubObject* currentUsingSuboject) throw(SimulatorException);
 
-	virtual ~DebugDrawVisualMaterial();
 
 protected:
 

@@ -95,7 +95,7 @@ VisualMaterial::VisualMaterial(
 	mCurrentlyUsedShader(0),
 	mShininess(shininess),
 	mReflectivity(reflectivity),
-	mColor(color)
+	mDiffuseColor(color)
 {
 	mTextures = textures;
 
@@ -127,7 +127,7 @@ VisualMaterial::VisualMaterial(	String name, bool isInstanced, const Vector4D& d
 	mCurrentlyUsedShader(0),
 	mShininess(1.0f),
 	mReflectivity(1.0f),
-	mColor(debugDrawColor)
+	mDiffuseColor(debugDrawColor)
 
 {
 	ShaderManager::getInstance().registerVisualMaterial(this);

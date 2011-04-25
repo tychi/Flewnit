@@ -2,254 +2,331 @@
 
 <flewnitGlobalConfig>
 
-	<!-- convention: lower case names for everythin but proper names and class names -->
+  <!-- convention: lower case names for everythin but proper names and class
+		names
+    -->
 
-	<generalSettings>		
+  <generalSettings>
 
-	    <doValidateSimulationStepResults type="BOOL" value="false" />		
-	    <doProfileAndOptimizeSettings type="BOOL" value="false" />		
-	    <doProfilePerformance type="BOOL" value="false" />		
-	    
-	    <doDebugDraw type="BOOL" value="true" />		
-	
-	
-		<!--
+    <doValidateSimulationStepResults type="BOOL" value="false" />
+    <doProfileAndOptimizeSettings type="BOOL" value="false" />
+    <doProfilePerformance type="BOOL" value="false" />
+
+    <doDebugDraw type="BOOL" value="true" />
+
+
+    <!--
 		<pathToData type="STRING" value="." />
-		<simulationPipelineConfig type="STRING" value="SimulationPipeLineConfig.xml"/>
-		<sceneAnnotationsFile type="STRING" value="LakeSceneAnnotations.xml" />
-		<disableMemoryTrackingLogging type="BOOL" value="true"/>
+		<simulationPipelineConfig
+			type="STRING"
+      value="SimulationPipeLineConfig.xml"/>
+		<sceneAnnotationsFile
+			type="STRING"
+      value="LakeSceneAnnotations.xml" />
+		<disableMemoryTrackingLogging
+			type="BOOL"
+      value="true"/>
 		-->
 
-	</generalSettings>
-	
-	<scenes>
+  </generalSettings>
 
-	  <scenesGlobalSettings>
-		  <tesselateMeshesWithDisplacementMap type="BOOL" value="true" />		
-		 
-		 <environmentMap type="STRING" value="./assets/textures/cubeMaps/evening.jpg" /> 
-	
-  		<referenceCountThresholdForInstancedRendering type="INT" value="8" />
-		</scenesGlobalSettings>
-		
-		<Scene>
-		  <Type type="STRING" value="HardCodedScene"/>
+  <scenes>
 
-  		  <SceneNode>
-			  <Type type="STRING" value="PURE_NODE"/>
-			  <name type="STRING" value="hardCodedSceneRootNode" />
-			  
-			  <position type="VEC3" x="-75.0" y="0.0" z="-0.0" />
-			  <direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
-			  <up type="VEC3" x="0.0" y="1.0" z="0.0" />				
-			  <scale type="FLOAT" value="1.0"/>	
-     	  </SceneNode>  
-      
-		</Scene>
+    <scenesGlobalSettings>
+      <tesselateMeshesWithDisplacementMap type="BOOL" value="true" />
 
-		<Scene>
-		  <Type type="STRING" value="SceneFile"/>
-  		<sceneFile type="STRING" value="./assets/blendfiles/raptor/raptor_11k_FacesNormalDisp_NoPackedTextures.blend" />		
-  		
-  		<SceneNode>
-			  <Type type="STRING" value="PURE_NODE"/>
-			  <name type="STRING" value="blendFileSceneRootNode" />
-			  <position type="VEC3" x="0.0" y="-15.0" z="-70.0" />
-			  <direction type="VEC3" x="0.0" y="-1.0" z="0.0" />
-			  <up type="VEC3" x="0.0" y="0.0" z="-1.0" />				
-			  <scale type="FLOAT" value="1."/>	
-			</SceneNode>  
-			  
-		</Scene>	
-	
+      <environmentMap type="STRING" value="./assets/textures/cubeMaps/evening.jpg"/>
 
-	
-	</scenes>
+      <referenceCountThresholdForInstancedRendering type="INT" value="8" />
+    </scenesGlobalSettings>
+
+    <Scene>
+      <Type type="STRING" value="HardCodedScene"/>
+
+      <SceneNode>
+        <Type type="STRING" value="PURE_NODE"/>
+        <name type="STRING" value="hardCodedSceneRootNode" />
+
+        <position type="VEC3" x="-75.0" y="0.0" z="-0.0" />
+        <direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
+        <up type="VEC3" x="0.0" y="1.0" z="0.0" />
+        <scale type="FLOAT" value="1.0"/>
+      </SceneNode>
+
+    </Scene>
+
+    <Scene>
+      <Type type="STRING" value="SceneFile"/>
+      <sceneFile type="STRING" value="./assets/blendfiles/raptor/raptor_11k_FacesNormalDisp_NoPackedTextures.blend"/>
+
+      <SceneNode>
+        <Type type="STRING" value="PURE_NODE"/>
+        <name type="STRING" value="blendFileSceneRootNode" />
+        <position type="VEC3" x="0.0" y="-15.0" z="-70.0" />
+        <direction type="VEC3" x="0.0" y="-1.0" z="0.0" />
+        <up type="VEC3" x="0.0" y="0.0" z="-1.0" />
+        <scale type="FLOAT" value="1."/>
+      </SceneNode>
+
+    </Scene>
 
 
-	<UI_Settings>
-
-		<windowSettings>
-
-			<mediaLayer type="STRING" value="GLFW" />
-
-			<windowTitle type="STRING" value="Flewnit" />
-
-			<fullScreen type="BOOL" value="false"/>
-
-			<enforceCustomResolutionInFullScreen type="BOOL" value="false" />
-
-			<resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
-			<position type="VEC2I" x="400" y="100" GUIVisibility="read" tweakConfigString="TODO"/>
-			
-			<numMultiSamples type="INT" value ="4" />
-			
-		</windowSettings>
-		
-		
-		<OpenGL_Settings>
-			<contextVersion type="VEC2I" x="4" y="1" />
-			<enforceCoreProfile type="BOOL" value="true" />
-		</OpenGL_Settings>
-		
-		
-		<OpenCL_Settings>
-			<contextVersion type="VEC2I" x="1" y="0" />	
-			<deviceType type="STRING" value="GPU" />
-		</OpenCL_Settings>
-
-		
-		<inputSettings>
-
-			<grabMouse type="BOOL" value="false" />
-
-			<enableWiimote type="BOOL" value="false" />
-
-		</inputSettings>
+  </scenes>
 
 
-		<!-- maybe GUI config to come... -->
+  <UI_Settings>
 
-	</UI_Settings>
+    <windowSettings>
+
+      <mediaLayer type="STRING" value="GLFW" />
+
+      <windowTitle type="STRING" value="Flewnit" />
+
+      <fullScreen type="BOOL" value="false"/>
+
+      <enforceCustomResolutionInFullScreen type="BOOL" value="false" />
+
+      <resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
+      <position type="VEC2I" x="400" y="100" GUIVisibility="read" tweakConfigString="TODO"/>
+
+      <numMultiSamples type="INT" value ="4" />
+
+    </windowSettings>
+
+
+    <OpenGL_Settings>
+      <contextVersion type="VEC2I" x="4" y="1" />
+      <enforceCoreProfile type="BOOL" value="true" />
+    </OpenGL_Settings>
+
+    <OpenCL_Settings>
+      <contextVersion type="VEC2I" x="1" y="0" />
+      <deviceType type="STRING" value="GPU" />
+    </OpenCL_Settings>
+
+    <inputSettings>
+      <grabMouse type="BOOL" value="false" />
+      <enableWiimote type="BOOL" value="false" />
+    </inputSettings>
+
+
+    <!-- maybe GUI config to come... -->
+
+  </UI_Settings>
 
 
 
-	<simulators>
-		<!--  -->
+  <simulators>
+    <!--  -->
 
-		<Simulator>
-			<Type type="STRING" value="MechanicsSimulator"/>
-
-
-			
-			
-			
-			
-			<SimulationPipelineStage>
-				<Type type="STRING" value="ParticleMechanicsStage"/>
-				
-				<generalSettings>
-
-				  <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
-				  <SPHSupportRadius type="FLOAT" value="1.5"		GUIVisibility="read/write" tweakConfigString="TODO"/>
- 
-          <numMaxFluids type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <!-- zero is a legitimate value to indicate that no rigid bodies are wanted -->
-          <numMaxRigidBodies type="INT" value="0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <!-- be careful with this value: the maximum may be hardware/implementation dependent and hence may be clamped;
-               GT200: max 256; Fermi: Max 1024; reason: scarce local memory, hence value reloading for greater particle counts; -->
-				  <numMaxParticlesPerRigidBody type="INT" value="1024" GUIVisibility="read/write" tweakConfigString="TODO"/>
+    <Simulator>
+      <Type type="STRING" value="MechanicsSimulator"/>
 
 
+      <SimulationPipelineStage>
+        <Type type="STRING" value="ParticleMechanicsStage"/>
 
-				  <particleMass type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-
-
-				  <particleMass type="FLOAT" value="0.5" GUIVisibility="read/write"	tweakConfigString="TODO"/>
-
-
+        <generalSettings>
 
           <!--
-				  <targetMinSimulationStepsPerSecond type="INT" value="60" GUIVisibility="read/write"	tweakConfigString="TODO"/>
-				  <particelizeBordersOnly type="BOOL" value ="false" GUIVisibility="read" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
           -->
-			  </generalSettings>
-			  
-			  <!-- it may be no good style  to scatter the scene definitions, but time pressure forces me to do so ;( -->
-			  <particleScene>
+          <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+          <SPHSupportRadius type="FLOAT" value="1.0"		GUIVisibility="read/write" tweakConfigString="TODO"/>
 
-        </particleScene>
-			
-			
-			</SimulationPipelineStage>
+          <numMaxFluids type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!-- zero is a legitimate value to indicate that no rigid bodies are wanted
+            -->
+          <numMaxRigidBodies type="INT" value="0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!-- be careful with this value: the maximum may be hardware/implementation
+						dependent
+            and hence may be clamped; GT200: max 256; Fermi: Max 1024;
+						reason:
+            scarce local memory, hence value reloading for greater particle
+						counts;
+            -->
+          <numMaxParticlesPerRigidBody type="INT" value="1024" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+          <numMaxUserForceControlPoints type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+          <!--as long i have no triangle-collision-mesh functionality, i have to keep the particles in a lame box ;( -->
+          <simulationDomainBorderMin  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <simulationDomainBorderMax  type="VEC4" x="33.0" y="33.0" z="33.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            
+          <gravityAcceleration  type="VEC4" x="0.0" y="-0.1" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <penaltyForceSpringConstant type="FLOAT" value="0.1" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <penaltyForceDamperConstant type="FLOAT" value="0.1" GUIVisibility="read/write" tweakConfigString="TODO"/>
+ 
+          
+          <!-- following values currently unused -->
+	          <targetSimulationStepsPerSecond type="INT" value="60" GUIVisibility="read/write" tweakConfigString="TODO"/>
+	          <maxSimulationStepsPerSecond type="INT" value="100" GUIVisibility="read/write" tweakConfigString="TODO"/>
+	          <!-- following val is kinda dumb, besides reducing particle count at init time we cannot enforce higher performance
+	               directly; but maybe the value will be of use at some time... -->
+	          <minSimulationStepsPerSecond type="INT" value="10" GUIVisibility="read/write"	tweakConfigString="TODO"/>
+						
+	          <!-- this values is to ensure stability, at the cost of a slow-motion simulation -->
+	          <maxTimestepPerSimulationStep type="float" value="0.1" GUIVisibility="read/write" tweakConfigString="TODO"/>
+	          
+	          <particelizeBordersOnly type="BOOL" value ="false" GUIVisibility="read"	tweakConfigString="TODO"/>
+            
+        </generalSettings>
+        
+        <UniformGrid>
+           <numCellsPerDimension type="INT" value="64" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <minCornerPosition  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <extendsOfOneCell  type="VEC4" x="3.0" y="3.0" z="3.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+				    <!--
+				      GPU-relevant "chunk-ization" size, denoting the max. element count processed by one OpenCL work group; 
+				      default: 32, because this is the warp size; 
+				      lesser  value means: functional units idle; 
+				      greater value means: another warp must work, most of those functional units idle 
+				                           Also, an SPH üparticle usually interact with only about 30 other particles;
+				                           Using the GPU and the Algorithm of Goswami, Interaction count become 27*32=864;
+				                           So don't dare increasing this number unless for testing what will happen ;(
+				    --> 
+           <numMaxElementsPerSimulationWorkGroup type="INT" value="100" GUIVisibility="read/write" tweakConfigString="TODO"/>     
+        </UniformGrid>
+
+        <!-- it may be no good style to scatter the scene definitions, but time pressure forces me to do so ;( -->
+        <ParticleScene>
+                
+          <ParticleFluid>
+            <name type="STRING" value="coldWater" />
+            <!--          
+            <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
+            -->
+            <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+          
+            <spawnAABBMin  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            <spawnAABBMax  type="VEC4" x="33.0" y="33.0" z="33.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            
+             <ParticleLiquidVisualMaterial>
+              <name type="STRING" value="coldWaterParticleLiquidVisualMaterial" />
+              <liquidColor type="VEC4" x="0.2" y="0.2" z="1.0" w="0.75" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <particleDrawRadius type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+              <foamColor type="VEC4" x="0.8" y="0.8" z="0.8" w="0.9" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <foamGenerationAcceleration type="FLOAT" value="0.1" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+              <refractivity type="FLOAT" value="1.5" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+              <shininess type="FLOAT" value="100.0" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+              <reflectivity type="FLOAT" value="0.6" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+              <numCurvatureFlowRelaxationSteps type="UINT" value="10" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+            </ParticleLiquidVisualMaterial>
+            
+            <ParticleFluidMechMat>
+              <name type="STRING" value="coldWaterParticleFluidMechMat" />
+              <massPerParticle  type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <restDensity      type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <gasConstant      type="FLOAT" value="0.1" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <viscosity        type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
+            </ParticleFluidMechMat>
+             
+          </ParticleFluid>
+          
+          
+        </ParticleScene>
+
+
+      </SimulationPipelineStage>
 
 
 
 
 
-		</Simulator>
+    </Simulator>
 
-		<Simulator>
-			<Type type="STRING" value="LightingSimulator"/>
+    <Simulator>
+      <Type type="STRING" value="LightingSimulator"/>
 
-			<generalSettings>
-				<Camera>
-					<position type="VEC3" x="0.0" y="0.0" z="10.0" />
-					<direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
-					<up type="VEC3" x="0.0" y="1.0" z="0.0" />				
-					<openingAngleVerticalDegrees type="FLOAT" value="45.0"/>
-					<movementSpeed type="FLOAT" value="0.5"/>		
-				</Camera>
-				
-				<polygonMode type="STRING" value="FILL"/>
-				
-				<supportedShadingFeatures>
-				  <directLighting type="BOOL" value="true"/>
-				  <diffuseTexturing type="BOOL" value="true"/>
-				  <normalMapping type="BOOL" value="true"/>
-				  <cubeMapping type="BOOL" value="true"/>
-				  <tessellation type="BOOL" value="true"/>				
-				</supportedShadingFeatures>
-								
+      <generalSettings>
+        <Camera>
+          <position type="VEC3" x="0.0" y="0.0" z="10.0" />
+          <direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
+          <up type="VEC3" x="0.0" y="1.0" z="0.0" />
+          <openingAngleVerticalDegrees type="FLOAT" value="45.0"/>
+          <movementSpeed type="FLOAT" value="0.5"/>
+        </Camera>
 
-				<GlobalShadingFeatures>
-					
-					<!-- -->
-					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS"/>
-					<lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT"/>
-					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_DEFAULT"/>
-					<!-- -->
-					
-					<!-- - ->
+        <polygonMode type="STRING" value="FILL"/>
+
+        <supportedShadingFeatures>
+          <directLighting type="BOOL" value="true"/>
+          <diffuseTexturing type="BOOL" value="true"/>
+          <normalMapping type="BOOL" value="true"/>
+          <cubeMapping type="BOOL" value="true"/>
+          <tessellation type="BOOL" value="true"/>
+        </supportedShadingFeatures>
+
+
+        <GlobalShadingFeatures>
+
+          <!-- -->
+          <lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS"/>
+          <lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT"/>
+          <shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_DEFAULT"/>
+          <!-- -->
+
+          <!-- - ->
 					<lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS"/>
-					<lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_NONE"/>
-					<shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_NONE"/>
+					<lightSourcesShadowFeature
+						type="STRING"
+            value="LIGHT_SOURCES_SHADOW_FEATURE_NONE"/>
+					<shadowTechnique
+						type="STRING"
+            value="SHADOW_TECHNIQUE_NONE"/>
 					<!- - -->
-					 
-					<numMaxLightSources type="INT" value="5"/>
-					<numMaxShadowCasters type="INT" value="1"/>
-					<numMaxInstancesRenderable type="INT" value="300"/>
-					<GBufferType type="STRING" value="TEXTURE_TYPE_2D_RECT"/>	
-					
-					<shaderCodeDirectory type="STRING" value="./src/MPP/Shader/ShaderSources/" />		
-				</GlobalShadingFeatures>
 
-			</generalSettings>
+          <numMaxLightSources type="INT" value="5"/>
+          <numMaxShadowCasters type="INT" value="1"/>
+          <numMaxInstancesRenderable type="INT" value="300"/>
+          <GBufferType type="STRING" value="TEXTURE_TYPE_2D_RECT"/>
 
-			
-			<!--
+          <shaderCodeDirectory type="STRING" value="./src/MPP/Shader/ShaderSources/"
+						/>
+        </GlobalShadingFeatures>
+
+      </generalSettings>
+
+
+      <!--
 			<SimulationPipelineStage>
 				<Type type="STRING" value="SkyBoxRenderer"/>
 				
-				<cubeMapName type="STRING" value="cloudy_noon" />
-				<cubeMapFileEnding type="STRING" value="jpg" />
+				<cubeMapName
+				type="STRING"
+        value="cloudy_noon" />
+				<cubeMapFileEnding type="STRING"
+				value="jpg"
+        />
 
 			</SimulationPipelineStage>
-			--> 
-				
-			<!-- -->		
-			<SimulationPipelineStage>
-				<Type type="STRING" value="ShadowMapGenerator"/>
-        		<shadowMapResolution type="INT" value="4096" />
-       			<polygonOffset type="VEC2" x="2.5" y="5.8"/>
-			</SimulationPipelineStage> 
-			<!-- -->	
-					
-			<SimulationPipelineStage>
-				<Type type="STRING" value="DefaultLightingStage"/>
-				
-				<renderToScreen type="STRING" value="true" />  <!-- indicator not to render to the main FBO -->
+			-->
 
-			</SimulationPipelineStage>
-						
+      <!-- -->
+      <SimulationPipelineStage>
+        <Type type="STRING" value="ShadowMapGenerator"/>
+        <shadowMapResolution type="INT" value="4096" />
+        <polygonOffset type="VEC2" x="2.5" y="5.8"/>
+      </SimulationPipelineStage>
+      <!-- -->
 
+      <SimulationPipelineStage>
+        <Type type="STRING" value="DefaultLightingStage"/>
 
-			<!-- Fluid rendering specific stages to go -->
-			
-		</Simulator>
+        <renderToScreen type="STRING" value="true" />
+        <!-- indicator not to render to the main FBO -->
+
+      </SimulationPipelineStage>
 
 
-	</simulators>
+
+      <!-- Fluid rendering specific stages to go -->
+
+    </Simulator>
+
+
+  </simulators>
 
 
 

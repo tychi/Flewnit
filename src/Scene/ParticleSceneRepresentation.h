@@ -31,16 +31,12 @@ class ParticleAttributeBuffers
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
-
 	ParticleAttributeBuffers(unsigned int numTotalParticles,
 			unsigned int invalidObjectID,
 			bool initToInvalidObjectID = true);
-
 	virtual ~ParticleAttributeBuffers();
-
 private:
 	friend class ParticleSceneRepresentation;
-
 	//after all fluids and rigid bodies have been initialized, they have to be uploaded to the
 	//cl device;
 	void flushBuffers();
@@ -77,6 +73,8 @@ private:
 	//so copying these buffer maybe is not the biggest memory related issue;
 	PingPongBuffer* mPredictedVelocitiesPiPoBuffer;
 	PingPongBuffer* mLastStepsAccelerationsPiPoBuffer;
+
+
 };
 
 
@@ -102,7 +100,9 @@ public:
 		//hence value reloading for greater particle counts;
 		//not implemented a compromise allowing greater RB particle count for lesser performance yet (april 2011)
 		unsigned int numMaxParticlesPerRigidBody,
-		unsigned int numMaxUserForceControlPoints
+		unsigned int numMaxUserForceControlPoints,
+		//accessor to z-Index-Helper; This class does not own this object, it*s just a shortcut handle
+		UniformGrid* usedUniformGrid
 	) throw(BufferException);
 
 	virtual ~ParticleSceneRepresentation();
@@ -145,7 +145,7 @@ public:
 			String name,
 			uint numParticles,
 			//should be a ParticleLiquidVisualMaterial, but when simulating smoke, it would be a different one..
-			//I#m rired of all those base class stubs; Maybe whis will be refactored once..
+			//I'm tired of all those base class stubs; Maybe whis will be refactored once..
 			VisualMaterial* visMat,
 			ParticleFluidMechMat* mechMat) throw(BufferException);
 
@@ -202,6 +202,8 @@ private:
 	RadixSorter* mRadixSorter;
 
 	CLProgram* mCLProgram_reorderAttributes;
+
+	UniformGrid* mUsedUniformGrid;
 	//}
 
 

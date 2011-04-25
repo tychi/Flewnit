@@ -69,6 +69,7 @@ class MechanicsSimulator;
 class SoundSimulator;
 
 class SimulationResourceManager;
+class IntermediateResultBuffersManager;
 
 
 class ParallelComputeManager;

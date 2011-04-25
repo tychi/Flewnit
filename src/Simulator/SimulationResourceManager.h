@@ -15,7 +15,7 @@
 #include "Common/BasicObject.h"
 
 #include "SimulatorForwards.h"
-#include "Simulator/SimulationResourceManager.h"
+
 
 namespace Flewnit
 {
@@ -99,6 +99,8 @@ private:
 	//generic buffers are also shared, but rather on a local level; They are
 	//stored centrally to resolve "posession" ambiguities between simulation domains;
 	std::map<String, BufferInterface* > mBuffers;
+
+	IntermediateResultBuffersManager* mIntermediateResultsBuffersManager;
 
 	//Textures can be globally shared (as Rendertarget for multiple simulation stages, or by multiple materials),
 	//and hence are stored centrally in order to

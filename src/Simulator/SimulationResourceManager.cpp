@@ -6,7 +6,10 @@
  */
 
 #include "SimulationResourceManager.h"
+
 #include "Scene/SceneGraph.h"
+
+#include "Buffer/IntermediateResultBuffersManager.h"
 
 #include "WorldObject/InstanceManager.h"
 #include "Material/Material.h"
@@ -49,6 +52,8 @@ SimulationResourceManager::~SimulationResourceManager()
 	{
 		delete pair.second;
 	}
+
+	delete mIntermediateResultsBuffersManager;
 
 	typedef std::map<String, BufferInterface* > BufferMap;
 	BOOST_FOREACH( BufferMap::value_type & pair, mBuffers)
