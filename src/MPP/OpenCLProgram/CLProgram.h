@@ -20,74 +20,45 @@
 namespace Flewnit
 {
 
-
-	/*
-	 * Base class for values relevant for OpenCL
-	 * 	-	program generation (by grantlee)
-	 * 	-	program compilation (by OpenCL driver)
-	 * 	-	kernel invocation
-	 *
-	 * It is up to the derived classes, if the value is used at compile time
-	 * (passed to grantlee or as compiler option string),
-	 * runtime (via clSetKernelArg()) or completely ignored.
-	 *
-	 *
-	 * Derive one Param class per Kernel class and be sure to keep it in synch with the kernel code,
-	 * especially the param list;
-	 */
-	class CLKernelWorkLoadParams
-	: 	public BasicObject
-	{
-		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-	public:
-		CLKernelWorkLoadParams(
-			cl_GLuint numTotalWorkItems,
-			cl_GLuint targetNumWorkItemsPerWorkGroup //not guaranteed not to be altered by calculateOptimalParameters()
-		);
-		virtual ~CLKernelWorkLoadParams(){}
-
-	private:
-		friend class CLKernel;
-
-		//there may be some __attribute__((reqd_work_group_size(...)))
-		//definitions in the kernel; check that this doesn't conflict with the passed values;
-		//also check common stuff like that the mNumWorkItemsPerWorkGroup is a power of two;
-		void validateAgainst(CLKernel* kernel)throw(SimulatorException);
-
-		cl_GLuint mNumTotalWorkItems;
-		cl_GLuint mNumWorkItemsPerWorkGroup;
-
-	};
-
-
-
 	class CLKernel
 		:public BasicObject
 	{
 		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
-		CLKernel(CLProgram* owningProgram, String kernelName, CLKernelWorkLoadParams* kernelWorkLoadParams);
 		~CLKernel();
 		void validate()throw(BufferException);
 
-		//grab&modify directly
+		//grab&modify directly; will be set resp. verified before every kernal launch
+		inline CLKernelArguments* getCLKernelArguments(){return mCLKernelArguments;}
 		inline CLKernelWorkLoadParams* getCLKernelWorkLoadParams()const{return mKernelWorkLoadParams;}
 
 
-		//work group/item dimensions/size etc are taken from CLKernelWorkLoadParams;
-		cl::Event run(std::vector<cl::Event>& EventsToWaitFor);
+		//work group/item dimensions/size etc are taken from kernelWorkLoadParams resp. mKernelWorkLoadParams;
+		typedef std::vector<cl::Event> EventVector;
+		cl::Event run(
+				const EventVector& EventsToWaitFor,
+				//zero indicates that the kernel shall use its own member work load params;
+				CLKernelWorkLoadParams* kernelWorkLoadParams = 0,
+				//zero indicates that the kernel shall use its own member kernel args;
+				CLKernelArguments* kernelArgs = 0
+		) throw(SimulatorException);
 
 	protected:
-		//make sure the kernels' signature fits exactly the type, number and order of values
-		//to be passed; Unfortunately, the OpenCL API has no way to query parameter names or types
-		//of kernel functions, hence there is a huge danger of malfunction without explicit
-		//error generation; be especially careful when implementing this function,
-		//ALWAYS keep it in synch with the openCL code!!!11
-		//virtual void passParamsToKernel()= 0;
-
+		friend class CLProgram;
+		friend class CLKernelArguments;
 		friend class CLKernelArgumentBase;
 
+		//called by CLProgram::createKernel() factory function;
+		CLKernel(CLProgram* owningProgram, String kernelName,
+				CLKernelWorkLoadParams* kernelWorkLoadParams,
+				CLKernelArguments* clKernelArguments);
+
+
+
+
 		String mKernelName;
+
+		CLKernelArguments* mCLKernelArguments;
 		CLKernelWorkLoadParams* mKernelWorkLoadParams;
 
 		cl::Kernel mKernel;
@@ -100,7 +71,7 @@ namespace Flewnit
 	{
 		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
-		CLProgram(Path codeDirectory, Path mProgramCodeSubFolderName, CLKernelWorkLoadParams* kernelWorkLoadParams);
+		CLProgram(Path codeDirectory, Path mProgramCodeSubFolderName);
 		virtual ~CLProgram();
 
 		//inline cl::Program& getCLProgramHandle()const{return mCLProgramHandle;}
@@ -109,16 +80,18 @@ namespace Flewnit
 		//called by constructor
 		virtual void build();
 
+		//Factory function; Owns the kernels, i.e. is responsible for their deletion;
 		//throw exception if there is a detectable incompatibility between the cl kernel and the args and work load params
 		//note: many stuff is not detectable because of the many missing query features
 		//(e.g. param name, param type of kernel arguments) so be very careful!!
 		CLKernel* createKernel(String name, CLKernelWorkLoadParams* kernelWorkLoadParams, CLKernelArguments* kernelArgs)throw(SimulatorException);
 
 		//setup the context for template rendering:
+		//non-pure virtual so that derived programs can replace or complement template info;
 		virtual void setupTemplateContext(TemplateContextMap& contextMap);
 
 		virtual void validate()throw(SimulatorException);
-		void writeToDisk(const String& sourceCode);
+
 
 
 		Path mCodeDirectory;

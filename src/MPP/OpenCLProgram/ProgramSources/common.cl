@@ -43,8 +43,11 @@
   // -->  both numParticles and numUniGridCells are usually equal to 256k; this is a coincidence and does NOT mean that
   //      one shall try to reuse or merge some kernels just because they work on the same number of elements; This is a special case that will
   //      NOT be abused for any efforts of optimization
+  //note: this value is used by every kernels bud the physical ones (SPH particle and rigid body); 
+  //      As those kernels don't use this macro, it's not an error that it is defined to nothing then;
   #define NUM_TOTAL_ELEMENTS ( {{ numTotalElements }} )
   
+  //used in a scan context;
   //default: 1; for rigid body update kernel: 9  
   //not working with |default:"1" fillter here as i'm afraid to forget the explicit setting in the updateRigidBodies kernel;
   #define NUM_ARRAYS_TO_SCAN_IN_PARALLEL ( {{ numArraysToScanInParallel }} )
