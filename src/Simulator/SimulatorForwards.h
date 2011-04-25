@@ -256,11 +256,16 @@ class	ParticleFluidMechMat;
 class MPP;
 
 	class ShaderManager;
-	class Shader;
+	class 	Shader;
 
-	class CLKernelArguments;
-	class CLKernel;
 	class CLProgram;
+	class 	CLKernel;
+	class 		CLKernelArgumentBase;
+	template<typename T> class CLValueKernelArgument;
+	class 		CLBufferKernelArgument;
+	class 		CLKernel;
+	class 		CLKernelArguments;
+	class		CLKernelWorkLoadParams;
 
 
 }

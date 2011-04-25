@@ -1,21 +1,43 @@
 /*
  * ZIndexHelper.h
  *
+ * Provider of the z-index lookup table and the initial z-Index calculation OpenCL Program;
+ *
  *  Created on: Apr 24, 2011
  *      Author: tychi
+ *
+ *
  */
 
-#ifndef ZINDEXHELPER_H_
-#define ZINDEXHELPER_H_
+#pragma once
 
-namespace Flewnit {
 
-class ZIndexHelper {
+#include "Common/BasicObject.h"
+
+#include "Simulator/SimulatorMetaInfo.h"
+
+
+namespace Flewnit
+{
+
+class ZIndexHelper
+	: public BasicObject
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS
+
 public:
-	ZIndexHelper();
+
+	ZIndexHelper(unsigned int numCellsPerDimension) throw(SimulatorException);
+
 	virtual ~ZIndexHelper();
+
+private:
+
+	Buffer* mZIndexLookupTable;
+
+	CLProgram* mCLProgram_initial_CalcZIndex;
 };
 
 }
 
-#endif /* ZINDEXHELPER_H_ */
+

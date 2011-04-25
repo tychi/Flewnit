@@ -9,13 +9,12 @@
 
 namespace Flewnit {
 
-ZIndexHelper::ZIndexHelper() {
-	// TODO Auto-generated constructor stub
-
-}
-
-ZIndexHelper::~ZIndexHelper() {
-	// TODO Auto-generated destructor stub
-}
+//ZIndexHelper::ZIndexHelper() {
+//	// TODO Auto-generated constructor stub
+//}
+//
+//ZIndexHelper::~ZIndexHelper() {
+//	// TODO Auto-generated destructor stub
+//}
 
 }

@@ -15,7 +15,7 @@
 #include "Common/FlewnitSharedDefinitions.h"
 #include "Simulator/SimulatorForwards.h"
 
-#include "CLKernelArguments.h"
+//#include "CLKernelArguments.h"
 
 namespace Flewnit
 {
@@ -35,29 +35,27 @@ namespace Flewnit
 	 * Derive one Param class per Kernel class and be sure to keep it in synch with the kernel code,
 	 * especially the param list;
 	 */
-	class CLParams
+	class CLKernelWorkLoadParams
 	: 	public BasicObject
 	{
 		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
-		CLParams(
-			cl_GLuint numElements,
+		CLKernelWorkLoadParams(
+			cl_GLuint numTotalWorkItems,
 			cl_GLuint targetNumWorkItemsPerWorkGroup //not guaranteed not to be altered by calculateOptimalParameters()
 		);
-		virtual ~CLParams(){}
+		virtual ~CLKernelWorkLoadParams(){}
 
-		cl_GLuint numTotalElements;
-		cl_GLuint numElementsPerWorkItem; 	//"serialization amount" in order to
-											//	- reduce memory needs or
-											//	- do more work per item for very small kernels
-											//	  to compensate kernel invocation/management overhead
-		cl_GLuint numWorkGroups;
-		cl_GLuint numWorkItemsPerWorkGroup;
+	private:
+		friend class CLKernel;
 
-		cl_GLuint neededLocalMemoryPerWorkItem;
+		//there may be some __attribute__((reqd_work_group_size(...)))
+		//definitions in the kernel; check that this doesn't conflict with the passed values;
+		//also check common stuff like that the mNumWorkItemsPerWorkGroup is a power of two;
+		void validateAgainst(CLKernel* kernel)throw(SimulatorException);
 
-		//to be overridden by special kernels if necessary
-		virtual void calculateOptimalParameters();
+		cl_GLuint mNumTotalWorkItems;
+		cl_GLuint mNumWorkItemsPerWorkGroup;
 
 	};
 
@@ -68,15 +66,15 @@ namespace Flewnit
 	{
 		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
-		CLKernel(CLProgram* owningProgram, String kernelName, CLParams* mParams);
+		CLKernel(CLProgram* owningProgram, String kernelName, CLKernelWorkLoadParams* kernelWorkLoadParams);
 		~CLKernel();
 		void validate()throw(BufferException);
 
 		//grab&modify directly
-		inline CLParams* getCLParams()const{return mParams;}
+		inline CLKernelWorkLoadParams* getCLKernelWorkLoadParams()const{return mKernelWorkLoadParams;}
 
 
-		//work group/item dimensions/size etc are taken from CLParams;
+		//work group/item dimensions/size etc are taken from CLKernelWorkLoadParams;
 		cl::Event run(std::vector<cl::Event>& EventsToWaitFor);
 
 	protected:
@@ -85,10 +83,12 @@ namespace Flewnit
 		//of kernel functions, hence there is a huge danger of malfunction without explicit
 		//error generation; be especially careful when implementing this function,
 		//ALWAYS keep it in synch with the openCL code!!!11
-		virtual void passParamsToKernel()= 0;
+		//virtual void passParamsToKernel()= 0;
+
+		friend class CLKernelArgumentBase;
 
 		String mKernelName;
-		CLParams* mParams;
+		CLKernelWorkLoadParams* mKernelWorkLoadParams;
 
 		cl::Kernel mKernel;
 	};
@@ -100,7 +100,7 @@ namespace Flewnit
 	{
 		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
-		CLProgram(Path codeDirectory, Path mProgramCodeSubFolderName, CLParams* params);
+		CLProgram(Path codeDirectory, Path mProgramCodeSubFolderName, CLKernelWorkLoadParams* kernelWorkLoadParams);
 		virtual ~CLProgram();
 
 		//inline cl::Program& getCLProgramHandle()const{return mCLProgramHandle;}
@@ -109,7 +109,11 @@ namespace Flewnit
 		//called by constructor
 		virtual void build();
 
-		CLKernel* createKernel(String name, CLParams* params);
+		//throw exception if there is a detectable incompatibility between the cl kernel and the args and work load params
+		//note: many stuff is not detectable because of the many missing query features
+		//(e.g. param name, param type of kernel arguments) so be very careful!!
+		CLKernel* createKernel(String name, CLKernelWorkLoadParams* kernelWorkLoadParams, CLKernelArguments* kernelArgs)throw(SimulatorException);
+
 		//setup the context for template rendering:
 		virtual void setupTemplateContext(TemplateContextMap& contextMap);
 
@@ -122,7 +126,7 @@ namespace Flewnit
 
 		cl::Program mCLProgram;
 
-		//CLParams* mParams;
+		//CLKernelWorkLoadParams* mKernelWorkLoadParams;
 		std::map<String, CLKernel*> mKernels;
 
 	};

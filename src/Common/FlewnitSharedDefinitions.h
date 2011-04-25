@@ -67,7 +67,7 @@ typedef boost::filesystem::path Path;
 //do some typedefs in order to be as independent from library specific types as possible
 typedef float 				Scalar;
 typedef std::string 		String;
-//for "invalid ID" tagging, we use -1, so we typedef the ID stuff to int instead of insigned int
+//for "invalid ID" tagging, we use -1, so we typedef the ID stuff to int instead of insigned int <-- edit: doesn't matter;
 typedef unsigned int		ID;
 typedef unsigned int		uint;
 //#define List std::vector

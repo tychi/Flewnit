@@ -150,6 +150,7 @@ ShaderFeaturesGlobal LightingSimulator::parseGlobalShaderFeatureFromConfig()
 	sfg.numMaxShadowCasters =	ConfigCaster::cast<int>(node.get("numMaxShadowCasters",0));
 	sfg.numMaxInstancesRenderable =	ConfigCaster::cast<int>(node.get("numMaxInstancesRenderable",0));
 
+
 	String GBufferTypeString =
 		ConfigCaster::cast<String>(	node.get("shadowTechnique",0));
 
@@ -226,6 +227,7 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 	{
 		String stageType = ConfigCaster::cast<String>(
 				mSimConfigNode->get("SimulationPipelineStage",i).get("Type",0));
+
 
 //		if(stageType  == "SkyBoxRenderer")
 //		{
