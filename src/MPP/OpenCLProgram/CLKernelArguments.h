@@ -13,7 +13,7 @@ namespace Flewnit {
 class CLKernelArguments {
 public:
 	CLKernelArguments();
-	virtual ~CLKernelArguments();
+	virtual ~CLKernelArguments( );
 };
 
 }

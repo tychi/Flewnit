@@ -53,6 +53,16 @@ public:
 	 *		  do not use the same buffer, and that a scale is applied only once per shared buffer;
 	 *
 	 *	NOTE: not implemented yet (april 21, 2011) TODO
+	 *
+	 *
+	 *	IMPORTANT FOR IMPLEMENTATION :
+	 *		Because updateRigidBody.cl performs parallel scans and hence each work item treats two particles,
+	 *	 	the number of paticles MUST be even!! the side effects of one "forgotten" or even worse - missread
+	 *		particles could blow up the wohl simulation; the control flow to catch this in a kernel is way too costly
+	 *		(at least three more if()'s), so ensure that the particleization handles this, e.g. by ignoring the last particle
+	 *		if its index is even... this could result in a slightly "odd" (what a  word wit ;( ) simulation behaviour,
+	 *		but won't blow up!
+	 *
 	 * */
 	ParticleRigidBody* particleizeGeometry(
 			Geometry* geomToParticleize, //usually a VertexBasedGeometry to be voxelized

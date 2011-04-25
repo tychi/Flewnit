@@ -46,7 +46,8 @@
   #define NUM_TOTAL_ELEMENTS ( {{ numTotalElements }} )
   
   //default: 1; for rigid body update kernel: 9  
-  #define NUM_ARRAYS_TO_SCAN_IN_PARALLEL ( {{ numArraysToScanInParallel|default:"1" }} )
+  //not working with |default:"1" fillter here as i'm afraid to forget the explicit setting in the updateRigidBodies kernel;
+  #define NUM_ARRAYS_TO_SCAN_IN_PARALLEL ( {{ numArraysToScanInParallel }} )
   //--------------------------------------------------------
   
   

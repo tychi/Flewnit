@@ -85,7 +85,7 @@ namespace Flewnit
 		//of kernel functions, hence there is a huge danger of malfunction without explicit
 		//error generation; be especially careful when implementing this function,
 		//ALWAYS keep it in synch with the openCL code!!!11
-		virtual void passParamsToKernel()=0;
+		virtual void passParamsToKernel()= 0;
 
 		String mKernelName;
 		CLParams* mParams;

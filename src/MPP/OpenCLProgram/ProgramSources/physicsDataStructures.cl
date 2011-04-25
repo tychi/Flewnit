@@ -87,33 +87,31 @@
   } UserForceControlPoint;
   
   
-  
+  /*
+    ParticleRigidBody object meta info;
+    
+    see updateRigidBodies.cl for further information;
+  */
   typedef struct
   {    
-    //read/write
+    //Transformation matrix to update the scene graph global transform of the rigid body object and hence to provide a transform for the glsl vertex shader
+    //(which is using the unrotated relative positions as vertex input);
+    //kernel access read/write;
+    //app access: init: write;
+    //            default: read;
     float16 transformationMatrix;
-    //TODO think about this...
-//        TODO TODO TODO IMPORTANT!!111
+    //kernel access read/write;
+    //app access: init and default: write;
+    //            if unsued: init to identity;
     float16 correctiveTransformationMatrix;
     
-    //direction, direction and upVector are read back by the host to construct a transformation matrix
-    //to update both the scene graph transform ogf the rigid body object and to provide a transform for the glsl vertex shader;
-    float4 centreOfMassPosition;
-    
-    //dirction and up vector needed as input to form the orthogonal base 
-    float4 direction; //rotated around angular velocity by  length(angularVelocity)*timeStep radians;
-                      //transformationMatrix= constructTransfPormationMatrix(
-                      //  centreOfMassPosNew, normalize(angularVelocity), length(angularVelocity)*timeStep );
-                      //directionNew,  = transformationMatrix * directionOld;
-                      //n.b.:(applxy same transform on all old particle relative values);
 
-    float4 upVector;  //influenced by angular velocity;
-                      //caclulation is the same as for direction;
+    //float4 centreOfMassPosition;
     
     float4 linearVelocity;
     float4 angularVelocity;
-    
-    
+
+
     float4 friction; //unused yet; maybe useful for collision with static geometry;
     
     
@@ -123,7 +121,13 @@
                               //           = massPerParticle/(rigidBodyAABBVolume / numParticleizationVoxels)
                               //           = massPerParticle/particleizationVoxelVolume
                               //           = massPerParticle*inverseParticleizationVoxelVolume
-                              
+                             
+    //because updateRigidBody.cl performs parallel scans and hence each work item treats two particles,
+    //the number of paticles MUST be even!! the side effects of one "forgotten" or even worse - missread
+    //particles could blow up the wohl simulation; the control flow to catch this in a kernel is way too costly
+    //(at least three more if()'s), so ensure that the particleization handles this, e.g. by ignoring the last particle
+    //if its index is even... this could result in a slightly "odd" (what a  word wit ;( ) simulation behaviour,
+    //but won't blow up!
     uint numContainingParticles;
     
     

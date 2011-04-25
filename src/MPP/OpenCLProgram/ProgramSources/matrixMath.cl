@@ -1,5 +1,63 @@
+   
+  
+#ifndef FLEWNIT_CL_PROGRAMS_MATRIX_MATH_GUARD
+#define FLEWNIT_CL_PROGRAMS_MATRIX_MATH_GUARD
+   
+   /*
+     matrixMath.cl
+   
+     Like in OpenGL, we assume column major matrices, i.e. matrixAsFloat16.lo.lo is the first column;
+     
+   */
+   
     
+    //grab the fourth column of a matrix coded as float16
+    #define TRANSLATION_VEC_OF_MATRIX( float16Matrix ) ( ( float16Matrix ).hi.hi )
+    //do nothing, just sure to have thought about it and be ready for future implememtation changes:
+    #define ROTATIONAL_PART( float16Matrix ) (  float16Matrix )
     
+    //float16Matrix.even selects row 0 and 2, float16Matrix.even.even selects row 0
+    /*
+    Column selection  ||                       |                      |                      |                      |
+                -->   ||  .lo.lo               | .lo.hi               | .hi.lo               | .hi.hi               |
+    | Row selection   ||                       |                      |                      |                      |
+    V                 ||                       |                      |                      |
+     =================||==============================================================================================
+                      || .lo.lo.lo.lo          | .lo.hi.lo.lo         | .hi.lo.lo.lo         | .hi.hi.lo.lo         |
+      .even.even      || .even.even.even.even  | .even.even.odd.even  | .even.even.even.odd  | .even.even.odd.odd   |
+                      || .s0                   | .s4                  | .s8                  | .sc                  |
+     _________________||_______________________|______________________|______________________|______________________|
+                      || .lo.lo.lo.hi          | .lo.hi.lo.hi         | .hi.lo.lo.hi         | .hi.hi.lo.hi         |
+      .odd.even       || .odd.even.even.even   | .odd.even.odd.even   | .odd.even.even.odd   | .odd.even.odd.odd    |
+                      || .s1                   | .s5                  | .s9                  | .sd                  |
+     _________________||_______________________|______________________|______________________|______________________| 
+                      || .lo.lo.hi.lo          | .lo.hi.hi.lo         | .hi.lo.hi.lo         | .hi.hi.hi.lo         |
+      .even.odd       || .even.odd.even.even   | .even.odd.odd.even   | .even.odd.even.odd   | .even.odd.odd.odd    |
+                      || .s2                   | .s6                  | .sa                  | .se                  |
+     _________________||_______________________|______________________|______________________|______________________|
+                      || .lo.lo.hi.hi          | .lo.hi.hi.hi         | .hi.lo.hi.hi         | .hi.hi.hi.hi         |
+      .odd.odd        || .odd.odd.even.even    | .odd.odd.odd.even    | .odd.odd.even.odd    | .odd.odd.odd.odd     |
+                      || .s3                   | .s7                  | .sb                  | .sf                  |
+     _________________||_______________________|______________________|______________________|______________________|
+    */    
+    #define COL_0( mat4x4OrRowVec4 ) ( ( mat4x4OrRowVec4 ).lo.lo )
+    #define COL_1( mat4x4OrRowVec4 ) ( ( mat4x4OrRowVec4 ).lo.hi )
+    #define COL_2( mat4x4OrRowVec4 ) ( ( mat4x4OrRowVec4 ).hi.lo )
+    #define COL_3( mat4x4OrRowVec4 ) ( ( mat4x4OrRowVec4 ).hi.hi )
+    
+    //not that this row selection even works on 4D-(column)vectors, not only on 4x4-Matrices!
+    #define ROW_0( mat4x4OrColVec4 )  ( ( mat4x4OrColVec4 ).even.even )
+    #define ROW_1( mat4x4OrColVec4 )  ( ( mat4x4OrColVec4 ).odd.even )
+    #define ROW_2( mat4x4OrColVec4 )  ( ( mat4x4OrColVec4 ).even.odd )
+    #define ROW_3( mat4x4OrColVec4 )  ( ( mat4x4OrColVec4 ).odd.odd )
+    
+    //note that you can nest the macros to fake kind of 2D-array selection!
+    //first select the column (most nested), than the row;
+    //mat->s0 == ROW_0(COL_0(*mat));
+    //Actually, the order of nesting doesn't even play a role!
+    //mat->s0 == COL_0(ROW_0(*mat));
+
+
     void constructRotationMatrix(__local float16* result, float4 rotationAxis, float rotationAngleRadians )
     {
       /*
@@ -28,7 +86,7 @@
 	    result->s9 =            tempVec.z * rotationAxis.y - sinAlpha * rotationAxis.x;
 	    result->sa = cosAlpha + tempVec.z * rotationAxis.z;
 	    
-	    //init also the rest to be sure... //maybe todo remove when stable
+	    //init also the rest to be sure... //maybe TODO remove when stable
 	    result->s3=0.0f;
 	    result->s7=0.0f;
 	    result->sb=0.0f;
@@ -60,8 +118,33 @@
       result->se = dot( leftMat->even.odd, rightMat->hi.hi );
       result->sf = dot( leftMat->odd.odd, rightMat->hi.hi );  
       
+      /*
+        or do you prefer the other flavour? :P
+      COL_0( ROW_0( *result ) ) = dot( ROW_0( *leftMat ), COL_0( *rightMat ) );
+      COL_0( ROW_1( *result ) ) = dot( ROW_1( *leftMat ), COL_0( *rightMat ) );
+      COL_0( ROW_2( *result ) ) = dot( ROW_2( *leftMat ), COL_0( *rightMat ) );
+      COL_0( ROW_3( *result ) ) = dot( ROW_3( *leftMat ), COL_0( *rightMat ) );
+      
+      COL_1( ROW_0( *result ) ) = dot( ROW_0( *leftMat ), COL_1( *rightMat ) );
+      COL_1( ROW_1( *result ) ) = dot( ROW_1( *leftMat ), COL_1( *rightMat ) );
+      COL_1( ROW_2( *result ) ) = dot( ROW_2( *leftMat ), COL_1( *rightMat ) );
+      COL_1( ROW_3( *result ) ) = dot( ROW_3( *leftMat ), COL_1( *rightMat ) );
+      
+      COL_2( ROW_0( *result ) ) = dot( ROW_0( *leftMat ), COL_2( *rightMat ) );
+      COL_2( ROW_1( *result ) ) = dot( ROW_1( *leftMat ), COL_2( *rightMat ) );
+      COL_2( ROW_2( *result ) ) = dot( ROW_2( *leftMat ), COL_2( *rightMat ) );
+      COL_2( ROW_3( *result ) ) = dot( ROW_3( *leftMat ), COL_2( *rightMat ) );
+      
+      COL_3( ROW_0( *result ) ) = dot( ROW_0( *leftMat ), COL_3( *rightMat ) );
+      COL_3( ROW_1( *result ) ) = dot( ROW_1( *leftMat ), COL_3( *rightMat ) );
+      COL_3( ROW_2( *result ) ) = dot( ROW_2( *leftMat ), COL_3( *rightMat ) );
+      COL_3( ROW_3( *result ) ) = dot( ROW_3( *leftMat ), COL_3( *rightMat ) );
+      */ 
+      
     }
     
+    //all elements but the rotational part are overwirrten so that the result matrix is in any case a valid
+    //4x4 rotation matrix without any projective or translational part!
     void matrixMult3x3( 
       __local float16* result, 
       __local float16* leftMat,
@@ -105,3 +188,6 @@
         vec.w
       );
     }
+    
+#endif //FLEWNIT_CL_PROGRAMS_MATRIX_MATH_GUARD    
+    
