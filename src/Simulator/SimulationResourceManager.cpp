@@ -10,6 +10,7 @@
 #include "Scene/SceneGraph.h"
 
 #include "Buffer/IntermediateResultBuffersManager.h"
+#include "Simulator/ParallelComputeManager.h"
 
 #include "WorldObject/InstanceManager.h"
 #include "Material/Material.h"
@@ -20,6 +21,8 @@
 #include "Util/Log/Log.h"
 
 #include <boost/foreach.hpp>
+#include "Util/HelperFunctions.h"
+#include "Buffer/Buffer.h"
 
 namespace Flewnit
 {
@@ -71,6 +74,49 @@ SimulationResourceManager::~SimulationResourceManager()
 	delete mScene;
 
 }
+
+
+//factory function for a general purpose OpenCL Buffer (with optional host component) without any GL/Interop/Channel/Texture/Typing/whatsoever
+//just an area of memory with a size of x bytes, minumum size of a cache line, size aligned to cache line size;
+//this removes some burden to use the complex constructors of the buffer class;
+Buffer* SimulationResourceManager::createGeneralPurposeOpenCLBuffer(String name, unsigned int sizeInByte, bool allocHostMem) throw(BufferException)
+{
+	if(PARA_COMP_MANAGER->getParallelComputeDeviceInfo().globalCacheLineSizeByte == 0)
+	{
+		throw(BufferException("Something went terribly wrong with your OpenCL initialization!"));
+	}
+
+
+	unsigned int numUintElements =
+		//alloc at least the size of a cache line;
+		std::max(
+			PARA_COMP_MANAGER->getParallelComputeDeviceInfo().globalCacheLineSizeByte,
+			//align to cache line size;
+			HelperFunctions::ceilToNextMultiple(
+				sizeInByte,
+				PARA_COMP_MANAGER->getParallelComputeDeviceInfo().globalCacheLineSizeByte
+			)
+		)
+		//as we denote elements and not byte yount, we have to divied by the byte size of uint
+		/ sizeof(unsigned int);
+
+
+	return new Buffer(
+		BufferInfo(
+			name,
+			ContextTypeFlags( (allocHostMem ? HOST_CONTEXT_TYPE_FLAG : 0) | OPEN_CL_CONTEXT_TYPE_FLAG),
+			INTERMEDIATE_RENDERING_SEMANTICS, //unused
+			TYPE_UINT32,
+			numUintElements,
+			BufferElementInfo(true), //no channeled buffers;
+			NO_GL_BUFFER_TYPE,
+			NO_CONTEXT_TYPE
+		),
+		true,
+		0
+	);
+}
+
 
 
 SceneGraph* SimulationResourceManager::getSceneGraph()const

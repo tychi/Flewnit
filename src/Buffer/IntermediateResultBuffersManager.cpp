@@ -8,10 +8,14 @@
 #include "IntermediateResultBuffersManager.h"
 
 #include "Simulator/ParallelComputeManager.h"
+#include "Simulator/SimulationResourceManager.h"
+
+#include "Util/HelperFunctions.h"
+//#include "Buffer/Buffer.h"
 
 #include <boost/foreach.hpp>
-#include "Util/HelperFunctions.h"
-#include "Buffer/Buffer.h"
+
+
 
 namespace Flewnit
 {
@@ -77,42 +81,18 @@ void IntermediateResultBuffersManager::allocBuffers()throw(BufferException)
 
 	mBuffersAreAllocated=true;
 
-	if(PARA_COMP_MANAGER->getParallelComputeDeviceInfo().globalCacheLineSizeByte == 0)
-	{
-		throw(BufferException("Something went terribly wrong with your OpenCL initialization!"));
-	}
+
 
 	for(unsigned int i = 0; i< mBufferByteSizes.size(); i++)
 	{
-		unsigned int numUintElements =
-			//alloc at least the size of a cache line;
-			std::max(
-				PARA_COMP_MANAGER->getParallelComputeDeviceInfo().globalCacheLineSizeByte,
-				//align to cache line size;
-				HelperFunctions::ceilToNextMultiple(
-					mBufferByteSizes[i],
-					PARA_COMP_MANAGER->getParallelComputeDeviceInfo().globalCacheLineSizeByte
-				)
-			)
-			//as we denote elements and not byte yount, we have to divied by the byte size of uint
-			/ sizeof(unsigned int);
-
 		mSharedIntermediateBuffers.push_back(
-		  new Buffer(
-			BufferInfo(
-				String("intermediateResultBuffer")+ HelperFunctions::toString(i),
-				ContextTypeFlags(HOST_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
-				INTERMEDIATE_RENDERING_SEMANTICS, //unused
-				TYPE_UINT32,
-				numUintElements,
-				BufferElementInfo(true), //no channeled buffers;
-				NO_GL_BUFFER_TYPE,
-				NO_CONTEXT_TYPE
-			),
-			true,
-			0
+		  SimulationResourceManager::getInstance().createGeneralPurposeOpenCLBuffer(
+				  String("intermediateResultBuffer")+ HelperFunctions::toString(i),
+				  mBufferByteSizes[i],
+				  true
 		  )
 		);
+
 	}
 }
 

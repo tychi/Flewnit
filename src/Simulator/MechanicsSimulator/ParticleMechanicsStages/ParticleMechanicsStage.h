@@ -91,16 +91,6 @@ private:
 
 	SceneNode* mParticleSceneParentSceneNode;
 
-	//---------------------------------------------------------------------------
-
-	//{ Buffers flushed to CL device at beginning of each simulations step
-		Buffer* mSimulationParametersBuffer;
-
-		uint mNumMaxUserForceControlPoints;
-		Buffer* mUserForceControlPointBuffer;
-	//}
-
-	//---------------------------------------------------------------------------
 
 
 	//There could come to one's mind to manage Scene representations and accell.
@@ -119,6 +109,20 @@ private:
 	UniformGridBufferSet* mSplitAndCompactedUniformGridCells;
 	//value implying how many work groups we need for SPH particle physics simulation Kernels;
 	unsigned int mNumCurrentSplitAndCompactedUniformGridCells;
+
+
+	//---------------------------------------------------------------------------
+
+	//{ Buffers flushed to CL device at beginning of each simulations step
+		Buffer* mSimulationParametersBuffer;
+
+		uint mNumMaxUserForceControlPoints;
+		Buffer* mUserForceControlPointBuffer;
+	//}
+
+	//---------------------------------------------------------------------------
+
+
 
 	//{
 		RadixSorter* mRadixSorter;

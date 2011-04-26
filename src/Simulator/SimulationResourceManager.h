@@ -15,6 +15,7 @@
 #include "Common/BasicObject.h"
 
 #include "SimulatorForwards.h"
+#include "Buffer/BufferSharedDefinitions.h"
 
 
 namespace Flewnit
@@ -30,6 +31,10 @@ public:
 	virtual ~SimulationResourceManager();
 
 
+	//factory function for a general purpose OpenCL Buffer (with optional host component) without any GL/Interop/Channel/Texture/Typing/whatsoever
+	//just an area of memory with a size of x bytes, minumum size of a cache line, size aligned to cache line size;
+	//this removes some burden to use the complex constructors of the buffer class;
+	Buffer* createGeneralPurposeOpenCLBuffer(String name, unsigned int sizeInByte, bool allocHostMem)throw(BufferException);
 
 	SceneGraph* getSceneGraph()const;
 

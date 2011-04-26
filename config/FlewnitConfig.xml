@@ -139,21 +139,23 @@
           <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
           -->
           <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          
-          <SPHSupportRadius type="FLOAT" value="1.0"		GUIVisibility="read/write" tweakConfigString="TODO"/>
-
           <numMaxFluids type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <!-- zero is a legitimate value to indicate that no rigid bodies are wanted
-            -->
+          <!-- zero is a legitimate value to indicate that no rigid bodies are wanted -->
           <numMaxRigidBodies type="INT" value="0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!-- should be 1/3* unigrid cell size; this means 27 particles/cell; this is good-->
+          <voxelSideLengthRepresentedByRigidBodyParticle type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <!-- be careful with this value: the maximum may be hardware/implementation
 						dependent
             and hence may be clamped; GT200: max 256; Fermi: Max 1024;
 						reason:
             scarce local memory, hence value reloading for greater particle
 						counts;
-            -->
+          -->
           <numMaxParticlesPerRigidBody type="INT" value="1024" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+          
+
+          <SPHSupportRadius type="FLOAT" value="1.0"		GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           <numMaxUserForceControlPoints type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
           

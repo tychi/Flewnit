@@ -11,9 +11,7 @@
 
 #include "Simulator/SimulatorMetaInfo.h"
 
-#define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
-#include "MPP/OpenCLProgram/ProgramSources/physicsDataStructures.cl"
-#undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+
 
 #include "UniformGrid.h"
 
@@ -88,21 +86,18 @@ class ParticleSceneRepresentation
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
 public:
-	//all initialization is done via XML
+
 	ParticleSceneRepresentation(
 		unsigned int numTotalParticles,
 		unsigned int numMaxFluids,
 		unsigned int numMaxRigidBodies,
-		//should be 1/3* unigrid cell size --> 27 particles/cell-->good
-		float voxelSideLengthRepresentedByRigidBodyParticle,
 		//be careful with this value: the maximum may be hardware/implementation dependent and hence may be clamped;
 		//GT200: max 256; Fermi: max 1024; reason: scarce local memory,
 		//hence value reloading for greater particle counts;
 		//not implemented a compromise allowing greater RB particle count for lesser performance yet (april 2011)
 		unsigned int numMaxParticlesPerRigidBody,
-		unsigned int numMaxUserForceControlPoints
-		//accessor to z-Index-Helper; This class does not own this object, it*s just a shortcut handle
-		//UniformGrid* usedUniformGrid
+		//should be 1/3* unigrid cell size --> 27 particles/cell-->good
+		float voxelSideLengthRepresentedByRigidBodyParticle
 	) throw(BufferException);
 
 	virtual ~ParticleSceneRepresentation();
@@ -112,7 +107,7 @@ public:
 
 	//precondition: mParticleAttributeBuffers->mZIndicesPiPoBuffer has been sorted and
 	//				mParticleAttributeBuffers->mOldIndicesPiPoBuffer has been reordered accordingly
-	void ReorderAttributes();
+	void reorderAttributes();
 
 	//upload mRigidBodyBuffer and mObjectGenericFeaturesBuffer to GPU bevor Simulation tick,
 	//as features may have been changed by the user;
@@ -177,11 +172,13 @@ public:
 
 private:
 
-	//internal helper routine for crerating the geometry objects for fluid objects;
+	//internal helper routine for creating the geometry objects for fluid objects;
 	VertexBasedGeometry* createGeometryFromAttributeBuffers(unsigned int particleStarIndex, unsigned int particleCount);
+	//bind the Buffers of mParticleAttributeBuffers to SimulationPipelineStage::mRenderingResults;
+	//called by ParticleSceneRepresentation's constructor;
+	void associateParticleAttributeBuffersWithRenderingResults();
 
-
-
+	//{ numeric members
 	unsigned int mNumTotalParticles;
 
 	unsigned int mNumMaxFluids;
@@ -192,13 +189,13 @@ private:
 
 	unsigned int mNumMaxParticlesPerRigidBody;
 	float mVoxelSideLengthRepresentedByRigidBodyParticle;
+	//}
 
-	unsigned int mNumMaxUserForceControlPoints;
 
-	std::vector<ParticleRigidBody*> mParticleRigidBodies;
+	//{ world object members
 	std::vector<ParticleFluid*> mParticleFluids;
-
-
+	std::vector<ParticleRigidBody*> mParticleRigidBodies;
+	//}
 
 	//{ abstracted but particle-represented-object meta info
 		//structure of four floats + 1 uint + 3 pad buffer;
@@ -215,12 +212,7 @@ private:
 		Buffer* mRigidBodyRelativePositionsBuffer;
 	//}
 
-
 	ParticleAttributeBuffers* mParticleAttributeBuffers;
-	//bind the Buffers of mParticleAttributeBuffers to SimulationPipelineStage::mRenderingResults;
-	//called by ParticleSceneRepresentation's constructor;
-	void associateParticleAttributeBuffersWithRenderingResults();
-
 
 	//{
 	CLProgram* mCLProgram_reorderAttributes;
