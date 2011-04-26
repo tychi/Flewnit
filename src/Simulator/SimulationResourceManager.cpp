@@ -26,7 +26,7 @@ namespace Flewnit
 
 //TODO init according to config file
 SimulationResourceManager::SimulationResourceManager() :
-	mScene(new SceneGraph())
+	mScene(new SceneGraph()),mIntermediateResultsBuffersManager(new IntermediateResultBuffersManager())
 {
 
 }

@@ -75,6 +75,7 @@ private:
 
 
 	SceneGraph* mScene;
+	IntermediateResultBuffersManager* mIntermediateResultsBuffersManager;
 
 
 	std::map<String, InstanceManager*> mInstanceManagers;
@@ -100,7 +101,6 @@ private:
 	//stored centrally to resolve "posession" ambiguities between simulation domains;
 	std::map<String, BufferInterface* > mBuffers;
 
-	IntermediateResultBuffersManager* mIntermediateResultsBuffersManager;
 
 	//Textures can be globally shared (as Rendertarget for multiple simulation stages, or by multiple materials),
 	//and hence are stored centrally in order to

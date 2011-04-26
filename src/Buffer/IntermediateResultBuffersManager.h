@@ -26,6 +26,7 @@ class IntermediateResultBuffersManager
 	: public Singleton<IntermediateResultBuffersManager>,
 	  public BasicObject
 {
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
 	IntermediateResultBuffersManager();
 	virtual ~IntermediateResultBuffersManager();
@@ -36,7 +37,7 @@ public:
 	//IN DESCENDING ORDER!!1 (sry std::sort is so annoying this the comparator objects, have no time for sorting now...
 	//.. but will at least verify the order ;( ).
 	//The manager stores the maxima of the requestet sizes to mBufferByteSizes;
-	void requestBufferAllocation(const std::vector<unsigned int>& minimumBufferByteSizes);
+	void requestBufferAllocation(const std::vector<unsigned int>& minimumBufferByteSizes)throw(BufferException);
 
 	//after the request phase, the engine calls allocBuffers();
 	//afterwards, no new allocation can be requested;
@@ -51,13 +52,13 @@ public:
 	void releaseBuffersFor(CLKernel* kernel)throw(BufferException);
 
 
+	Buffer* getBuffer(CLKernel* kernelPtrForValidation, unsigned int i)const throw(BufferException);
 
 private:
 	std::vector<unsigned int> mBufferByteSizes;
 	std::vector<Buffer*> mSharedIntermediateBuffers;
 
 	bool mBuffersAreAllocated;
-	bool mBuffersAreAcquired;
 
 	CLKernel* mCurrentOwningKernel;
 
