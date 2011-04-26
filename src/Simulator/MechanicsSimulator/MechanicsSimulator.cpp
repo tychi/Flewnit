@@ -13,6 +13,9 @@
 
 #include <typeinfo>
 #include "Simulator/SimulationPipelineStage.h"
+#include "Util/Loader/Config.h"
+#include "Util/Loader/LoaderHelper.h"
+#include "Simulator/MechanicsSimulator/ParticleMechanicsStages/ParticleMechanicsStage.h"
 
 
 namespace Flewnit
@@ -21,19 +24,28 @@ namespace Flewnit
 MechanicsSimulator::MechanicsSimulator(ConfigStructNode* simConfigNode)
 :SimulatorInterface(MECHANICAL_SIM_DOMAIN,simConfigNode)
 {
-	// TODO Auto-generated constructor stub
-
+	// everything  done in initPipeLine()
 }
 
 MechanicsSimulator::~MechanicsSimulator()
 {
-	// TODO Auto-generated destructor stub
+	BOOST_FOREACH(SimulationPipelineStage* stage, mSimStages)
+	{
+		delete stage;
+	}
 }
 
 bool MechanicsSimulator::stepSimulation() throw(SimulatorException)
 {
 	// TODO Auto-generated destructor stub
 	//LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
+
+	for(unsigned int i=0; i< mSimStages.size(); i++)
+	{
+		mSimStages[i]->stepSimulation();
+	}
+
+
 	return true;
 }
 
@@ -44,10 +56,25 @@ bool MechanicsSimulator::initPipeLine() throw(SimulatorException)
 	// TODO Auto-generated destructor stub
 	LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  initPipeLine()\n";
 
+	unsigned int numStages = mSimConfigNode->get("SimulationPipelineStage").size();
+
+	for(unsigned int i =0 ; i < numStages; i++)
+	{
+		String stageType = ConfigCaster::cast<String>(
+				mSimConfigNode->get("SimulationPipelineStage",i).get("Type",0));
+
+		if(stageType  == "ParticleMechanicsStage")
+		{
+			mSimStages.push_back(new ParticleMechanicsStage( &( mSimConfigNode->get("SimulationPipelineStage",i) ) ) );
+		}
+
+	}
+
 	BOOST_FOREACH(SimulationPipelineStage* stage, mSimStages)
 	{
 		stage->initStage();
 	}
+
 
 	return true;
 }

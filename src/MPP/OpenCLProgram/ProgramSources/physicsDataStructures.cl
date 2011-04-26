@@ -34,7 +34,7 @@
   
 #endif //FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
   
-  
+
   
 
   typedef struct 
@@ -83,6 +83,15 @@
      
 
      //structure implicitely aligned to 2*(4*4)=32 bytes;
+     
+    #ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+      //setter for c++ app ;)
+      void setInfluenceRadius(float influenceRadius)
+      {
+        squaredInfluenceRadius = influenceRadius * influenceRadius;
+        inverseSquaredInfluenceRadius = 1.0f/ squaredInfluenceRadius;
+      }
+    #endif //FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
      
   } UserForceControlPoint;
   

@@ -128,6 +128,13 @@
 
         <generalSettings>
 
+ 	        <!-- if true, the particles move the faster the more powerful the hardware is;
+	          usually not desirable in a real application, but good for testing;               -->
+        	<useFrameRateIndependentSimulationTimestep type="BOOL" value="TRUE" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!-- value is always used as timestep if useFrameRateIndependentSimulationTimestep==true;
+	             this values is to ensure stability, at the cost of maybe a slow-motion simulation -->
+          <maxTimestepPerSimulationStep type="FLOAT" value="0.01" GUIVisibility="read/write" tweakConfigString="TODO"/>
+
           <!--
           <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
           -->
@@ -165,10 +172,6 @@
 	          <!-- following val is kinda dumb, besides reducing particle count at init time we cannot enforce higher performance
 	               directly; but maybe the value will be of use at some time... -->
 	          <minSimulationStepsPerSecond type="INT" value="10" GUIVisibility="read/write"	tweakConfigString="TODO"/>
-						
-	          <!-- this values is to ensure stability, at the cost of a slow-motion simulation -->
-	          <maxTimestepPerSimulationStep type="float" value="0.1" GUIVisibility="read/write" tweakConfigString="TODO"/>
-	          
 	          <particelizeBordersOnly type="BOOL" value ="false" GUIVisibility="read"	tweakConfigString="TODO"/>
             
         </generalSettings>

@@ -83,7 +83,7 @@ public:
 	//throw exception if no buffers are allocated for the specified element type
 	inline UniformGridBufferSet* getBufferSet()const{return mUniformGridBufferSet;}
 
-
+	inline Buffer* getZIndexLookupTable()const{return mZIndexLookupTable;}
 
 	//updates mUniformGridBufferSet according to sortedZIndicesKeyBuffer;
 	//there is an optimazation so that after returning,
@@ -104,25 +104,29 @@ private:
 	Vector4D mMinCornerPosition;
 	Vector4D mExtendsOfOneCell;
 
+	void setupZIndexLookUpTable(); //called by constructor
+	Buffer* mZIndexLookupTable;
+
 
 	UniformGridBufferSet* mUniformGridBufferSet;
+
+	//{ update non-compacted stuff
 	CLProgram* mCLProgram_UpdateUniformGrid;
 
-	//{ scan and split stuff
-		//private buffers for intermediate results:
+	//{ split and compact stuff
+		unsigned int mNumMaxElementsPerSimulationWorkGroup;
+		CLProgram* mCLProgram_splitAndCompactUniformGrid;
 
+		//following buffers became obolete thanks to IntermediateResultBuffersManager:
+		//private buffers for intermediate results:
 		//mNumCellsPerDimension^3  elements
-		Buffer* gLocallyScannedTabulatedValues;
+		//Buffer* gLocallyScannedTabulatedValues;
 		//hardware dependent: (mNumCellsPerDimension^3)/ (2*numMaxWorkItems_Base2Floored) elements
-		Buffer* gPartiallyGloballyScannedTabulatedValues;
+		//Buffer* gPartiallyGloballyScannedTabulatedValues;
 		//at least NUM_BASE2_CEILED_COMPUTE_UNITS + 1  elements;
 		//+1 because the kernel finishing the "total scan" may wanna write out the total sum;
 		//--> this is the value defining the number of work groups to be launched for SPH physics sim;
-		Buffer* gSumsOfPartialGlobalScans;
-
-		unsigned int mNumMaxElementsPerSimulationWorkGroup;
-
-		CLProgram* mCLProgram_splitAndCompactUniformGrid;
+		//Buffer* gSumsOfPartialGlobalScans;
 	//}
 
 };

@@ -35,6 +35,10 @@
 
 #include "Simulator/SimulationPipelineStage.h"
 
+#define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+#include "MPP/OpenCLProgram/ProgramSources/physicsDataStructures.cl"
+#undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+
 
 namespace Flewnit
 {
@@ -53,16 +57,50 @@ public:
 	virtual bool validateStage()throw(SimulatorException);
 
 
-	inline ParticleSceneRepresentation* getParticleSceneRepresentation()const{return mParticleSceneRepresentation;}
+
+
+	//inline ParticleSceneRepresentation* getParticleSceneRepresentation()const{return mParticleSceneRepresentation;}
+
+//	//directly do re reinterpret_cast on mSimulationParametersBuffer, no dedicated object necessary;
+//	//read only acces for app
+//	CLshare::SimulationParameters* const getSimParams()const;
+//
+//
+//
+//	//the returne pointer points directly to the corresponding stride in the host-buffer representation;
+//	//So you can mod the CL behaviour by directly writing to the dereferenced object; The info will be uploaded automatically
+//	//at the begin of every simulation tick;
+//	CLshare::UserForceControlPoint* addUserForceControlPoint(
+//			const Vector4D& forceOriginWorldPos,
+//			float influenceRadius,
+//			float intensity //positive: push away; negative: pull towards origin;
+//    )throw(BufferException);
+//
+//	void setGravityAcceleration(const Vector4D& gravAcc);
+//	void setSPHSupportRadius(float val);
+
+
+
 
 private:
 
-	//{ Buffers flushed to CL device at beginning of eacht simulations step
-	Buffer* mSimulationParametersBuffer;
+	//if true, the particles move the faster the more powerful the hardware is;
+	//usually not desirable in a real scenario, but good for testing;
+	bool mUseFrameRateIndependentSimulationTimestep;
+	float mMaxTimestepPerSimulationStep;
 
-	uint mNumMaxUserForceControlPoints;
-	Buffer* mUserForceControlPointBuffer;
+	SceneNode* mParticleSceneParentSceneNode;
+
+	//---------------------------------------------------------------------------
+
+	//{ Buffers flushed to CL device at beginning of each simulations step
+		Buffer* mSimulationParametersBuffer;
+
+		uint mNumMaxUserForceControlPoints;
+		Buffer* mUserForceControlPointBuffer;
 	//}
+
+	//---------------------------------------------------------------------------
 
 
 	//There could come to one's mind to manage Scene representations and accell.
@@ -76,16 +114,27 @@ private:
 	//		  near future;
 	//--> This stage maintains its own scene representation
 	ParticleSceneRepresentation* mParticleSceneRepresentation;
+	UniformGrid* mParticleUniformGrid;
+	//UniformGrid* mStaticTriangleUniformGrid; //for later ;)
+	UniformGridBufferSet* mSplitAndCompactedUniformGridCells;
+	//value implying how many work groups we need for SPH particle physics simulation Kernels;
+	unsigned int mNumCurrentSplitAndCompactedUniformGridCells;
 
 	//{
-		UniformGrid* mParticleUniformGrid;
-		//for later ;)
-		//UniformGrid* mStaticTriangleUniformGrid;
-		UniformGridBufferSet* mSplitAndCompactedUniformGridCells;
-		//value implying how many work groups we need for SPH particle physics simulation Kernels;
-		unsigned int mNumCurrentSplitAndCompactedUniformGridCells;
+		RadixSorter* mRadixSorter;
 	//}
 
+
+	//{
+		CLProgram* mCLProgram_initial_CalcZIndex;
+		//CLProgram* mCLProgram_radixSort; 					//is in class RadixSorter
+		//CLProgram* mCLProgram_reorderAttributes; 			//is in class ParticleSceneRepresentation
+		//CLProgram* mCLProgram_updateUniformGrid;			//is in class UniformGrid
+		//CLProgram* mCLProgram_splitAndCompactUniformGrid;	//is in class UniformGrid
+		CLProgram* mCLProgram_updateDensity;
+		CLProgram* mCLProgram_initial_updateForce_integrate_calcZIndex;
+		CLProgram* mCLProgram_updateForce_integrate_calcZIndex;
+	//}
 
 
 };

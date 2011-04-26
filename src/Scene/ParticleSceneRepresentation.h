@@ -102,7 +102,7 @@ public:
 		unsigned int numMaxParticlesPerRigidBody,
 		unsigned int numMaxUserForceControlPoints,
 		//accessor to z-Index-Helper; This class does not own this object, it*s just a shortcut handle
-		UniformGrid* usedUniformGrid
+		//UniformGrid* usedUniformGrid
 	) throw(BufferException);
 
 	virtual ~ParticleSceneRepresentation();
@@ -110,7 +110,9 @@ public:
 
 	//{ routines to be called every simulation tick;
 
-	void sortZIndicesAndReorderAttributes();
+	//precondition: mParticleAttributeBuffers->mZIndicesPiPoBuffer has been sorted and
+	//				mParticleAttributeBuffers->mOldIndicesPiPoBuffer has been reordered accordingly
+	void ReorderAttributes();
 
 	//upload mRigidBodyBuffer and mObjectGenericFeaturesBuffer to GPU bevor Simulation tick,
 	//as features may have been changed by the user;
@@ -198,15 +200,6 @@ private:
 
 
 
-	//{
-	RadixSorter* mRadixSorter;
-
-	CLProgram* mCLProgram_reorderAttributes;
-
-	UniformGrid* mUsedUniformGrid;
-	//}
-
-
 	//{ abstracted but particle-represented-object meta info
 		//structure of four floats + 1 uint + 3 pad buffer;
 		//mNumMaxFluids +  mNumMaxRigidBodies +1 elements;
@@ -227,6 +220,11 @@ private:
 	//bind the Buffers of mParticleAttributeBuffers to SimulationPipelineStage::mRenderingResults;
 	//called by ParticleSceneRepresentation's constructor;
 	void associateParticleAttributeBuffersWithRenderingResults();
+
+
+	//{
+	CLProgram* mCLProgram_reorderAttributes;
+	//}
 
 
 };
