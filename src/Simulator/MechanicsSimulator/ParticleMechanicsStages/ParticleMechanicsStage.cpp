@@ -23,13 +23,13 @@ ParticleMechanicsStage::ParticleMechanicsStage(ConfigStructNode* simConfigNode)
 	  mParticleSceneRepresentation(0),
 	  mParticleUniformGrid(0),
 ////	  //mStaticTriangleUniformGrid(0), //for later ;)
-	  mSplitAndCompactedUniformGridCells(0)
-	  ,mNumCurrentSplitAndCompactedUniformGridCells(0) //<-- this is the bad one... why?
-//	  mRadixSorter(0)											//-- until here run but srash on shutdown
-//	  mCLProgram_initial_CalcZIndex(0)
-//	  mCLProgram_updateDensity(0),
-//	  mCLProgram_initial_updateForce_integrate_calcZIndex(0)
-//	  mCLProgram_updateForce_integrate_calcZIndex(0)
+	  mSplitAndCompactedUniformGridCells(0),
+	  mNumCurrentSplitAndCompactedUniformGridCells(0), //<-- this is the bad one... why?
+	  mRadixSorter(0),										//-- until here run but srash on shutdown
+	  mCLProgram_initial_CalcZIndex(0),
+	  mCLProgram_updateDensity(0),
+	  mCLProgram_initial_updateForce_integrate_calcZIndex(0),
+	  mCLProgram_updateForce_integrate_calcZIndex(0)
 
 {
 	//everything done in init()
@@ -96,39 +96,43 @@ bool ParticleMechanicsStage::validateStage()throw(SimulatorException)
 }
 
 
-////directly do re reinterpret_cast on mSimulationParametersBuffer, no dedicated object necessary;
-////read only acces for app
-//CLshare::SimulationParameters* const ParticleMechanicsStage::getSimParams()const
-//{
-//	//TODO
-//	assert(0&&"TODO implement");
-//}
-//
-//
-//
-////the returne pointer points directly to the corresponding stride in the host-buffer representation;
-////So you can mod the CL behaviour by directly writing to the dereferenced object; The info will be uploaded automatically
-////at the begin of every simulation tick;
-//CLshare::UserForceControlPoint* ParticleMechanicsStage::addUserForceControlPoint(
-//		const Vector4D& forceOriginWorldPos,
-//		float influenceRadius,
-//		float intensity //positive: push away; negative: pull towards origin;
-//)throw(BufferException)
-//{
-//	//TODO
-//	assert(0&&"TODO implement");
-//}
-//
-//void setGravityAcceleration(const Vector4D& gravAcc)
-//{
-//	//TODO
-//	assert(0&&"TODO implement");
-//}
-//
-//void setSPHSupportRadius(float val)
-//{
-//	//TODO
-//	assert(0&&"TODO implement");
-//}
+//directly do re reinterpret_cast on mSimulationParametersBuffer, no dedicated object necessary;
+//read only acces for app
+CLshare::SimulationParameters* const ParticleMechanicsStage::getSimParams()const
+{
+	//TODO
+	assert(0&&"TODO implement");
+
+	return 0;
+}
+
+
+
+//the returne pointer points directly to the corresponding stride in the host-buffer representation;
+//So you can mod the CL behaviour by directly writing to the dereferenced object; The info will be uploaded automatically
+//at the begin of every simulation tick;
+CLshare::UserForceControlPoint* ParticleMechanicsStage::addUserForceControlPoint(
+		const Vector4D& forceOriginWorldPos,
+		float influenceRadius,
+		float intensity //positive: push away; negative: pull towards origin;
+)throw(BufferException)
+{
+	//TODO
+	assert(0&&"TODO implement");
+
+	return 0;
+}
+
+void setGravityAcceleration(const Vector4D& gravAcc)
+{
+	//TODO
+	assert(0&&"TODO implement");
+}
+
+void setSPHSupportRadius(float val)
+{
+	//TODO
+	assert(0&&"TODO implement");
+}
 
 }

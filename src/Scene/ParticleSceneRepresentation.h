@@ -100,7 +100,7 @@ public:
 		//hence value reloading for greater particle counts;
 		//not implemented a compromise allowing greater RB particle count for lesser performance yet (april 2011)
 		unsigned int numMaxParticlesPerRigidBody,
-		unsigned int numMaxUserForceControlPoints,
+		unsigned int numMaxUserForceControlPoints
 		//accessor to z-Index-Helper; This class does not own this object, it*s just a shortcut handle
 		//UniformGrid* usedUniformGrid
 	) throw(BufferException);
