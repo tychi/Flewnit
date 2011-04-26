@@ -24,7 +24,33 @@ ParticleAttributeBuffers::ParticleAttributeBuffers(
 		unsigned int invalidObjectID,
 		bool initToInvalidObjectID)
 {
-	//TODO
+	BufferInfo glCLSharedIndexBufferInfo(
+		"particleIndexTableBuffer",
+		//all three contexts;
+		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
+		INDEX_SEMANTICS,
+		TYPE_UINT32,
+		numTotalParticles,
+		BufferElementInfo(1,GPU_DATA_TYPE_UINT,32,false),
+		VERTEX_INDEX_BUFFER_TYPE,
+		NO_CONTEXT_TYPE
+	);
+	mParticleIndexTableBuffer = new Buffer(	glCLSharedIndexBufferInfo,	true, 0 );
+
+	//PRIMITIVE_ID_SEMANTICS
+
+
+//	PingPongBuffer* mObjectInfoPiPoBuffer; //uint ping pong buffer
+//
+//	PingPongBuffer* mZIndicesPiPoBuffer; //uint ping pong buffer
+//	//the "backtracking" values for reoardering of physical attributes,
+//	//result of RadixSorter::sort()
+//	PingPongBuffer* mOldIndicesPiPoBuffer; //uint ping pong buffer
+//	PingPongBuffer* mPositionsPiPoBuffer; //vec4 ping pong buffer;
+//	PingPongBuffer* mDensitiesPiPoBuffer;
+//	PingPongBuffer* mCorrectedVelocitiesPiPoBuffer;
+//	PingPongBuffer* mPredictedVelocitiesPiPoBuffer;
+//	PingPongBuffer* mLastStepsAccelerationsPiPoBuffer;
 
 }
 

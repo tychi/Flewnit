@@ -105,7 +105,7 @@ Buffer* SimulationResourceManager::createGeneralPurposeOpenCLBuffer(String name,
 		BufferInfo(
 			name,
 			ContextTypeFlags( (allocHostMem ? HOST_CONTEXT_TYPE_FLAG : 0) | OPEN_CL_CONTEXT_TYPE_FLAG),
-			INTERMEDIATE_RENDERING_SEMANTICS, //unused
+			CUSTOM_SEMANTICS, //INTERMEDIATE_RENDERING_SEMANTICS, //unused
 			TYPE_UINT32,
 			numUintElements,
 			BufferElementInfo(true), //no channeled buffers;
