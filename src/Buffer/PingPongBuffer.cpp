@@ -16,10 +16,11 @@ namespace Flewnit
 
 PingPongBuffer::PingPongBuffer(String name,BufferInterface* ping, BufferInterface* pong ) throw(BufferException)
 :
-//tak BufferInfo from one of the Managed Buffers
-BufferInterface(ping->getBufferInfo()),
-mInactiveBufferIndex(0),
-mActiveBufferIndex(1)
+//take BufferInfo from one of the Managed Buffers
+//BufferInterface(ping->getBufferInfo()),
+ BufferInterface( BufferInfo( ping->getBufferInfo(), name, true ) ),
+ mInactiveBufferIndex(0),
+ mActiveBufferIndex(1)
 {
 	//alloc new one, as we need its info for tracking purposes till the end,
 	//when the managed buffers are already deleted;
@@ -47,14 +48,17 @@ mActiveBufferIndex(1)
 
 	mPingPongBuffers[mInactiveBufferIndex] = ping;
 	mPingPongBuffers[mActiveBufferIndex] = pong;
+
+	getHandlesFromCurrentActiveBuffer();
 }
 
 PingPongBuffer::~PingPongBuffer()
 {
 	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Destroying PingPongBuffer named "<<mBufferInfo->name<<" ;\n";
 
-	delete mPingPongBuffers[mInactiveBufferIndex];
-	delete mPingPongBuffers[mActiveBufferIndex];
+	//DON'T delete the managed buffers! everythin is done by SimResMan!
+	//delete mPingPongBuffers[mInactiveBufferIndex];
+	//delete mPingPongBuffers[mActiveBufferIndex];
 
 	//omit a free() call by the bufferinterface destructor as members of this class were only references
 	mCPU_Handle=0;

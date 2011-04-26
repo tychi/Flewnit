@@ -178,6 +178,16 @@ void BufferInterface::bind(ContextType type)throw(BufferException)
 
 bool BufferInterface::allocMem()throw(BufferException)
 {
+	if( mBufferInfo->isPingPongBuffer ||
+		//don't trust the bufferInfo
+		dynamic_cast<PingPongBuffer*>(this)
+	)
+	{
+		throw(BufferException("Buffer::allocMem(): this routine may never be calles for ping pong buffers, as they are only managers"
+				"for other buffers but having some own associated memory!"));
+	}
+
+
 	//assert that this routine is called only once per object:
 	if(mCPU_Handle || mGraphicsBufferHandle || mComputeBufferHandle())
 	{
