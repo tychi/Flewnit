@@ -374,4 +374,61 @@ ParticleRigidBody* ParticleSceneRepresentation::createParticleRigidBody(
 }
 
 
+//bind the Buffers of ParticleMechanicsStage::mParticleAttributeBuffers to SimulationPipelineStage::mRenderingResults;
+//called by ParticleSceneRepresentation's constructor;
+void ParticleSceneRepresentation::associateParticleAttributeBuffersWithRenderingResults(
+		std::map<BufferSemantics,BufferInterface*>& renderingResults)
+{
+
+	renderingResults[
+	  //INDEX_SEMANTICS
+	  mParticleAttributeBuffers->mParticleIndexTableBuffer->getBufferInfo().bufferSemantics
+	] = mParticleAttributeBuffers->mParticleIndexTableBuffer;
+
+	renderingResults[
+	  //PRIMITIVE_ID_SEMANTICS
+	  mParticleAttributeBuffers->mObjectInfoPiPoBuffer->getBufferInfo().bufferSemantics
+	] = mParticleAttributeBuffers->mObjectInfoPiPoBuffer;
+
+	renderingResults[
+	  //Z_INDEX_SEMANTICS
+	  mParticleAttributeBuffers->mZIndicesPiPoBuffer->getBufferInfo().bufferSemantics
+	] = mParticleAttributeBuffers->mZIndicesPiPoBuffer;
+
+	renderingResults[
+	  //CUSTOM_SEMANTICS
+	  mParticleAttributeBuffers->mOldIndicesPiPoBuffer->getBufferInfo().bufferSemantics
+	] = mParticleAttributeBuffers->mOldIndicesPiPoBuffer;
+
+	renderingResults[
+	  //POSITION_SEMANTICS
+	  mParticleAttributeBuffers->mPositionsPiPoBuffer->getBufferInfo().bufferSemantics
+	] = mParticleAttributeBuffers->mPositionsPiPoBuffer;
+
+	renderingResults[
+	  //DENSITY_SEMANTICS
+	  mParticleAttributeBuffers->mDensitiesPiPoBuffer->getBufferInfo().bufferSemantics
+	] = mParticleAttributeBuffers->mDensitiesPiPoBuffer;
+
+	renderingResults[
+	  //VELOCITY_SEMANTICS
+	        //optional use mPredictedVelocitiesPiPoBuffer ;(
+	  mParticleAttributeBuffers->mCorrectedVelocitiesPiPoBuffer->getBufferInfo().bufferSemantics
+	] = mParticleAttributeBuffers->mCorrectedVelocitiesPiPoBuffer;
+
+	renderingResults[
+	  //FORCE_SEMANTICS
+	  mParticleAttributeBuffers->mLastStepsAccelerationsPiPoBuffer->getBufferInfo().bufferSemantics
+	] = mParticleAttributeBuffers->mLastStepsAccelerationsPiPoBuffer;
+
+}
+
+//internal helper routine for creating the geometry objects for fluid objects;
+VertexBasedGeometry* ParticleSceneRepresentation::createGeometryFromAttributeBuffers(
+		unsigned int particleStartIndex, unsigned int particleCount)
+{
+
+}
+
+
 }

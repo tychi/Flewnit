@@ -95,6 +95,8 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 		)
 	  );
 
+	  mParticleSceneRepresentation->associateParticleAttributeBuffersWithRenderingResults(mRenderingResults);
+
 
 
 

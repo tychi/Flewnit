@@ -170,13 +170,14 @@ public:
 
 	//} end factory routines
 
+	//bind the Buffers of ParticleMechanicsStage::mParticleAttributeBuffers to SimulationPipelineStage::mRenderingResults;
+	//called by ParticleSceneRepresentation's constructor;
+	void associateParticleAttributeBuffersWithRenderingResults(std::map<BufferSemantics,BufferInterface*>& renderingResults);
+
 private:
 
 	//internal helper routine for creating the geometry objects for fluid objects;
-	VertexBasedGeometry* createGeometryFromAttributeBuffers(unsigned int particleStarIndex, unsigned int particleCount);
-	//bind the Buffers of mParticleAttributeBuffers to SimulationPipelineStage::mRenderingResults;
-	//called by ParticleSceneRepresentation's constructor;
-	void associateParticleAttributeBuffersWithRenderingResults();
+	VertexBasedGeometry* createGeometryFromAttributeBuffers(unsigned int particleStartIndex, unsigned int particleCount);
 
 	//{ numeric members
 	unsigned int mNumTotalParticles;
