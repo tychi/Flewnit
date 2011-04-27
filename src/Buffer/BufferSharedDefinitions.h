@@ -338,10 +338,12 @@ public:
 			GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
 			ContextType mappedToCPUContext = NO_CONTEXT_TYPE);
 
+	BufferInfo(const BufferInfo& rhs);
+
 
 	//if alternate name is "", then the name of rhs is taken for the new object
 	//isPingPongBuffer is set by PingPongBuffer constructor
-	BufferInfo(const BufferInfo& rhs, String alternateName="", bool isPingPongBuf=false);
+	BufferInfo(const BufferInfo& rhs, String alternateName, bool isPingPongBuf);
 
 	virtual ~BufferInfo();
 	bool operator==(const BufferInfo& rhs) const;

@@ -27,7 +27,7 @@ PingPongBuffer::PingPongBuffer(String name,BufferInterface* ping, BufferInterfac
 	//mBufferInfo = new BufferInfo(ping->getBufferInfo());
 
 	//override pingpong flag
-	mBufferInfo->isPingPongBuffer = true;
+	//mBufferInfo->isPingPongBuffer = true; <-- already done in BufferInfo ctr;
 
 	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Creating PingPongBuffer named "<<mBufferInfo->name<<" ;\n";
 
@@ -46,8 +46,8 @@ PingPongBuffer::PingPongBuffer(String name,BufferInterface* ping, BufferInterfac
 	}
 
 
-	mPingPongBuffers[mInactiveBufferIndex] = ping;
-	mPingPongBuffers[mActiveBufferIndex] = pong;
+	mPingPongBuffers[mActiveBufferIndex] = ping;
+	mPingPongBuffers[mInactiveBufferIndex] = pong;
 
 	getHandlesFromCurrentActiveBuffer();
 }

@@ -52,21 +52,21 @@ BufferInfo::BufferInfo(String name,
 	bufferSizeInByte = numElements * BufferHelper::elementSize(elementType);
 }
 
+
+BufferInfo::BufferInfo(const BufferInfo& rhs)
+: elementInfo(rhs.elementInfo)
+{
+	(*this) = rhs;
+	name=rhs.name;
+}
+
+
 BufferInfo::BufferInfo(const BufferInfo& rhs,String alternateName, bool isPingPongBuf)
 : elementInfo(rhs.elementInfo)
 {
 	(*this) = rhs;
-	//in constructor, usually copy name if no alternate name is provided;
-	//we only dont want a name copy in assignment per operator=
-	if(alternateName=="")
-	{
-		name=rhs.name;
-	}
-	else
-	{
-		name=alternateName;
-	}
 
+	this->name=alternateName;
 	this->isPingPongBuffer = isPingPongBuf;
 
 }

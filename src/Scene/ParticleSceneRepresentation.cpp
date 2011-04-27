@@ -171,8 +171,17 @@ ParticleAttributeBuffers::ParticleAttributeBuffers(
 	//-------------------------------------------------------------------------------------------------------
 	if(initToInvalidObjectID)
 	{
-		//mObjectInfoPiPoBuffer->getCPUBufferHandle()
+		unsigned int* objectInfos = reinterpret_cast<unsigned int*>( mObjectInfoPiPoBuffer->getCPUBufferHandle() );
 
+		for(unsigned int i = 0; i< numTotalParticles; i++)
+		{
+			objectInfos[i] =0; //init
+
+			SET_OBJECT_ID(objectInfos[i], invalidObjectID);
+			SET_PARTICLE_ID(objectInfos[i], i);
+		}
+
+		//no GPU upload, this is done when all RB and fluids are initialized;
 	}
 
 }
