@@ -7,15 +7,33 @@
 
 #pragma once
 
-namespace Flewnit {
+#include "UniformGridRelatedProgram.h"
 
-class UpdateUniformGridProgram
 
+
+namespace Flewnit
 {
 
+class UpdateUniformGridProgram
+	:public UniformGridRelatedProgram
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
-	UpdateUniformGridProgram();
+
 	virtual ~UpdateUniformGridProgram();
+
+protected:
+
+	//Protected Constructors for derived classes
+	//Constructor for
+	// - updateUniformGrid.cl
+	// - splitAndCompactUniformGrid.cl
+	UpdateUniformGridProgram(UniformGrid* uniGrid);
+
+	//issue the several createKernel() calls with initial argument list etc;
+	virtual void createKernels();
+
 };
+
 
 }

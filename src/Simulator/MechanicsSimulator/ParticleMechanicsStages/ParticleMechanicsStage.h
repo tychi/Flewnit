@@ -110,6 +110,9 @@ private:
 	//value implying how many work groups we need for SPH particle physics simulation Kernels;
 	unsigned int mNumCurrentSplitAndCompactedUniformGridCells;
 
+	RadixSorter* mRadixSorter;
+
+
 
 	//---------------------------------------------------------------------------
 
@@ -123,20 +126,14 @@ private:
 	//---------------------------------------------------------------------------
 
 
-
 	//{
-		RadixSorter* mRadixSorter;
-	//}
-
-
-	//{
-		CLProgram* mCLProgram_initial_updateForce_integrate_calcZIndex;
-		//RadixSortProgram* mCLProgram_radixSort; 					//is in class RadixSorter
-		//BasicCLProgram* mCLProgram_reorderAttributes; 	//is in class ParticleSceneRepresentation
-		//ParticleSimulationProgram* mCLProgram_updateUniformGrid;			//is in class UniformGrid
-		//ParticleSimulationProgram* mCLProgram_splitAndCompactUniformGrid;	//is in class UniformGrid
-		ParticleSimulationProgram* mCLProgram_updateDensity;
-		ParticleSimulationProgram* mCLProgram_updateForce_integrate_calcZIndex;
+		UpdateForce_Integrate_CalcZIndex_Program* mInitial_UpdateForce_Integrate_CalcZIndex_Program;
+		//RadixSortProgram* mRadixSortProgram; 									//is in class RadixSorter
+		//ReorderParticleAttributesProgram* mReorderParticleAttributesProgram; 	//is in class ParticleSceneRepresentation
+		//UpdateUniformGridProgram* mUpdateUniformGridProgram;					//is in class UniformGrid
+		//SplitAndCompactUniformGridProgram* mSplitAndCompactUniformGridProgram;//is in class UniformGrid
+		UpdateDensityProgram* mUpdateDensityProgram;
+		UpdateForce_Integrate_CalcZIndex_Program* mUpdateForce_Integrate_CalcZIndex_Program;
 		UpdateRigidBodiesProgram* mCLProgram_updateRigidBodies;
 	//}
 

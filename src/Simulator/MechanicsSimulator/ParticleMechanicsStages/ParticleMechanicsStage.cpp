@@ -20,20 +20,21 @@ ParticleMechanicsStage::ParticleMechanicsStage(ConfigStructNode* simConfigNode)
 	  mUseFrameRateIndependentSimulationTimestep(false),
 	  mMaxTimestepPerSimulationStep(0.0f),
 	  mParticleSceneParentSceneNode(0),
-////	  //TODO init correctly already here where possible ?
 	  mParticleSceneRepresentation(0),
 	  mParticleUniformGrid(0),
-////	  //mStaticTriangleUniformGrid(0), //for later ;)
+	  //mStaticTriangleUniformGrid(0), //for later ;)
 	  mSplitAndCompactedUniformGridCells(0),
-	  mNumCurrentSplitAndCompactedUniformGridCells(0), //<-- this is the bad one... why?
+	  mNumCurrentSplitAndCompactedUniformGridCells(0),
+	  mRadixSorter(0),
 	  mSimulationParametersBuffer(0),
 	  mNumMaxUserForceControlPoints(0),
 	  mUserForceControlPointBuffer(0),
-	  mRadixSorter(0),										//-- until here run but srash on shutdown
-	  mCLProgram_initial_updateForce_integrate_calcZIndex(0),
-	  mCLProgram_updateDensity(0),
-	  mCLProgram_updateForce_integrate_calcZIndex(0),
+
+	  mInitial_UpdateForce_Integrate_CalcZIndex_Program(0),
+	  mUpdateDensityProgram(0),
+	  mUpdateForce_Integrate_CalcZIndex_Program(0),
 	  mCLProgram_updateRigidBodies(0)
+
 {
 	//everything done in init()
 
@@ -49,11 +50,6 @@ ParticleMechanicsStage::~ParticleMechanicsStage()
 //
 //	delete mRadixSorter;
 //
-//	delete mCLProgram_initial_CalcZIndex;
-//	delete mCLProgram_updateDensity;
-//	delete mCLProgram_initial_updateForce_integrate_calcZIndex;
-//	delete mCLProgram_updateForce_integrate_calcZIndex;
-//	delete mCLProgram_updateRigidBodies;
 
 }
 

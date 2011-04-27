@@ -55,18 +55,6 @@ class UniformGrid
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 
-//	class UniformGridBuffers
-//	{
-//
-//		//four Buffers with mNumCellsPerDimension^3 elements of type uint
-//		Buffer* startIndices;
-//		Buffer* startIndicesCompacted;
-//		Buffer* elementCounts;
-//		Buffer* elementCountsCompatced;
-//
-//		unsigned int numNonEmptyCellsAfterSplitAndCompaction;
-//	};
-
 	UniformGrid(
 		unsigned int numCellsPerDimension,
 
@@ -111,11 +99,12 @@ private:
 	UniformGridBufferSet* mUniformGridBufferSet;
 
 	//{ update non-compacted stuff
-	ParticleSimulationProgram* mCLProgram_UpdateUniformGrid;
+	UpdateUniformGridProgram* mUpdateUniformGridProgram;
 
 	//{ split and compact stuff
 		unsigned int mNumMaxElementsPerSimulationWorkGroup;
-		ParticleSimulationProgram* mCLProgram_splitAndCompactUniformGrid;
+		SplitAndCompactUniformGridProgram* mSplitAndCompactUniformGridProgram;
+
 
 		//following buffers became obolete thanks to IntermediateResultBuffersManager:
 		//private buffers for intermediate results:

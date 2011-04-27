@@ -5,23 +5,46 @@
  *      Author: tychi
  */
 
-#ifndef UPDATEFORCE_INTEGRATE_CALCZINDEX_PROGRAM_H_
-#define UPDATEFORCE_INTEGRATE_CALCZINDEX_PROGRAM_H_
 
-namespace Flewnit {
+#pragma once
 
-class UpdateForce_Integrate_CalcZIndex_Program {
+
+
+#include "ParticleSimulationProgram.h"
+
+
+namespace Flewnit
+{
+
+class UpdateForce_Integrate_CalcZIndex_Program
+	: public ParticleSimulationProgram
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
-	UpdateForce_Integrate_CalcZIndex_Program();
+
 	virtual ~UpdateForce_Integrate_CalcZIndex_Program();
-};
 
-class Initial_UpdateForce_Integrate_CalcZIndex_Program {
-public:
-	Initial_UpdateForce_Integrate_CalcZIndex_Program();
-	virtual ~Initial_UpdateForce_Integrate_CalcZIndex_Program();
+protected:
+
+	//Protected Constructor for derived classes:
+	// - _initial_updateForce_integrate_calcZIndex.cl
+	// - updateDensity.cl
+	// - updateForce_integrate_calcZIndex.cl
+	// - updateRigidBodies.cl
+	UpdateForce_Integrate_CalcZIndex_Program(bool initialVersion, UniformGrid* uniGrid, ParticleSceneRepresentation* partScene);
+
+
+	//issue the several createKernel() calls with initial argument list etc;
+	//if initialVersion :
+	// - kernel_initial_CalcZIndex
+	// - kernel_initial_updateForce_integrate_calcZIndex
+	//else:
+	// - kernel_updateForce_integrate_calcZIndex
+	virtual void createKernels();
+
+	bool mIsInitialVersion;
+
 };
 
 }
 
-#endif /* UPDATEFORCE_INTEGRATE_CALCZINDEX_PROGRAM_H_ */

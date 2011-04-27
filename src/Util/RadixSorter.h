@@ -91,7 +91,7 @@ private:
 		unsigned int mNumWorkGroups_TabulationAndReorderPhase;
 	//}
 
-	CLProgram* mClProgram_RadixSort;
+	RadixSortProgram* mRadixSortProgram;
 
 	//{ buffers for intermediate results
 	//	check radixSort.cl for further info;

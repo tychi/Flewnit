@@ -7,15 +7,16 @@
 
 #include "SplitAndCompactUniformGridProgram.h"
 
-namespace Flewnit {
+namespace Flewnit
+{
 
-SplitAndCompactUniformGridProgram::SplitAndCompactUniformGridProgram() {
-	// TODO Auto-generated constructor stub
-
-}
-
-SplitAndCompactUniformGridProgram::~SplitAndCompactUniformGridProgram() {
-	// TODO Auto-generated destructor stub
-}
+//SplitAndCompactUniformGridProgram::SplitAndCompactUniformGridProgram() {
+//	// TODO Auto-generated constructor stub
+//
+//}
+//
+//SplitAndCompactUniformGridProgram::~SplitAndCompactUniformGridProgram() {
+//	// TODO Auto-generated destructor stub
+//}
 
 }

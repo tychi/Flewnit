@@ -24,6 +24,9 @@ public:
 protected:
 	virtual void setupTemplateContext(TemplateContextMap& contextMap);
 
+	//issue the several createKernel() calls with initial argument list etc;
+	virtual void createKernels();
+
 private:
 	RadixSorter* mRadixSorter;
 };

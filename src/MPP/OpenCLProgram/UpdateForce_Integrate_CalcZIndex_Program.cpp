@@ -9,13 +9,13 @@
 
 namespace Flewnit {
 
-UpdateForce_Integrate_CalcZIndex_Program::UpdateForce_Integrate_CalcZIndex_Program() {
-	// TODO Auto-generated constructor stub
-
-}
-
-UpdateForce_Integrate_CalcZIndex_Program::~UpdateForce_Integrate_CalcZIndex_Program() {
-	// TODO Auto-generated destructor stub
-}
+//UpdateForce_Integrate_CalcZIndex_Program::UpdateForce_Integrate_CalcZIndex_Program() {
+//	// TODO Auto-generated constructor stub
+//
+//}
+//
+//UpdateForce_Integrate_CalcZIndex_Program::~UpdateForce_Integrate_CalcZIndex_Program() {
+//	// TODO Auto-generated destructor stub
+//}
 
 }
