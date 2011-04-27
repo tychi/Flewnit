@@ -111,11 +111,11 @@ private:
 	UniformGridBufferSet* mUniformGridBufferSet;
 
 	//{ update non-compacted stuff
-	CLProgram* mCLProgram_UpdateUniformGrid;
+	ParticleSimulationProgram* mCLProgram_UpdateUniformGrid;
 
 	//{ split and compact stuff
 		unsigned int mNumMaxElementsPerSimulationWorkGroup;
-		CLProgram* mCLProgram_splitAndCompactUniformGrid;
+		ParticleSimulationProgram* mCLProgram_splitAndCompactUniformGrid;
 
 		//following buffers became obolete thanks to IntermediateResultBuffersManager:
 		//private buffers for intermediate results:

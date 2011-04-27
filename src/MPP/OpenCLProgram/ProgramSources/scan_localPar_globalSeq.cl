@@ -44,6 +44,16 @@
 
   {% include "scan.cl" %}
 
+  //Possible default  values: 
+  //  for particles (sorted by radix sort) target in this thesis: 2^18 = 256k;
+  //  for uniform grid cells (compacted by stream compaction) target in this thesis: 64^3 = 2^18 = 256k; 
+  // -->  both numParticles and numUniGridCells are usually equal to 256k; this is a coincidence and does NOT mean that
+  //      one shall try to reuse or merge some kernels just because they work on the same number of elements; This is a special case that will
+  //      NOT be abused for any efforts of optimization
+  //note: this value is used by every kernels bud the physical ones (SPH particle and rigid body); 
+  //      As those kernels don't use this macro, it's not an error that it is defined to nothing then;
+  #define NUM_TOTAL_ELEMENTS_TO_SCAN ( {{ numTotalElementsToScan }} )
+
  
   //default: 1024
   #define NUM_WORK_ITEMS_PER_WORK_GROUP ( NUM_MAX_WORK_ITEMS_PER_WORK_GROUP )
@@ -51,7 +61,7 @@
   #define NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN ( 2 * NUM_WORK_ITEMS_PER_WORK_GROUP )
 
   //default 2^18/2^11=2^7 = 128
-  #define NUM_ELEMENTS__GLOBAL_SCAN (  NUM_TOTAL_ELEMENTS / NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN  )
+  #define NUM_ELEMENTS__GLOBAL_SCAN (  NUM_TOTAL_ELEMENTS_TO_SCAN / NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN  )
   
   //Target: keep "scan hierarchies" as flat as possible,
   //so that in the best case, we can safe a "global scan phase", because there are only a few elements left to be scanned
@@ -77,10 +87,10 @@
   void kernel_scan_localPar_globalSeq(
     
     {% block tabulationArgs %} 
-      __global uint* gValuesToTabulate, //NUM_TOTAL_ELEMENTS  elements
+      __global uint* gValuesToTabulate, //NUM_TOTAL_ELEMENTS_TO_SCAN  elements
     {% endblock tabulationArgs %} 
       
-    __global uint* gLocallyScannedTabulatedValues, //NUM_TOTAL_ELEMENTS  elements 
+    __global uint* gLocallyScannedTabulatedValues, //NUM_TOTAL_ELEMENTS_TO_SCAN  elements 
     __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_ELEMENTS__GLOBAL_SCAN elements
     __global uint* gSumsOfPartialGlobalScans,  //at least NUM_BASE2_CEILED_COMPUTE_UNITS + 1  elements;
                                                //+1 because the kernel finishing the "total scan" may wanna write out

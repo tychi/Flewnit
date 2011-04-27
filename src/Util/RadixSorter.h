@@ -58,8 +58,6 @@ private:
 	unsigned int mNumElementsPerRadixCounter;
 
 
-	CLProgram* mClProgram_RadixSort;
-
 	//--------------------------------------
 	//{
 	//members computed from user provided params and hardware dependent attributes
@@ -93,8 +91,13 @@ private:
 		unsigned int mNumWorkGroups_TabulationAndReorderPhase;
 	//}
 
+	CLProgram* mClProgram_RadixSort;
+
 	//{ buffers for intermediate results
-	//	check redixSort.cl for further info;
+	//	check radixSort.cl for further info;
+
+		//became obsolete thanks to IntermediateResultBuffersManager:
+		/*
 
 		//mNumRadicesPerPass * ( mNumElements / mNumElementsPerRadixCounter) elements of type uint; (e.g. 64 * 64k);
 		Buffer* mLocalRadixCounters;
@@ -113,6 +116,7 @@ private:
 		//occur (alignment, cache line size etc..)
 		Buffer* mPartialScanResultsOfTotalRadixCounts;
 
+		*/
 	//}
 };
 

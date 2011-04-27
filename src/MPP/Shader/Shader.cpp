@@ -76,7 +76,7 @@ Shader::Shader(Path codeDirectory, Path specificShaderCodeSubFolderName, const S
 	{
 		mShaderStages[i]=0;
 	}
-	build();
+	//build();
 
 }
 

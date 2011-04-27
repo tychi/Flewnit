@@ -33,6 +33,8 @@ GenericLightingUberShader::GenericLightingUberShader(Path codeDirectory, const S
 :
 		Shader(codeDirectory, Path("GenericLightingUberShader"), localShaderFeatures)
 {
+	build();
+
 	assert( "only lighting stuff allowed in this shader type" &&
 		(
 			( mLocalShaderFeatures.renderingTechnique == RENDERING_TECHNIQUE_DEFAULT_LIGHTING) ||

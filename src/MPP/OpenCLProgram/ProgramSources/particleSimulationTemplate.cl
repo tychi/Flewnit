@@ -243,33 +243,35 @@
       if(lwiID < numParticlesInOwnGroup )
       {
      
-{% block processSPHResults %}
-  {% comment %}
-    evalute SPH results: add force densities together compute collision forces with static geometry, trnasform to acceleration, 
-    add gravity...
-  {% endcomment %}      
-{% endblock processSPHResults %}
+        {% block processSPHResults %}
+          {% comment %}
+            evalute SPH results: add force densities together compute collision forces with static geometry, trnasform to acceleration, 
+            add gravity...
+          {% endcomment %}      
+        {% endblock processSPHResults %}
 
 
-  //integrat only for valid particles, rest MUST stay at zero to not corrupt scans in rigid body calculations
-  if(! IS_INVALID_PARTICLE(ownParticleObjectID) )
-  {
-{% block integrate %}
-  {% comment %}
-    calculate new positions and velocites from new accelerations and old poistions and velocities;
-  {% endcomment %}          
-{% endblock integrate %}
-  } // end if(! IS_INVALID_PARTICLE() )
+          //integrat only for valid particles, rest MUST stay at zero to not corrupt scans in rigid body calculations
+          if(! IS_INVALID_PARTICLE(ownParticleObjectID) )
+          {
+          
+            {% block integrate %}
+              {% comment %}
+                calculate new positions and velocites from new accelerations and old poistions and velocities;
+              {% endcomment %}          
+            {% endblock integrate %}
+
+          } // end if(! IS_INVALID_PARTICLE() )
 
 
-{% block calcZIndex %}      
-{% endblock calcZIndex %}
+        {% block calcZIndex %}      
+        {% endblock calcZIndex %}
 
-{% block uploadUpdatedParticleAttribs %}
-  {% comment %}
-    pattern:  g<attribute name plural>New[ lwiID ] = own<attribute name singular>;
-  {% endcomment %} 
-{% endblock uploadUpdatedParticleAttribs %}
+        {% block uploadUpdatedParticleAttribs %}
+          {% comment %}
+            pattern:  g<attribute name plural>New[ lwiID ] = own<attribute name singular>;
+          {% endcomment %} 
+        {% endblock uploadUpdatedParticleAttribs %}
       
       } //end if(lwiID < numParticlesInOwnGroup )
   }

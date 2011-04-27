@@ -74,20 +74,3 @@
   //=====================================================================================
   
   
-  
-    {% comment %}
-      
-      legacy code to delete
-    
-    { if rigidBodySimulation }
-      if( IS_RIGID_BODY_PARTICLE(particleObjectInfo) )
-      { 
-        //update the index of this rigid body particle in the "rigid bodies' particle index tracking list"
-        gParticleIndexTable[ 
-          GET_RIGID_BODY_ID( particleObjectInfo ) * NUM_MAX_PARTICLES_PER_RIGID_BODY 
-          + GET_PARTICLE_ID( particleObjectInfo ) 
-        ] = gwiID;
-      }
-    { endif }
-    
-    {% endcomment %}

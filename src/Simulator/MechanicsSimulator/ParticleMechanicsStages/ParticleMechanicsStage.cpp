@@ -30,11 +30,10 @@ ParticleMechanicsStage::ParticleMechanicsStage(ConfigStructNode* simConfigNode)
 	  mNumMaxUserForceControlPoints(0),
 	  mUserForceControlPointBuffer(0),
 	  mRadixSorter(0),										//-- until here run but srash on shutdown
-	  mCLProgram_initial_CalcZIndex(0),
-	  mCLProgram_updateDensity(0),
 	  mCLProgram_initial_updateForce_integrate_calcZIndex(0),
-	  mCLProgram_updateForce_integrate_calcZIndex(0)
-
+	  mCLProgram_updateDensity(0),
+	  mCLProgram_updateForce_integrate_calcZIndex(0),
+	  mCLProgram_updateRigidBodies(0)
 {
 	//everything done in init()
 
@@ -54,6 +53,7 @@ ParticleMechanicsStage::~ParticleMechanicsStage()
 //	delete mCLProgram_updateDensity;
 //	delete mCLProgram_initial_updateForce_integrate_calcZIndex;
 //	delete mCLProgram_updateForce_integrate_calcZIndex;
+//	delete mCLProgram_updateRigidBodies;
 
 }
 
@@ -108,10 +108,10 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 //	  mNumMaxUserForceControlPoints(0),
 //	  mUserForceControlPointBuffer(0),
 //	  mRadixSorter(0),										//-- until here run but srash on shutdown
-//	  mCLProgram_initial_CalcZIndex(0),
-//	  mCLProgram_updateDensity(0),
 //	  mCLProgram_initial_updateForce_integrate_calcZIndex(0),
-//	  mCLProgram_updateForce_integrate_calcZIndex(0)
+//	  mCLProgram_updateDensity(0),
+//	  mCLProgram_updateForce_integrate_calcZIndex(0),
+//	  mCLProgram_updateRigidBodies(0)
 
 	return true;
 }

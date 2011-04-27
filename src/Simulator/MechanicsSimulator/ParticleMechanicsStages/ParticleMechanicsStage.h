@@ -130,14 +130,14 @@ private:
 
 
 	//{
-		CLProgram* mCLProgram_initial_CalcZIndex;
-		//CLProgram* mCLProgram_radixSort; 					//is in class RadixSorter
-		//CLProgram* mCLProgram_reorderAttributes; 			//is in class ParticleSceneRepresentation
-		//CLProgram* mCLProgram_updateUniformGrid;			//is in class UniformGrid
-		//CLProgram* mCLProgram_splitAndCompactUniformGrid;	//is in class UniformGrid
-		CLProgram* mCLProgram_updateDensity;
 		CLProgram* mCLProgram_initial_updateForce_integrate_calcZIndex;
-		CLProgram* mCLProgram_updateForce_integrate_calcZIndex;
+		//RadixSortProgram* mCLProgram_radixSort; 					//is in class RadixSorter
+		//BasicCLProgram* mCLProgram_reorderAttributes; 	//is in class ParticleSceneRepresentation
+		//ParticleSimulationProgram* mCLProgram_updateUniformGrid;			//is in class UniformGrid
+		//ParticleSimulationProgram* mCLProgram_splitAndCompactUniformGrid;	//is in class UniformGrid
+		ParticleSimulationProgram* mCLProgram_updateDensity;
+		ParticleSimulationProgram* mCLProgram_updateForce_integrate_calcZIndex;
+		ParticleSimulationProgram* mCLProgram_updateRigidBodies;
 	//}
 
 

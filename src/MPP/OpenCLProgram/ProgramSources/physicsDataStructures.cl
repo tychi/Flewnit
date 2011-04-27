@@ -11,6 +11,7 @@
   
   By using this file in both host and device code, even some macros can be used by the app, so that consistency is guaranteed; 
 
+
 */
 
   

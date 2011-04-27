@@ -29,6 +29,7 @@ SkyDomeShader::SkyDomeShader(Path codeDirectory, TextureType renderTargetTexture
 				false)
 		)
 {
+	build();
 	//nothing to assert, as the restricted constructor parameters assure that the user
 	//cannot abuse this shadertype via strange parameters;
 

@@ -39,8 +39,9 @@ public:
 	MPP(String name, SimulationDomain sd);
 	virtual ~MPP();
 
-protected:
 	virtual void build()=0;
+
+protected:
 	virtual void setupTemplateContext(TemplateContextMap& contextMap)=0;
 	virtual void validate()throw(SimulatorException)=0;
 

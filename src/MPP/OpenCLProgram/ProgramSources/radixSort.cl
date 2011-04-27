@@ -43,6 +43,18 @@
   //####################################################################################
   
 
+  //Possible default  values: 
+  //  for particles (sorted by radix sort) target in this thesis: 2^18 = 256k;
+  //  for uniform grid cells (compacted by stream compaction) target in this thesis: 64^3 = 2^18 = 256k; 
+  // -->  both numParticles and numUniGridCells are usually equal to 256k; this is a coincidence and does NOT mean that
+  //      one shall try to reuse or merge some kernels just because they work on the same number of elements; This is a special case that will
+  //      NOT be abused for any efforts of optimization
+  //note: this value is used by every kernels bud the physical ones (SPH particle and rigid body); 
+  //      As those kernels don't use this macro, it's not an error that it is defined to nothing then;
+  #define NUM_TOTAL_ELEMENTS_TO_SCAN ( {{ numTotalElementsToScan }} )
+
+
+
   
   //--------------------------------------------------------------------------------------
     //default: 3 * log2(uniGridNumCellsPerDimension) = 18
@@ -66,7 +78,7 @@
     //this way, we need...
     #define NUM_KEY_ELEMENTS_PER_RADIX_COUNTER ( {{ numElementsPerRadixCounter }} )
     //... "only" 256k / 4<16> = 64k<16k> radix counters per radix;
-    #define NUM_TOTAL_RADIX_COUNTERS_PER_RADIX ( NUM_TOTAL_ELEMENTS / NUM_KEY_ELEMENTS_PER_RADIX_COUNTER )
+    #define NUM_TOTAL_RADIX_COUNTERS_PER_RADIX ( NUM_TOTAL_ELEMENTS_TO_SCAN / NUM_KEY_ELEMENTS_PER_RADIX_COUNTER )
   //-------------------------------------------------------------------------------------                                                                                        
    
            
@@ -103,7 +115,7 @@
     #define NUM_ELEMENTS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER)
     //default (fermi) : 2^18/( 2^7 * 2^2) = 2^9 = 512
     //default (GT200) : 2^18/( 2^5 * 2^3) = 2^10 = 1024
-    #define NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE ( NUM_TOTAL_ELEMENTS  / (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER) )
+    #define NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE ( NUM_TOTAL_ELEMENTS_TO_SCAN  / (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER) )
     
  
     #define NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL ( (2*NUM_ELEMENTS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE ) / NUM_LOCAL_RADIX_COUNTER_ELEMENTS )
@@ -130,7 +142,7 @@
   //phase one out of three in a radix sort pass: tabulate and local scan
   __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE,1,1))) 
   void kernel_radixSort_tabulate_localScan_Phase(
-    __global uint* gKeysToSort,     //NUM_TOTAL_ELEMENTS elements
+    __global uint* gKeysToSort,     //NUM_TOTAL_ELEMENTS_TO_SCAN elements
     __global uint* gLocallyScannedRadixCounters,  //NUM_RADICES_PER_PASS * NUM_TOTAL_RADIX_COUNTERS_PER_RADIX elements; (e.g. 64*64k);
                                     //is logically an array NUM_RADICES_PER_PASS radix counter arrays;
                                     //In phase 1 (tabulation and local scan), the results of local scans of the counters 
@@ -286,7 +298,6 @@
   //pow2(ceil(log2(CL_DEVICE_MAX_COMPUTE_UNITS))) work groups (value calced by app), 
   //i.e. the number of multiprocessors, rounded to the next power of two
   #define NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE  ( NUM_BASE2_CEILED_COMPUTE_UNITS )
-  //#define NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE  ( {{ numGlobalScanWorkGroups }} )
   //default value for Geforce GT  435M (fermi) : (64 / pow2(ceil(log2( 2))) = 32
   //default value for Geforce GTX 280  (GT200) : (64 / pow2(ceil(log2(30))) = 2
   //default value for Geforce GTX 570  (fermi) : (64 / pow2(ceil(log2(15))) = 4
@@ -431,16 +442,16 @@
   void kernel_radixSort_reorder_Phase(
     //following key ping pong buffers: (We need ping pong buffers, because although input and output indices are a perfect permutation
     //of each other, read from and write to the same buffer would need global synchronization)
-    __global uint* gKeysToSort,     //NUM_TOTAL_ELEMENTS elements; 
+    __global uint* gKeysToSort,     //NUM_TOTAL_ELEMENTS_TO_SCAN elements; 
                                     //needed to select the relevant radix for reordering and to be scattered to reorderedKeys;
-   __global uint* gReorderedKeys,    //NUM_TOTAL_ELEMENTS elements; 
+   __global uint* gReorderedKeys,    //NUM_TOTAL_ELEMENTS_TO_SCAN elements; 
                                     //The reordered keys are written to this buffer,which we may needed in following
                                     //radix sort passes to sort them according to the next radix interval;
                                     //Furthermore, in physics simulation using a uniform grid as acceleration structure,
                                     //the keys are needed to determine the start and end object within a cell.
 
     //following value ping pong buffers:                                                                 
-    __global uint* gOldIndices,   //NUM_TOTAL_ELEMENTS elements; 
+    __global uint* gOldIndices,   //NUM_TOTAL_ELEMENTS_TO_SCAN elements; 
                                     //Because there are several radix sort passes needed
                                     //until a high-bit key array is completely sorted, it would be madness to reorder (and hence scatter uncoalesced) 
                                     //EVERY value associated to this key (e.g. position vectors, velocity vectors etc.)
@@ -452,7 +463,7 @@
                                     //a relatively great amount of coalescing is still implicitely provided.
                                     //In first radix sort pass, this array is unused and get_global_id(0) is taken instead as initial
                                     //index.                                  
-    __global uint* gReorderedOldIndices,//NUM_TOTAL_ELEMENTS elements;   
+    __global uint* gReorderedOldIndices,//NUM_TOTAL_ELEMENTS_TO_SCAN elements;   
 
 
     

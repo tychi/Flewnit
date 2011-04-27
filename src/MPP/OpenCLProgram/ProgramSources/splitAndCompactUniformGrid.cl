@@ -14,7 +14,11 @@
   {% endblock documentHeader %} 
 
 
-  {% block specialDefinitions %}   
+  {% block specialDefinitions %} 
+  
+  
+    {% include "uniformGridCommon.cl" %}  
+    
     
     uint tabulate(uint globalIndex,  __global uint* gUniGridCells_ParticleStartIndex, __global uint* gUniGridCells_ParticleEndIndexPlus1)
     {
@@ -67,7 +71,7 @@
       because here, it wouldn't save a kernel invocation;
       
     */
-    
+
     __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
     void kernel_splitAndCompactUniformGrid(
       __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements; to be split and compacted,too
@@ -79,7 +83,7 @@
       __global uint* gCompactedUniGridCells_ParticleStartIndex
       __global uint* gCompactedUniGridCells_NumParticles, 
 
-      __global uint* gLocallyScannedTabulatedValues, //gLocallyScannedSimWorkGroupCount, NUM_TOTAL_ELEMENTS  elements 
+      __global uint* gLocallyScannedTabulatedValues, //gLocallyScannedSimWorkGroupCount, NUM_TOTAL_ELEMENTS_TO_SCAN  elements 
       __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_ELEMENTS__GLOBAL_SCAN elements
       __global uint* gSumsOfPartialGlobalScans,  //at least NUM_BASE2_CEILED_COMPUTE_UNITS + 1  elements;
                                                  //+1 because this kernel writes out the total sim work group count                                                 

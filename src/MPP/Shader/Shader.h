@@ -119,14 +119,14 @@ public:
 	//acessor for LightSourceManager to use the handle directly for its queries
 	inline GLuint getGLProgramHandle()const{return mGLProgramHandle;}
 
+	virtual void build();
 
 protected:
 
 	friend class ShaderManager;
 	Shader(Path codeDirectory, Path specificShaderCodeSubFolderName, const ShaderFeaturesLocal& localShaderFeatures);
 
-	//called by constructor
-	virtual void build();
+
 	//setup the context for template rendering:
 	virtual void setupTemplateContext(TemplateContextMap& contextMap);
 	void generateShaderStage(ShaderStageType shaderStageType, Grantlee::Engine* templateEngine, const TemplateContextMap& contextMap);

@@ -13,10 +13,6 @@
 
 
 
-#include "UniformGrid.h"
-
-
-
 namespace Flewnit
 {
 
@@ -216,7 +212,7 @@ private:
 	ParticleAttributeBuffers* mParticleAttributeBuffers;
 
 	//{
-	CLProgram* mCLProgram_reorderAttributes;
+	BasicCLProgram* mCLProgram_reorderAttributes;
 	//}
 
 

@@ -7,7 +7,7 @@
 */
 
 
-{% include physicsCommonFunctions.cl %} 
+{% include "physicsCommonFunctions.cl" %} 
 
 __kernel void _initial_CalcZIndex(
   __constant uint* cGridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation

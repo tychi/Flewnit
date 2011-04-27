@@ -71,14 +71,28 @@ namespace Flewnit
 	{
 		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
-		CLProgram(Path codeDirectory, Path mProgramCodeSubFolderName);
+		CLProgram(
+				Path sourceFileName,
+				Path mProgramCodeSubFolderName = Path(String("")),
+				Path codeDirectory = Path( FLEWNIT_DEFAULT_OPEN_CL_KERNEL_SOURCES_PATH ) );
 		virtual ~CLProgram();
 
 		//inline cl::Program& getCLProgramHandle()const{return mCLProgramHandle;}
+
+		//note: in contrst to Shader class, you have to call build() by yoursefl, as otherwise
+		//when calling setupTemplateContext() from build() called from base class constructor,
+		//setupTemplateContext() of the derived classes will not be called correctly ;(
+		virtual void build();
+
 	protected:
 
-		//called by constructor
-		virtual void build();
+
+		//setup the context for template rendering:
+		//pure virtual because template contexts can differ considerably, and even if there is a common subset in this framework,
+		//it should not count as "default" template setup; in this case, a little boilerplate is preferred to the generality
+		//of this OpenCL Program class
+		virtual void setupTemplateContext(TemplateContextMap& contextMap)=0;
+
 
 		//Factory function; Owns the kernels, i.e. is responsible for their deletion;
 		//throw exception if there is a detectable incompatibility between the cl kernel and the args and work load params
@@ -86,9 +100,6 @@ namespace Flewnit
 		//(e.g. param name, param type of kernel arguments) so be very careful!!
 		CLKernel* createKernel(String name, CLKernelWorkLoadParams* kernelWorkLoadParams, CLKernelArguments* kernelArgs)throw(SimulatorException);
 
-		//setup the context for template rendering:
-		//non-pure virtual so that derived programs can replace or complement template info;
-		virtual void setupTemplateContext(TemplateContextMap& contextMap);
 
 		virtual void validate()throw(SimulatorException);
 

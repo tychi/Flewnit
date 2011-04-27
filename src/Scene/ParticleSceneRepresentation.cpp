@@ -298,7 +298,9 @@ ParticleSceneRepresentation::ParticleSceneRepresentation(
 	);
 
 
-	//mCLProgram_reorderAttributes =
+//	mCLProgram_reorderAttributes = new CLProgram(
+//
+//	);
 
 }
 
@@ -306,7 +308,6 @@ ParticleSceneRepresentation::~ParticleSceneRepresentation()
 {
 	delete mParticleAttributeBuffers;
 
-	//TODO
 	//delete mCLProgram_reorderAttributes;
 }
 
@@ -423,11 +424,16 @@ void ParticleSceneRepresentation::associateParticleAttributeBuffersWithRendering
 
 }
 
+
+
 //internal helper routine for creating the geometry objects for fluid objects;
 VertexBasedGeometry* ParticleSceneRepresentation::createGeometryFromAttributeBuffers(
 		unsigned int particleStartIndex, unsigned int particleCount)
 {
+	//TODO
+	assert(0&&"TODO implement");
 
+	return 0;
 }
 
 

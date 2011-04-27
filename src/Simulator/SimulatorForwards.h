@@ -23,6 +23,7 @@ namespace Flewnit
 class FPSCounter;
 class InputInterpreter;
 
+class AmendedTransform;
 
 
 //settings to configure a simulation step:
@@ -260,13 +261,16 @@ class MPP;
 	class 	Shader;
 
 	class CLProgram;
-	class 	CLKernel;
-	class 		CLKernelArgumentBase;
+	class 	BasicCLProgram;
+	class	RadixSortProgram;
+	class 	ParticleSimulationProgram;
+	class CLKernel;
+	class CLKernelWorkLoadParams;
+	class CLKernelArguments;
+	class CLKernelArgumentBase;
 	template<typename T> class CLValueKernelArgument;
-	class 		CLBufferKernelArgument;
-	class 		CLKernel;
-	class 		CLKernelArguments;
-	class		CLKernelWorkLoadParams;
+	class 	CLBufferKernelArgument;
+
 
 
 }
