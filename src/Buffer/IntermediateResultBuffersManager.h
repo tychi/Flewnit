@@ -23,14 +23,16 @@ namespace Flewnit
 {
 
 class IntermediateResultBuffersManager
-	: public Singleton<IntermediateResultBuffersManager>,
-	  public BasicObject
+	: public BasicObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
-public:
+private:
+	friend class CLProgramManager;
+	//only instanciable and deletable by CLProgramManager
 	IntermediateResultBuffersManager();
 	virtual ~IntermediateResultBuffersManager();
 
+public:
 
 	//every functional unit (CL program, class etc) calls this request function,
 	//passing the minimum sizes of the required intermediate buffers,

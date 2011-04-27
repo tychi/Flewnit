@@ -1,6 +1,12 @@
 /*
  * PingPongBuffer.h
  *
+ * Convention throughout the whole framework:
+ * The buffer that has been least recently written is the active buffer;
+ * This means, that BEFORE a new write to a ping pong buffer, the programmer is responsible to do the toggle
+ * right befor the write, so that after the write, the active buffer is automatically the most recently
+ * written one again;
+ *
  *  Created on: Nov 27, 2010
  *      Author: tychi
  *
@@ -33,7 +39,8 @@ protected:
 
 
 public:
-	void toggleBuffers();
+	//returns pointer to itself for convenience;
+	PingPongBuffer* toggleBuffers();
 	BufferInterface* getActiveBuffer()const;
 	BufferInterface* getInactiveBuffer()const;
 

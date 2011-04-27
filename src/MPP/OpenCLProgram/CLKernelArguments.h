@@ -64,7 +64,7 @@ protected:
 
 	CLKernelArgumentBase(String argName, size_t argSizeInByte, void* argValuePtr);
 
-	void passArgToKernel(cl_uint argIndex, CLKernel* clKernel);
+	virtual void passArgToKernel(cl_uint argIndex, CLKernel* clKernel);
 
 
 	String mArgName;
@@ -90,6 +90,7 @@ public:
 		//CLKernelArgumentBase::mArgValuePtr directly points to mValue; nothing to re-point ;)
 		inline void setValue(T val)const{mValue = val;}
 protected:
+
 		T mValue;
 };
 
@@ -100,14 +101,22 @@ class CLBufferKernelArgument
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
-	CLBufferKernelArgument(String argName, BufferInterface* buffi);
+	//param ifPingPongBufferUsedInactiveOne delegates if in case a ping pong buffer is passed,
+	//explicitly the INactive buffer component shall be bound as kernel arg!
+	CLBufferKernelArgument(String argName, BufferInterface* buffi,  bool ifPingPongBufferUseInactiveOne = false );
 	virtual ~CLBufferKernelArgument( ){}
 
 	inline BufferInterface* get()const{return mBufferInterface;}
-	void set(BufferInterface* buffi );
+	//CLKernelArgumentBase::mArgValuePtr has to be altered;
+	void set(BufferInterface* buffi, bool ifPingPongBufferUseInactiveOne = false );
 
 protected:
+	//override for buffer argument to handle that always the respective active/inactive ping pong component,
+	//if the buffer is a ping pong buffer;
+	virtual void passArgToKernel(cl_uint argIndex, CLKernel* clKernel);
+
 	BufferInterface* mBufferInterface;
+	bool mIfPingPongBufferUseInactiveOne;
 };
 
 

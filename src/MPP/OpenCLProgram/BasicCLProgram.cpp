@@ -10,13 +10,27 @@
 namespace Flewnit
 {
 
-//BasicCLProgram::BasicCLProgram() {
-//	// TODO Auto-generated constructor stub
-//
-//}
-//
-//BasicCLProgram::~BasicCLProgram() {
-//	// TODO Auto-generated destructor stub
-//}
+
+BasicCLProgram::BasicCLProgram(
+		Path sourceFileName,
+		SimulationDomain sd,
+		Path codeDirectory,
+		Path programCodeSubFolderName
+)
+: CLProgram(sourceFileName, sd, codeDirectory, programCodeSubFolderName)
+{
+	//nothing to do
+}
+
+BasicCLProgram::~BasicCLProgram()
+{
+	//everything done by base class
+}
+
+void BasicCLProgram::setupTemplateContext(TemplateContextMap& contextMap)
+{
+	//TODO
+	assert(0&&"TODO implement");
+}
 
 }

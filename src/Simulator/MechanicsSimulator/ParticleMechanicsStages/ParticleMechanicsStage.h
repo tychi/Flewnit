@@ -137,7 +137,7 @@ private:
 		//ParticleSimulationProgram* mCLProgram_splitAndCompactUniformGrid;	//is in class UniformGrid
 		ParticleSimulationProgram* mCLProgram_updateDensity;
 		ParticleSimulationProgram* mCLProgram_updateForce_integrate_calcZIndex;
-		ParticleSimulationProgram* mCLProgram_updateRigidBodies;
+		UpdateRigidBodiesProgram* mCLProgram_updateRigidBodies;
 	//}
 
 

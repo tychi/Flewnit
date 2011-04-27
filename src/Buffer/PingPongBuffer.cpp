@@ -68,11 +68,13 @@ PingPongBuffer::~PingPongBuffer()
 }
 
 
-void PingPongBuffer::toggleBuffers()
+PingPongBuffer* PingPongBuffer::toggleBuffers()
 {
 	mInactiveBufferIndex =  	(mInactiveBufferIndex +1) %2;
 	mActiveBufferIndex =  	(mActiveBufferIndex +1) 	%2;
 	getHandlesFromCurrentActiveBuffer();
+
+	return this;
 }
 
 void PingPongBuffer::getHandlesFromCurrentActiveBuffer()

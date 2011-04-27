@@ -57,4 +57,35 @@ unsigned int HelperFunctions::ceilToNextMultiple(unsigned int valToCeil, unsigne
 	}
 }
 
+unsigned int HelperFunctions::ceilToNextPowerOfTwo(unsigned int valToCeil)
+{
+	assert( valToCeil <= (unsigned int)(1<<31));
+
+	if(valToCeil == 0)
+	{return valToCeil;}
+
+	unsigned int result = 1;
+
+	while(result < valToCeil)
+	{
+		result <<= 1;
+	}
+
+	return result;
+}
+
+unsigned int HelperFunctions::floorToNextPowerOfTwo(unsigned int valToCeil)
+{
+
+	unsigned int result = (1<<31) ;
+
+	while(result > valToCeil)
+	{
+		result >>= 1;
+	}
+
+	return result;
+}
+
+
 }

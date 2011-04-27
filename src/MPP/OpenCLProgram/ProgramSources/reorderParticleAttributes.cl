@@ -9,7 +9,7 @@
   
   {% include "physicsDataStructures.cl" %}
   
-  __kernel void kernel_reorderPhysicalAttributes(
+  __kernel void kernel_reorderParticleAttributes(
   
     __constant ObjectGenericFeatures* cObjectGenericFeatures,
       

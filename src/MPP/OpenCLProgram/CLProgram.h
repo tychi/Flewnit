@@ -13,12 +13,17 @@
 #include "MPP/MPP.h"
 
 #include "Common/FlewnitSharedDefinitions.h"
-#include "Simulator/SimulatorForwards.h"
+
+#include "Simulator/SimulatorMetaInfo.h"
+
 
 //#include "CLKernelArguments.h"
 
 namespace Flewnit
 {
+
+	typedef std::vector<cl::Event> EventVector;
+
 
 	class CLKernel
 		:public BasicObject
@@ -30,36 +35,44 @@ namespace Flewnit
 
 		//grab&modify directly; will be set resp. verified before every kernal launch
 		inline CLKernelArguments* getCLKernelArguments(){return mCLKernelArguments;}
-		inline CLKernelWorkLoadParams* getCLKernelWorkLoadParams()const{return mKernelWorkLoadParams;}
+		inline CLKernelWorkLoadParams* getCLKernelWorkLoadParams()const{return mDefaultKernelWorkLoadParams;}
 
 
-		//work group/item dimensions/size etc are taken from kernelWorkLoadParams resp. mKernelWorkLoadParams;
-		typedef std::vector<cl::Event> EventVector;
-		cl::Event run(
-				const EventVector& EventsToWaitFor,
-				//zero indicates that the kernel shall use its own member work load params;
-				CLKernelWorkLoadParams* kernelWorkLoadParams = 0,
-				//zero indicates that the kernel shall use its own member kernel args;
-				CLKernelArguments* kernelArgs = 0
-		) throw(SimulatorException);
+		//{ run routines
+			//work group/item dimensions/size etc are taken from kernelWorkLoadParams resp. mKernelWorkLoadParams;
+			//run() routine for kernels with always the same work load (radix sort, uniform grid updated,
+			//stream compaction etc.);
+			//Calls mCLKernelArguments->passArgsToKernel();
+			cl::Event run(const EventVector& EventsToWaitFor) throw(SimulatorException);
+			//run() routine for kernels with different work loads
+			//Calls customKernelWorkLoadParams.passArgsToKernel();
+			cl::Event run(
+					const EventVector& EventsToWaitFor,
+					const CLKernelWorkLoadParams& customKernelWorkLoadParams
+			) throw(SimulatorException);
+		//}
+
+
 
 	protected:
 		friend class CLProgram;
-		friend class CLKernelArguments;
 		friend class CLKernelArgumentBase;
 
-		//called by CLProgram::createKernel() factory function;
+		//called by virtual void CLProgram::createKernels();
+		//those routines build the default arguments list;
 		CLKernel(CLProgram* owningProgram, String kernelName,
-				CLKernelWorkLoadParams* kernelWorkLoadParams,
+				CLKernelWorkLoadParams* defaultKernelWorkLoadParams,
 				CLKernelArguments* clKernelArguments);
 
-
-
+		//called by CLProgram::virtual void createKernels() factory functions;
+		//virtual void createKernelArguments()=0;
+		//called by run() routines to potentially update arguments (toggle ping pong buffers etc)
+		//virtual void setupKernelArguments()=0;
 
 		String mKernelName;
 
 		CLKernelArguments* mCLKernelArguments;
-		CLKernelWorkLoadParams* mKernelWorkLoadParams;
+		CLKernelWorkLoadParams* mDefaultKernelWorkLoadParams;
 
 		cl::Kernel mKernel;
 	};
@@ -73,19 +86,28 @@ namespace Flewnit
 	public:
 		CLProgram(
 				Path sourceFileName,
-				Path mProgramCodeSubFolderName = Path(String("")),
-				Path codeDirectory = Path( FLEWNIT_DEFAULT_OPEN_CL_KERNEL_SOURCES_PATH ) );
+				SimulationDomain sd = GENERIC_SIM_DOMAIN,
+				Path codeDirectory = Path( FLEWNIT_DEFAULT_OPEN_CL_KERNEL_SOURCES_PATH ),
+				Path programCodeSubFolderName = Path(String(""))
+		);
 		virtual ~CLProgram();
 
 		//inline cl::Program& getCLProgramHandle()const{return mCLProgramHandle;}
 
-		//note: in contrst to Shader class, you have to call build() by yoursefl, as otherwise
+		//note: in contrast to Shader class, you have to call build() by yoursefl, as otherwise
 		//when calling setupTemplateContext() from build() called from base class constructor,
 		//setupTemplateContext() of the derived classes will not be called correctly ;(
 		virtual void build();
 
+
+		CLKernel* getKernel(String name)throw(SimulatorException);
+
+		//issue the several createKernel() calls with initial argument list etc;
+		virtual void createKernels()=0;
+
 	protected:
 
+		void validate()throw(SimulatorException);
 
 		//setup the context for template rendering:
 		//pure virtual because template contexts can differ considerably, and even if there is a common subset in this framework,
@@ -94,26 +116,31 @@ namespace Flewnit
 		virtual void setupTemplateContext(TemplateContextMap& contextMap)=0;
 
 
-		//Factory function; Owns the kernels, i.e. is responsible for their deletion;
-		//throw exception if there is a detectable incompatibility between the cl kernel and the args and work load params
-		//note: many stuff is not detectable because of the many missing query features
-		//(e.g. param name, param type of kernel arguments) so be very careful!!
-		CLKernel* createKernel(String name, CLKernelWorkLoadParams* kernelWorkLoadParams, CLKernelArguments* kernelArgs)throw(SimulatorException);
-
-
-		virtual void validate()throw(SimulatorException);
-
-
-
 		Path mCodeDirectory;
 		Path mProgramCodeSubFolderName;
 
 		cl::Program mCLProgram;
 
-		//CLKernelWorkLoadParams* mKernelWorkLoadParams;
-		std::map<String, CLKernel*> mKernels;
+
+		typedef std::map<String, CLKernel*> KernelMap;
+		KernelMap mKernels;
+
+	private:
+
 
 	};
 
 
 }
+
+
+
+//legacy TODO delete
+
+//Factory function;
+//called byconstructors of derived classes;
+//Owns the kernels, i.e. is responsible for their deletion;
+//throw exception if there is a detectable incompatibility between the cl kernel and the args and work load params
+//note: many stuff is not detectable because of the many missing query features
+//(e.g. param name, param type of kernel arguments) so be very careful!!
+//CLKernel* createKernel(String name, CLKernelWorkLoadParams* kernelWorkLoadParams, CLKernelArguments* kernelArgs)throw(SimulatorException);

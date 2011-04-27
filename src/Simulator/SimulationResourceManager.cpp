@@ -29,7 +29,7 @@ namespace Flewnit
 
 //TODO init according to config file
 SimulationResourceManager::SimulationResourceManager() :
-	mScene(new SceneGraph()),mIntermediateResultsBuffersManager(new IntermediateResultBuffersManager())
+	mScene(new SceneGraph())
 {
 
 }
@@ -56,7 +56,6 @@ SimulationResourceManager::~SimulationResourceManager()
 		delete pair.second;
 	}
 
-	delete mIntermediateResultsBuffersManager;
 
 	typedef std::map<String, BufferInterface* > BufferMap;
 	BOOST_FOREACH( BufferMap::value_type & pair, mBuffers)

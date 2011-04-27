@@ -7,231 +7,26 @@
 
 #include "ParticleSceneRepresentation.h"
 
+#include "ParticleAttributeBuffers.h"
+
 #define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 #include "MPP/OpenCLProgram/ProgramSources/physicsDataStructures.cl"
 #undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 
 #include "Simulator/SimulationResourceManager.h"
+#include "Simulator/ParallelComputeManager.h"
+
 #include "Buffer/Buffer.h"
 #include "MPP/OpenCLProgram/CLProgram.h"
 #include "Buffer/PingPongBuffer.h"
+#include "MPP/OpenCLProgram/BasicCLProgram.h"
+#include "Util/HelperFunctions.h"
+#include "MPP/OpenCLProgram/CLKernelArguments.h"
 
 
 namespace Flewnit
 {
 
-ParticleAttributeBuffers::ParticleAttributeBuffers(
-		unsigned int numTotalParticles,
-		unsigned int invalidObjectID,
-		bool initToInvalidObjectID)
-{
-	BufferInfo glCLSharedIndexBufferInfo(
-		"particleIndexTableBuffer",
-		//all three contexts;
-		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
-		INDEX_SEMANTICS,
-		TYPE_UINT32,
-		numTotalParticles,
-		BufferElementInfo(1,GPU_DATA_TYPE_UINT,32,false),
-		VERTEX_INDEX_BUFFER_TYPE,
-		NO_CONTEXT_TYPE
-	);
-	mParticleIndexTableBuffer = new Buffer(	glCLSharedIndexBufferInfo,	true, 0 );
-
-
-	BufferInfo glCLSharedObjectInfoBufferInfo(
-		"particleObjectInfoBufferPing",
-		//all three contexts;
-		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
-		PRIMITIVE_ID_SEMANTICS,
-		TYPE_UINT32,
-		numTotalParticles,
-		BufferElementInfo(1,GPU_DATA_TYPE_UINT,32,false),
-		VERTEX_ATTRIBUTE_BUFFER_TYPE,
-		NO_CONTEXT_TYPE
-	);
-	Buffer* ping = new Buffer(	glCLSharedObjectInfoBufferInfo,	true, 0 );
-	glCLSharedObjectInfoBufferInfo.name = "particleObjectInfoBufferPong";
-	Buffer* pong = new Buffer(	glCLSharedObjectInfoBufferInfo,	true, 0 );
-	mObjectInfoPiPoBuffer = new PingPongBuffer("particleObjectInfoPiPoBuffer",ping,pong);
-
-
-	BufferInfo glCLSharedZIndicesBufferInfo(
-		"particleZIndicesBufferPing",
-		//all three contexts;
-		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
-		Z_INDEX_SEMANTICS,
-		TYPE_UINT32,
-		numTotalParticles,
-		BufferElementInfo(1,GPU_DATA_TYPE_UINT,32,false),
-		VERTEX_ATTRIBUTE_BUFFER_TYPE,
-		NO_CONTEXT_TYPE
-	);
-	ping = new Buffer(	glCLSharedZIndicesBufferInfo,	true, 0 );
-	glCLSharedZIndicesBufferInfo.name = "particleZIndicesBufferPong";
-	pong = new Buffer(	glCLSharedZIndicesBufferInfo,	true, 0 );
-	mZIndicesPiPoBuffer = new PingPongBuffer("particleZIndicesPiPoBuffer",ping,pong);
-
-	BufferInfo glCLSharedOldIndicesBufferInfo(
-		"particleOldIndicesBufferPing",
-		//all three contexts;
-		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
-		CUSTOM_SEMANTICS, //actually, it is not planned to bind this buffer as vertex  attribute to GL,
-						  //hence it has no real semantics, it is just a helper buffer for sorting;
-						  //but maybe for debug purposes, one would want to bind it anyway ;(...
-		TYPE_UINT32,
-		numTotalParticles,
-		BufferElementInfo(1,GPU_DATA_TYPE_UINT,32,false),
-		VERTEX_ATTRIBUTE_BUFFER_TYPE,
-		NO_CONTEXT_TYPE
-	);
-	ping = new Buffer(	glCLSharedOldIndicesBufferInfo,	true, 0 );
-	glCLSharedOldIndicesBufferInfo.name = "particleOldIndicesBufferPong";
-	pong = new Buffer(	glCLSharedOldIndicesBufferInfo,	true, 0 );
-	mOldIndicesPiPoBuffer = new PingPongBuffer("particleOldIndicesPiPoBuffer",ping,pong);
-
-
-	//-------------------------------------------------------------------------------------------------------------------
-	//beginning with the actual physical attributes:
-
-	BufferInfo glCLSharedPositionsBufferInfo(
-		"particlePositionsBufferPing",
-		//all three contexts;
-		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
-		POSITION_SEMANTICS,
-		TYPE_VEC4F,
-		numTotalParticles,
-		BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false),
-		VERTEX_ATTRIBUTE_BUFFER_TYPE,
-		NO_CONTEXT_TYPE
-	);
-	ping = new Buffer(	glCLSharedPositionsBufferInfo,	true, 0 );
-	glCLSharedPositionsBufferInfo.name = "particlePositionsBufferPong";
-	pong = new Buffer(	glCLSharedPositionsBufferInfo,	true, 0 );
-	mPositionsPiPoBuffer = new PingPongBuffer("particlePositionsPiPoBuffer",ping,pong);
-
-	BufferInfo glCLSharedDensitiesBufferInfo(
-		"particleDensitiesBufferPing",
-		//all three contexts;
-		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
-		DENSITY_SEMANTICS,
-		TYPE_FLOAT,
-		numTotalParticles,
-		BufferElementInfo(1,GPU_DATA_TYPE_FLOAT,32,false),
-		VERTEX_ATTRIBUTE_BUFFER_TYPE,
-		NO_CONTEXT_TYPE
-	);
-	ping = new Buffer(	glCLSharedDensitiesBufferInfo,	true, 0 );
-	glCLSharedDensitiesBufferInfo.name = "particleDensitiesBufferPong";
-	pong = new Buffer(	glCLSharedDensitiesBufferInfo,	true, 0 );
-	mDensitiesPiPoBuffer = new PingPongBuffer("particleDensitiesPiPoBuffer",ping,pong);
-
-
-	BufferInfo glCLSharedVelocitiesBufferInfo(
-		"particleCorrectedVelocitiesBufferPing",
-		//all three contexts;
-		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
-		VELOCITY_SEMANTICS,
-		TYPE_VEC4F,
-		numTotalParticles,
-		BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false),
-		VERTEX_ATTRIBUTE_BUFFER_TYPE,
-		NO_CONTEXT_TYPE
-	);
-	ping = new Buffer(	glCLSharedVelocitiesBufferInfo,	true, 0 );
-	glCLSharedVelocitiesBufferInfo.name = "particleCorrectedVelocitiesBufferPong";
-	pong = new Buffer(	glCLSharedVelocitiesBufferInfo,	true, 0 );
-	mCorrectedVelocitiesPiPoBuffer = new PingPongBuffer("particleCorrectedVelocitiesPiPoBuffer",ping,pong);
-
-	//at least one time, a buffer infor object can be reused ;)
-	glCLSharedVelocitiesBufferInfo.name = "particlePredictedVelocitiesBufferPing";
-	ping = new Buffer(	glCLSharedVelocitiesBufferInfo,	true, 0 );
-	glCLSharedVelocitiesBufferInfo.name = "particlePredictedVelocitiesBufferPong";
-	pong = new Buffer(	glCLSharedVelocitiesBufferInfo,	true, 0 );
-	mPredictedVelocitiesPiPoBuffer = new PingPongBuffer("particlePredictedVelocitiesPiPoBuffer",ping,pong);
-
-
-
-	BufferInfo glCLSharedAccelerationsBufferInfo(
-		"particleAccelerationsBufferPing",
-		//all three contexts;
-		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
-		FORCE_SEMANTICS, //k, have to refactor ;(.. but F=m*a, particle mass is known ;)
-		TYPE_VEC4F,
-		numTotalParticles,
-		BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false),
-		VERTEX_ATTRIBUTE_BUFFER_TYPE,
-		NO_CONTEXT_TYPE
-	);
-	ping = new Buffer(	glCLSharedAccelerationsBufferInfo,	true, 0 );
-	glCLSharedAccelerationsBufferInfo.name = "particleAccelerationsBufferPong";
-	pong = new Buffer(	glCLSharedAccelerationsBufferInfo,	true, 0 );
-	mLastStepsAccelerationsPiPoBuffer = new PingPongBuffer("particleAccelerationsPiPoBuffer",ping,pong);
-
-	//-------------------------------------------------------------------------------------------------------
-	if(initToInvalidObjectID)
-	{
-		unsigned int* objectInfos = reinterpret_cast<unsigned int*>( mObjectInfoPiPoBuffer->getCPUBufferHandle() );
-
-		for(unsigned int i = 0; i< numTotalParticles; i++)
-		{
-			objectInfos[i] =0; //init
-
-			SET_OBJECT_ID(objectInfos[i], invalidObjectID);
-			SET_PARTICLE_ID(objectInfos[i], i);
-		}
-
-		//no GPU upload, this is done when all RB and fluids are initialized;
-	}
-
-}
-
-ParticleAttributeBuffers::~ParticleAttributeBuffers()
-{
-	//nothing to do, buffers are deleted by SimResourceMan.
-}
-
-//after all fluids and rigid bodies have been initialized, they have to be uploaded to the
-//cl device;
-void ParticleAttributeBuffers::flushBuffers()
-{
-	//what an amazing piece of code this routine is ;)
-
-	mParticleIndexTableBuffer->copyFromHostToGPU();
-
-	mObjectInfoPiPoBuffer->copyFromHostToGPU();
-	mZIndicesPiPoBuffer->copyFromHostToGPU();
-	mOldIndicesPiPoBuffer->copyFromHostToGPU();
-	mPositionsPiPoBuffer->copyFromHostToGPU();
-	mDensitiesPiPoBuffer->copyFromHostToGPU();
-	mCorrectedVelocitiesPiPoBuffer->copyFromHostToGPU();
-	mPredictedVelocitiesPiPoBuffer->copyFromHostToGPU();
-	mLastStepsAccelerationsPiPoBuffer->copyFromHostToGPU();
-
-}
-
-//usually, all particle attribute data remains on the GPU and don't need to be read back;
-//but for debugging purposes during development, we will need the read-back functionality;
-void ParticleAttributeBuffers::readBackBuffers()
-{
-	//what an amazing piece of code this routine is ;)
-
-	mParticleIndexTableBuffer->readBack();
-
-	mObjectInfoPiPoBuffer->readBack();
-	mZIndicesPiPoBuffer->readBack();
-	mOldIndicesPiPoBuffer->readBack();
-	mPositionsPiPoBuffer->readBack();
-	mDensitiesPiPoBuffer->readBack();
-	mCorrectedVelocitiesPiPoBuffer->readBack();
-	mPredictedVelocitiesPiPoBuffer->readBack();
-	mLastStepsAccelerationsPiPoBuffer->readBack();
-}
-
-
-
-
-//#######################################################################################################
 
 ParticleSceneRepresentation::ParticleSceneRepresentation(
 		unsigned int numTotalParticles,
@@ -260,7 +55,7 @@ ParticleSceneRepresentation::ParticleSceneRepresentation(
 	mRigidBodyBuffer(0),
 	mRigidBodyRelativePositionsBuffer(0),
 	mParticleAttributeBuffers(0),
-	mCLProgram_reorderAttributes(0)
+	mReorderParticleAttributesProgram(0)
 
 {
 
@@ -298,8 +93,64 @@ ParticleSceneRepresentation::ParticleSceneRepresentation(
 	);
 
 
-//	mCLProgram_reorderAttributes = new CLProgram(
+//	mCLProgram_reorderAttributes = new BasicCLProgram(Path(String("reorderAttributes.cl")));
+//	//TODO create kernel
+//	mCLProgram_reorderAttributes->build();
+//	mCLProgram_reorderAttributes->createKernel(
+//		"kernel_reorderPhysicalAttributes",
+//		new CLKernelWorkLoadParams(
+//			numTotalParticles,
+//			HelperFunctions::floorToNextPowerOfTwo(
+//				PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize
+//			)
+//		),
+//		new CLKernelArguments(
+//			{
+//				new CLBufferKernelArgument("cObjectGenericFeatures",mObjectGenericFeaturesBuffer),
 //
+//				//least recently written i.e. active buffer is automatically selected, hence just pass the ping pong buffer as-is;
+//				//we are not writing to this buffer in this kernel
+//				new CLBufferKernelArgument("gReorderedOldIndices",mParticleAttributeBuffers->mOldIndicesPiPoBuffer),
+//				new CLBufferKernelArgument("gParticleIndexTable",mParticleAttributeBuffers->mParticleIndexTableBuffer),
+//
+//				new CLBufferKernelArgument("gParticleObjectInfosOld",
+//						//remember: do the toggle right before a new writing update
+//						mParticleAttributeBuffers->mObjectInfoPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
+//				new CLBufferKernelArgument("gParticleObjectInfosReordered",
+//						mParticleAttributeBuffers->mObjectInfoPiPoBuffer->getActiveBuffer() ),
+//
+//				new CLBufferKernelArgument("gPositionsOld",
+//						//remember: do the toggle right before a new writing update
+//						mParticleAttributeBuffers->mPositionsPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
+//				new CLBufferKernelArgument("gPositionsReordered",
+//						mParticleAttributeBuffers->mPositionsPiPoBuffer->getActiveBuffer() ),
+//
+//				new CLBufferKernelArgument("gDensitiesOld",
+//					//remember: do the toggle right before a new writing update
+//					mParticleAttributeBuffers->mDensitiesPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
+//				new CLBufferKernelArgument("gDensitiesReordered",
+//					mParticleAttributeBuffers->mDensitiesPiPoBuffer->getActiveBuffer() ),
+//
+//				new CLBufferKernelArgument("gCorrectedVelocitiesOld",
+//					//remember: do the toggle right before a new writing update
+//					mParticleAttributeBuffers->mCorrectedVelocitiesPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
+//				new CLBufferKernelArgument("gCorrectedVelocitiesReordered",
+//					mParticleAttributeBuffers->mCorrectedVelocitiesPiPoBuffer->getActiveBuffer() ),
+//
+//
+//				new CLBufferKernelArgument("gPredictedVelocitiesOld",
+//					//remember: do the toggle right before a new writing update
+//					mParticleAttributeBuffers->mPredictedVelocitiesPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
+//				new CLBufferKernelArgument("gPredictedVelocitiesReordered",
+//					mParticleAttributeBuffers->mPredictedVelocitiesPiPoBuffer->getActiveBuffer() ),
+//
+//				new CLBufferKernelArgument("gAccelerationsOld",
+//					//remember: do the toggle right before a new writing update
+//					mParticleAttributeBuffers->mLastStepsAccelerationsPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
+//				new CLBufferKernelArgument("gAccelerationsReordered",
+//					mParticleAttributeBuffers->mLastStepsAccelerationsPiPoBuffer->getActiveBuffer() )
+//			}
+//		)
 //	);
 
 }
@@ -308,7 +159,7 @@ ParticleSceneRepresentation::~ParticleSceneRepresentation()
 {
 	delete mParticleAttributeBuffers;
 
-	//delete mCLProgram_reorderAttributes;
+
 }
 
 
@@ -423,6 +274,8 @@ void ParticleSceneRepresentation::associateParticleAttributeBuffersWithRendering
 	] = mParticleAttributeBuffers->mLastStepsAccelerationsPiPoBuffer;
 
 }
+
+
 
 
 

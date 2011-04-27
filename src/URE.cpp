@@ -27,6 +27,7 @@
 
 #include "Simulator/ParallelComputeManager.h"
 #include "Simulator/SimulationResourceManager.h"
+#include "MPP/OpenCLProgram/CLProgramManager.h"
 
 
 #include "Simulator/MechanicsSimulator/MechanicsSimulator.h"
@@ -97,6 +98,7 @@ URE::URE()
   mGUI(0),
   mParallelComputeManager(0),
   mSimulationResourceManager(0),
+  mCLProgramManager(0),
 
   mGeometryTransformer(0)
 {
@@ -146,6 +148,7 @@ bool URE::init(Path& pathToGlobalConfigFile)
 
 
 	mSimulationResourceManager =  new SimulationResourceManager();
+	mCLProgramManager = new CLProgramManager();
 
 	if(mConfig->root().childExists("generalSettings",0))
 	{
@@ -262,6 +265,7 @@ void URE::resetEngine()
 	//TODO delete classes
 	//delete mGeometryConverter;
 
+	delete mCLProgramManager;
 	delete mSimulationResourceManager;
 	delete mParallelComputeManager;
 

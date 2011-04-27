@@ -23,11 +23,21 @@ public:
 		return (countBits(num) <= 1);
 	}
 
+	//static unsigned int log2ui(unsigned int val);
+
 	static String toString(int number);
 
 	static int countBits(int num);
 
+
+
 	static unsigned int ceilToNextMultiple(unsigned int valToCeil, unsigned int multipleToBeCeiledTo);
+
+	//if valToCeil is power of two, return valToCeil, else return the next higher value being a power of two
+	static unsigned int ceilToNextPowerOfTwo(unsigned int valToCeil);
+	//if valToCeil is power of two, return valToCeil, else return the next lower value being a power of two
+	static unsigned int floorToNextPowerOfTwo(unsigned int valToCeil);
+
 };
 
 }

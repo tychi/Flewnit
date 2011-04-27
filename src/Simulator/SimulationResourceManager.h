@@ -80,7 +80,6 @@ private:
 
 
 	SceneGraph* mScene;
-	IntermediateResultBuffersManager* mIntermediateResultsBuffersManager;
 
 
 	std::map<String, InstanceManager*> mInstanceManagers;

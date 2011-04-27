@@ -154,6 +154,7 @@ class SceneRepresentation;
 	class SceneGraph;
 		class SceneNode;
 	class ParticleSceneRepresentation;
+	class 	ParticleAttributeBuffers;
 	class VoxelSceneRepresentation;
 	class PrimitiveSceneRepresentation;
 
@@ -260,10 +261,21 @@ class MPP;
 	class ShaderManager;
 	class 	Shader;
 
-	class CLProgram;
-	class 	BasicCLProgram;
-	class	RadixSortProgram;
-	class 	ParticleSimulationProgram;
+	class CLProgramManager;
+	class 	CLProgram;
+	class 	 	BasicCLProgram;
+	class	 		RadixSortProgram;
+	class 	  		ReorderParticleAttributesProgram;
+
+	class 			UniformGridRelatedProgram;
+	class 				UpdateUniformGridProgram;
+	class				SplitAndCompactUniformGridProgram;
+	class 	  			ParticleSimulationProgram;
+	class 					Initial_UpdateForce_Integrate_CalcZIndex_Program;
+	class					UpdateDensityProgram;
+	class					UpdateForce_Integrate_CalcZIndex_Program;
+	class 					UpdateRigidBodiesProgram;
+
 	class CLKernel;
 	class CLKernelWorkLoadParams;
 	class CLKernelArguments;

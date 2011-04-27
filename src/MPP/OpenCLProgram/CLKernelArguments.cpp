@@ -8,6 +8,8 @@
 #include "CLKernelArguments.h"
 
 #include "Buffer/BufferInterface.h"
+#include "Buffer/PingPongBuffer.h"
+
 #include "Simulator/ParallelComputeManager.h"
 #include "CLProgram.h"
 
@@ -50,20 +52,43 @@ void CLKernelArgumentBase::passArgToKernel(cl_uint argIndex, CLKernel* clKernel)
 	);
 }
 
-CLBufferKernelArgument::CLBufferKernelArgument(String argName, BufferInterface* buffi)
+CLBufferKernelArgument::CLBufferKernelArgument(
+		String argName,
+		BufferInterface* buffi,
+		bool ifPingPongBufferUseInactiveOne
+)
 	: CLKernelArgumentBase(
-		argName, sizeof(cl_mem),
-		&( buffi->getComputeBufferHandle()() )
+		argName,
+		sizeof(cl_mem),
+		( ! ifPingPongBufferUseInactiveOne )
+		  ? (void*) ( &( buffi->getComputeBufferHandle()() ) )
+		  : (void*) ( &( buffi->toPingPongBuffer().getInactiveBuffer()->getComputeBufferHandle()() ) )
 	  ),
-	  mBufferInterface(buffi)
+	  mBufferInterface(buffi),
+	  mIfPingPongBufferUseInactiveOne(ifPingPongBufferUseInactiveOne)
 	{}
 
-void CLBufferKernelArgument::set(BufferInterface* buffi )
+void CLBufferKernelArgument::set(BufferInterface* buffi, bool ifPingPongBufferUseInactiveOne )
 {
 	assert(buffi && "CLBufferKernelArgument::set; buffer != 0" );
+	assert(
+		"ifPingPongBufferUseInactiveOne may only be true if buffi is a ping pong buffer! "&&
+		( ! ( ifPingPongBufferUseInactiveOne &&  ( ! buffi->isPingPongBuffer() ) ) )
+	);
 
 	mBufferInterface = buffi;
-	mArgValuePtr = &( buffi->getComputeBufferHandle()() );
+	mArgValuePtr =
+		( ! ifPingPongBufferUseInactiveOne )
+			? (void*) ( &( buffi->getComputeBufferHandle()() ) )
+			: (void*) ( &( buffi->toPingPongBuffer().getInactiveBuffer()->getComputeBufferHandle()() ) );
+	mIfPingPongBufferUseInactiveOne =  ifPingPongBufferUseInactiveOne;
+}
+
+void CLBufferKernelArgument::passArgToKernel(cl_uint argIndex, CLKernel* clKernel)
+{
+	//setup robustly againgst ping pong buffer toggle
+	set(mBufferInterface, mIfPingPongBufferUseInactiveOne);
+	CLKernelArgumentBase::passArgToKernel(argIndex,clKernel);
 }
 
 
@@ -86,6 +111,29 @@ CLKernelArguments::~CLKernelArguments()
 		delete arg;
 	}
 }
+
+
+
+//at least verify the argument count ;( other info related to a kernel argument list
+//is not available yet :((
+void CLKernelArguments::validateAgainst(CLKernel* kernel)throw(SimulatorException)
+{
+	//TODO
+	assert(0 && "TODO implement");
+}
+
+void CLKernelArguments::passArgsToKernel(CLKernel* clKernel)
+{
+	for(unsigned int i = 0; i < mArgVec.size(); i++)
+	{
+		mArgVec[i]->passArgToKernel(i, clKernel);
+	}
+}
+
+
+
+
+
 
 //throw exception is arg with name doesn't exist, i < mArgVec.size,
 //if a bad cast occured;

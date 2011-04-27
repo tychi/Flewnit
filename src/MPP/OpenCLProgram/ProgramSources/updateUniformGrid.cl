@@ -7,7 +7,7 @@
 
  //=====================================================================================
   /*
-      Kernel to determine how many particles are in every uniform grid cell and where the first particle of a cell resides in memory              
+      Kernel to determine how many elements are in every uniform grid cell and where the first element of a cell resides in memory              
   */
   
   //default: 64;
@@ -21,20 +21,20 @@
   
   __kernel __attribute__((reqd_work_group_size(NUM_MAX_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
   void kernel_updateUniformGrid(
-    __global uint* gSortedZIndices, //numTotalParticles elements
+    __global uint* gSortedZIndices, //numTotalElements elements
     
 
-    __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements
+    __global uint* gUniGridCells_ElementStartIndex, //NUM_TOTAL_GRID_CELLS elements
     
-    //__global int* gUniGridCells_NumParticles //NUM_TOTAL_GRID_CELLS elements
+    //__global int* gUniGridCells_NumElements //NUM_TOTAL_GRID_CELLS elements
                                                //is initialized to zero for every entry, so that unwritten values are valid for
                                                //stream compaction scan in following kernel  
-   __global uint* gUniGridCells_ParticleEndIndexPlus1 //NUM_TOTAL_GRID_CELLS elements
-                                               //is actually the gUniGridCells_NumParticles buffer, but for performance reasons
+   __global uint* gUniGridCells_ElementEndIndexPlus1 //NUM_TOTAL_GRID_CELLS elements
+                                               //is actually the gUniGridCells_NumElements buffer, but for performance reasons
                                                //(don't wanna make thousands of global atom_adds and atom_subs),
-                                               //it will hold the particle end index+1 after the kernel has completed;
-                                               //the transformation to the number of residing particles 
-                                               //(numParticles = (endIndexPlus1 > 0) ? (endIndexPlus1 - startIndex) :0) will be performed during 
+                                               //it will hold the element end index+1 after the kernel has completed;
+                                               //the transformation to the number of residing elements 
+                                               //(numElements = (endIndexPlus1 > 0) ? (endIndexPlus1 - startIndex) :0) will be performed during 
                                                //tabulation for the stream compaction
                                                
   )
@@ -67,21 +67,21 @@
     //leftmost global element?
     if(gwiID == 0)
     {
-      //index of own particle is definitely the start index of the cell it lies in:
-      //obsolete because is zero anyway:
-      //gUniGridCells_ParticleStartIndex[ lSortedZIndices[ 0 ] ]= 0; 
+      //index of own element is definitely the start index of the cell it lies in:
+      //obsolete because is zero anyway: <-- o'rly? i suppose that only the endindex resp element count buffer is set to zero
+      gUniGridCells_ElementStartIndex[ lSortedZIndices[ 0 ] ]= 0; 
       return;     
     }
     //rightmost global element?
     if(gwiID == (get_global_size() -1) )
     {
-      //(index of own particle +1) is definitely the (end index +1) of the cell it lies in:
-      gUniGridCells_ParticleEndIndexPlus1[ lSortedZIndices[ LOCAL_OWN_INDEX ] ] = get_global_size();
+      //(index of own element +1) is definitely the (end index +1) of the cell it lies in:
+      gUniGridCells_ElementEndIndexPlus1[ lSortedZIndices[ LOCAL_OWN_INDEX ] ] = get_global_size();
       return;      
     }
     //} end check the special cases where no neighbours exist at all  
      
-    //left and right neighbours do exist in the following code, otherwise, the particle would have been masked by the above code
+    //left and right neighbours do exist in the following code, otherwise, the element would have been masked by the above code
     
     //grab left index from local memory unless it is the leftmost element in work group, then grab from global memory
     uint leftZIndex = ( (lwiID > 0) ?  (lSortedZIndices[ LOCAL_LEFT_INDEX ]) : (gSortedZIndices[ GLOBAL_LEFT_INDEX ]) );
@@ -93,9 +93,9 @@
     {
       //left index is different, i.e. here starts a new index; 
       //set the relevant start index of own grid cell :
-      gUniGridCells_ParticleStartIndex[ ownZIndex ]= GLOBAL_OWN_INDEX ;
+      gUniGridCells_ElementStartIndex[ ownZIndex ]= GLOBAL_OWN_INDEX ;
       //set the relevant (end index+1) of left neighbour grid cell :
-      gUniGridCells_ParticleEndIndexPlus1[ leftZIndex ]= GLOBAL_OWN_INDEX; 
+      gUniGridCells_ElementEndIndexPlus1[ leftZIndex ]= GLOBAL_OWN_INDEX; 
     }  
     //we dont have to check inequalitity of the own z-index to its right neigbour, because when the global border cases are caught,
     //there are as many middle-right differences as there are middle-left differences ;). Both start and end of the relevant grid cells
@@ -104,11 +104,11 @@
     /*
       Bullsh** from Goswami paper? Seems quite unnecessary to me, and this approach wasting operations and bandwidth and
       enforces many serializations due to the atomics:
-      "Whereas the first particle in a block can
+      "Whereas the first element in a block can
        be determined using the atomicMin operation in CUDA, the
-       number of particles is found by incrementing a particle count
-       with atomicInc. Thus each particle updates both the starting
-       index and particle count of its block in the list B [...]"
+       number of elements is found by incrementing a element count
+       with atomicInc. Thus each element updates both the starting
+       index and element count of its block in the list B [...]"
        
      My approach should be much faster, though in the subsequent "cell split and compatction" kernel,
      we have some overhead to compensate for this optimization 

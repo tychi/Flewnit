@@ -130,6 +130,7 @@ private:
     //cl::Context*			mOpenCLContext;
     ParallelComputeManager* 		mParallelComputeManager;
     SimulationResourceManager*		mSimulationResourceManager;
+    CLProgramManager*				mCLProgramManager;
 
 
     //typedef Map<String,SimulatorInterface*> SimulatorMap;

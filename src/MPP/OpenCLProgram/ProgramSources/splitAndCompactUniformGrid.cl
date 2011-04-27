@@ -20,30 +20,30 @@
     {% include "uniformGridCommon.cl" %}  
     
     
-    uint tabulate(uint globalIndex,  __global uint* gUniGridCells_ParticleStartIndex, __global uint* gUniGridCells_ParticleEndIndexPlus1)
+    uint tabulate(uint globalIndex,  __global uint* gUniGridCells_ElementStartIndex, __global uint* gUniGridCells_ElementEndIndexPlus1)
     {
-      uint endIndexPlus1 =  gUniGridCells_ParticleEndIndexPlus1[ globalIndex ];
+      uint endIndexPlus1 =  gUniGridCells_ElementEndIndexPlus1[ globalIndex ];
     
       //to be valid, the value must be at least 1, as its name indicates for non-negative numbers;
       //an invalid end indx indicates an empty cell; Reason: in updateUniformGrid.cl, the cell entries have not been written,
-      //because there was no particle responsible for this cell; as the buffer is clreard to zero every frame, zero indicates
+      //because there was no element responsible for this cell; as the buffer is clreard to zero every frame, zero indicates
       //the emptyness      
       if(endIndexPlus1 == 0) {return 0;}
       
-      uint numResidingParticles = endIndexPlus1 - gUniGridCells_ParticleStartIndex[ globalIndex ];
-      //do the fix for the optimization in updateUniformGrid.cl: assign the "true" number of particles: 
-      gUniGridCells_ParticleEndIndexPlus1[ globalIndex ] = numResidingParticles;
-      return GET_NUM_SIM_WORK_GROUPS_OF_CELL( numResidingParticles );
+      uint numResidingElements = endIndexPlus1 - gUniGridCells_ElementStartIndex[ globalIndex ];
+      //do the fix for the optimization in updateUniformGrid.cl: assign the "true" number of elements: 
+      gUniGridCells_ElementEndIndexPlus1[ globalIndex ] = numResidingElements;
+      return GET_NUM_SIM_WORK_GROUPS_OF_CELL( numResidingElements );
     }
   
   {% endblock specialDefinitions %} 
   
   
   {% block tabulationArgs%} 
-    __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements
-    __global uint* gUniGridCells_ParticleEndIndexPlus1, //NUM_TOTAL_GRID_CELLS elements
+    __global uint* gUniGridCells_ElementStartIndex, //NUM_TOTAL_GRID_CELLS elements
+    __global uint* gUniGridCells_ElementEndIndexPlus1, //NUM_TOTAL_GRID_CELLS elements
                                                //see updateUniformGrid.cl argument list for further information about this 
-                                               //"strange" encoding of the number of particles in a cell
+                                               //"strange" encoding of the number of elements in a cell
   {% endblock tabulationArgs %} 
   
   
@@ -51,12 +51,12 @@
     //tabulate global values and store them to local mem for scan
     lLocallyScannedTabulatedValues[ paddedLocalLowerIndex  ] = 
       tabulate( globalLowerIndex, 
-                gUniGridCells_ParticleStartIndex, 
-                gUniGridCells_ParticleEndIndexPlus1  );
+                gUniGridCells_ElementStartIndex, 
+                gUniGridCells_ElementEndIndexPlus1  );
     lLocallyScannedTabulatedValues[ paddedLocalHigherIndex ] =    
       tabulate( globalHigherIndex, 
-                gUniGridCells_ParticleStartIndex, 
-                gUniGridCells_ParticleEndIndexPlus1  );
+                gUniGridCells_ElementStartIndex, 
+                gUniGridCells_ElementEndIndexPlus1  );
   {% endblock tabulation %}
   
   
@@ -74,14 +74,14 @@
 
     __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
     void kernel_splitAndCompactUniformGrid(
-      __global uint* gUniGridCells_ParticleStartIndex, //NUM_TOTAL_GRID_CELLS elements; to be split and compacted,too
-      __global uint* gUniGridCells_NumParticles, //NUM_TOTAL_GRID_CELLS  elements, to be tabulated again for split; costs extra calculations,
+      __global uint* gUniGridCells_ElementStartIndex, //NUM_TOTAL_GRID_CELLS elements; to be split and compacted,too
+      __global uint* gUniGridCells_NumElements, //NUM_TOTAL_GRID_CELLS  elements, to be tabulated again for split; costs extra calculations,
                                                  //but saves memory and bandwidth;
       
-       //ping pong components of gUniGridCells_ParticleStartIndex and gUniGridCells_NumParticles;
+       //ping pong components of gUniGridCells_ElementStartIndex and gUniGridCells_NumElements;
        //In the physics simulation phase, only "total count of simulation work groups" elements will be used;                     
-      __global uint* gCompactedUniGridCells_ParticleStartIndex
-      __global uint* gCompactedUniGridCells_NumParticles, 
+      __global uint* gCompactedUniGridCells_ElementStartIndex
+      __global uint* gCompactedUniGridCells_NumElements, 
 
       __global uint* gLocallyScannedTabulatedValues, //gLocallyScannedSimWorkGroupCount, NUM_TOTAL_ELEMENTS_TO_SCAN  elements 
       __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_ELEMENTS__GLOBAL_SCAN elements
@@ -144,35 +144,35 @@
       #pragma unroll
       for(uint i=0 ; i < 2; i++ )
       {      
-        uint currentNumResidentParticles =  gUniGridCells_NumParticles[  globalIndex ];
+        uint currentNumResidentElements =  gUniGridCells_NumElements[  globalIndex ];
         
         //write out only non-empty grid cells!
-        if(currentNumResidentParticles > 0)
+        if(currentNumResidentElements > 0)
         {
-          uint currentParticleStartIndex = gUniGridCells_ParticleStartIndex[ globalIndex ];
-          uint numSimWorkGroupsOfThisCell = GET_NUM_SIM_WORK_GROUPS_OF_CELL( currentNumResidentParticles );
+          uint currentElementStartIndex = gUniGridCells_ElementStartIndex[ globalIndex ];
+          uint numSimWorkGroupsOfThisCell = GET_NUM_SIM_WORK_GROUPS_OF_CELL( currentNumResidentElements );
           uint compactedIndex = groupOffset + gLocallyScannedTabulatedValues[ globalIndex ];
            
           //split
           for(uint simGroupRunner=0; simGroupRunner < numSimWorkGroupsOfThisCell; simGroupRunner++ )
           {
             //compact
-            gCompactedUniGridCells_NumParticles[compactedIndex + simGroupRunner] = 
+            gCompactedUniGridCells_NumElements[compactedIndex + simGroupRunner] = 
               ( 
                 ( simGroupRunner < (numSimWorkGroupsOfThisCell - 1 ) )
-                //for all but the last group, there are 32 particles in each sim work group
+                //for all but the last group, there are 32 elements in each sim work group
                 ? (NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP)
-                //the last sim work group gets the rest of the particles, namely currentNumResidentParticles%32
-                : ( BASE_2_MODULO( currentNumResidentParticles, NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP) ) 
+                //the last sim work group gets the rest of the elements, namely currentNumResidentElements%32
+                : ( BASE_2_MODULO( currentNumResidentElements, NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP) ) 
               ); 
               
-            gCompactedUniGridCells_ParticleStartIndex[ compactedIndex + simGroupRunner ] = 
-              currentParticleStartIndex
+            gCompactedUniGridCells_ElementStartIndex[ compactedIndex + simGroupRunner ] = 
+              currentElementStartIndex
               //increment start index by intervals of 32
               + (simGroupRunner << LOG2_NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP);    
           }  
            
-        }//endif(currentNumResidentParticles >0)
+        }//endif(currentNumResidentElements >0)
         
         globalIndex += (NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN/2);
       }
