@@ -28,9 +28,13 @@ public:
 
 protected:
 
+	//the most simple templat context: an empty one ;)
+	virtual void setupTemplateContext(TemplateContextMap& contextMap){}
+
 	//issue the createKernel() call for reorderAttributes.cl with initial argument list
 	virtual void createKernels();
 
+	ParticleSceneRepresentation* mParticleSceneRepresentation;
 
 };
 

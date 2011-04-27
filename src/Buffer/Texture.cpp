@@ -95,7 +95,7 @@ void Texture::writeCL(const void* data)throw(BufferException)
 			//although it is const in the wrapped c-function 0_o
 			const_cast<void*>( data ),
 			0,
-			& PARA_COMP_MANAGER->getLastEvent()
+			PARA_COMP_MANAGER->getLastEventPtr()
 	);
 }
 
@@ -133,7 +133,7 @@ void Texture::readCL(void* data)throw(BufferException)
 			0,
 			data,
 			0,
-			& PARA_COMP_MANAGER->getLastEvent()
+			PARA_COMP_MANAGER->getLastEventPtr()
 	);
 }
 
@@ -169,7 +169,7 @@ void Texture::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(Buff
 			origin,
 			region,
 			0,
-			& PARA_COMP_MANAGER->getLastEvent()
+			PARA_COMP_MANAGER->getLastEventPtr()
 	);
 }
 

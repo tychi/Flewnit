@@ -104,7 +104,8 @@ void Buffer::generateCL()throw(BufferException)
 			mBufferInfo->bufferSizeInByte,
 			NULL,
 			//TODO check if adress of a reference is the same as the adress of a variable
-			& PARA_COMP_MANAGER->getLastCLError()
+			//& PARA_COMP_MANAGER->getLastCLErrorReference()
+			PARA_COMP_MANAGER->getLastCLErrorPtr()
 	);
 
 }
@@ -116,7 +117,8 @@ void Buffer::generateCLGL()throw(BufferException)
 			CL_MEM_READ_WRITE,
 			mGraphicsBufferHandle,
 			//TODO check if adress of a reference is the same as the adress of a variable
-			& PARA_COMP_MANAGER->getLastCLError()
+			//& PARA_COMP_MANAGER->getLastCLErrorReference()
+			PARA_COMP_MANAGER->getLastCLErrorPtr()
 	);
 	PARA_COMP_MANAGER->registerSharedBuffer(mComputeBufferHandle);
 }
@@ -154,7 +156,8 @@ void Buffer::writeCL(const void* data)throw(BufferException)
 			mBufferInfo->bufferSizeInByte,
 			data,
 			0,
-			& PARA_COMP_MANAGER->getLastEvent());
+			PARA_COMP_MANAGER->getLastEventPtr()
+	);
 }
 
 void Buffer::readGL(void* data)throw(BufferException)
@@ -170,7 +173,8 @@ void Buffer::readCL(void* data)throw(BufferException)
 			mBufferInfo->bufferSizeInByte,
 			data,
 			0,
-			& PARA_COMP_MANAGER->getLastEvent());
+			PARA_COMP_MANAGER->getLastEventPtr()
+	);
 }
 
 void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
@@ -198,8 +202,8 @@ void Buffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(Buffe
 			0,
 			mBufferInfo->bufferSizeInByte,
 			0,
-			& PARA_COMP_MANAGER->getLastEvent()
-			);
+			PARA_COMP_MANAGER->getLastEventPtr()
+	);
 }
 
 

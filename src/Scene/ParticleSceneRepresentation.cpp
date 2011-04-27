@@ -22,6 +22,7 @@
 #include "MPP/OpenCLProgram/BasicCLProgram.h"
 #include "Util/HelperFunctions.h"
 #include "MPP/OpenCLProgram/CLKernelArguments.h"
+#include "MPP/OpenCLProgram/ReorderParticleAttributesProgram.h"
 
 
 namespace Flewnit
@@ -92,66 +93,8 @@ ParticleSceneRepresentation::ParticleSceneRepresentation(
 		true
 	);
 
+	//mReorderParticleAttributesProgram = new ReorderParticleAttributesProgram(this);
 
-//	mCLProgram_reorderAttributes = new BasicCLProgram(Path(String("reorderAttributes.cl")));
-//	//TODO create kernel
-//	mCLProgram_reorderAttributes->build();
-//	mCLProgram_reorderAttributes->createKernel(
-//		"kernel_reorderPhysicalAttributes",
-//		new CLKernelWorkLoadParams(
-//			numTotalParticles,
-//			HelperFunctions::floorToNextPowerOfTwo(
-//				PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize
-//			)
-//		),
-//		new CLKernelArguments(
-//			{
-//				new CLBufferKernelArgument("cObjectGenericFeatures",mObjectGenericFeaturesBuffer),
-//
-//				//least recently written i.e. active buffer is automatically selected, hence just pass the ping pong buffer as-is;
-//				//we are not writing to this buffer in this kernel
-//				new CLBufferKernelArgument("gReorderedOldIndices",mParticleAttributeBuffers->mOldIndicesPiPoBuffer),
-//				new CLBufferKernelArgument("gParticleIndexTable",mParticleAttributeBuffers->mParticleIndexTableBuffer),
-//
-//				new CLBufferKernelArgument("gParticleObjectInfosOld",
-//						//remember: do the toggle right before a new writing update
-//						mParticleAttributeBuffers->mObjectInfoPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
-//				new CLBufferKernelArgument("gParticleObjectInfosReordered",
-//						mParticleAttributeBuffers->mObjectInfoPiPoBuffer->getActiveBuffer() ),
-//
-//				new CLBufferKernelArgument("gPositionsOld",
-//						//remember: do the toggle right before a new writing update
-//						mParticleAttributeBuffers->mPositionsPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
-//				new CLBufferKernelArgument("gPositionsReordered",
-//						mParticleAttributeBuffers->mPositionsPiPoBuffer->getActiveBuffer() ),
-//
-//				new CLBufferKernelArgument("gDensitiesOld",
-//					//remember: do the toggle right before a new writing update
-//					mParticleAttributeBuffers->mDensitiesPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
-//				new CLBufferKernelArgument("gDensitiesReordered",
-//					mParticleAttributeBuffers->mDensitiesPiPoBuffer->getActiveBuffer() ),
-//
-//				new CLBufferKernelArgument("gCorrectedVelocitiesOld",
-//					//remember: do the toggle right before a new writing update
-//					mParticleAttributeBuffers->mCorrectedVelocitiesPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
-//				new CLBufferKernelArgument("gCorrectedVelocitiesReordered",
-//					mParticleAttributeBuffers->mCorrectedVelocitiesPiPoBuffer->getActiveBuffer() ),
-//
-//
-//				new CLBufferKernelArgument("gPredictedVelocitiesOld",
-//					//remember: do the toggle right before a new writing update
-//					mParticleAttributeBuffers->mPredictedVelocitiesPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
-//				new CLBufferKernelArgument("gPredictedVelocitiesReordered",
-//					mParticleAttributeBuffers->mPredictedVelocitiesPiPoBuffer->getActiveBuffer() ),
-//
-//				new CLBufferKernelArgument("gAccelerationsOld",
-//					//remember: do the toggle right before a new writing update
-//					mParticleAttributeBuffers->mLastStepsAccelerationsPiPoBuffer->toggleBuffers()->getInactiveBuffer()),
-//				new CLBufferKernelArgument("gAccelerationsReordered",
-//					mParticleAttributeBuffers->mLastStepsAccelerationsPiPoBuffer->getActiveBuffer() )
-//			}
-//		)
-//	);
 
 }
 

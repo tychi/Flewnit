@@ -175,7 +175,8 @@ public:
 	cl::Context& getCLContext();
 	cl::CommandQueue& getCommandQueue();
 	cl::Device& getUsedDevice();
-	cl::Event& getLastEvent();
+	//cl::Event& getLastEvent();
+	cl::Event* getLastEventPtr();
 
 	//to be called by buffer implementations at the end of memory allocation;
 	void registerSharedBuffer(cl::Memory newSharedBuffer);
@@ -195,8 +196,12 @@ public:
 	void setBlockAfterEnqueue(cl_bool val){mBlockAfterEnqueue = val;}
 	cl_bool getBlockAfterEnqueue()const{return mBlockAfterEnqueue;}
 
-    inline cl_int& getLastCLError(){return mLastCLError;}
-    inline GLenum getLastGLError(){return mLastGLError;}
+	//accessor for propagating the last error to the framework for further processing (error checking ;()
+    //inline cl_int& getLastCLErrorReference(){return mLastCLError;}
+    inline cl_int* getLastCLErrorPtr(){return &mLastCLError;}
+
+//    inline cl_int& getLastCLError(){return mLastCLError;}
+//    inline GLenum getLastGLError(){return mLastGLError;}
 
 };
 

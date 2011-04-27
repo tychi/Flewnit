@@ -417,9 +417,15 @@ cl::Device& ParallelComputeManager::getUsedDevice()
 {
 	return mUsedDevice;
 }
-cl::Event& ParallelComputeManager::getLastEvent()
+
+//cl::Event& ParallelComputeManager::getLastEvent()
+//{
+//	return mLastEvent;
+//}
+
+cl::Event* ParallelComputeManager::getLastEventPtr()
 {
-	return mLastEvent;
+	return &mLastEvent;
 }
 
 

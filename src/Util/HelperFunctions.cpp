@@ -74,12 +74,12 @@ unsigned int HelperFunctions::ceilToNextPowerOfTwo(unsigned int valToCeil)
 	return result;
 }
 
-unsigned int HelperFunctions::floorToNextPowerOfTwo(unsigned int valToCeil)
+unsigned int HelperFunctions::floorToNextPowerOfTwo(unsigned int valToFloor)
 {
 
 	unsigned int result = (1<<31) ;
 
-	while(result > valToCeil)
+	while(result > valToFloor)
 	{
 		result >>= 1;
 	}

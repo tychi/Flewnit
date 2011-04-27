@@ -36,7 +36,7 @@ public:
 	//if valToCeil is power of two, return valToCeil, else return the next higher value being a power of two
 	static unsigned int ceilToNextPowerOfTwo(unsigned int valToCeil);
 	//if valToCeil is power of two, return valToCeil, else return the next lower value being a power of two
-	static unsigned int floorToNextPowerOfTwo(unsigned int valToCeil);
+	static unsigned int floorToNextPowerOfTwo(unsigned int valToFloor);
 
 };
 

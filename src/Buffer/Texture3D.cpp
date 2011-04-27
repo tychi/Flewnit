@@ -121,7 +121,9 @@ void Texture3D::generateCLGL()throw(BufferException)
 			mTextureInfoCastPtr->textureTarget,
 			0,
 			mGraphicsBufferHandle,
-			& PARA_COMP_MANAGER->getLastCLError()
+			//TODO check if adress of a reference is the same as the adress of a variable
+			//& PARA_COMP_MANAGER->getLastCLErrorReference()
+			PARA_COMP_MANAGER->getLastCLErrorPtr()
 	);
 }
 

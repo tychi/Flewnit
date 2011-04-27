@@ -216,6 +216,9 @@ bool URE::init(Path& pathToGlobalConfigFile)
 //	}
 
 
+	mCLProgramManager->getInstance().buildProgramsAndCreateKernels();
+
+
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	Profiler::getInstance().updateMemoryTrackingInfo();
 #endif

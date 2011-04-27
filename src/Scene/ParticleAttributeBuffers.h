@@ -31,6 +31,7 @@ public:
 	virtual ~ParticleAttributeBuffers();
 private:
 	friend class ParticleSceneRepresentation;
+	friend class ReorderParticleAttributesProgram; //make friend for accessing for kernel arg list generation
 
 	// convenience function to toggle all ping pong particle attribute/index buffers at once
 	void toggleBuffers();

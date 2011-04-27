@@ -53,16 +53,16 @@ namespace Flewnit
 		//}
 
 
+		//called by virtual void CLProgram::createKernels();
+		//those routines build the default arguments list;
+		CLKernel(CLProgram* owningProgram, String kernelName,
+				CLKernelWorkLoadParams* defaultKernelWorkLoadParams,
+				CLKernelArguments* kernelArguments);
 
 	protected:
 		friend class CLProgram;
 		friend class CLKernelArgumentBase;
 
-		//called by virtual void CLProgram::createKernels();
-		//those routines build the default arguments list;
-		CLKernel(CLProgram* owningProgram, String kernelName,
-				CLKernelWorkLoadParams* defaultKernelWorkLoadParams,
-				CLKernelArguments* clKernelArguments);
 
 		//called by CLProgram::virtual void createKernels() factory functions;
 		//virtual void createKernelArguments()=0;
@@ -71,8 +71,8 @@ namespace Flewnit
 
 		String mKernelName;
 
-		CLKernelArguments* mCLKernelArguments;
 		CLKernelWorkLoadParams* mDefaultKernelWorkLoadParams;
+		CLKernelArguments* mCLKernelArguments;
 
 		cl::Kernel mKernel;
 	};
@@ -106,6 +106,7 @@ namespace Flewnit
 		virtual void createKernels()=0;
 
 	protected:
+		friend class CLKernel;
 
 		void validate()throw(SimulatorException);
 

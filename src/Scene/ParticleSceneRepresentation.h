@@ -57,6 +57,8 @@ public:
 	//}
 
 	//{getters
+	inline unsigned int getNumTotalParticles()const{return mNumTotalParticles;}
+
 	inline unsigned int getNumMaxFluids()const{return mNumMaxFluids; }
 	inline unsigned int getNumCurrentFluids()const{return mNumCurrentFluids; }
 	inline unsigned int getNumMaxRigidBodies()const{return mNumMaxRigidBodies; }
@@ -155,6 +157,7 @@ private:
 	ParticleAttributeBuffers* mParticleAttributeBuffers;
 
 	//{
+	friend class ReorderParticleAttributesProgram; //make friend for easier kernal argument list generation
 	ReorderParticleAttributesProgram* mReorderParticleAttributesProgram;
 	//}
 

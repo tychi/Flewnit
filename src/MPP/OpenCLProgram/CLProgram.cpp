@@ -11,13 +11,64 @@
 
 #include "MPP/OpenCLProgram/CLProgramManager.h"
 
+#include "Simulator/ParallelComputeManager.h"
+
 
 #include <boost/foreach.hpp>
 
 namespace Flewnit
 {
 
+//called by virtual void CLProgram::createKernels();
+//those routines build the default arguments list;
+CLKernel::CLKernel(CLProgram* owningProgram, String kernelName,
+		CLKernelWorkLoadParams* defaultKernelWorkLoadParams,
+		CLKernelArguments* kernelArguments)
+:
+	mKernelName(kernelName),
+	mDefaultKernelWorkLoadParams(defaultKernelWorkLoadParams),
+	mCLKernelArguments(kernelArguments)
 
+{
+//TODO
+
+//	GUARD(
+//		mKernel = clCreateKernel(
+//			owningProgram->mCLProgram(),
+//			kernelName.c_str()
+//
+//		)
+//	);
+}
+
+
+CLKernel::~CLKernel()
+{
+
+}
+
+void CLKernel::validate()throw(BufferException)
+{
+	//TODO
+	assert(0&&"TODO implement");
+}
+
+cl::Event CLKernel::run(const EventVector& EventsToWaitFor) throw(SimulatorException)
+{
+	//TODO
+	assert(0&&"TODO implement");
+}
+
+//run() routine for kernels with different work loads
+//Calls customKernelWorkLoadParams.passArgsToKernel();
+cl::Event CLKernel::run(
+	const EventVector& EventsToWaitFor,
+	const CLKernelWorkLoadParams& customKernelWorkLoadParams
+) throw(SimulatorException)
+{
+	//TODO
+	assert(0&&"TODO implement");
+}
 
 
 
