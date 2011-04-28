@@ -121,10 +121,10 @@ void ParticleSceneRepresentation::reorderAttributes()
 		//wait for the event that the last radix sort reorder phase has finished; only after finishing,
 		//mParticleAttributeBuffers->mOldIndicesPiPoBuffer has valid values usable for reordering
 		EventVector{
-//			CLProgramManager::getInstance().
-//				getProgram("radixSort.cl")->
-//				getKernel("kernel_radixSort_reorder_Phase")->
-//				getEventOfLastKernelExecution()
+			CLProgramManager::getInstance().
+				getProgram("radixSort.cl")->
+				getKernel("kernel_radixSort_reorder_Phase")->
+				getEventOfLastKernelExecution()
 		}
 	);
 
@@ -133,12 +133,12 @@ void ParticleSceneRepresentation::reorderAttributes()
 
 }
 
-//upload mRigidBodyBuffer and mObjectGenericFeaturesBuffer to GPU bevor Simulation tick,
+//upload mRigidBodyBuffer and mObjectGenericFeaturesBuffer to GPU before Simulation tick,
 //as features may have been changed by the user;
 void ParticleSceneRepresentation::flushObjectBuffers()
 {
-	//TODO
-
+	mObjectGenericFeaturesBuffer->copyFromHostToGPU();
+	mRigidBodyBuffer->copyFromHostToGPU();
 }
 
 //to be called after a simulation step:
@@ -185,6 +185,19 @@ ParticleRigidBody* ParticleSceneRepresentation::createParticleRigidBody(
 
 	return 0;
 }
+
+
+//internal helper routine for creating the geometry objects for fluid objects;
+VertexBasedGeometry* ParticleSceneRepresentation::createGeometryFromAttributeBuffers(
+		unsigned int particleStartIndex, unsigned int particleCount)
+{
+	//TODO
+	assert(0&&"TODO implement");
+
+	return 0;
+}
+
+
 
 
 //bind the Buffers of ParticleMechanicsStage::mParticleAttributeBuffers to SimulationPipelineStage::mRenderingResults;
@@ -237,18 +250,6 @@ void ParticleSceneRepresentation::associateParticleAttributeBuffersWithRendering
 }
 
 
-
-
-
-//internal helper routine for creating the geometry objects for fluid objects;
-VertexBasedGeometry* ParticleSceneRepresentation::createGeometryFromAttributeBuffers(
-		unsigned int particleStartIndex, unsigned int particleCount)
-{
-	//TODO
-	assert(0&&"TODO implement");
-
-	return 0;
-}
 
 
 }

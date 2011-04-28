@@ -11,7 +11,10 @@
 #include "AccelerationStructure.h"
 #include "WorldObject/WorldObject.h"
 
-#include "SceneRepresentation.h"
+#include "Simulator/SimulationObject.h"
+
+
+//#include "SceneRepresentation.h"
 
 
 
@@ -20,18 +23,24 @@ namespace Flewnit
 {
 
 class UniformGridBufferSet
-	 : public BasicObject
+	 : public SimulationObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:
 
-	UniformGridBufferSet(unsigned int numCellsPerDimension);
+	UniformGridBufferSet(String name, unsigned int numCellsPerDimension);
 	virtual ~UniformGridBufferSet();
 
 	//Before calling UniformGrid::updateCells(), the element counts mus be zero everywhere;
 	//this is why we have to clear the buffer before;
 	//The returned event is needed for the kernel_updateUniformGrid to wait for the transfer to finish;
+	//after execution of kernel "kernel_updateForce_integrate_calcZIndex", the uniform grid buffers
+	//aren't needed before the next "kernel_updateUniformGrid" invocation;
+	//between the two calls, radix sort happens; we can hide the buffer write latency by
+	//enqueue the write before invoking radix sort kernels;
+	//The "kernel_updateUniformGrid" waiting for the mClearElementCountEvent makes security "perfect" ;).
 	cl::Event clearElementCounts();
+	inline cl::Event getClearElementCountEvent()const{return mClearElementCountEvent;}
 
 	inline Buffer* getStartIndices()const{return  mStartIndices;}
 	inline Buffer* getElementCounts()const{return mElementCounts;}
@@ -41,6 +50,8 @@ private:
 	//Buffers with numCellsPerDimension^3 elements of type uint
 	Buffer* mStartIndices;
 	Buffer* mElementCounts;
+
+	cl::Event mClearElementCountEvent;
 
 };
 
@@ -53,6 +64,8 @@ class UniformGrid
 public:
 
 	UniformGrid(
+		String name, //provide a name, as there might be several uniform grids in the whole simulation pipeline,
+					 //and we need unique object names;
 		unsigned int numCellsPerDimension,
 
 		Vector4D minCornerPosition,
@@ -91,6 +104,11 @@ private:
 
 	void setupZIndexLookUpTable(); //called by constructor
 	Buffer* mZIndexLookupTable;
+
+	//create and add so visual sim domain a subobject consisting of
+	//a VertexBasedGeometry and a DebugDrawVisualMaterial; The geometry hold vertices for direct
+	//line drawing without index buffer;
+	void createAndAddDebugDrawSubObject();
 
 
 	UniformGridBufferSet* mUniformGridBufferSet;

@@ -12,6 +12,7 @@
 #include "Scene/SceneGraph.h"
 #include "Scene/ParticleSceneRepresentation.h"
 #include "Simulator/ParallelComputeManager.h"
+#include "Scene/UniformGrid.h"
 
 
 namespace Flewnit
@@ -45,9 +46,9 @@ ParticleMechanicsStage::ParticleMechanicsStage(ConfigStructNode* simConfigNode)
 ParticleMechanicsStage::~ParticleMechanicsStage()
 {
 	delete  mParticleSceneRepresentation;
+	delete  mParticleUniformGrid;
+	//delete  mStaticTriangleUniformGrid; //for later ;)
 //TODO uncomment when implemented and initialized
-//	delete  mParticleUniformGrid;
-//	//delete  mStaticTriangleUniformGrid; //for later ;)
 //	delete mSplitAndCompactedUniformGridCells;
 //
 //	delete mRadixSorter;
@@ -59,44 +60,46 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 {
 	ConfigStructNode& generalSettingsNode = mSimConfigNode->get("generalSettings",0);
 
-	  mUseFrameRateIndependentSimulationTimestep =
+	mUseFrameRateIndependentSimulationTimestep =
 		ConfigCaster::cast<bool>(
 					generalSettingsNode.get("useFrameRateIndependentSimulationTimestep",0)
 		);
 
-	  mMaxTimestepPerSimulationStep =
+	mMaxTimestepPerSimulationStep =
 		ConfigCaster::cast<float>(
 			generalSettingsNode.get("maxTimestepPerSimulationStep",0)
 		);
 
-	  mParticleSceneParentSceneNode =
+	mParticleSceneParentSceneNode =
 		SimulationResourceManager::getInstance().getSceneGraph()->root().addChild(
 			new SceneNode("particleSceneParentSceneNode", PURE_NODE)
 		);
 
 
-	  mParticleSceneRepresentation = new ParticleSceneRepresentation(
-		ConfigCaster::cast<int>(
-			generalSettingsNode.get("numMaxParticles",0)
-		),
-		ConfigCaster::cast<int>(
-			generalSettingsNode.get("numMaxFluids",0)
-		),
-		ConfigCaster::cast<int>(
-			generalSettingsNode.get("numMaxRigidBodies",0)
-		),
-		ConfigCaster::cast<int>(
-			generalSettingsNode.get("numMaxParticlesPerRigidBody",0)
-		),
-		ConfigCaster::cast<float>(
-			generalSettingsNode.get("voxelSideLengthRepresentedByRigidBodyParticle",0)
-		)
-	  );
+	mParticleSceneRepresentation = new ParticleSceneRepresentation(
+		ConfigCaster::cast<int>( generalSettingsNode.get("numMaxParticles",0) ),
+		ConfigCaster::cast<int>( generalSettingsNode.get("numMaxFluids",0) ),
+		ConfigCaster::cast<int>( generalSettingsNode.get("numMaxRigidBodies",0) ),
+		ConfigCaster::cast<int>( generalSettingsNode.get("numMaxParticlesPerRigidBody",0) ),
+		ConfigCaster::cast<float>( generalSettingsNode.get("voxelSideLengthRepresentedByRigidBodyParticle",0) )
+	);
 
-	  mParticleSceneRepresentation->associateParticleAttributeBuffersWithRenderingResults(mRenderingResults);
+	mParticleSceneRepresentation->associateParticleAttributeBuffersWithRenderingResults(mRenderingResults);
 
+	//-------------------------------------
 
-//	  mParticleUniformGrid(0),
+	ConfigStructNode& uniGridSettingsNode = mSimConfigNode->get("UniformGrid",0);
+
+	mParticleUniformGrid = new UniformGrid(
+		"particleUniformGrid",
+		ConfigCaster::cast<int>( uniGridSettingsNode.get("numCellsPerDimension",0) ),
+		ConfigCaster::cast<Vector4D>( uniGridSettingsNode.get("minCornerPosition",0) ),
+		ConfigCaster::cast<Vector4D>( uniGridSettingsNode.get("extendsOfOneCell",0) ),
+		ConfigCaster::cast<int>( uniGridSettingsNode.get("numMaxElementsPerSimulationWorkGroup",0) )
+	);
+	//add to scene graph to be debug drawable
+	mParticleSceneParentSceneNode->addChild(mParticleUniformGrid);
+
 //	  //mStaticTriangleUniformGrid(0), //for later ;)
 //	  mSplitAndCompactedUniformGridCells(0),
 //	  mNumCurrentSplitAndCompactedUniformGridCells(0),
