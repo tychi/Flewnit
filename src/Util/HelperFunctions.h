@@ -23,7 +23,7 @@ public:
 		return (countBits(num) <= 1);
 	}
 
-	//static unsigned int log2ui(unsigned int val);
+	static unsigned int log2ui(unsigned int val);
 
 	static String toString(int number);
 

@@ -46,7 +46,7 @@ ParticleMechanicsStage::ParticleMechanicsStage(ConfigStructNode* simConfigNode)
 ParticleMechanicsStage::~ParticleMechanicsStage()
 {
 	delete  mParticleSceneRepresentation;
-	delete  mParticleUniformGrid;
+	// DON'T delete  mParticleUniformGrid; It is a worldobjects, hence managed by the scenegraph!;
 	//delete  mStaticTriangleUniformGrid; //for later ;)
 //TODO uncomment when implemented and initialized
 //	delete mSplitAndCompactedUniformGridCells;

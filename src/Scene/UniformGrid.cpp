@@ -13,6 +13,7 @@
 #include "Buffer/Buffer.h"
 #include "MPP/OpenCLProgram/CLProgram.h"
 #include "MPP/OpenCLProgram/CLProgramManager.h"
+#include "Util/HelperFunctions.h"
 
 
 
@@ -154,20 +155,21 @@ UniformGrid::UniformGrid(
   mSplitAndCompactUniformGridProgram(0) //init to zero to be sure that all members are initialized first
 
 {
+	setupZIndexLookUpTable();
+
 //TODO
+//	createAndAddDebugDrawGeometry();
 
 //	mUpdateUniformGridProgram = new UpdateUniformGridProgram(this);
 //	mSplitAndCompactUniformGridProgram = new SplitAndCompactUniformGridProgram(this);
 //
-//	setupZIndexLookUpTable();
 //
-//	createAndAddDebugDrawGeometry();
 }
 
 UniformGrid::~UniformGrid()
 {
-	//TODO
-	assert(0&&"TODO implement");
+	delete mUniformGridBufferSet;
+	//nothing else to delete;
 
 }
 
@@ -190,8 +192,53 @@ unsigned int UniformGrid::splitAndCompactCells(UniformGridBufferSet* compactionR
 
 void UniformGrid::setupZIndexLookUpTable() //called by constructor
 {
-	//TODO
-	assert(0&&"TODO implement");
+	assert( HelperFunctions::isPowerOfTwo( mNumCellsPerDimension ));
+	unsigned int log2NumCellsPerDimension = HelperFunctions::log2ui(mNumCellsPerDimension);
+
+	unsigned int* uintPtr = reinterpret_cast<unsigned int*>(mZIndexLookupTable->getCPUBufferHandle());
+
+	for(unsigned int axis = 0; axis < 3; axis++ )
+	{
+		for(unsigned int currentIndexOnAxis = 0; currentIndexOnAxis < mNumCellsPerDimension; currentIndexOnAxis++ )
+		{
+			unsigned int posInArray = axis * mNumCellsPerDimension + currentIndexOnAxis;
+
+			//init to zero
+			uintPtr[ posInArray ] = 0;
+
+			for(unsigned int currentBitPos = 0; currentBitPos < log2NumCellsPerDimension; currentBitPos++ )
+			{
+				uintPtr[ posInArray ] |=
+					//select the bit in currentIndexOnAxis at bit position "currentBitPos":
+					//shift it to the right currentBitPos bits, so that it is at the least significant bit;
+					//to extract it from the rest of the bist being irrelevant, AND it with 1;
+					//result: if 'currentIndexOnAxis[currentBitPos]'==0: 32bit uint value with all bits zero;
+					//		  if 'currentIndexOnAxis[currentBitPos]'==1: 32bit uint value with LSB == 1
+					//													 and rest of the bits zero;
+					( (currentIndexOnAxis >> currentBitPos) & 1 )
+					//'scatter' the bit for interleaved storage:
+					//left shift by three times the actual bit pos yields in the end
+					//the same bit pattern as currentIndexOnAxis, but with zwo zero bits between each old bit;
+					<<
+					(
+						(3 * currentBitPos)
+						+
+						// Shifting this "scattered bit" in addition by 'axis' bits, the scttered bit pattern gets
+						//an offset so that
+						// 	   uintPtr[0* mNumCellsPerDimension + cell3Dindex.x]
+						//	|  uintPtr[1* mNumCellsPerDimension + cell3Dindex.y]
+						//	|  uintPtr[2* mNumCellsPerDimension + cell3Dindex.z]
+						//yields the final z-index ;
+						//see http://en.wikipedia.org/wiki/Z-order_curve for further info about Z-order curves
+						axis
+					)
+					;
+			}
+		}
+	}
+
+	//write to memory
+	mZIndexLookupTable->copyFromHostToGPU();
 
 
 }

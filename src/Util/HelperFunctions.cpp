@@ -46,6 +46,23 @@ int HelperFunctions::countBits(int num)
 
 }
 
+
+unsigned int HelperFunctions::log2ui(unsigned int val)
+{
+	assert("HelperFunctions::log2ui(uint) is atm only defined for values already being a power of two;( "
+			&& HelperFunctions::isPowerOfTwo(val) && ( val > 0 ) );
+
+	unsigned int bitPosOfBase2Val = 0;
+
+	while( ( (unsigned int)(1) << bitPosOfBase2Val ) < val)
+	{
+		bitPosOfBase2Val++;
+	}
+
+	return bitPosOfBase2Val;
+}
+
+
 unsigned int HelperFunctions::ceilToNextMultiple(unsigned int valToCeil, unsigned int multipleToBeCeiledTo)
 {
 	unsigned int rest = valToCeil % multipleToBeCeiledTo;
