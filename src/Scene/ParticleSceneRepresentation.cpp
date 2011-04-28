@@ -23,6 +23,7 @@
 #include "Util/HelperFunctions.h"
 #include "MPP/OpenCLProgram/CLKernelArguments.h"
 #include "MPP/OpenCLProgram/ReorderParticleAttributesProgram.h"
+#include "MPP/OpenCLProgram/CLProgramManager.h"
 
 
 namespace Flewnit
@@ -101,8 +102,7 @@ ParticleSceneRepresentation::ParticleSceneRepresentation(
 ParticleSceneRepresentation::~ParticleSceneRepresentation()
 {
 	delete mParticleAttributeBuffers;
-
-
+	//nothing els to delete, cl programs and buffers are globally managed
 }
 
 
@@ -110,8 +110,26 @@ ParticleSceneRepresentation::~ParticleSceneRepresentation()
 //				mParticleAttributeBuffers->mOldIndicesPiPoBuffer has been reordered accordingly
 void ParticleSceneRepresentation::reorderAttributes()
 {
-	//TODO
-	assert(0&&"TODO implement");
+	//my CLKernelArguments implementation ensures the the ping pong buffers are correctly bound,
+	//independent how often they were toggled;
+	//As long as one sticks to the convention
+	//to toggle after buffer writing, so that the least recently written one is always the active one
+	//to be read, and the inactive one is the one to be written to,
+	//everything should be alright.
+
+	mReorderParticleAttributesProgram->getKernel("kernel_reorderParticleAttributes")->run(
+		//wait for the event that the last radix sort reorder phase has finished; only after finishing,
+		//mParticleAttributeBuffers->mOldIndicesPiPoBuffer has valid values usable for reordering
+		EventVector{
+//			CLProgramManager::getInstance().
+//				getProgram("radixSort.cl")->
+//				getKernel("kernel_radixSort_reorder_Phase")->
+//				getEventOfLastKernelExecution()
+		}
+	);
+
+	//toggle to make the least recently written buffers the active ones
+	mParticleAttributeBuffers->toggleBuffers();
 
 }
 

@@ -12,6 +12,7 @@
   __kernel 
   void kernel_reorderParticleAttributes(
   
+    //__constant ObjectGenericFeatures* cObjectGenericFeatures,
     __constant ObjectGenericFeatures* cObjectGenericFeatures,
       
     __global uint* gReorderedOldIndices,

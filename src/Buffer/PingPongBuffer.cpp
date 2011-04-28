@@ -19,8 +19,8 @@ PingPongBuffer::PingPongBuffer(String name,BufferInterface* ping, BufferInterfac
 //take BufferInfo from one of the Managed Buffers
 //BufferInterface(ping->getBufferInfo()),
  BufferInterface( BufferInfo( ping->getBufferInfo(), name, true ) ),
- mInactiveBufferIndex(0),
- mActiveBufferIndex(1)
+ mActiveBufferIndex(0),
+ mInactiveBufferIndex(1)
 {
 	//alloc new one, as we need its info for tracking purposes till the end,
 	//when the managed buffers are already deleted;
@@ -215,7 +215,7 @@ void PingPongBuffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)th
 {
 	assert("PingPongBuffer::operator=() forbidden due to too much ambiguity; assign desired pingpong managed buffers directly!"&&0);
 }
-void PingPongBuffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(BufferException)
+void PingPongBuffer::copyCLFrom(const ComputeBufferHandle& bufferToCopyContentsFrom)throw(BufferException)
 {
 	assert("PingPongBuffer::operator=() forbidden due to too much ambiguity; assign desired pingpong managed buffers directly!"&&0);
 }

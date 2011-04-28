@@ -590,7 +590,8 @@ GraphicsBufferHandle BufferInterface::getGraphicsBufferHandle()const  throw(Buff
 			throw(BufferException("BufferInterface::getGraphicsBufferHandle: buffer has no GL attachment"));
 	return mGraphicsBufferHandle;
 }
-ComputeBufferHandle BufferInterface::getComputeBufferHandle()const  throw(BufferException)
+
+const ComputeBufferHandle& BufferInterface::getComputeBufferHandle()const  throw(BufferException)
 {
 	if((mBufferInfo->usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG) == 0)
 			throw(BufferException("BufferInterface::getComputeBufferHandle: buffer has no CL attachment"));

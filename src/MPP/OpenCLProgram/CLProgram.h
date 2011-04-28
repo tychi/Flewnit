@@ -44,15 +44,15 @@ namespace Flewnit
 			//run() routine for kernels with always the same work load (radix sort, uniform grid updated,
 			//stream compaction etc.);
 			//Calls mCLKernelArguments->passArgsToKernel();
-			cl::Event run(const EventVector* eventsToWaitFor) throw(SimulatorException);
+			cl::Event run(const EventVector& eventsToWaitFor) throw(SimulatorException);
 			//run() routine for kernels with different work loads
 			//Uses customKernelWorkLoadParams insead of its member to define work group sizes etc;
 			cl::Event run(
-					const EventVector* eventsToWaitFor,
+					const EventVector& eventsToWaitFor,
 					const CLKernelWorkLoadParams& customKernelWorkLoadParams
 			) throw(SimulatorException);
 		//}
-
+		cl::Event getEventOfLastKernelExecution()const{return mEventOfLastKernelExecution;}
 
 		//called by virtual void CLProgram::createKernels();
 		//those routines build the default arguments list;
@@ -78,6 +78,9 @@ namespace Flewnit
 		CLKernelArguments* mCLKernelArguments;
 
 		cl::Kernel mKernel;
+
+	private:
+		cl::Event mEventOfLastKernelExecution;
 	};
 
 

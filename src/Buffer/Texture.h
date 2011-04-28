@@ -154,7 +154,7 @@ protected:
 	//can be non-pure, as clEnqueueCopyImage is quite generic;
 	//must be implemented with  an exception-throw for certain concrete Texture classes
 	//which don't have interop features
-	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(BufferException);
+	virtual void copyCLFrom(const ComputeBufferHandle & bufferToCopyContentsFrom)throw(BufferException);
 
 	//non-pure, as glDeleteTextures() applies to every texture type :)
 	virtual void freeGL()throw(BufferException);

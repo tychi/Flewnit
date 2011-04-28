@@ -11,6 +11,8 @@
 #include "Scene/SceneNode.h"
 #include "Scene/SceneGraph.h"
 #include "Scene/ParticleSceneRepresentation.h"
+#include "Simulator/ParallelComputeManager.h"
+
 
 namespace Flewnit
 {
@@ -114,7 +116,14 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 
 bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 {
+	PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
+
 	//TODO
+
+	//TEST ONLY; DELETE CALL!
+	//mParticleSceneRepresentation->reorderAttributes();
+
+
 	return true;
 }
 

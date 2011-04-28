@@ -25,6 +25,7 @@ public:
 	CLProgramManager();
 	virtual ~CLProgramManager();
 
+	CLProgram* getProgram(String name)throw(SimulatorException);
 
 private:
 	//friend void CLProgram::registerToCLPRogramManager();
@@ -35,7 +36,7 @@ private:
 			Path programCodeSubFolderName
 	);
 
-	void registerCLProgram(CLProgram* clProgram);
+	void registerCLProgram(CLProgram* clProgram)throw(SimulatorException);
 
 	friend class URE;
 	void buildProgramsAndCreateKernels();
@@ -44,7 +45,8 @@ private:
 	//all buffer kernel arguments are available on kernel creation;
 	IntermediateResultBuffersManager* mIntermediateResultBuffersManager;
 
-	std::vector<CLProgram*> mCLPrograms;
+	typedef std::map<String, CLProgram*> CLProgramMap;
+	CLProgramMap mCLPrograms;
 
 
 };

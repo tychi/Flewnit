@@ -48,12 +48,16 @@ void ReorderParticleAttributesProgram::createKernels()
 		{
 			new CLBufferKernelArgument("cObjectGenericFeatures",
 				mParticleSceneRepresentation->mObjectGenericFeaturesBuffer),
+//HAXX TEST
+//mParticleSceneRepresentation->mParticleAttributeBuffers->mOldIndicesPiPoBuffer->getActiveBuffer()),
 
 			//least recently written i.e. active buffer is automatically selected if not specified otherwise,
 			//hence just pass the ping pong buffer as-is;
 			//we are not writing to this buffer in this kernel
 			new CLBufferKernelArgument("gReorderedOldIndices",
 				mParticleSceneRepresentation->mParticleAttributeBuffers->mOldIndicesPiPoBuffer),
+//HAXX TEST
+//mParticleSceneRepresentation->mParticleAttributeBuffers->mOldIndicesPiPoBuffer->getActiveBuffer()),
 
 			//not a ping pong buffer, hence just pass without any special case considferation
 			new CLBufferKernelArgument("gParticleIndexTable",

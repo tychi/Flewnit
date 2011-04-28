@@ -124,7 +124,7 @@ public:
 	//non-const variant for CPU-buffer writing
 	CPUBufferHandle getCPUBufferHandle()const throw(BufferException);
 	GraphicsBufferHandle getGraphicsBufferHandle()const throw(BufferException);
-	ComputeBufferHandle getComputeBufferHandle()const throw(BufferException);
+	const ComputeBufferHandle & getComputeBufferHandle()const throw(BufferException);
 	///\}
 protected:
 

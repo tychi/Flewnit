@@ -102,14 +102,25 @@ void CLKernelArgumentBase::passArgToKernel(cl_uint argIndex, CLKernel* clKernel)
 {
 	assert(clKernel);
 
-	GUARD(
-		clSetKernelArg(
-			clKernel->mKernel(),
-			argIndex,
-			mArgSize,
-			mArgValuePtr
-		)
-	);
+//	GUARD(
+//		clSetKernelArg(
+//			clKernel->mKernel(),
+//			argIndex,
+//			mArgSize,
+//			mArgValuePtr
+//		)
+//	);
+
+	clKernel->mKernel.setArg(argIndex, mArgSize, mArgValuePtr);
+
+//	cl::KernelFunctor kernelFunctor =
+//		clKernel->mKernel.bind(
+//				PARA_COMP_MANAGER->getCommandQueue(),
+//				cl::NDRange(clKernel->mDefaultKernelWorkLoadParams->mNumTotalWorkItems),
+//				cl::NDRange(clKernel->mDefaultKernelWorkLoadParams->mNumWorkItemsPerWorkGroup )
+//		);
+
+
 }
 
 CLBufferKernelArgument::CLBufferKernelArgument(
@@ -120,12 +131,14 @@ CLBufferKernelArgument::CLBufferKernelArgument(
 	: CLKernelArgumentBase(
 		argName,
 		sizeof(cl_mem),
-		( ! ifPingPongBufferUseInactiveOne )
-		  ? (void*) ( &( buffi->getComputeBufferHandle()() ) )
-		  : (void*) ( &( buffi->toPingPongBuffer().getInactiveBuffer()->getComputeBufferHandle()() ) )
+		0 //set to zero, we handle stuff for buffers ourselves
+//		( ! ifPingPongBufferUseInactiveOne )
+//		  ? (const void*) ( &( buffi->getComputeBufferHandle()() ) )
+//		  : (const void*) ( &( buffi->toPingPongBuffer().getInactiveBuffer()->getComputeBufferHandle()() ) )
 	  ),
 	  mBufferInterface(buffi),
-	  mIfPingPongBufferUseInactiveOne(ifPingPongBufferUseInactiveOne)
+	  mIfPingPongBufferUseInactiveOne(ifPingPongBufferUseInactiveOne),
+	  mCurrentCLMemoryHandle(0)
 	{}
 
 void CLBufferKernelArgument::set(BufferInterface* buffi, bool ifPingPongBufferUseInactiveOne )
@@ -136,19 +149,37 @@ void CLBufferKernelArgument::set(BufferInterface* buffi, bool ifPingPongBufferUs
 		( ! ( ifPingPongBufferUseInactiveOne &&  ( ! buffi->isPingPongBuffer() ) ) )
 	);
 
+//	const ComputeBufferHandle& activeCLMemCppRef = buffi->getComputeBufferHandle();
+//	const cl_mem& activeCLMemCRef = activeCLMemCppRef();
+//	//const cl_mem* activeCLMemCPtr = & activeCLMemCRef;
+//
+//	//cl_mem* activeCLMemCPtr = & ( activeCLMemCRef );
+
 	mBufferInterface = buffi;
-	mArgValuePtr =
-		( ! ifPingPongBufferUseInactiveOne )
-			? (void*) ( &( buffi->getComputeBufferHandle()() ) )
-			: (void*) ( &( buffi->toPingPongBuffer().getInactiveBuffer()->getComputeBufferHandle()() ) );
-	mIfPingPongBufferUseInactiveOne =  ifPingPongBufferUseInactiveOne;
+	mIfPingPongBufferUseInactiveOne = ifPingPongBufferUseInactiveOne;
+
+	if(mIfPingPongBufferUseInactiveOne)
+	{
+		mCurrentCLMemoryHandle = mBufferInterface->toPingPongBuffer().getInactiveBuffer()->getComputeBufferHandle()();
+	}
+	else
+	{
+		mCurrentCLMemoryHandle = mBufferInterface->getComputeBufferHandle()();
+	}
+	mArgValuePtr = & mCurrentCLMemoryHandle;
+
+
+
+
 }
 
 void CLBufferKernelArgument::passArgToKernel(cl_uint argIndex, CLKernel* clKernel)
 {
 	//setup robustly againgst ping pong buffer toggle
 	set(mBufferInterface, mIfPingPongBufferUseInactiveOne);
+
 	CLKernelArgumentBase::passArgToKernel(argIndex,clKernel);
+	//clKernel->mKernel.setArg(argIndex, mArgSize, mArgValuePtr);
 }
 
 

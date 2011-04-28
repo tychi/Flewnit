@@ -442,7 +442,7 @@
     //of each other, read from and write to the same buffer would need global synchronization)
     __global uint* gKeysToSort,     //NUM_TOTAL_ELEMENTS_TO_SCAN elements; 
                                     //needed to select the relevant radix for reordering and to be scattered to reorderedKeys;
-   __global uint* gReorderedKeys,    //NUM_TOTAL_ELEMENTS_TO_SCAN elements; 
+    __global uint* gReorderedKeys,    //NUM_TOTAL_ELEMENTS_TO_SCAN elements; 
                                     //The reordered keys are written to this buffer,which we may needed in following
                                     //radix sort passes to sort them according to the next radix interval;
                                     //Furthermore, in physics simulation using a uniform grid as acceleration structure,

@@ -193,11 +193,11 @@ void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(Buff
 	);
 
 }
-void Buffer::copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(BufferException)
+void Buffer::copyCLFrom(const ComputeBufferHandle & bufferToCopyContentsFrom)throw(BufferException)
 {
 	PARA_COMP_MANAGER->getCommandQueue().enqueueCopyBuffer(
-			static_cast<cl::Buffer&>(bufferToCopyContentsFrom),
-			static_cast<cl::Buffer&>(mComputeBufferHandle),
+			static_cast<const cl::Buffer&>(bufferToCopyContentsFrom),
+			static_cast<const cl::Buffer&>(mComputeBufferHandle),
 			0,
 			0,
 			mBufferInfo->bufferSizeInByte,

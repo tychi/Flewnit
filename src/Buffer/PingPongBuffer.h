@@ -3,14 +3,17 @@
  *
  * Convention throughout the whole framework:
  * The buffer that has been least recently written is the active buffer;
- * This means, that BEFORE a new write to a ping pong buffer, the programmer is responsible to do the toggle
- * right befor the write, so that after the write, the active buffer is automatically the most recently
- * written one again;
+ * This means, that RIGHT AFTER a new write to a ping pong buffer, the programmer is responsible to do the toggle
+ * within the same routing doing the write,
+ * so that after the write, the most recently written buffer is the active one again to be read by OpenGL rendering,
+ * OpenGL shaders, OpenCL kernels and/or the host;
+ * This ensures that in the whole framework, the active buffer is the most up-to-date one, and the inactive one
+ * is the buffer next to be overwritten;
+ *
  *
  *  Created on: Nov 27, 2010
  *      Author: tychi
  *
- * \brief The base class of all buffers;
  */
 
 #pragma once
@@ -34,8 +37,8 @@ public:
 protected:
 
 	BufferInterface* mPingPongBuffers[2];
-	int mInactiveBufferIndex;
 	int mActiveBufferIndex;
+	int mInactiveBufferIndex;
 
 
 public:
@@ -80,7 +83,7 @@ protected:
 //	virtual void readGL(void* data);
 //	virtual void readCL(void* data);
 //	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom);
-//	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom);
+//	virtual void copyCLFrom(const ComputeBufferHandle& bufferToCopyContentsFrom);
 //	virtual void freeGL();
 //	virtual void freeCL();
 ////	virtual void* mapGLToHost();

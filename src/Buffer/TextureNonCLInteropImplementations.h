@@ -29,7 +29,7 @@
 	}
 	//must be implemented with  an exception-throw for certain concrete Texture classes
 	//which don't have interop features
-	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(BufferException)
+	virtual void copyCLFrom(const ComputeBufferHandle & bufferToCopyContentsFrom)throw(BufferException)
 	{
 		throw(BufferException("Thie Texture type has no interop possibility with OpenCL yet,"
 					"although for some types it is possible in CUDA! This is frustrating, but we have to accept it ;(."));

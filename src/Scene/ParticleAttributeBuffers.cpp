@@ -197,7 +197,14 @@ void ParticleAttributeBuffers::toggleBuffers()
 {
 	mObjectInfoPiPoBuffer->toggleBuffers();
 	mZIndicesPiPoBuffer->toggleBuffers();
+
+	//the ping pong functionality of mOldIndicesPiPoBuffer is only needed
+	//because of the several passes during radix sort;
+	//After sorting, this buffer is only used for reordering, afterwards, its values are irrelevant
+	//and are overwritten with the next radix sort pass;
+	//hence, we can toggle this buffer together with the others for logical consistency, and no one gives a sh** ;);
 	mOldIndicesPiPoBuffer->toggleBuffers();
+
 	mPositionsPiPoBuffer->toggleBuffers();
 	mDensitiesPiPoBuffer->toggleBuffers();
 	mCorrectedVelocitiesPiPoBuffer->toggleBuffers();

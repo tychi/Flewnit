@@ -67,7 +67,7 @@ void CLKernel::validate()throw(SimulatorException)
 	mCLKernelArguments->validateAgainst(this);
 }
 
-cl::Event CLKernel::run(const EventVector* eventsToWaitFor) throw(SimulatorException)
+cl::Event CLKernel::run(const EventVector& eventsToWaitFor) throw(SimulatorException)
 {
 	mCLKernelArguments->passArgsToKernel(this);
 
@@ -78,18 +78,22 @@ cl::Event CLKernel::run(const EventVector* eventsToWaitFor) throw(SimulatorExcep
 			cl::NullRange,
 			cl::NDRange( (size_t) ( mDefaultKernelWorkLoadParams->mNumTotalWorkItems) ),
 			cl::NDRange( (size_t) ( mDefaultKernelWorkLoadParams->mNumWorkItemsPerWorkGroup) ),
-			eventsToWaitFor,
-			PARA_COMP_MANAGER->getLastEventPtr()
+			& eventsToWaitFor,
+			//PARA_COMP_MANAGER->getLastEventPtr()
+			& mEventOfLastKernelExecution
 		);
 
-	//do a copy of the event object, as the gobal one can be altered ;(
-	return cl::Event( *( PARA_COMP_MANAGER->getLastEventPtr() ) );
+	//assign this event to global last event, if anyone is interested in it (don't know yet ;( );
+	*(PARA_COMP_MANAGER->getLastEventPtr()) = mEventOfLastKernelExecution;
+
+	return mEventOfLastKernelExecution;
+;
 }
 
 //run() routine for kernels with different work loads
 //Calls customKernelWorkLoadParams.passArgsToKernel();
 cl::Event CLKernel::run(
-	const EventVector* eventsToWaitFor,
+	const EventVector& eventsToWaitFor,
 	const CLKernelWorkLoadParams& customKernelWorkLoadParams
 ) throw(SimulatorException)
 {
@@ -104,12 +108,15 @@ cl::Event CLKernel::run(
 			cl::NullRange,
 			cl::NDRange( customKernelWorkLoadParams.mNumTotalWorkItems ),
 			cl::NDRange( customKernelWorkLoadParams.mNumWorkItemsPerWorkGroup ),
-			eventsToWaitFor,
-			PARA_COMP_MANAGER->getLastEventPtr()
+			& eventsToWaitFor,
+			//PARA_COMP_MANAGER->getLastEventPtr()
+			& mEventOfLastKernelExecution
 		);
 
-	//do a copy of the event object, as the gobal one can be altered ;(
-	return cl::Event( *( PARA_COMP_MANAGER->getLastEventPtr() ) );
+	//assign this event to global last event, if anyone is interested in it (don't know yet ;( );
+	*(PARA_COMP_MANAGER->getLastEventPtr()) = mEventOfLastKernelExecution;
+
+	return mEventOfLastKernelExecution;
 }
 
 

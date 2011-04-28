@@ -57,8 +57,12 @@ private:
 	PingPongBuffer* mObjectInfoPiPoBuffer; //uint ping pong buffer
 
 	PingPongBuffer* mZIndicesPiPoBuffer; //uint ping pong buffer
-	//the "backtracking" values for reoardering of physical attributes,
+	//the "backtracking" values for reordering of physical attributes,
 	//result of RadixSorter::sort()
+	//the ping pong functionality of mOldIndicesPiPoBuffer is only needed
+	//because of the several passes during radix sort;
+	//After sorting, this buffer is only used for reordering, afterwards, its values are irrelevant
+	//and are overwritten with the next radix sort pass;
 	PingPongBuffer* mOldIndicesPiPoBuffer; //uint ping pong buffer
 	PingPongBuffer* mPositionsPiPoBuffer; //vec4 ping pong buffer;
 	PingPongBuffer* mDensitiesPiPoBuffer;

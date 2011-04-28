@@ -37,6 +37,7 @@ class CLKernelWorkLoadParams
 
 	private:
 		friend class CLKernel;
+		friend class CLKernelArgumentBase;
 
 		//there may be some __attribute__((reqd_work_group_size(...)))
 		//definitions in the kernel; check that this doesn't conflict with the passed values;
@@ -70,6 +71,7 @@ protected:
 	String mArgName;
 	size_t mArgSize;
 	void* mArgValuePtr;
+
 
 };
 
@@ -117,6 +119,12 @@ protected:
 
 	BufferInterface* mBufferInterface;
 	bool mIfPingPongBufferUseInactiveOne;
+
+	//With the CL C++ API and its "const *& operator()() const" wtf stuff,
+	//I get segfaults or "& needs lvalue" compiler errors;
+	//Hence, i just save a copy to the unwrapped cl_mem handle; this variable
+	//cannot be destroyed as temporary and connot have any const*const&const()const-fuckup;
+	cl_mem mCurrentCLMemoryHandle;
 };
 
 

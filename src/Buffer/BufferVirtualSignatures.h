@@ -32,7 +32,7 @@
 	virtual void readGL(void* data)		throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
 	virtual void readCL(void* data)		throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
 	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
-	virtual void copyCLFrom(ComputeBufferHandle bufferToCopyContentsFrom)throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+	virtual void copyCLFrom(const ComputeBufferHandle & bufferToCopyContentsFrom)throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
 	virtual void freeGL()			throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
 	virtual void freeCL()			throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
 
