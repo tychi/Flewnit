@@ -16,6 +16,7 @@
 #include "Util/Loader/Config.h"
 #include "Util/Loader/LoaderHelper.h"
 #include "Simulator/MechanicsSimulator/ParticleMechanicsStages/ParticleMechanicsStage.h"
+#include "Simulator/ParallelComputeManager.h"
 
 
 namespace Flewnit
@@ -40,10 +41,14 @@ bool MechanicsSimulator::stepSimulation() throw(SimulatorException)
 	// TODO Auto-generated destructor stub
 	//LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
 
+	PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
+
 	for(unsigned int i=0; i< mSimStages.size(); i++)
 	{
 		mSimStages[i]->stepSimulation();
 	}
+
+	PARA_COMP_MANAGER->acquireSharedBuffersForGraphics();
 
 
 	return true;

@@ -116,7 +116,6 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 
 bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 {
-	PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 
 	//TODO
 
