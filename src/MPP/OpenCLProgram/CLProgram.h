@@ -58,7 +58,7 @@ namespace Flewnit
 		//those routines build the default arguments list;
 		CLKernel(CLProgram* owningProgram, String kernelName,
 				CLKernelWorkLoadParams* defaultKernelWorkLoadParams,
-				CLKernelArguments* kernelArguments);
+				CLKernelArguments* kernelArguments)throw(SimulatorException);
 
 	protected:
 		friend class CLProgram;

@@ -70,6 +70,12 @@ public:
 	inline Log& operator<<(double logEntry){return handleGenericValues<double>(logEntry);}
 	inline Log& operator<<(size_t logEntry){return handleGenericValues<size_t>(logEntry);}
 
+	inline Log& operator<<(const Vector3Dui& logEntry){
+		return (*this)<<"Vector3Dui("
+				<<logEntry.x<<","
+				<<logEntry.y<<","
+				<<logEntry.z<<")";
+	}
 	inline Log& operator<<(const Vector4D& logEntry){
 		return (*this)<<"Vector4D("
 				<<logEntry.x<<","

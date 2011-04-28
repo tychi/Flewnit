@@ -28,20 +28,26 @@ namespace Flewnit
 //those routines build the default arguments list;
 CLKernel::CLKernel(CLProgram* owningProgram, String kernelName,
 		CLKernelWorkLoadParams* defaultKernelWorkLoadParams,
-		CLKernelArguments* kernelArguments)
+		CLKernelArguments* kernelArguments) throw(SimulatorException)
 :
 	mKernelName(kernelName),
 	mDefaultKernelWorkLoadParams(defaultKernelWorkLoadParams),
 	mCLKernelArguments(kernelArguments)
 
 {
-	//GUARD(
+	try
+	{
 		mKernel = cl::Kernel(
 			owningProgram->mCLProgram,
 			kernelName.c_str(),
 			PARA_COMP_MANAGER->getLastCLErrorPtr()
 		);
-	//);
+	}
+	catch(cl::Error)
+	{
+
+		throw(SimulatorException(String("something went wrong when creating the CL kernel ") + kernelName));
+	}
 
 	validate();
 

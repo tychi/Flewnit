@@ -14,6 +14,7 @@
 #include "CLProgram.h"
 
 #include <boost/foreach.hpp>
+#include "Util/Log/Log.h"
 
 
 namespace Flewnit
@@ -28,10 +29,61 @@ CLKernelWorkLoadParams::CLKernelWorkLoadParams(
 
 }
 
+
+//there may be some __attribute__((reqd_work_group_size(...)))
+//definitions in the kernel; check that this doesn't conflict with the passed values;
+//also check common stuff like that the mNumWorkItemsPerWorkGroup is a power of two;
 void CLKernelWorkLoadParams::validateAgainst(CLKernel* kernel)const throw(SimulatorException)
 {
-	//TODO
-	//assert(0 && "TODO implement");
+	size_t maxPossibleWorkGRoupSizeOfThisKernel =
+		kernel->mKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(
+			PARA_COMP_MANAGER->getUsedDevice(),
+			PARA_COMP_MANAGER->getLastCLErrorPtr()
+	);
+	LOG<<INFO_LOG_LEVEL<<"Validation of work load params for kernel "<< kernel->mKernelName << ":\n";
+	LOG<<INFO_LOG_LEVEL<<"  Specified desired     work group size of kernel: "<<mNumWorkItemsPerWorkGroup<< ";\n";
+	LOG<<INFO_LOG_LEVEL<<"  Technical maximum     work group size of kernel: "<<maxPossibleWorkGRoupSizeOfThisKernel<< ";\n";
+
+	cl::size_t<3> compileTimeRequiredWorkGRoupSizes =
+			kernel->mKernel.getWorkGroupInfo<CL_KERNEL_COMPILE_WORK_GROUP_SIZE>(
+				PARA_COMP_MANAGER->getUsedDevice(),
+				PARA_COMP_MANAGER->getLastCLErrorPtr()
+		);
+	LOG<<INFO_LOG_LEVEL<<"  Compile time specified work group sizes of kernel: "
+			<<
+			Vector3Dui(
+					(uint)(compileTimeRequiredWorkGRoupSizes[0]),
+					(uint)(compileTimeRequiredWorkGRoupSizes[1]),
+					(uint)(compileTimeRequiredWorkGRoupSizes[2])
+			)<< ";\n";
+
+	cl_ulong usedLocalMemByKernel =
+		kernel->mKernel.getWorkGroupInfo<CL_KERNEL_LOCAL_MEM_SIZE>(
+				PARA_COMP_MANAGER->getUsedDevice(),
+				PARA_COMP_MANAGER->getLastCLErrorPtr()
+		);
+	LOG<<INFO_LOG_LEVEL<<"  Local memory used by this kernel (bytes): "<<usedLocalMemByKernel<< ";\n";
+
+	if(maxPossibleWorkGRoupSizeOfThisKernel < mNumWorkItemsPerWorkGroup)
+	{
+		throw(SimulatorException("More work items per work group specified than are possible in this kernel!"));
+	}
+
+	if(	( compileTimeRequiredWorkGRoupSizes[1] > 1 ) ||
+	    ( compileTimeRequiredWorkGRoupSizes[2] > 1 )    )
+	{
+		throw(SimulatorException("Sorry there are  multi dim work group dimensions provided as compile time "
+				"work group sizes, but this framefork currently only supports 1D work loads :(;"));
+	}
+
+	if( //indicator the there was some  __ attribute __((reqd_work_group_size(x,1,1))) specified in kernel
+		(compileTimeRequiredWorkGRoupSizes[0] != 0 ) &&
+		( mNumWorkItemsPerWorkGroup != (unsigned int)(compileTimeRequiredWorkGRoupSizes[0]) )
+	)
+	{
+		throw(SimulatorException("The compile time work grou size does not fit the now provided one!"));
+	}
+
 }
 
 
