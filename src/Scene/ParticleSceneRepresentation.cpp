@@ -10,7 +10,7 @@
 #include "ParticleAttributeBuffers.h"
 
 #define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
-#include "MPP/OpenCLProgram/ProgramSources/physicsDataStructures.cl"
+#include "MPP/OpenCLProgram/ProgramSources/common/physicsDataStructures.cl"
 #undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 
 #include "Simulator/SimulationResourceManager.h"

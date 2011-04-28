@@ -15,6 +15,7 @@
 
 
 #include <boost/foreach.hpp>
+#include <grantlee/engine.h>
 
 namespace Flewnit
 {
@@ -30,21 +31,20 @@ CLKernel::CLKernel(CLProgram* owningProgram, String kernelName,
 	mCLKernelArguments(kernelArguments)
 
 {
-//TODO
-
-//	GUARD(
-//		mKernel = clCreateKernel(
-//			owningProgram->mCLProgram(),
-//			kernelName.c_str()
-//
-//		)
-//	);
+	GUARD(
+		mKernel = cl::Kernel(
+			owningProgram->mCLProgram,
+			kernelName.c_str(),
+			PARA_COMP_MANAGER->getLastCLErrorPtr()
+		)
+	);
 }
 
 
 CLKernel::~CLKernel()
 {
-
+	delete mDefaultKernelWorkLoadParams;
+	delete mCLKernelArguments;
 }
 
 void CLKernel::validate()throw(BufferException)
@@ -102,9 +102,29 @@ CLProgram::~CLProgram()
 
 void CLProgram::build()
 {
+//    Grantlee::Engine *templateEngine = new Grantlee::Engine();
+//    Grantlee::FileSystemTemplateLoader::Ptr loader =
+//    		Grantlee::FileSystemTemplateLoader::Ptr( new Grantlee::FileSystemTemplateLoader() );
+//
+//    String programDirectory=	(mCodeDirectory / mProgramCodeSubFolderName).string() ;
+//    String commonCodeSnippetsDirectory = (mCodeDirectory / Path("Common")).string();
+//    loader->setTemplateDirs( QStringList() << shaderDirectory.c_str() << commonCodeSnippetsDirectory.c_str());
+//    templateEngine->addTemplateLoader(loader);
+//
+//    //setup the context to delegate template rendering according to the shaderFeatures (both local and global):
+//    TemplateContextMap contextMap;
+//    setupTemplateContext(contextMap);
+}
+
+
+
+void CLProgram::validate()throw(SimulatorException)
+{
 	//TODO
 	assert(0&&"TODO implement");
 }
+
+
 
 CLKernel* CLProgram::getKernel(String name)throw(SimulatorException)
 {
@@ -117,16 +137,6 @@ CLKernel* CLProgram::getKernel(String name)throw(SimulatorException)
 
 	return mKernels[name];
 }
-
-
-void CLProgram::validate()throw(SimulatorException)
-{
-	//TODO
-	assert(0&&"TODO implement");
-}
-
-
-
 
 
 

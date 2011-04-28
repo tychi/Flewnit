@@ -10,9 +10,7 @@
 
 #include "WorldObject/WorldObject.h"
 
-#define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
-#include "MPP/OpenCLProgram/ProgramSources/physicsDataStructures.cl"
-#undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+
 
 
 namespace Flewnit
