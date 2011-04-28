@@ -93,7 +93,7 @@ ParticleSceneRepresentation::ParticleSceneRepresentation(
 		true
 	);
 
-	//mReorderParticleAttributesProgram = new ReorderParticleAttributesProgram(this);
+	mReorderParticleAttributesProgram = new ReorderParticleAttributesProgram(this);
 
 
 }

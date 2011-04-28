@@ -31,7 +31,8 @@ namespace Flewnit
 		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
 		~CLKernel();
-		void validate()throw(BufferException);
+
+		void validate()throw(SimulatorException);
 
 		//grab&modify directly; will be set resp. verified before every kernal launch
 		inline CLKernelArguments* getCLKernelArguments(){return mCLKernelArguments;}
@@ -43,11 +44,11 @@ namespace Flewnit
 			//run() routine for kernels with always the same work load (radix sort, uniform grid updated,
 			//stream compaction etc.);
 			//Calls mCLKernelArguments->passArgsToKernel();
-			cl::Event run(const EventVector& EventsToWaitFor) throw(SimulatorException);
+			cl::Event run(const EventVector* eventsToWaitFor) throw(SimulatorException);
 			//run() routine for kernels with different work loads
-			//Calls customKernelWorkLoadParams.passArgsToKernel();
+			//Uses customKernelWorkLoadParams insead of its member to define work group sizes etc;
 			cl::Event run(
-					const EventVector& EventsToWaitFor,
+					const EventVector* eventsToWaitFor,
 					const CLKernelWorkLoadParams& customKernelWorkLoadParams
 			) throw(SimulatorException);
 		//}
@@ -62,6 +63,8 @@ namespace Flewnit
 	protected:
 		friend class CLProgram;
 		friend class CLKernelArgumentBase;
+		friend class CLKernelArguments;
+		friend class CLKernelWorkLoadParams;
 
 
 		//called by CLProgram::virtual void createKernels() factory functions;

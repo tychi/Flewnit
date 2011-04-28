@@ -41,7 +41,7 @@ class CLKernelWorkLoadParams
 		//there may be some __attribute__((reqd_work_group_size(...)))
 		//definitions in the kernel; check that this doesn't conflict with the passed values;
 		//also check common stuff like that the mNumWorkItemsPerWorkGroup is a power of two;
-		void validateAgainst(CLKernel* kernel)throw(SimulatorException);
+		void validateAgainst(CLKernel* kernel)const throw(SimulatorException);
 
 		cl_GLuint mNumTotalWorkItems;
 		cl_GLuint mNumWorkItemsPerWorkGroup;
@@ -153,7 +153,7 @@ private:
 
 	//at least verify the argument count ;( other info related to a kernel argument list
 	//is not available yet :((
-	void validateAgainst(CLKernel* kernel)throw(SimulatorException);
+	void validateAgainst(CLKernel* kernel)const throw(SimulatorException);
 	void passArgsToKernel(CLKernel* clKernel);
 
 	CLKernelArgumentBase* getArg(unsigned int i) throw(BufferException);

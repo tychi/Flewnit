@@ -13,10 +13,13 @@
 
 #include "Simulator/ParallelComputeManager.h"
 
+#include "Util/Log/Log.h"
+
+#include <grantlee/engine.h>
 
 #include <boost/foreach.hpp>
-#include <grantlee/engine.h>
-#include "Util/Log/Log.h"
+
+
 
 namespace Flewnit
 {
@@ -32,13 +35,17 @@ CLKernel::CLKernel(CLProgram* owningProgram, String kernelName,
 	mCLKernelArguments(kernelArguments)
 
 {
-	GUARD(
+	//GUARD(
 		mKernel = cl::Kernel(
 			owningProgram->mCLProgram,
 			kernelName.c_str(),
 			PARA_COMP_MANAGER->getLastCLErrorPtr()
-		)
-	);
+		);
+	//);
+
+	validate();
+
+	mDefaultKernelWorkLoadParams->validateAgainst(this);
 }
 
 
@@ -48,27 +55,55 @@ CLKernel::~CLKernel()
 	delete mCLKernelArguments;
 }
 
-void CLKernel::validate()throw(BufferException)
+void CLKernel::validate()throw(SimulatorException)
 {
-	//TODO
-	assert(0&&"TODO implement");
+	mDefaultKernelWorkLoadParams->validateAgainst(this);
+	mCLKernelArguments->validateAgainst(this);
 }
 
-cl::Event CLKernel::run(const EventVector& EventsToWaitFor) throw(SimulatorException)
+cl::Event CLKernel::run(const EventVector* eventsToWaitFor) throw(SimulatorException)
 {
-	//TODO
-	assert(0&&"TODO implement");
+	mCLKernelArguments->passArgsToKernel(this);
+
+	*(PARA_COMP_MANAGER->getLastCLErrorPtr())
+		=
+		PARA_COMP_MANAGER->getCommandQueue().enqueueNDRangeKernel(
+			mKernel,
+			cl::NullRange,
+			cl::NDRange( (size_t) ( mDefaultKernelWorkLoadParams->mNumTotalWorkItems) ),
+			cl::NDRange( (size_t) ( mDefaultKernelWorkLoadParams->mNumWorkItemsPerWorkGroup) ),
+			eventsToWaitFor,
+			PARA_COMP_MANAGER->getLastEventPtr()
+		);
+
+	//do a copy of the event object, as the gobal one can be altered ;(
+	return cl::Event( *( PARA_COMP_MANAGER->getLastEventPtr() ) );
 }
 
 //run() routine for kernels with different work loads
 //Calls customKernelWorkLoadParams.passArgsToKernel();
 cl::Event CLKernel::run(
-	const EventVector& EventsToWaitFor,
+	const EventVector* eventsToWaitFor,
 	const CLKernelWorkLoadParams& customKernelWorkLoadParams
 ) throw(SimulatorException)
 {
-	//TODO
-	assert(0&&"TODO implement");
+	customKernelWorkLoadParams.validateAgainst(this);
+
+	mCLKernelArguments->passArgsToKernel(this);
+
+	*(PARA_COMP_MANAGER->getLastCLErrorPtr())
+			=
+		PARA_COMP_MANAGER->getCommandQueue().enqueueNDRangeKernel(
+			mKernel,
+			cl::NullRange,
+			cl::NDRange( customKernelWorkLoadParams.mNumTotalWorkItems ),
+			cl::NDRange( customKernelWorkLoadParams.mNumWorkItemsPerWorkGroup ),
+			eventsToWaitFor,
+			PARA_COMP_MANAGER->getLastEventPtr()
+		);
+
+	//do a copy of the event object, as the gobal one can be altered ;(
+	return cl::Event( *( PARA_COMP_MANAGER->getLastEventPtr() ) );
 }
 
 
@@ -125,7 +160,7 @@ void CLProgram::build()
 
 	Path generatedProgPath=
 		mCodeDirectory  / Path("__generated") /
-		Path( getName()	);
+		Path( String("_GEN_") + getName()	);
 
 	writeToDisk(programSourceCode, generatedProgPath);
 
@@ -146,7 +181,8 @@ void CLProgram::build()
 
 
 
-	GUARD(
+	try
+	{
 		mCLProgram.build(
 				// don't specify a specific device, the one associated to program's cl::Context is taken by default
 				//^| (cl_device_id*)&devices.front(), <-- pointer to reference to nonexsiting element; this is madness,
@@ -155,10 +191,15 @@ void CLProgram::build()
 				//{}
 				// define later "-cl-fast-relaxed-math"
 
-		)
-	);
+		);
 
-    validate();
+		LOG<<INFO_LOG_LEVEL<<getName()<<": sucessfully built!\n";
+	}
+	catch(cl::Error err)
+	{
+		validate();
+	}
+
 
 }
 
@@ -166,33 +207,26 @@ void CLProgram::build()
 
 void CLProgram::validate()throw(SimulatorException)
 {
-	//GUARD( mCLProgram.getBuildInfo(PARA_COMP_MANAGER->getUsedDevice(), PARA_COMP_MANAGER->getLastCLErrorPtr()) );
-
-	GUARD( cl_build_status buildStatus =
+	cl_build_status buildStatus =
 		mCLProgram.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(
-				PARA_COMP_MANAGER->getUsedDevice(), PARA_COMP_MANAGER->getLastCLErrorPtr())
-	);
+				PARA_COMP_MANAGER->getUsedDevice(), PARA_COMP_MANAGER->getLastCLErrorPtr());
 
 	if(buildStatus != CL_BUILD_SUCCESS)
 	{
-		GUARD( String buildLog =
-			mCLProgram.getBuildInfo<CL_PROGRAM_BUILD_LOG>(
-					PARA_COMP_MANAGER->getUsedDevice(), PARA_COMP_MANAGER->getLastCLErrorPtr())
-		);
+		//GUARD(
+		String buildLog = mCLProgram.getBuildInfo<CL_PROGRAM_BUILD_LOG>(
+					PARA_COMP_MANAGER->getUsedDevice(), PARA_COMP_MANAGER->getLastCLErrorPtr());
+		//);
 
 		Path errorLogPath=
 			mCodeDirectory  / Path("__generated") /
-			Path( getName()	) / Path("__PROGRAM_BUILD_INFO_LOG") ;
+			Path( String("INFO_LOG_") + getName() ) ;
 
 		writeToDisk(buildLog,errorLogPath);
 
 		LOG<<ERROR_LOG_LEVEL<< buildLog<<"\n";
 
 		throw(SimulatorException(String("OpenCL program ")+ getName() + String(": Build Error!")));
-	}
-	else
-	{
-		LOG<<INFO_LOG_LEVEL<<getName()<<": sucessfully built";
 	}
 
 

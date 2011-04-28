@@ -28,6 +28,14 @@ CLKernelWorkLoadParams::CLKernelWorkLoadParams(
 
 }
 
+void CLKernelWorkLoadParams::validateAgainst(CLKernel* kernel)const throw(SimulatorException)
+{
+	//TODO
+	//assert(0 && "TODO implement");
+}
+
+
+
 //------------------------------------------------------
 
 
@@ -116,10 +124,15 @@ CLKernelArguments::~CLKernelArguments()
 
 //at least verify the argument count ;( other info related to a kernel argument list
 //is not available yet :((
-void CLKernelArguments::validateAgainst(CLKernel* kernel)throw(SimulatorException)
+void CLKernelArguments::validateAgainst(CLKernel* kernel)const throw(SimulatorException)
 {
-	//TODO
-	assert(0 && "TODO implement");
+
+	cl_uint numKernelArgs = kernel->mKernel.getInfo<CL_KERNEL_NUM_ARGS>( PARA_COMP_MANAGER->getLastCLErrorPtr());
+
+	if(numKernelArgs != mArgVec.size())
+	{
+		throw(SimulatorException(kernel->mKernelName+String(" CLKernel::validate(): number of arguments differ!")));
+	}
 }
 
 void CLKernelArguments::passArgsToKernel(CLKernel* clKernel)
@@ -188,16 +201,6 @@ CLBufferKernelArgument* CLKernelArguments::getBufferArg(unsigned int i) throw(Bu
 }
 
 
-
-
-//CLKernelArguments::CLKernelArguments() {
-//	// TODO Auto-generated constructor stub
-//
-//}
-//
-//CLKernelArguments::~CLKernelArguments() {
-//	// TODO Auto-generated destructor stub
-//}
 
 
 
