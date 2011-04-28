@@ -29,12 +29,13 @@
 #include "Geometry/InstancedGeometry.h"
 
 
-#include <grantlee/engine.h>
+
+
 #include "UserInterface/WindowManager/WindowManager.h"
 #include "Util/HelperFunctions.h"
 
-typedef QVariantHash TemplateContextMap;
 
+#include <grantlee/engine.h>
 
 
 namespace Flewnit

@@ -7,6 +7,16 @@
 
 #include "BasicCLProgram.h"
 
+#include "Simulator/ParallelComputeManager.h"
+#include "Util/HelperFunctions.h"
+#include "MPP/MPP.h"
+
+
+#include <grantlee/engine.h>
+//#include <QtCore/QString>
+//#include <QtCore/QVariantHash>
+
+
 namespace Flewnit
 {
 
@@ -29,8 +39,16 @@ BasicCLProgram::~BasicCLProgram()
 
 void BasicCLProgram::setupTemplateContext(TemplateContextMap& contextMap)
 {
-	//TODO
-	assert(0&&"TODO implement");
+	contextMap.insert(
+		"numComputeUnits_Base2Ceiled",
+		HelperFunctions::ceilToNextPowerOfTwo(
+			PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxComputeUnits)
+	);
+
+	contextMap.insert(
+		"numMaxWorkItems_Base2Floored",
+		HelperFunctions::floorToNextPowerOfTwo(PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize)
+	);
 }
 
 }
