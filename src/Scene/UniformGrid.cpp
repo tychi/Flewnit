@@ -19,7 +19,9 @@
 #include "Material/DebugDrawVisualMaterial.h"
 #include "WorldObject/SubObject.h"
 #include "Material/VisualMaterial.h"
+#include "MPP/OpenCLProgram/UpdateUniformGridProgram.h"
 
+#include <boost/foreach.hpp>
 
 
 namespace Flewnit
@@ -140,7 +142,9 @@ UniformGrid::UniformGrid(
 	Vector4D extendsOfOneCell,
 	//GPU-relevant "chunk-ization" size, denoting the max. element count processed
 	//by on work group; default: 32
-	unsigned int numMaxElementsPerSimulationWorkGroup
+	unsigned int numMaxElementsPerSimulationWorkGroup,
+
+	const std::vector<String>& namesOfUniGridBufferSetsToCreate
 )
 : AccelerationStructure(name, UNIFORM_GRID ),
 
@@ -154,18 +158,26 @@ UniformGrid::UniformGrid(
 		"zIndexLookupTable", 3 * 4 * numCellsPerDimension, true)
   ),
 
-  mUniformGridBufferSet( new UniformGridBufferSet(name + String("BufferSet"), numCellsPerDimension) ),
   mUpdateUniformGridProgram(0), //init to zero to be sure that all members are initialized first
   mNumMaxElementsPerSimulationWorkGroup(numMaxElementsPerSimulationWorkGroup),
   mSplitAndCompactUniformGridProgram(0) //init to zero to be sure that all members are initialized first
 
 {
+	BOOST_FOREACH(String name, namesOfUniGridBufferSetsToCreate)
+	{
+		assert( mUniformGridBufferSetMap.find(name) == mUniformGridBufferSetMap.end() );
+
+		mUniformGridBufferSetMap[name] =
+				new UniformGridBufferSet(name + String("UniformGridBufferSetBufferSet"), numCellsPerDimension);
+	}
+
+
 	setupZIndexLookUpTable();
 
 	createAndAddDebugDrawSubObject();
 
 //TODO
-//	mUpdateUniformGridProgram = new UpdateUniformGridProgram(this);
+	mUpdateUniformGridProgram = new UpdateUniformGridProgram(this);
 //	mSplitAndCompactUniformGridProgram = new SplitAndCompactUniformGridProgram(this);
 //
 //
@@ -173,21 +185,39 @@ UniformGrid::UniformGrid(
 
 UniformGrid::~UniformGrid()
 {
-	delete mUniformGridBufferSet;
+	BOOST_FOREACH( UniformGridBufferSetMap::value_type & pair, mUniformGridBufferSetMap)
+	{
+		delete pair.second;
+	}
+
 	//nothing else to delete;
 
 }
 
 
+//throw exception if no buffers are allocated for the specified name
+UniformGridBufferSet* UniformGrid::getBufferSet(String name)const throw(BufferException)
+{
+	if(mUniformGridBufferSetMap.find(name) == mUniformGridBufferSetMap.end())
+	{
+		throw(SimulatorException(
+				String("UniformGrid::getBufferSet(tring name): Buffer set with specified name ")
+				+ name + String(" doesn't exist!") ));
+	}
 
-void UniformGrid::updateCells(PingPongBuffer* sortedZIndicesKeyBuffer)
+	return mUniformGridBufferSetMap.find(name)->second;
+	//return mUniformGridBufferSetMap[name];
+}
+
+
+void UniformGrid::updateCells(String bufferSetName, PingPongBuffer* sortedZIndicesKeyBuffer)
 {
 	//TODO
 	assert(0&&"TODO implement");
 
 }
 
-unsigned int UniformGrid::splitAndCompactCells(UniformGridBufferSet* compactionResultBufferSet)
+unsigned int UniformGrid::splitAndCompactCells(String bufferSetName,UniformGridBufferSet* compactionResultBufferSet)
 {
 	//TODO
 	assert(0&&"TODO implement");

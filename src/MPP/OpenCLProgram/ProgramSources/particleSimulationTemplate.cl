@@ -137,16 +137,16 @@
 
     /*alloc local mem for neighbrours, grab needed attributes for own particles, store them to private mem*/  
     float4 ownPosition;
-    __local float4 lCurrentNeighbourPositions[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ];
+    __local float4 lCurrentNeighbourPositions[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
     uint ownParticleObjectID;
-    __local uint lCurrentNeighbourParticleObjectIDs[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ];
+    __local uint lCurrentNeighbourParticleObjectIDs[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
    
       
 {% block kernelDependentParticleAttribsMalloc %} 
   {% comment %} pattern:
     for each needed attribute: 
       <attribute type> own<attribute name singular>;
-      optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ]; 
+      optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ]; 
   {% endcomment %}
 
       
@@ -229,8 +229,8 @@
 
 
                 }  //end accum SPH calculations
-                neighbourParticleStartIndex += NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP;
-                numRemainingNeighbourParticlesToInteract -= NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP
+                neighbourParticleStartIndex += NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP;
+                numRemainingNeighbourParticlesToInteract -= NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP
               }  //end for simGroupRunner     
             }//endif(numRemainingNeighbourParticlesToInteract >0)
             posInNeighbour.z += cSimParams->uniGridCellSizes.z;

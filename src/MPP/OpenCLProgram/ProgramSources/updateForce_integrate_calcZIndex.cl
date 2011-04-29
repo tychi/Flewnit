@@ -107,15 +107,15 @@
     {% comment %} pattern:
       for each needed attribute: 
         <attribute type> own<attribute name singular>;
-        optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ]; 
+        optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ]; 
     {% endcomment %}
                   
     float ownDensity;
     float ownPressure;
-    __local float lCurrentNeighbourDensities[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ];
+    __local float lCurrentNeighbourDensities[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
     
     float4 ownPredictedVelCurrent;
-    __local float4 lCurrentNeighbourPredictedVelsCurrent[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ];
+    __local float4 lCurrentNeighbourPredictedVelsCurrent[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
  
     //physical quantities resulting from sph "force" computation;
     //physical units: [ (kg m/(s^2)) / V]= force/volume;

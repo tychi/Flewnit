@@ -95,7 +95,9 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 		ConfigCaster::cast<int>( uniGridSettingsNode.get("numCellsPerDimension",0) ),
 		ConfigCaster::cast<Vector4D>( uniGridSettingsNode.get("minCornerPosition",0) ),
 		ConfigCaster::cast<Vector4D>( uniGridSettingsNode.get("extendsOfOneCell",0) ),
-		ConfigCaster::cast<int>( uniGridSettingsNode.get("numMaxElementsPerSimulationWorkGroup",0) )
+		ConfigCaster::cast<int>( uniGridSettingsNode.get("numMaxElementsPerSimulationWorkGroup",0) ),
+		//alloc only one UniformGridBufferSet, namely for particles; triangle come later ;)
+		std::vector<String>{ "particles" }
 	);
 	//add to scene graph to be debug drawable
 	mParticleSceneParentSceneNode->addChild(mParticleUniformGrid);

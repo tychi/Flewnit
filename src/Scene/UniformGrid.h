@@ -72,27 +72,35 @@ public:
 		Vector4D extendsOfOneCell,
 		//GPU-relevant "chunk-ization" size, denoting the max. element count processed
 		//by on work group; default: 32
-		unsigned int numMaxElementsPerSimulationWorkGroup
+		unsigned int numMaxElementsPerSimulationWorkGroup,
+		//if you have several types to maintain (particles and triangle,e.g.), you have to
+		//store them in different buffers in order to don't waste bandwidth if you only need a
+		//single type at the moment; specify here implicitely how many UniformGridBufferSets
+		//you need and by which name you want them to be referenced
+		const std::vector<String>& namesOfUniGridBufferSetsToCreate
 	);
 
 	virtual ~UniformGrid();
 
-
-	//throw exception if no buffers are allocated for the specified element type
-	inline UniformGridBufferSet* getBufferSet()const{return mUniformGridBufferSet;}
+	inline unsigned int getNumCellsPerDimension()const{return mNumCellsPerDimension; }
+	inline unsigned int getNumMaxElementsPerSimulationWorkGroup()const{return mNumMaxElementsPerSimulationWorkGroup; }
 
 	inline Buffer* getZIndexLookupTable()const{return mZIndexLookupTable;}
+
+	//throw exception if no buffers are allocated for the specified name
+	UniformGridBufferSet* getBufferSet(String name)const throw(BufferException);
+
 
 	//updates mUniformGridBufferSet according to sortedZIndicesKeyBuffer;
 	//there is an optimazation so that after returning,
 	//this buffer mUniformGridBufferSet->mElementCounts contains (particleEndIndex+1);
 	//this is "fixed" within splitAndCompactCells();
 	//see updateUniformGrid.cl and splitAndCompactUniformGrid.cl for further info
-	void updateCells(PingPongBuffer* sortedZIndicesKeyBuffer);
+	void updateCells(String bufferSetName, PingPongBuffer* sortedZIndicesKeyBuffer);
 	//returns the number of non-empty split cells;
 	//(this value implies to the ParticleMechanicsStage
 	//how many work groups it must launch for SPH particle physics simulation Kernels)
-	unsigned int splitAndCompactCells(UniformGridBufferSet* compactionResultBufferSet);
+	unsigned int splitAndCompactCells(String bufferSetName, UniformGridBufferSet* compactionResultBufferSet);
 
 
 
@@ -110,8 +118,8 @@ private:
 	//line drawing without index buffer;
 	void createAndAddDebugDrawSubObject();
 
-
-	UniformGridBufferSet* mUniformGridBufferSet;
+	typedef std::map<String, UniformGridBufferSet*> UniformGridBufferSetMap;
+	UniformGridBufferSetMap mUniformGridBufferSetMap;
 
 	//{ update non-compacted stuff
 	UpdateUniformGridProgram* mUpdateUniformGridProgram;

@@ -26,7 +26,7 @@
     {% comment %} pattern:
       for each needed attribute: 
         <attribute type> own<attribute name singular>;
-        optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP  ]; 
+        optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ]; 
     {% endcomment %}
                   
     float ownDensity;

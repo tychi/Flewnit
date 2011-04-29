@@ -27,7 +27,7 @@ protected:
 	//Constructor for
 	// - updateUniformGrid.cl
 	// - splitAndCompactUniformGrid.cl
-	UniformGridRelatedProgram(Path sourceFileName, UniformGrid* uniGrid);
+	UniformGridRelatedProgram(Path sourceFileName, UniformGrid* uniGrid, SimulationDomain sd = GENERIC_SIM_DOMAIN);
 
 
 	//calls BasicCLProgram::setupTemplateContext() and sets up uniform grid related template params;

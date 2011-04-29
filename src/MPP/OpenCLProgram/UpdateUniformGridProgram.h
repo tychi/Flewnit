@@ -20,15 +20,13 @@ class UpdateUniformGridProgram
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
 
+	//updateUniformGrid.cl is created by this class
+	UpdateUniformGridProgram(UniformGrid* uniGrid);
+
 	virtual ~UpdateUniformGridProgram();
 
 protected:
 
-	//Protected Constructors for derived classes
-	//Constructor for
-	// - updateUniformGrid.cl
-	// - splitAndCompactUniformGrid.cl
-	UpdateUniformGridProgram(UniformGrid* uniGrid);
 
 	//issue the several createKernel() calls with initial argument list etc;
 	virtual void createKernels();

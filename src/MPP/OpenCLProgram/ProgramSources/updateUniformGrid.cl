@@ -10,13 +10,9 @@
       Kernel to determine how many elements are in every uniform grid cell and where the first element of a cell resides in memory              
   */
   
-  //default: 64;
-  #define NUM_GRID_CELLS_PER_DIMENSION ( {{ numGridCellsPerDimension }} )
-  //default: 64^3 = 2^18 = 256k
-  #define NUM_TOTAL_GRID_CELLS ( NUM_GRID_CELLS_PER_DIMENSION * NUM_GRID_CELLS_PER_DIMENSION * NUM_GRID_CELLS_PER_DIMENSION  )
+  //lol, we don't even need include "uniformGridCommon.cl" X-D
 
-  
-
+  {% include "common.cl" %}
   
   
   __kernel __attribute__((reqd_work_group_size(NUM_MAX_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
@@ -24,12 +20,12 @@
     __global uint* gSortedZIndices, //numTotalElements elements
     
 
-    __global uint* gUniGridCells_ElementStartIndex, //NUM_TOTAL_GRID_CELLS elements
+    __global uint* gUniGridCells_ElementStartIndex, //NUM_UNIGRID_CELLS_PER_DIMENSION ^3 elements
     
-    //__global int* gUniGridCells_NumElements //NUM_TOTAL_GRID_CELLS elements
+    //__global int* gUniGridCells_NumElements //NUM_UNIGRID_CELLS_PER_DIMENSION ^3 elements
                                                //is initialized to zero for every entry, so that unwritten values are valid for
                                                //stream compaction scan in following kernel  
-   __global uint* gUniGridCells_ElementEndIndexPlus1 //NUM_TOTAL_GRID_CELLS elements
+   __global uint* gUniGridCells_ElementEndIndexPlus1 //NUM_UNIGRID_CELLS_PER_DIMENSION ^3 elements
                                                //is actually the gUniGridCells_NumElements buffer, but for performance reasons
                                                //(don't wanna make thousands of global atom_adds and atom_subs),
                                                //it will hold the element end index+1 after the kernel has completed;
@@ -73,10 +69,10 @@
       return;     
     }
     //rightmost global element?
-    if(gwiID == (get_global_size() -1) )
+    if(gwiID == (get_global_size(0) -1) )
     {
       //(index of own element +1) is definitely the (end index +1) of the cell it lies in:
-      gUniGridCells_ElementEndIndexPlus1[ lSortedZIndices[ LOCAL_OWN_INDEX ] ] = get_global_size();
+      gUniGridCells_ElementEndIndexPlus1[ lSortedZIndices[ LOCAL_OWN_INDEX ] ] = get_global_size(0);
       return;      
     }
     //} end check the special cases where no neighbours exist at all  

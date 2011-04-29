@@ -40,8 +40,8 @@
   
   
   {% block tabulationArgs%} 
-    __global uint* gUniGridCells_ElementStartIndex, //NUM_TOTAL_GRID_CELLS elements
-    __global uint* gUniGridCells_ElementEndIndexPlus1, //NUM_TOTAL_GRID_CELLS elements
+    __global uint* gUniGridCells_ElementStartIndex, //NUM_UNIGRID_CELLS_PER_DIMENSION ^3 elements
+    __global uint* gUniGridCells_ElementEndIndexPlus1, //NUM_UNIGRID_CELLS_PER_DIMENSION ^3 elements
                                                //see updateUniformGrid.cl argument list for further information about this 
                                                //"strange" encoding of the number of elements in a cell
   {% endblock tabulationArgs %} 
@@ -74,8 +74,8 @@
 
     __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
     void kernel_splitAndCompactUniformGrid(
-      __global uint* gUniGridCells_ElementStartIndex, //NUM_TOTAL_GRID_CELLS elements; to be split and compacted,too
-      __global uint* gUniGridCells_NumElements, //NUM_TOTAL_GRID_CELLS  elements, to be tabulated again for split; costs extra calculations,
+      __global uint* gUniGridCells_ElementStartIndex, //NUM_UNIGRID_CELLS_PER_DIMENSION ^3 elements; to be split and compacted,too
+      __global uint* gUniGridCells_NumElements, //NUM_UNIGRID_CELLS_PER_DIMENSION ^3  elements, to be tabulated again for split; costs extra calculations,
                                                  //but saves memory and bandwidth;
       
        //ping pong components of gUniGridCells_ElementStartIndex and gUniGridCells_NumElements;
@@ -161,15 +161,15 @@
               ( 
                 ( simGroupRunner < (numSimWorkGroupsOfThisCell - 1 ) )
                 //for all but the last group, there are 32 elements in each sim work group
-                ? (NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP)
+                ? (NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP)
                 //the last sim work group gets the rest of the elements, namely currentNumResidentElements%32
-                : ( BASE_2_MODULO( currentNumResidentElements, NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP) ) 
+                : ( BASE_2_MODULO( currentNumResidentElements, NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP) ) 
               ); 
               
             gCompactedUniGridCells_ElementStartIndex[ compactedIndex + simGroupRunner ] = 
               currentElementStartIndex
               //increment start index by intervals of 32
-              + (simGroupRunner << LOG2_NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP);    
+              + (simGroupRunner << LOG2_NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP);    
           }  
            
         }//endif(currentNumResidentElements >0)

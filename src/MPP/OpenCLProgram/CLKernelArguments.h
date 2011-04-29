@@ -63,9 +63,13 @@ public:
 protected:
 	friend class CLKernelArguments;
 
-	CLKernelArgumentBase(String argName, size_t argSizeInByte, void* argValuePtr);
+	//note if no argValuePtr is passed, this may be in indicator that this argument list is for
+	//generic" programs with frequently changing arguments;
+	//The user hat to set the unititialized arguments manually, else an exception is thrown
+	CLKernelArgumentBase(String argName, size_t argSizeInByte, void* argValuePtr = 0);
 
-	virtual void passArgToKernel(cl_uint argIndex, CLKernel* clKernel);
+	//if mArgValuePtr is still 0, then throw exception
+	virtual void passArgToKernel(cl_uint argIndex, CLKernel* clKernel)throw(BufferException);
 
 
 	String mArgName;
@@ -115,7 +119,7 @@ public:
 protected:
 	//override for buffer argument to handle that always the respective active/inactive ping pong component,
 	//if the buffer is a ping pong buffer;
-	virtual void passArgToKernel(cl_uint argIndex, CLKernel* clKernel);
+	virtual void passArgToKernel(cl_uint argIndex, CLKernel* clKernel)throw(BufferException);
 
 	BufferInterface* mBufferInterface;
 	bool mIfPingPongBufferUseInactiveOne;

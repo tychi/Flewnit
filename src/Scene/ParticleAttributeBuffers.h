@@ -29,9 +29,18 @@ public:
 			unsigned int invalidObjectID,
 			bool initToInvalidObjectID = true);
 	virtual ~ParticleAttributeBuffers();
-private:
-	friend class ParticleSceneRepresentation;
-	friend class ReorderParticleAttributesProgram; //make friend for accessing for kernel arg list generation
+
+
+	inline Buffer* getParticleIndexTableBuffer()const{return mParticleIndexTableBuffer;}
+	inline PingPongBuffer* getObjectInfoPiPoBuffer()const{return mObjectInfoPiPoBuffer;}
+	inline PingPongBuffer* getZIndicesPiPoBuffer()const{return mZIndicesPiPoBuffer;}
+	inline PingPongBuffer* getOldIndicesPiPoBuffer()const{return mOldIndicesPiPoBuffer;}
+	inline PingPongBuffer* getPositionsPiPoBuffer()const{return mPositionsPiPoBuffer;}
+	inline PingPongBuffer* getDensitiesPiPoBuffer()const{return mDensitiesPiPoBuffer;}
+	inline PingPongBuffer* getCorrectedVelocitiesPiPoBuffer()const{return mCorrectedVelocitiesPiPoBuffer;}
+	inline PingPongBuffer* getPredictedVelocitiesPiPoBuffer()const{return mPredictedVelocitiesPiPoBuffer;}
+	inline PingPongBuffer* getLastStepsAccelerationsPiPoBuffer()const{return mLastStepsAccelerationsPiPoBuffer;}
+
 
 	// convenience function to toggle all ping pong particle attribute/index buffers at once
 	void toggleBuffers();
@@ -41,6 +50,12 @@ private:
 	//usually, all particle attribute data remains on the GPU and don't need to be read back;
 	//but for debugging purposes during development, we will need the read-back functionality;
 	void readBackBuffers();
+
+private:
+
+	friend class ParticleSceneRepresentation;
+	friend class ReorderParticleAttributesProgram; //make friend for accessing for kernel arg list generation
+
 
 	//tracking buffer for fluid objects and rigid bodies to find their belonging particles in the
 	//recurrently reordered attribute buffers;

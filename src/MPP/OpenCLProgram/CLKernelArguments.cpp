@@ -98,8 +98,14 @@ CLKernelArgumentBase::CLKernelArgumentBase(String argName, size_t argSizeInByte,
 
 }
 
-void CLKernelArgumentBase::passArgToKernel(cl_uint argIndex, CLKernel* clKernel)
+void CLKernelArgumentBase::passArgToKernel(cl_uint argIndex, CLKernel* clKernel)throw(BufferException)
 {
+	if(! mArgValuePtr)
+	{
+		throw(BufferException("CLKernelArgumentBase::passArgToKernel: "
+				"arg pointer is still NULL! Set it to a valid value;"));
+	}
+
 	assert(clKernel);
 
 //	GUARD(
@@ -144,6 +150,7 @@ CLBufferKernelArgument::CLBufferKernelArgument(
 void CLBufferKernelArgument::set(BufferInterface* buffi, bool ifPingPongBufferUseInactiveOne )
 {
 	assert(buffi && "CLBufferKernelArgument::set; buffer != 0" );
+
 	assert(
 		"ifPingPongBufferUseInactiveOne may only be true if buffi is a ping pong buffer! "&&
 		( ! ( ifPingPongBufferUseInactiveOne &&  ( ! buffi->isPingPongBuffer() ) ) )
@@ -173,8 +180,14 @@ void CLBufferKernelArgument::set(BufferInterface* buffi, bool ifPingPongBufferUs
 
 }
 
-void CLBufferKernelArgument::passArgToKernel(cl_uint argIndex, CLKernel* clKernel)
+void CLBufferKernelArgument::passArgToKernel(cl_uint argIndex, CLKernel* clKernel)throw(BufferException)
 {
+	if(! mBufferInterface)
+	{
+		throw(BufferException("CLBufferKernelArgument::passArgToKernel: "
+				"Buffer pointer is still NULL! Set it to a valid value;"));
+	}
+
 	//setup robustly againgst ping pong buffer toggle
 	set(mBufferInterface, mIfPingPongBufferUseInactiveOne);
 
