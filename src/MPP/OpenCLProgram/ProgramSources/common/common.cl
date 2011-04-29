@@ -16,7 +16,7 @@
   #define SQUARED_LENGTH( vec ) ( vec.x * vec.x + vec.y * vec.y + vec.z * vec.z )
   
   //will execute faster than de "generic" modulo operator
-  #define BASE_2_MODULO (val, base2Val) ( (val) & ( (base2val) -1 ) )
+  #define BASE_2_MODULO(val,base2Val) ( (val) & ( (base2Val) -1 ) )
   //--------------------------------------------------------
   
   

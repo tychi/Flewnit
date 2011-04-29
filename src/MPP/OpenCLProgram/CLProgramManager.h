@@ -27,6 +27,9 @@ public:
 
 	CLProgram* getProgram(String name)throw(SimulatorException);
 
+	inline IntermediateResultBuffersManager* getIntermediateResultBuffersManager()const
+			{return mIntermediateResultBuffersManager;}
+
 private:
 	//friend void CLProgram::registerToCLPRogramManager();
 	friend CLProgram::CLProgram(

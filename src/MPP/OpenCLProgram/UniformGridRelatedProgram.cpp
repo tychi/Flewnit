@@ -7,9 +7,12 @@
 
 #include "UniformGridRelatedProgram.h"
 
-#include <grantlee/engine.h>
 #include "Scene/UniformGrid.h"
 #include "Util/HelperFunctions.h"
+
+#include <grantlee/engine.h>
+
+
 
 namespace Flewnit
 {

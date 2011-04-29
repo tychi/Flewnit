@@ -24,6 +24,7 @@
 #include <boost/foreach.hpp>
 #include "MPP/OpenCLProgram/CLKernelArguments.h"
 #include "Buffer/PingPongBuffer.h"
+#include "MPP/OpenCLProgram/SplitAndCompactUniformGridProgram.h"
 
 
 namespace Flewnit
@@ -183,11 +184,11 @@ UniformGrid::UniformGrid(
 
 	createAndAddDebugDrawSubObject();
 
-//TODO
+
 	mUpdateUniformGridProgram = new UpdateUniformGridProgram(this);
-//	mSplitAndCompactUniformGridProgram = new SplitAndCompactUniformGridProgram(this);
-//
-//
+	mSplitAndCompactUniformGridProgram = new SplitAndCompactUniformGridProgram(this);
+
+
 }
 
 UniformGrid::~UniformGrid()

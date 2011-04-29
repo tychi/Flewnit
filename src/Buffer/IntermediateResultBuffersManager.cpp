@@ -21,7 +21,7 @@ namespace Flewnit
 {
 
 IntermediateResultBuffersManager::IntermediateResultBuffersManager()
-: 	mBuffersAreAllocated(false), mCurrentOwningKernel(0)
+: 	mBuffersAreAllocated(false)
 {
 	//do nothing
 }
@@ -96,37 +96,48 @@ void IntermediateResultBuffersManager::allocBuffers()throw(BufferException)
 	}
 }
 
-
-void IntermediateResultBuffersManager::acquireBuffersFor(CLKernel* kernel)throw(BufferException)
+Buffer* IntermediateResultBuffersManager::getBuffer(unsigned int i)const throw(BufferException)
 {
-	if(mCurrentOwningKernel)
+	if( i >= mSharedIntermediateBuffers.size() )
 	{
-		throw(BufferException("buffers are not released!"));
+		throw(BufferException("IntermediateResultBuffersManager::getBuffer(unsigned int i):"
+				"there aren't that many buffers allocated!"));
 	}
-
-	mCurrentOwningKernel= kernel;
-}
-
-void IntermediateResultBuffersManager::releaseBuffersFor(CLKernel* kernel)throw(BufferException)
-{
-	if(mCurrentOwningKernel != kernel)
-	{
-		throw(BufferException("You have not right to release buffers you do not own ;("));
-	}
-	mCurrentOwningKernel = 0;
-}
-
-Buffer* IntermediateResultBuffersManager::getBuffer(CLKernel* kernelPtrForValidation, unsigned int i)const throw(BufferException)
-{
-	if(mCurrentOwningKernel != kernelPtrForValidation)
-	{
-		throw(BufferException("You have not right to acces the intermediate buffers; acquire them before using them;"));
-	}
-
-	assert(i < mSharedIntermediateBuffers.size());
 
 	return mSharedIntermediateBuffers[i];
 }
+
+
+//void IntermediateResultBuffersManager::acquireBuffersFor(CLKernel* kernel)throw(BufferException)
+//{
+//	if(mCurrentOwningKernel)
+//	{
+//		throw(BufferException("buffers are not released!"));
+//	}
+//
+//	mCurrentOwningKernel= kernel;
+//}
+//
+//void IntermediateResultBuffersManager::releaseBuffersFor(CLKernel* kernel)throw(BufferException)
+//{
+//	if(mCurrentOwningKernel != kernel)
+//	{
+//		throw(BufferException("You have not right to release buffers you do not own ;("));
+//	}
+//	mCurrentOwningKernel = 0;
+//}
+//
+//Buffer* IntermediateResultBuffersManager::getBuffer(CLKernel* kernelPtrForValidation, unsigned int i)const throw(BufferException)
+//{
+//	if(mCurrentOwningKernel != kernelPtrForValidation)
+//	{
+//		throw(BufferException("You have not right to acces the intermediate buffers; acquire them before using them;"));
+//	}
+//
+//	assert(i < mSharedIntermediateBuffers.size());
+//
+//	return mSharedIntermediateBuffers[i];
+//}
 
 
 }

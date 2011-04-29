@@ -1,5 +1,5 @@
 
-{% extends scan_localPar_globalSeq.cl %}
+{% extends "scan_localPar_globalSeq.cl" %}
 
   {% block documentHeader %} 
     /**
@@ -65,7 +65,7 @@
     /*
       Kernel to do a stream compaction on the base of the scan of the number of work groups per cell;
       The total count of simulation work groups to be launched for the following physics simulation phases
-      will be written to gSumsOfPartialGlobalScans[NUM_BASE2_CEILED_COMPUTE_UNITS];
+      will be written to gSumsOfPartialGlobalScans[NUM_COMPUTE_UNITS_BASE2_CEILED];
       
       Note that in contrast to kernel_scan_localPar_globalSeq, in this kernel, no sequentialization will be performed,
       because here, it wouldn't save a kernel invocation;
@@ -78,18 +78,19 @@
       __global uint* gUniGridCells_NumElements, //NUM_UNIGRID_CELLS_PER_DIMENSION ^3  elements, to be tabulated again for split; costs extra calculations,
                                                  //but saves memory and bandwidth;
       
-       //ping pong components of gUniGridCells_ElementStartIndex and gUniGridCells_NumElements;
-       //In the physics simulation phase, only "total count of simulation work groups" elements will be used;                     
-      __global uint* gCompactedUniGridCells_ElementStartIndex
+       //UniformGridBufferSet to be compacted;
+       //In the physics simulation phase, only "total count of simulation work groups" elements of these Buffers will be used;              
+      __global uint* gCompactedUniGridCells_ElementStartIndex,
       __global uint* gCompactedUniGridCells_NumElements, 
 
       __global uint* gLocallyScannedTabulatedValues, //gLocallyScannedSimWorkGroupCount, NUM_TOTAL_ELEMENTS_TO_SCAN  elements 
       __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_ELEMENTS__GLOBAL_SCAN elements
-      __global uint* gSumsOfPartialGlobalScans,  //at least NUM_BASE2_CEILED_COMPUTE_UNITS + 1  elements;
+      __global uint* gSumsOfPartialGlobalScans   //at least NUM_COMPUTE_UNITS_BASE2_CEILED + 1  elements;
                                                  //+1 because this kernel writes out the total sim work group count                                                 
     )
     {
-      __local uint lScannedSumsOfPartialGlobalScans [ PADDED_STRIDE ( NUM_BASE2_CEILED_COMPUTE_UNITS )];
+      __local uint lScannedSumsOfPartialGlobalScans [ PADDED_STRIDE ( NUM_COMPUTE_UNITS_BASE2_CEILED )];
+      __local uint lTotalSimWorkGroupCount;
       
       uint lwiID = get_local_id(0); // short for "local work item ID"
       uint gwiID = get_global_id(0); // short for "global work item ID"
@@ -97,8 +98,8 @@
       
       //check if we actually have more than one compute units, otherwise the scan would not be called and hence the first element
       //in lSumsOfPartialScansOfSumsOfGlobalRadixCounts wouldn't be zero and corrupt the offsetting; we have to catch this situation.
-      #if NUM_BASE2_CEILED_COMPUTE_UNITS > 1
-        if(lwiID < (NUM_BASE2_CEILED_COMPUTE_UNITS) )
+      #if NUM_COMPUTE_UNITS_BASE2_CEILED > 1
+        if(lwiID < (NUM_COMPUTE_UNITS_BASE2_CEILED) )
         { 
           //copy the tiny array to be scanned in order to yield the final offset and total count to local memory:
           uint paddedLocalIndex = CONFLICT_FREE_INDEX( get_local_id(0) );
@@ -111,13 +112,13 @@
         //scan the coarsest granularity   
         //default for GT435M 2/2=1; yes ,really, it is not worth such an invocation on such a device, but i wanna stay general
         //and not optimize for a single graphics card ;)
-        if(lwiID < (NUM_BASE2_CEILED_COMPUTE_UNITS/2) )
+        if(lwiID < (NUM_COMPUTE_UNITS_BASE2_CEILED/2) )
         {        
-          uint totalSimWorkGroupCount = scanExclusive(lScannedSumsOfPartialGlobalScans,NUM_BASE2_CEILED_COMPUTE_UNITS, lwiID );
+          scanExclusive(lScannedSumsOfPartialGlobalScans, & lTotalSimWorkGroupCount, NUM_COMPUTE_UNITS_BASE2_CEILED, lwiID );
           if(lwiID == 0)
           {
             //write the total count to global memory
-            gSumsOfPartialGlobalScans[NUM_BASE2_CEILED_COMPUTE_UNITS] = totalSimWorkGroupCount;
+            gSumsOfPartialGlobalScans[NUM_COMPUTE_UNITS_BASE2_CEILED] = lTotalSimWorkGroupCount;
           }
         }
       #else

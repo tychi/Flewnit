@@ -26,12 +26,6 @@ class IntermediateResultBuffersManager
 	: public BasicObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
-private:
-	friend class CLProgramManager;
-	//only instanciable and deletable by CLProgramManager
-	IntermediateResultBuffersManager();
-	virtual ~IntermediateResultBuffersManager();
-
 public:
 
 	//every functional unit (CL program, class etc) calls this request function,
@@ -41,28 +35,51 @@ public:
 	//The manager stores the maxima of the requestet sizes to mBufferByteSizes;
 	void requestBufferAllocation(const std::vector<unsigned int>& minimumBufferByteSizes)throw(BufferException);
 
-	//after the request phase, the engine calls allocBuffers();
+	//call only valid if  buffersAreAllocated();
+	Buffer* getBuffer(unsigned int i)const throw(BufferException);
+
+	inline bool buffersAreAllocated()const{return mBuffersAreAllocated;}
+
+	//{
+	//I once thought about a way to save the buffers of beeing concurrently used by kernels;
+	//but this concept contradicts the paradigm to invoke kernel as easy as possible without
+	//to much special sutff;
+	//Plus, the event-waiting mechanism used by my kernels also enables mutual exclusion,
+	//although you have the drawback that vou have to know the possibly competing buffer accesse
+	//(kernel invocations / buffer reads,writes,copies);
+	//TODO enhance the BufferInterface class with a cl::event mamber tracking at least the
+	//last reads,writes,copies; (tahsts special stuff for a generic usage of this framework,
+	//as long i only simulate particles with openCL, this issue is not that urgent; )
+	//	inline bool buffersAreAcquired()const{return (mCurrentOwningKernel == 0 );}
+	//	void acquireBuffersFor(CLKernel* kernel)throw(BufferException);
+	//	void releaseBuffersFor(CLKernel* kernel)throw(BufferException);
+	//	Buffer* getBuffer(CLKernel* kernelPtrForValidation, unsigned int i)const throw(BufferException);
+	//}
+
+private:
+	friend class CLProgramManager;
+	//only instanciable, "buffer-allocatable" and deletable by CLProgramManager
+	IntermediateResultBuffersManager();
+	virtual ~IntermediateResultBuffersManager();
+
+	//after the request phase, before the kernels are generated and with their defaul arguments
+	//(if available),the CLProgramManager singleton calls allocBuffers();
+	//this way, at least the intermediate buffers can be used as arguments passed to the CLKernel class
+	//and never need to be altered; this way, the user of the CLKernel is not bothered with binding
+	//intermediate buffers :).
 	//afterwards, no new allocation can be requested;
 	//the buffers are currently allocated for both host and OpenCL, but not OpenGL!
 	//If it will turn out that GL context is of any usage, it will be supplemented ;(
 	void allocBuffers()throw(BufferException);
 
-	inline bool buffersAreAllocated()const{return mBuffersAreAllocated;}
-	inline bool buffersAreAcquired()const{return (mCurrentOwningKernel == 0 );}
-
-	void acquireBuffersFor(CLKernel* kernel)throw(BufferException);
-	void releaseBuffersFor(CLKernel* kernel)throw(BufferException);
 
 
-	Buffer* getBuffer(CLKernel* kernelPtrForValidation, unsigned int i)const throw(BufferException);
-
-private:
 	std::vector<unsigned int> mBufferByteSizes;
 	std::vector<Buffer*> mSharedIntermediateBuffers;
 
 	bool mBuffersAreAllocated;
 
-	CLKernel* mCurrentOwningKernel;
+	//CLKernel* mCurrentOwningKernel;
 
 };
 

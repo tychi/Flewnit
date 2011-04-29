@@ -23,38 +23,7 @@
    
 
 
-   //-------------------------------------------------------------------------------------
-   //returns the total sum
-   void scanExclusive(
-      __local  SCAN_DATA_TYPE * arrayToScan, //correctly padded element input/output array
-      __local  SCAN_DATA_TYPE * lTotalSum,   //save memory and one barrier by using local mem instead of returning a private value;
-      uint numElements, 
-      uint workItemOffsetID, //usually just get_local_id(0), but when scanning several small arrays within the same work group,
-                            //the work item id may be smaller than workItemOffsetID in order to fit the index calculations
-     
-   )
-   {
-      //no read in, everything is at the correct place in local memory
-      
-      scanExclusive_upSweep(arrayToScan, lTotalSum, numElements, workItemOffsetID);
-      
-      //note: total sum copy and clear to zero of last element is done within upsweep;
-      //      reason: save one if() statement + when only the total sum is needed instead of a complete scan,
-      //      one can call scanExclusive_upSweep(..) directly;
-      // SCAN_DATA_TYPE totalSum = arrayToScan[ CONFLICT_FREE_INDEX( numElements - 1 ) ];
-      //if (workItemOffsetID == 0) 
-      //{ 
-        //(*lTotalSum) = arrayToScan[ CONFLICT_FREE_INDEX( numElements - 1 ) ];
-        //arrayToScan[ CONFLICT_FREE_INDEX(numElements - 1) ] = 0;// clear the last element
-      //} 
-      
-      scanExclusive_downSweep(arrayToScan, numElements, workItemOffsetID);
-      
-      //ensure that the caller can read any value without hazard;
-      barrier(CLK_LOCAL_MEM_FENCE);  
-   
-      //return totalSum;
-   }
+ 
   
   
   //-------------------------------------------------------------------------------------
@@ -165,3 +134,40 @@
       }  
   }
   //-------------------------------------------------------------------------------------
+  
+  
+  
+   //-------------------------------------------------------------------------------------
+   //returns the total sum
+   void scanExclusive(
+      __local  SCAN_DATA_TYPE * arrayToScan, //correctly padded element input/output array
+      __local  SCAN_DATA_TYPE * lTotalSum,   //save memory and one barrier by using local mem instead of returning a private value;
+      uint numElements, 
+      uint workItemOffsetID //usually just get_local_id(0), but when scanning several small arrays within the same work group,
+                            //the work item id may be smaller than workItemOffsetID in order to fit the index calculations
+     
+   )
+   {
+      //no read in, everything is at the correct place in local memory
+      
+      scanExclusive_upSweep(arrayToScan, lTotalSum, numElements, workItemOffsetID);
+      
+      //note: total sum copy and clear to zero of last element is done within upsweep;
+      //      reason: save one if() statement + when only the total sum is needed instead of a complete scan,
+      //      one can call scanExclusive_upSweep(..) directly;
+      // SCAN_DATA_TYPE totalSum = arrayToScan[ CONFLICT_FREE_INDEX( numElements - 1 ) ];
+      //if (workItemOffsetID == 0) 
+      //{ 
+        //(*lTotalSum) = arrayToScan[ CONFLICT_FREE_INDEX( numElements - 1 ) ];
+        //arrayToScan[ CONFLICT_FREE_INDEX(numElements - 1) ] = 0;// clear the last element
+      //} 
+      
+      scanExclusive_downSweep(arrayToScan, numElements, workItemOffsetID);
+      
+      //ensure that the caller can read any value without hazard;
+      barrier(CLK_LOCAL_MEM_FENCE);  
+   
+      //return totalSum;
+   }
+   
+   

@@ -72,7 +72,7 @@
   // Geforce GT  435 M: 128/ 2=64
   // Geforce GTX 280  : 128/32= 4
   // Geforce GTX 570  : 128/16= 8 
-  #define NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY (  NUM_ELEMENTS__GLOBAL_SCAN / NUM_BASE2_CEILED_COMPUTE_UNITS )
+  #define NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY (  NUM_ELEMENTS__GLOBAL_SCAN / NUM_COMPUTE_UNITS_BASE2_CEILED )
   
   
   {% block specialDefinitions %} 
@@ -90,7 +90,7 @@
       
     __global uint* gLocallyScannedTabulatedValues, //NUM_TOTAL_ELEMENTS_TO_SCAN  elements 
     __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_ELEMENTS__GLOBAL_SCAN elements
-    __global uint* gSumsOfPartialGlobalScans,  //at least NUM_BASE2_CEILED_COMPUTE_UNITS + 1  elements;
+    __global uint* gSumsOfPartialGlobalScans  //at least NUM_BASE2_CEILED_COMPUTE_UNITS + 1  elements;
                                                //+1 because the kernel finishing the "total scan" may wanna write out
                                                //the total sum
   )

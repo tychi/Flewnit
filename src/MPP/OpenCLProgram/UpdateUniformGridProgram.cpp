@@ -21,7 +21,7 @@ namespace Flewnit
 
 UpdateUniformGridProgram::UpdateUniformGridProgram(UniformGrid* uniGrid)
 :
-	UniformGridRelatedProgram(String("updateUniformGrid.cl"), uniGrid)
+	UniformGridRelatedProgram(Path(String("updateUniformGrid.cl")), uniGrid)
 {
 	//nothing to do
 }
