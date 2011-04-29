@@ -33,7 +33,7 @@ public:
 	//IN DESCENDING ORDER!!1 (sry std::sort is so annoying this the comparator objects, have no time for sorting now...
 	//.. but will at least verify the order ;( ).
 	//The manager stores the maxima of the requestet sizes to mBufferByteSizes;
-	void requestBufferAllocation(const std::vector<unsigned int>& minimumBufferByteSizes)throw(BufferException);
+	void requestBufferAllocation(const std::vector<size_t>& minimumBufferByteSizes)throw(BufferException);
 
 	//call only valid if  buffersAreAllocated();
 	Buffer* getBuffer(unsigned int i)const throw(BufferException);
@@ -74,7 +74,7 @@ private:
 
 
 
-	std::vector<unsigned int> mBufferByteSizes;
+	std::vector<size_t> mBufferByteSizes;
 	std::vector<Buffer*> mSharedIntermediateBuffers;
 
 	bool mBuffersAreAllocated;

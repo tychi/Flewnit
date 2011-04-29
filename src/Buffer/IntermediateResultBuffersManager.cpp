@@ -37,7 +37,7 @@ IntermediateResultBuffersManager::~IntermediateResultBuffersManager()
 //.. but will at least verify the order ;( ).
 //The manager stores the maxima of the requestet sizes to mBufferByteSizes;
 void IntermediateResultBuffersManager::requestBufferAllocation(
-		const std::vector<unsigned int>& minimumBufferByteSizes) throw(BufferException)
+		const std::vector<size_t>& minimumBufferByteSizes) throw(BufferException)
 
 {
 	assert(minimumBufferByteSizes.size() > 0);

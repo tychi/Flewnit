@@ -36,6 +36,9 @@ protected:
 	//issue the several createKernel() calls with initial argument list etc;
 	virtual void createKernels();
 
+	//internal value, can be comüputen on the fly but for readybility an consistency..
+	unsigned int mNumScanKernelWorkGroups;
+
 };
 
 }

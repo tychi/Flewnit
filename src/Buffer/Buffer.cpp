@@ -164,6 +164,7 @@ void Buffer::readGL(void* data)throw(BufferException)
 {
 	glGetBufferSubData(mGlBufferTargetEnum,0,mBufferInfo->bufferSizeInByte,data);
 }
+
 void Buffer::readCL(void* data)throw(BufferException)
 {
 	PARA_COMP_MANAGER->getCommandQueue().enqueueReadBuffer(

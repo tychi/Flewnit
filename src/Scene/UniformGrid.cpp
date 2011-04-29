@@ -209,7 +209,7 @@ UniformGridBufferSet* UniformGrid::getBufferSet(String name)const throw(BufferEx
 	if(mUniformGridBufferSetMap.find(name) == mUniformGridBufferSetMap.end())
 	{
 		throw(SimulatorException(
-				String("UniformGrid::getBufferSet(tring name): Buffer set with specified name ")
+				String("UniformGrid::getBufferSet(String name): Buffer set with specified name ")
 				+ name + String(" doesn't exist!") ));
 	}
 
@@ -223,13 +223,13 @@ void UniformGrid::updateCells(String bufferSetName, PingPongBuffer* sortedZIndic
 	CLKernel* currentKernel = mUpdateUniformGridProgram->getKernel("kernel_updateUniformGrid");
 
 	currentKernel->getCLKernelArguments()->getBufferArg("gSortedZIndices")
-			->set(sortedZIndicesKeyBuffer);
+		->set(sortedZIndicesKeyBuffer);
 
 	currentKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementStartIndex")
-			->set( getBufferSet(bufferSetName)->getStartIndices() );
+		->set( getBufferSet(bufferSetName)->getStartIndices() );
 
 	currentKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementEndIndexPlus1")
-			->set( getBufferSet(bufferSetName)->getElementCounts() );
+		->set( getBufferSet(bufferSetName)->getElementCounts() );
 
 	currentKernel->run(
 		EventVector{
@@ -244,10 +244,57 @@ void UniformGrid::updateCells(String bufferSetName, PingPongBuffer* sortedZIndic
 
 unsigned int UniformGrid::splitAndCompactCells(String bufferSetName,UniformGridBufferSet* compactionResultBufferSet)
 {
-	//TODO
-	assert(0&&"TODO implement");
+	//scan phase
 
-	return 0;
+	CLKernel* scanKernel = mSplitAndCompactUniformGridProgram->getKernel("kernel_scan_localPar_globalSeq");
+
+	scanKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementStartIndex")
+		->set( getBufferSet(bufferSetName)->getStartIndices() );
+
+	scanKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementEndIndexPlus1")
+		->set( getBufferSet(bufferSetName)->getElementCounts() );
+
+	//nothing else to set as argument for this kernel, intermediate buffers are already bound
+	scanKernel->run(
+		EventVector{
+			//wait for the uniform grid update ;)
+			mUpdateUniformGridProgram->getKernel("kernel_updateUniformGrid")
+				->getEventOfLastKernelExecution()
+		}
+	);
+
+
+	//-----------------------------------------------------------------------------------------------------------
+	//finish scan anc split&compact phase
+
+	CLKernel* splitNCompactKernel = mSplitAndCompactUniformGridProgram->getKernel("kernel_splitAndCompactUniformGrid");
+
+
+	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementStartIndex")
+		->set( getBufferSet(bufferSetName)->getStartIndices() );
+
+	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_NumElements")
+		->set( getBufferSet(bufferSetName)->getElementCounts() );
+
+	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gCompactedUniGridCells_ElementStartIndex")
+		->set( compactionResultBufferSet->getStartIndices() );
+
+	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gCompactedUniGridCells_NumElements")
+		->set( compactionResultBufferSet->getElementCounts() );
+
+	//nothing else to set as argument for this kernel, intermediate buffers are already bound
+	splitNCompactKernel->run(
+		EventVector{
+			//wait for the scan kernel to return (invocated above)
+			scanKernel->getEventOfLastKernelExecution()
+		}
+	);
+
+
+	//------------------------------------------------------------------------------------
+	//read back total count:
+	return mSplitAndCompactUniformGridProgram->readBackNumGeneratedNonEmptySplijtCells();
+
 }
 
 void UniformGrid::setupZIndexLookUpTable() //called by constructor

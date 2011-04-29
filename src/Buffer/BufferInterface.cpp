@@ -337,6 +337,30 @@ void BufferInterface::copyFromHostToGPU()throw(BufferException)
 }
 
 
+//if you definetzly need control over blocking, but don't want to corrupt
+//the global blocking setting, use this routine; so you can save programming a
+//"store-state-to-temp - execute - restore-state-from-temp" -pattern
+void BufferInterface::readBack(bool enforceBlockOrUnblock)throw(BufferException)
+{
+	//kinda hacky routine; fine grained synchronization-vs.-perfomance tunes
+	//weren't considered during BufferInterface design, as I thougth that througout simulation,
+	//there will be no reads/wirtes or copies..
+	//to fix this ugly structure is a TODO
+
+	cl_bool blockGlobalTmp = PARA_COMP_MANAGER->getBlockAfterEnqueue();
+
+
+	//override global state;
+	PARA_COMP_MANAGER->setBlockAfterEnqueue(enforceBlockOrUnblock);
+
+	//standard readback function;
+	readBack();
+
+	//restore global blocking stuff
+	PARA_COMP_MANAGER->setBlockAfterEnqueue(blockGlobalTmp);
+}
+
+
 void BufferInterface::readBack()throw(BufferException)
 {
 	assert( "CPU buffer must exist for readback" && mCPU_Handle);

@@ -67,6 +67,11 @@ public:
 	//will decide, which api will be used for the readback;
 	void readBack()throw(BufferException);
 
+	//if you definetzly need control over blocking, but don't want to corrupt
+	//the global blocking setting, use this routine; so you can save programming a
+	//"store-state-to-temp - execute - restore-state-from-temp" -pattern
+	void readBack(bool enforceBlockOrUnblock)throw(BufferException);
+
 	void* mapBuffer()throw(BufferException)
 	{
 		//TODO implement when needed

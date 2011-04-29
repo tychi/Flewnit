@@ -1,6 +1,10 @@
 /*
  * SplitAndCompactUniformGridProgram.cpp
  *
+ *
+ * For information about the strange kernelWorkLoadParams calculations
+ * for kernel_scan_localPar_globalSeq, refer to scan_localPar_globalSeq.cl;
+ *
  *  Created on: Apr 27, 2011
  *      Author: tychi
  */
@@ -27,19 +31,24 @@ namespace Flewnit
 
 SplitAndCompactUniformGridProgram::SplitAndCompactUniformGridProgram(UniformGrid* uniGrid)
 :
-	UniformGridRelatedProgram(String("splitAndCompactUniformGrid.cl"), uniGrid)
+	UniformGridRelatedProgram(String("splitAndCompactUniformGrid.cl"), uniGrid),
+	mNumScanKernelWorkGroups(
+		HelperFunctions::ceilToNextPowerOfTwo(
+			PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxComputeUnits
+		)
+	)
 {
 	unsigned int numTotalGridCells =
 		mUniGrid->getNumCellsPerDimension()* mUniGrid->getNumCellsPerDimension()* mUniGrid->getNumCellsPerDimension();
 
 	//request intermediate buffers from  IntermediateResultBuffersManager:
 	CLProgramManager::getInstance().getIntermediateResultBuffersManager()->requestBufferAllocation(
-		std::vector<unsigned int>{
+		std::vector<size_t>{
 
 			// - Kernel: 	kernel_scan_localPar_globalSeq
 			// - arg:	 	gLocallyScannedTabulatedValues
 			// - size:		4 bytes per entry * mNumCellsPerDimension^3
-			4 * numTotalGridCells,
+			(size_t) (sizeof(unsigned int) * numTotalGridCells),
 
 			// - Kernel: 	kernel_scan_localPar_globalSeq
 			// - arg:	 	gSumsOfPartialGlobalScans
@@ -49,11 +58,14 @@ SplitAndCompactUniformGridProgram::SplitAndCompactUniformGridProgram(UniformGrid
 			//							 We know that the work group size is  floorToNextPowerOfTwo(maxWorkGroupSize);
 			//							 So divide total element count by this numbe, then you know how many elements you
 			//							 need for a global scan of the local scan total sums;
-			(4 * numTotalGridCells)
-				/
+			(size_t)
 			(
-				2 * HelperFunctions::floorToNextPowerOfTwo(
-					PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize
+				(sizeof(unsigned int) * numTotalGridCells)
+					/
+				(
+					2 * HelperFunctions::floorToNextPowerOfTwo(
+						PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize
+					)
 				)
 			),
 
@@ -61,9 +73,18 @@ SplitAndCompactUniformGridProgram::SplitAndCompactUniformGridProgram(UniformGrid
 			// - arg:	 	gPartiallyGloballyScannedTabulatedValues
 			// - size:		at least 4 bytes per entry * (ceilToNextPowerOfTwo(numComputeUnits) + 1);
 			//				+1 because the kernel finishing the "total scan" writes out the total sum for read back;;
-			HelperFunctions::ceilToNextPowerOfTwo(
-				PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxComputeUnits
-			) +1
+			//				Why ceilToNextPowerOfTwo(numComputeUnits)? Be cause we have that many work groups
+			//				in
+			(size_t)
+			(
+				sizeof(unsigned int) *
+				(
+					HelperFunctions::ceilToNextPowerOfTwo(
+							PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxComputeUnits
+					)
+					+ 1
+				)
+			)
 		}
 	);
 
@@ -125,19 +146,23 @@ void SplitAndCompactUniformGridProgram::setupTemplateContext(TemplateContextMap&
 
 void SplitAndCompactUniformGridProgram::createKernels()
 {
+	//maximum possible work group size, but floored to power of two;
+	//no memory scarcity here as we scan only one array,n ot 64 like in radix sort or 9
+	//like in rigid body update; Hence we can use the maximum work group size for maximum scan efficiency
+	unsigned int scanKernelWorkGroupSize =
+		HelperFunctions::floorToNextPowerOfTwo(
+			PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize
+		);
+
+	unsigned int numScanKernelTotalWorkItems  = mNumScanKernelWorkGroups * scanKernelWorkGroupSize;
+
 	mKernels["kernel_scan_localPar_globalSeq"] = new CLKernel(
 		this,
 		"kernel_scan_localPar_globalSeq",
 
 		new CLKernelWorkLoadParams(
-			//getNumCellsPerDimension() ^3 work items, one per cell
-			mUniGrid->getNumCellsPerDimension()*mUniGrid->getNumCellsPerDimension()*mUniGrid->getNumCellsPerDimension(),
-			//maximum possible work group size, but floored to power of two;
-			//no memory scarcity here as we scan only one array,n ot 64 like in radix sort or 9
-			//like in rigid body update; Hence we can use the maximum work group size for maximum scan efficiency
-			HelperFunctions::floorToNextPowerOfTwo(
-				PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize
-			)
+			numScanKernelTotalWorkItems,
+			scanKernelWorkGroupSize
 		),
 
 		new CLKernelArguments(
@@ -213,6 +238,31 @@ void SplitAndCompactUniformGridProgram::createKernels()
 			}
 		)
 	);
+}
+
+
+//to be called after kernel run to grab the total sum of the scan process;
+unsigned int SplitAndCompactUniformGridProgram::readBackNumGeneratedNonEmptySplijtCells()
+{
+	BufferInterface* bufferWithTotalScanSum =
+		getKernel("kernel_splitAndCompactUniformGrid")->getCLKernelArguments()
+			->getBufferArg("gSumsOfPartialGlobalScans")->get();
+
+	//read back and block
+	bufferWithTotalScanSum->readBack(true);
+
+	//enforce that buffer is read back! <-- not correct; only on CPU level, this ensures correct order, not
+	//for CPU/GPU memory reads/writes/copies
+	//PARA_COMP_MANAGER->barrierCompute();
+
+	//read the relevant value from the host buffer
+	return
+		reinterpret_cast<unsigned int * >( bufferWithTotalScanSum->getCPUBufferHandle() )
+			[
+			 	//remember the size explanations to gSumsOfPartialGlobalScans, see above;
+			 	//the last element of this buffer is the searched total sum
+			 	 mNumScanKernelWorkGroups
+			];
 }
 
 }
