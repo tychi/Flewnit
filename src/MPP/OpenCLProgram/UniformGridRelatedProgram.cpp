@@ -56,17 +56,6 @@ void UniformGridRelatedProgram::setupTemplateContext(TemplateContextMap& context
 		HelperFunctions::log2ui( mUniGrid->getNumMaxElementsPerSimulationWorkGroup() )
 	);
 
-
-#define NUM_UNIGRID_CELLS_PER_DIMENSION ( {{ numUniGridCellsPerDimension }} )
-//default: 6
-#define LOG2_NUM_UNIGRID_CELLS_PER_DIMENSION ( {{ log2NumUniGridCellsPerDimension }} )
-
-//default: 32; reason:
-//  < 32  --> some threads in warp idle
-//  > 32  --> double number of simulation work groups, many threads idle in split up cells;
-#define NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP ( {{ numMaxParticlesPerSimulationWorkGroup }} )
-//default log2(32) = 5;
-#define LOG2_NUM_MAX_PARTICLES_PER_SIMULATION_WORK_GROUP ( {{ log2NumMaxParticlesPerSimulationWorkGroup }}
 }
 
 

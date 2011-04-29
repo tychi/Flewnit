@@ -35,6 +35,12 @@ CLKernelWorkLoadParams::CLKernelWorkLoadParams(
 //also check common stuff like that the mNumWorkItemsPerWorkGroup is a power of two;
 void CLKernelWorkLoadParams::validateAgainst(CLKernel* kernel)const throw(SimulatorException)
 {
+	if ( (mNumTotalWorkItems % mNumWorkItemsPerWorkGroup) != 0 )
+	{
+		throw(SimulatorException("total work item count must be a multiple of work group work item count!"));
+	}
+
+
 	size_t maxPossibleWorkGRoupSizeOfThisKernel =
 		kernel->mKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(
 			PARA_COMP_MANAGER->getUsedDevice(),

@@ -22,6 +22,8 @@
 #include "MPP/OpenCLProgram/UpdateUniformGridProgram.h"
 
 #include <boost/foreach.hpp>
+#include "MPP/OpenCLProgram/CLKernelArguments.h"
+#include "Buffer/PingPongBuffer.h"
 
 
 namespace Flewnit
@@ -88,8 +90,6 @@ cl::Event UniformGridBufferSet::clearElementCounts()
 
 	//---------------------------------------------------
 	EventVector eventVec;
-	cl::Event initial_kernelEvent = CLProgramManager::getInstance().getProgram("updateForce_integrate_calcZIndex.cl")->
-			getKernel("kernel_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
 	cl::Event default_kernelEvent = CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")->
 			getKernel("kernel_initial_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
 
@@ -99,12 +99,19 @@ cl::Event UniformGridBufferSet::clearElementCounts()
 		eventVec.push_back(default_kernelEvent);
 	}
 	else{
+		cl::Event initial_kernelEvent =
+			CLProgramManager::getInstance().
+				getProgram("updateForce_integrate_calcZIndex.cl")->
+				getKernel("kernel_updateForce_integrate_calcZIndex")->
+				getEventOfLastKernelExecution();
+
 		if( initial_kernelEvent() != 0 ){
 			//we are in pass 1; dependency: initial physics copmutation kernel
 			eventVec.push_back(initial_kernelEvent);
-		}else{
-			//we are in pass 0; zero dependencies here
 		}
+		//else{
+			//we are in pass 0; zero dependencies here
+		//}
 	}
 	//-------------------------------------------------
 
@@ -212,8 +219,25 @@ UniformGridBufferSet* UniformGrid::getBufferSet(String name)const throw(BufferEx
 
 void UniformGrid::updateCells(String bufferSetName, PingPongBuffer* sortedZIndicesKeyBuffer)
 {
-	//TODO
-	assert(0&&"TODO implement");
+	CLKernel* currentKernel = mUpdateUniformGridProgram->getKernel("kernel_updateUniformGrid");
+
+	currentKernel->getCLKernelArguments()->getBufferArg("gSortedZIndices")
+			->set(sortedZIndicesKeyBuffer);
+
+	currentKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementStartIndex")
+			->set( getBufferSet(bufferSetName)->getStartIndices() );
+
+	currentKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementEndIndexPlus1")
+			->set( getBufferSet(bufferSetName)->getElementCounts() );
+
+	currentKernel->run(
+		EventVector{
+			//wait for reorder phase of radix sort kernel to finish ;)
+			CLProgramManager::getInstance().getProgram("radixSort.cl")
+				->getKernel("kernel_radixSort_reorder_Phase")->getEventOfLastKernelExecution()
+		}
+	);
+
 
 }
 
