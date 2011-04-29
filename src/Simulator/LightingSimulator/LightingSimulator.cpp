@@ -262,6 +262,8 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 
 	//GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_POINT));
 	GUARD(glPointSize(10.0f));
+	GUARD(glEnable(GL_LINE_SMOOTH));
+	GUARD(glLineWidth(0.01f));
 
 	//GUARD(glPolygonMode(GL_FRONT, GL_FILL));
     GUARD(glEnable(GL_CULL_FACE));

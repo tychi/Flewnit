@@ -15,6 +15,11 @@
 #include "MPP/OpenCLProgram/CLProgramManager.h"
 #include "Util/HelperFunctions.h"
 
+#include "Geometry/VertexBasedGeometry.h"
+#include "Material/DebugDrawVisualMaterial.h"
+#include "WorldObject/SubObject.h"
+#include "Material/VisualMaterial.h"
+
 
 
 namespace Flewnit
@@ -157,9 +162,9 @@ UniformGrid::UniformGrid(
 {
 	setupZIndexLookUpTable();
 
-//TODO
-//	createAndAddDebugDrawGeometry();
+	createAndAddDebugDrawSubObject();
 
+//TODO
 //	mUpdateUniformGridProgram = new UpdateUniformGridProgram(this);
 //	mSplitAndCompactUniformGridProgram = new SplitAndCompactUniformGridProgram(this);
 //
@@ -248,8 +253,139 @@ void UniformGrid::setupZIndexLookUpTable() //called by constructor
 //line drawing without index buffer;
 void UniformGrid::createAndAddDebugDrawSubObject()
 {
-	//TODO
-	assert(0&&"TODO implement");
+	VertexBasedGeometry* lineGeo = new VertexBasedGeometry(
+		getName() + String("DebugDrawLineGeometry"),
+		VERTEX_BASED_LINES
+	);
+
+	Buffer* linesPositionBuffer = new Buffer(
+		BufferInfo(
+			getName() + lineGeo->getName() + String("PositionBuffer"),
+			ContextTypeFlags( HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG ),
+			POSITION_SEMANTICS,
+			TYPE_VEC4F,
+			//6 faces @ (mNumCellsPerDimension +1) verts per axis, sqare to get num of verts filling a whole side
+			6 * (mNumCellsPerDimension +1 ) * (mNumCellsPerDimension +1 ),
+			BufferElementInfo( 4, GPU_DATA_TYPE_FLOAT,32,false ),
+			VERTEX_ATTRIBUTE_BUFFER_TYPE,
+			NO_CONTEXT_TYPE
+		),
+		false,
+		0
+	);
+
+	Vector4D* posBuffer= reinterpret_cast<Vector4D*>(linesPositionBuffer->getCPUBufferHandle());
+
+	Vector4D uniGridCentre = mMinCornerPosition + mNumCellsPerDimension * 0.5f * mExtendsOfOneCell;
+	//Vector3D distFaceToCentre;  mNumCellsPerDimension * 0.5f ;
+
+	unsigned int offsetInPosBuffer = 0;
+
+	//handle the two xy-planes
+	for( unsigned int yIndex = 0; yIndex <= mNumCellsPerDimension; yIndex ++)
+	{
+		for( unsigned int xIndex = 0; xIndex <= mNumCellsPerDimension; xIndex ++)
+		{
+			posBuffer[ offsetInPosBuffer + 2 * (mNumCellsPerDimension +1) * yIndex +  2 * xIndex + 0 ]
+			  =
+			     mMinCornerPosition +
+			     xIndex * mExtendsOfOneCell.x * Vector4D(1.0f,0.0f,0.0f,0.0f) +
+			     yIndex * mExtendsOfOneCell.y * Vector4D(0.0f,1.0f,0.0f,0.0f) +
+			     0      * mExtendsOfOneCell.z * Vector4D(0.0f,0.0f,1.0f,0.0f)
+			     ;
+
+			posBuffer[ offsetInPosBuffer + 2 * (mNumCellsPerDimension +1) * yIndex +  2 * xIndex + 1 ]
+			  =
+			     mMinCornerPosition +
+			     xIndex * mExtendsOfOneCell.x * Vector4D(1.0f,0.0f,0.0f,0.0f) +
+			     yIndex * mExtendsOfOneCell.y * Vector4D(0.0f,1.0f,0.0f,0.0f) +
+			     mNumCellsPerDimension * mExtendsOfOneCell.z * Vector4D(0.0f,0.0f,1.0f,0.0f)
+			     ;
+		}
+	}
+
+	offsetInPosBuffer += 2 * (mNumCellsPerDimension +1 ) * (mNumCellsPerDimension +1 );
+
+	//handle the two zy-planes
+	for( unsigned int yIndex = 0; yIndex <= mNumCellsPerDimension; yIndex ++)
+	{
+		for( unsigned int zIndex = 0; zIndex <= mNumCellsPerDimension; zIndex ++)
+		{
+			posBuffer[ offsetInPosBuffer + 2 * (mNumCellsPerDimension +1) * yIndex +  2 * zIndex + 0 ]
+			  =
+			     mMinCornerPosition +
+			     0      * mExtendsOfOneCell.x * Vector4D(1.0f,0.0f,0.0f,0.0f) +
+			     yIndex * mExtendsOfOneCell.y * Vector4D(0.0f,1.0f,0.0f,0.0f) +
+			     zIndex * mExtendsOfOneCell.z * Vector4D(0.0f,0.0f,1.0f,0.0f)
+			     ;
+
+			posBuffer[ offsetInPosBuffer + 2 * (mNumCellsPerDimension +1) * yIndex +  2 * zIndex + 1 ]
+			  =
+				mMinCornerPosition +
+				mNumCellsPerDimension * mExtendsOfOneCell.x * Vector4D(1.0f,0.0f,0.0f,0.0f) +
+			    yIndex 				  * mExtendsOfOneCell.y * Vector4D(0.0f,1.0f,0.0f,0.0f) +
+				zIndex                * mExtendsOfOneCell.z * Vector4D(0.0f,0.0f,1.0f,0.0f)
+				;
+		}
+	}
+
+	offsetInPosBuffer += 2 * (mNumCellsPerDimension +1 ) * (mNumCellsPerDimension +1 );
+
+	//handle the two xz-planes
+	for( unsigned int zIndex = 0; zIndex <= mNumCellsPerDimension; zIndex ++)
+	{
+		for( unsigned int xIndex = 0; xIndex <= mNumCellsPerDimension; xIndex ++)
+		{
+			posBuffer[ offsetInPosBuffer + 2 * (mNumCellsPerDimension +1) * zIndex +  2 * xIndex + 0 ]
+			  =
+			     mMinCornerPosition +
+			     xIndex * mExtendsOfOneCell.x * Vector4D(1.0f,0.0f,0.0f,0.0f) +
+			     0      * mExtendsOfOneCell.y * Vector4D(0.0f,1.0f,0.0f,0.0f) +
+			     zIndex * mExtendsOfOneCell.z * Vector4D(0.0f,0.0f,1.0f,0.0f)
+			     ;
+
+			posBuffer[ offsetInPosBuffer + 2 * (mNumCellsPerDimension +1) * zIndex +  2 * xIndex + 1 ]
+			  =
+				mMinCornerPosition +
+				xIndex 				  * mExtendsOfOneCell.x * Vector4D(1.0f,0.0f,0.0f,0.0f) +
+				mNumCellsPerDimension * mExtendsOfOneCell.y * Vector4D(0.0f,1.0f,0.0f,0.0f) +
+				zIndex                * mExtendsOfOneCell.z * Vector4D(0.0f,0.0f,1.0f,0.0f)
+				;
+		}
+	}
+
+	linesPositionBuffer->copyFromHostToGPU();
+
+	lineGeo->setAttributeBuffer(linesPositionBuffer);
+
+	DebugDrawVisualMaterial* debugDrawMat = new DebugDrawVisualMaterial(
+		getName() + lineGeo->getName() + String("VisualMat"),
+		Vector4D(0.1f,0.0f,0.3f,1.0f),false,VERTEX_BASED_LINES
+	);
+
+//	VisualMaterial* debugDrawMat =
+//		new VisualMaterial(
+//			getName() + lineGeo->getName() + String("VisualMat"),
+//			//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+//			VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+//			ShadingFeatures(
+//				SHADING_FEATURE_DIRECT_LIGHTING
+//			),
+//			std::map<BufferSemantics,Texture*>(),
+//			VisualMaterialFlags(true,false,true,true,false,false),
+//			100.0f,
+//			0.5f,
+//			Vector4D(1.1f,0.0f,0.3f,1.0f)
+//		);
+
+	addSubObject(
+		new SubObject(
+			getName() + String("DebugDrawVisualSubObject"),
+			VISUAL_SIM_DOMAIN,
+			lineGeo,
+			debugDrawMat
+		)
+	);
 }
 
 
