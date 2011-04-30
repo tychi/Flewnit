@@ -74,6 +74,7 @@ public:
 		{ assert(rbId < mParticleRigidBodies.size()); return mParticleRigidBodies[rbId];}
 
 	inline ParticleAttributeBuffers* getParticleAttributeBuffers()const{return mParticleAttributeBuffers;}
+
 	//}
 
 	//{ factory routines
@@ -160,6 +161,7 @@ private:
 
 	//{
 	friend class ReorderParticleAttributesProgram; //make friend for easier kernal argument list generation
+	friend class ParticleSimulationProgram; //make friend for easier kernal argument list generation
 	ReorderParticleAttributesProgram* mReorderParticleAttributesProgram;
 	//}
 

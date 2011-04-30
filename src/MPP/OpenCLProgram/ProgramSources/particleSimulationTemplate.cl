@@ -70,6 +70,8 @@
       //better a parameter list with in some kernels unused params than eternal confusion..
       __global uint* gParticleObjectInfos,
 
+      //write-only buffer; IMPORTANT: bind hence inactive ping pong comnponent to this argument, so that we can to a consitent toggle
+      //on all attribute buffers after the SPH kernel invocations
       __global uint* gZindicesNew,
       
       __global float4* gPositionsOld,

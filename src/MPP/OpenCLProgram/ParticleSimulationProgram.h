@@ -38,7 +38,7 @@ public:
 	// - updateDensity.cl
 	// - updateForce_integrate_calcZIndex.cl
 	// - updateRigidBodies.cl
-	ParticleSimulationProgram(ParticleSimulationProgramType type, UniformGrid* uniGrid, ParticleSceneRepresentation* partScene);
+	ParticleSimulationProgram(ParticleSimulationProgramType type, ParticleMechanicsStage* particleMechStage);
 
 protected:
 
@@ -50,8 +50,8 @@ protected:
 	//issue the several createKernel() calls with initial argument list etc;
 	virtual void createKernels();
 
-	ParticleSceneRepresentation* mParticleSceneRepresentation;
-	ParticleSimulationProgramType mType;
+	ParticleMechanicsStage* mParticleMechanicsStage;
+	ParticleSimulationProgramType mParticleSimulationProgramType;
 
 };
 

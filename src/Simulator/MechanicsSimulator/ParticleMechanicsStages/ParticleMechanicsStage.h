@@ -91,6 +91,7 @@ public:
 
 
 private:
+	friend class ParticleSimulationProgram;
 
 	//if true, the particles move the faster the more powerful the hardware is;
 	//usually not desirable in a real scenario, but good for testing;

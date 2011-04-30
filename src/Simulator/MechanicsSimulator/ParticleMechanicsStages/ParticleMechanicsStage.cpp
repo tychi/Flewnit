@@ -191,16 +191,13 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 	//--------------------------------------------------------------------
 
 	mInitial_UpdateForce_Integrate_CalcZIndex_Program =
-		new ParticleSimulationProgram(INIT_FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM,
-				mParticleUniformGrid,mParticleSceneRepresentation);
+		new ParticleSimulationProgram(INIT_FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM,	this);
 
 	mUpdateDensityProgram =
-		new ParticleSimulationProgram(DENSITIY_PARTICLE_SIM_PROGRAM,
-				mParticleUniformGrid,mParticleSceneRepresentation);
+		new ParticleSimulationProgram(DENSITIY_PARTICLE_SIM_PROGRAM, this);
 
 	mUpdateForce_Integrate_CalcZIndex_Program =
-		new ParticleSimulationProgram(FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM,
-				mParticleUniformGrid,mParticleSceneRepresentation);
+		new ParticleSimulationProgram(FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM, this);
 
 
 //	for later ;(

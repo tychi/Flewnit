@@ -45,13 +45,11 @@ CLKernel::CLKernel(CLProgram* owningProgram, String kernelName,
 	}
 	catch(cl::Error)
 	{
-
 		throw(SimulatorException(String("something went wrong when creating the CL kernel ") + kernelName));
 	}
 
 	validate();
 
-	mDefaultKernelWorkLoadParams->validateAgainst(this);
 }
 
 
@@ -63,13 +61,27 @@ CLKernel::~CLKernel()
 
 void CLKernel::validate()throw(SimulatorException)
 {
-	mDefaultKernelWorkLoadParams->validateAgainst(this);
+	if( (mDefaultKernelWorkLoadParams->mNumTotalWorkItems != 0 )
+		&& (mDefaultKernelWorkLoadParams->mNumWorkItemsPerWorkGroup != 0 )
+	)
+	{
+		mDefaultKernelWorkLoadParams->validateAgainst(this);
+	}
+
 	mCLKernelArguments->validateAgainst(this);
 }
 
 cl::Event CLKernel::run(const EventVector& eventsToWaitFor) throw(SimulatorException)
 {
 	mCLKernelArguments->passArgsToKernel(this);
+
+	if( (mDefaultKernelWorkLoadParams->mNumTotalWorkItems == 0 )
+		|| (mDefaultKernelWorkLoadParams->mNumWorkItemsPerWorkGroup == 0 )
+	)
+	{
+		throw(SimulatorException("mDefaultKernelWorkLoadParams to be used are invalid! provide custom params!"));
+	}
+
 
 	*(PARA_COMP_MANAGER->getLastCLErrorPtr())
 		=

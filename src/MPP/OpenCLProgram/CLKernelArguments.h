@@ -30,8 +30,9 @@ class CLKernelWorkLoadParams
 		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
 		CLKernelWorkLoadParams(
-			cl_GLuint numTotalWorkItems,
-			cl_GLuint numWorkItemsPerWorkGroup
+			//if work load params aren't know a priori, default params help maskin validation
+			cl_GLuint numTotalWorkItems = 0,
+			cl_GLuint numWorkItemsPerWorkGroup =0
 		);
 		virtual ~CLKernelWorkLoadParams(){}
 
