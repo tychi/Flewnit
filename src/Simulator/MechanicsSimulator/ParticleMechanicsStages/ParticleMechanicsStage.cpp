@@ -48,7 +48,7 @@ ParticleMechanicsStage::~ParticleMechanicsStage()
 {
 	delete  mParticleSceneRepresentation;
 	// DON'T delete  mParticleUniformGrid; It is a worldobjects, hence managed by the scenegraph!;
-//	delete mSplitAndCompactedUniformGridCells;
+	delete mSplitAndCompactedUniformGridCells;
 	delete mRadixSorter;
 }
 

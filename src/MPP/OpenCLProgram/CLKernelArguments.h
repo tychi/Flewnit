@@ -92,9 +92,9 @@ public:
 		{}
 		virtual ~CLValueKernelArgument( ){}
 
-		inline T getValue()const{return mValue;}
+		T getValue()const{return mValue;}
 		//CLKernelArgumentBase::mArgValuePtr directly points to mValue; nothing to re-point ;)
-		inline void setValue(T val)const{mValue = val;}
+		void setValue(T val){ mValue = val; }
 protected:
 
 		T mValue;

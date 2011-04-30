@@ -26,6 +26,9 @@
 #include "Buffer/PingPongBuffer.h"
 #include "MPP/OpenCLProgram/SplitAndCompactUniformGridProgram.h"
 
+#include "URE.h"
+#include "Util/Time/FPSCounter.h"
+
 
 namespace Flewnit
 {
@@ -59,7 +62,8 @@ UniformGridBufferSet::UniformGridBufferSet(String name, unsigned int numCellsPer
 
 	//actually unneccessary to init startindices, but to be sure...
 	memset( mStartIndices->getCPUBufferHandle(), 0, mStartIndices->getBufferInfo().bufferSizeInByte );
-	mStartIndices->copyFromHostToGPU();
+	//copy blocking initially
+	mStartIndices->copyFromHostToGPU(true);
 }
 
 
@@ -133,8 +137,8 @@ cl::Event UniformGridBufferSet::clearElementCounts()
 	*(PARA_COMP_MANAGER->getLastEventPtr()) = mClearElementCountEvent;
 
 	//restore global blocking stuff
-	PARA_COMP_MANAGER->setBlockAfterEnqueue(blockGlobalTmp);
 
+	PARA_COMP_MANAGER->setBlockAfterEnqueue(blockGlobalTmp);
 	return mClearElementCountEvent;
 }
 
@@ -221,6 +225,19 @@ UniformGridBufferSet* UniformGrid::getBufferSet(String name)const throw(BufferEx
 void UniformGrid::updateCells(String bufferSetName, PingPongBuffer* sortedZIndicesKeyBuffer)
 {
 	CLKernel* currentKernel = mUpdateUniformGridProgram->getKernel("kernel_updateUniformGrid");
+	EventVector eventsToWaitFor =
+		{	//wait for reorder phase of radix sort kernel to finish ;)
+			CLProgramManager::getInstance().getProgram("radixSort.cl")
+				->getKernel("kernel_radixSort_reorder_Phase")->getEventOfLastKernelExecution()
+		};
+
+	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() >0)
+	{
+		eventsToWaitFor.push_back(
+			getBufferSet(bufferSetName)->getClearElementCountEvent()
+		);
+	}
+
 
 	currentKernel->getCLKernelArguments()->getBufferArg("gSortedZIndices")
 		->set(sortedZIndicesKeyBuffer);
@@ -231,13 +248,7 @@ void UniformGrid::updateCells(String bufferSetName, PingPongBuffer* sortedZIndic
 	currentKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementEndIndexPlus1")
 		->set( getBufferSet(bufferSetName)->getElementCounts() );
 
-	currentKernel->run(
-		EventVector{
-			//wait for reorder phase of radix sort kernel to finish ;)
-			CLProgramManager::getInstance().getProgram("radixSort.cl")
-				->getKernel("kernel_radixSort_reorder_Phase")->getEventOfLastKernelExecution()
-		}
-	);
+	currentKernel->run( eventsToWaitFor );
 
 
 }

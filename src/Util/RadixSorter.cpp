@@ -12,6 +12,12 @@
 #include "MPP/OpenCLProgram/RadixSortProgram.h"
 #include "Util/Log/Log.h"
 
+#include "URE.h"
+#include "Util/Time/FPSCounter.h"
+#include "Buffer/PingPongBuffer.h"
+#include "MPP/OpenCLProgram/CLProgramManager.h"
+#include "MPP/OpenCLProgram/CLKernelArguments.h"
+
 
 //don't know if hardcode is necessary, but numbers deep in source code are even worse ;(
 //TODO outsource to XML
@@ -145,10 +151,88 @@ RadixSorter::~RadixSorter()
  * */
 void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer)
 {
+	cl::Event eventToWaitFor;
+	switch (URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames()) {
+		case 0:
+			eventToWaitFor =
+				CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
+					->getKernel("kernel_initial_CalcZIndex")->getEventOfLastKernelExecution();
+			break;
+		case 1:
+			eventToWaitFor =
+				CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
+					->getKernel("kernel_initial_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
+			break;
+		default:
+			eventToWaitFor =
+				CLProgramManager::getInstance().getProgram("updateForce_integrate_calcZIndex.cl")
+					->getKernel("kernel_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
+			break;
+	}
+
+	CLKernel* phase1Kernel = mRadixSortProgram->getKernel("kernel_radixSort_tabulate_localScan_Phase");
+	//set key buffer argument, not changing over the passes but via toggling, and toggle is handled
+	//CLBufferKernelArgument class automatically
+	phase1Kernel->getCLKernelArguments()->getBufferArg("gKeysToSort")->set(keysBuffer);
+
+
+	CLKernel* phase2Kernel = mRadixSortProgram->getKernel("kernel_radixSort_globalScan_Phase");
+	//only intermediate buffers for phase 2, all "fixed", no "changing buffer bindings" to set
+
+
+	CLKernel* phase3Kernel = mRadixSortProgram->getKernel("kernel_radixSort_reorder_Phase");
+	//bind active key buffer for reading
+	phase3Kernel->getCLKernelArguments()->getBufferArg("gKeysToSort")->set(keysBuffer,false);
+	//inactive for writing
+	phase3Kernel->getCLKernelArguments()->getBufferArg("gReorderedKeys")->set(keysBuffer, true);
+	//bind active key oldIndicesBuffer for reading
+	phase3Kernel->getCLKernelArguments()->getBufferArg("gOldIndices")->set(oldIndicesBuffer, false);
+	//inactive for writing
+	phase3Kernel->getCLKernelArguments()->getBufferArg("gReorderedOldIndices")->set(oldIndicesBuffer, true);
+
+
+
 	for(unsigned int currentPass = 0; currentPass < mNumRadixSortPasses; currentPass++)
 	{
-		//TODO
+		//--------------------------------------------------------------------------
+		//phase 1
+
+		//only the "numPass" argument - guess what - changes over the passes ;)
+		phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
+
+		phase1Kernel->run( EventVector{eventToWaitFor} );
+
+		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
+
+		//--------------------------------------------------------------------------
+		//phase 2
+
+		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
+
+		phase2Kernel->run( EventVector{eventToWaitFor} );
+
+		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
+
+		//--------------------------------------------------------------------------
+		//phase 3
+
+		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
+
+		phase3Kernel->run( EventVector{eventToWaitFor} );
+
+		//make phase 1 weit for phase 3 to finish:
+		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();
+
+
+		//##########################################################################
+		//do the buffer toggle
+		keysBuffer->toggleBuffers();
+		oldIndicesBuffer->toggleBuffers();
+
 	}
+
+	//keysBuffer and oldIndicesBuffer should have their sorted resp reordered values in there active component
+	//now ;)
 }
 
 

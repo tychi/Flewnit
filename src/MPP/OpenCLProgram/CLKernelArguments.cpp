@@ -181,9 +181,6 @@ void CLBufferKernelArgument::set(BufferInterface* buffi, bool ifPingPongBufferUs
 	}
 	mArgValuePtr = & mCurrentCLMemoryHandle;
 
-
-
-
 }
 
 void CLBufferKernelArgument::passArgToKernel(cl_uint argIndex, CLKernel* clKernel)throw(BufferException)
