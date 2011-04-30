@@ -26,11 +26,11 @@ public:
 
 protected:
 
-	//Protected Constructor for derived classes:
+
 	// - _initial_updateForce_integrate_calcZIndex.cl
-	// - updateDensity.cl
+
 	// - updateForce_integrate_calcZIndex.cl
-	// - updateRigidBodies.cl
+
 	UpdateForce_Integrate_CalcZIndex_Program(bool initialVersion, UniformGrid* uniGrid, ParticleSceneRepresentation* partScene);
 
 

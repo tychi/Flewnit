@@ -2,7 +2,6 @@
 #ifndef FLEWNIT_CL_PROGRAMS_PHYSICS_COMMON_FUNCTIONS_GUARD
 #define FLEWNIT_CL_PROGRAMS_PHYSICS_COMMON_FUNCTIONS_GUARD
 
-  {% include "physicsDataStructures.cl" %}
 
   {% include "particleSimulationCommon.cl" %}
   
@@ -24,11 +23,11 @@
     cell3Dindex.z = BASE_2_MODULO( cell3Dindex.z, NUM_UNIGRID_CELLS_PER_DIMENSION ); 
     
     return (
-      gridPosToZIndexLookupTable[ 0* UNIGRID_NUM_CELLS_PER_DIMENSION + cell3Dindex.x ]
+      cGridPosToZIndexLookupTable[ 0* NUM_UNIGRID_CELLS_PER_DIMENSION + cell3Dindex.x ]
       |
-      gridPosToZIndexLookupTable[ 1* UNIGRID_NUM_CELLS_PER_DIMENSION + cell3Dindex.y ]
+      cGridPosToZIndexLookupTable[ 1* NUM_UNIGRID_CELLS_PER_DIMENSION + cell3Dindex.y ]
       |
-      gridPosToZIndexLookupTable[ 2* UNIGRID_NUM_CELLS_PER_DIMENSION + cell3Dindex.z ]
+      cGridPosToZIndexLookupTable[ 2* NUM_UNIGRID_CELLS_PER_DIMENSION + cell3Dindex.z ]
     );
   }
   
@@ -96,7 +95,7 @@
   }
   
   
-  float laplacianViscosity(float4 distanceVector, __constant SimulationParameters* cSimParams))
+  float laplacianViscosity(float4 distanceVector, __constant SimulationParameters* cSimParams)
   {
     float lenDistVec = length(distanceVector);
     //TODO use native functions when stable

@@ -3,8 +3,9 @@
 #define FLEWNIT_CL_PROGRAMS_PARTICLE_SIMULATION_COMMON_GUARD
 
   {% include "common.cl" %}
-  
   {% include "uniformGridCommon.cl" %}
+
+  {% include "physicsDataStructures.cl" %}
   
   //-------------fluid simulation macros ------------------------------------------- 
   //{ Fluid and Rigid Body related definitions

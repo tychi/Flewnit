@@ -61,8 +61,10 @@ public:
 
 	inline unsigned int getNumMaxFluids()const{return mNumMaxFluids; }
 	inline unsigned int getNumCurrentFluids()const{return mNumCurrentFluids; }
+
 	inline unsigned int getNumMaxRigidBodies()const{return mNumMaxRigidBodies; }
 	inline unsigned int getNumCurrentRigidBodies()const{return mNumCurrentRigidBodies; }
+	inline unsigned int getNumMaxParticlesPerRigidBody()const{return mNumMaxParticlesPerRigidBody; }
 
 	inline unsigned int getInvalidObjectID()const{return mNumMaxFluids +1; }
 

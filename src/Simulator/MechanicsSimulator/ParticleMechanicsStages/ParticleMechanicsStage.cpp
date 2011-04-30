@@ -27,6 +27,9 @@
 #include "Util/Time/FPSCounter.h"
 
 
+#include "MPP/OpenCLProgram/ParticleSimulationProgram.h"
+
+
 namespace Flewnit
 {
 
@@ -171,6 +174,9 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 		mConstantTimeStep
 	);
 
+	//before forgetting it, upload ;(
+	mSimulationParametersBuffer->copyFromHostToGPU(true);
+
 
 	mNumMaxUserForceControlPoints =
 		ConfigCaster::cast<int>( generalSettingsNode.get("numMaxUserForceControlPoints",0) );
@@ -182,10 +188,22 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 		);
 
 
+	//--------------------------------------------------------------------
 
-//	  mInitial_UpdateForce_Integrate_CalcZIndex_Program(0),
-//	  mUpdateDensityProgram(0),
-//	  mUpdateForce_Integrate_CalcZIndex_Program(0),
+	mInitial_UpdateForce_Integrate_CalcZIndex_Program =
+		new ParticleSimulationProgram(INIT_FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM,
+				mParticleUniformGrid,mParticleSceneRepresentation);
+
+	mUpdateDensityProgram =
+		new ParticleSimulationProgram(DENSITIY_PARTICLE_SIM_PROGRAM,
+				mParticleUniformGrid,mParticleSceneRepresentation);
+
+	mUpdateForce_Integrate_CalcZIndex_Program =
+		new ParticleSimulationProgram(FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM,
+				mParticleUniformGrid,mParticleSceneRepresentation);
+
+
+//	for later ;(
 //	  mCLProgram_updateRigidBodies(0)
 
 	return true;

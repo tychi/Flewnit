@@ -1,5 +1,5 @@
   
-  {% extends particleSimulationTemplate.cl %}
+  {% extends "particleSimulationTemplate.cl" %}
   
   {% block documentHeader %}
     /**
@@ -20,7 +20,11 @@
      ( cObjectGenericFeatures[ objectID ].gasConstant * (density - cObjectGenericFeatures[ objectID ].restDensity) )
      
      
-   float4 staticGeometryCollisionAcceleration( __constant SimulationParameters* cSimParams, float4 particlePosition, float particleMass)
+   float4 staticGeometryCollisionAcceleration(
+      __constant SimulationParameters* cSimParams, 
+      float4 particlePosition, 
+      float4 particleVelocity,
+      float particleMass)
    {        
      float4 collisionForce = (float4)(0.0f,0.0f,0.0f,0.0f);
          
@@ -31,42 +35,42 @@
             ( cSimParams->simulationDomainBorders.minPos.x - particlePosition.x  ) 
             * cSimParams->penaltyForceSpringConstant      
             -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * ownPredictedVelCurrent.x;
+            cSimParams->penaltyForceDamperConstant * particleVelocity.x;
       }
       if(particlePosition.x > cSimParams->simulationDomainBorders.maxPos.x){
           collisionForce.x += 
-            ( cSimParams->simulationDomainBorders.MaxPos.x - particlePosition.x  ) 
+            ( cSimParams->simulationDomainBorders.maxPos.x - particlePosition.x  ) 
             * cSimParams->penaltyForceSpringConstant      
             -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * ownPredictedVelCurrent.x;
+            cSimParams->penaltyForceDamperConstant * particleVelocity.x;
       }
       if(particlePosition.y < cSimParams->simulationDomainBorders.minPos.y){
           collisionForce.y += 
            ( cSimParams->simulationDomainBorders.minPos.y - particlePosition.y  ) 
             * cSimParams->penaltyForceSpringConstant      
             -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * ownPredictedVelCurrent.y;
+            cSimParams->penaltyForceDamperConstant * particleVelocity.y;
       }
       if(particlePosition.y > cSimParams->simulationDomainBorders.maxPos.y){
           collisionForce.y += 
              ( cSimParams->simulationDomainBorders.maxPos.y - particlePosition.y  ) 
             * cSimParams->penaltyForceSpringConstant      
             -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * ownPredictedVelCurrent.y;
+            cSimParams->penaltyForceDamperConstant * particleVelocity.y;
       }
       if(particlePosition.z < cSimParams->simulationDomainBorders.minPos.z){
           collisionForce.z += 
             ( cSimParams->simulationDomainBorders.minPos.z - particlePosition.z ) 
             * cSimParams->penaltyForceSpringConstant      
             -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * ownPredictedVelCurrent.z;
+            cSimParams->penaltyForceDamperConstant * particleVelocity.z;
       }
       if(particlePosition.z > cSimParams->simulationDomainBorders.maxPos.z){
           collisionForce.z += 
             ( cSimParams->simulationDomainBorders.maxPos.z - particlePosition.z ) 
             * cSimParams->penaltyForceSpringConstant      
             -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * ownPredictedVelCurrent.z;
+            cSimParams->penaltyForceDamperConstant * particleVelocity.z;
       }
       
       return collisionForce / particleMass ; //TODO native..
@@ -167,7 +171,7 @@
                   ownPressureForceDensityNew.xyz -=
                       ( 
                         //mass 
-                        cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].mass
+                        cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle
                         //mean of both pressures for symmetry reasons:
                         * 0.5f  
                         *( ownPressure + 
@@ -188,7 +192,7 @@
                   */
                   ownViscosityForceDensityNew.xyz += 
                       //mass 
-                      cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].mass
+                      cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle
                       //relative velocity of currently treated neighbour particle
                       * ( lCurrentNeighbourPredictedVelsCurrent[ interactingLocalIndex ].xyz - ownPredictedVelCurrent.xyz )                  
                       / lCurrentNeighbourDensities[ interactingLocalIndex ] //TODO native_divide( ) or * native_recip() or so ;)
@@ -212,7 +216,11 @@
 
       /*collision test with static geometry and reaction*/
       float4 staticGeomCollisionAcceleration = 
-        staticGeometryCollisionAcceleration(cSimParams, ownPosition, cObjectGenericFeatures[ ownParticleObjectID ].mass );
+        staticGeometryCollisionAcceleration(
+          cSimParams, 
+          ownPosition, 
+          ownPredictedVelCurrent,
+          cObjectGenericFeatures[ ownParticleObjectID ].massPerParticle );
 
 
       

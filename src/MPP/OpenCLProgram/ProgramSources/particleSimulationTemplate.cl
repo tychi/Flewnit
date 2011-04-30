@@ -22,7 +22,6 @@
 
 
 {% block inclusions %}
-  {% include "physicsDataStructures.cl" %}
   {% include "physicsCommonFunctions.cl" %}
 {% endblock inclusions %}
 
@@ -42,7 +41,7 @@
 {% block constantBufferKernelArgs %} {%comment%}/*usually the same for all physics kernels*/{%endcomment%}
       
       __constant SimulationParameters* cSimParams,
-      __constant uint* gridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation
+      __constant uint* cGridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation
       //RIGID_BODY_OFFSET + numRigidBodies elements; contains (amongs other properties) the masses of the fluid particles, 
       //then the masses of the respective rigid bodies; this way, we can grab the masses without any branching :).      
       //__constant float* cObjectMassesPerParticle, 
@@ -230,49 +229,56 @@
 
                 }  //end accum SPH calculations
                 neighbourParticleStartIndex += NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP;
-                numRemainingNeighbourParticlesToInteract -= NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP
-              }  //end for simGroupRunner     
-            }//endif(numRemainingNeighbourParticlesToInteract >0)
-            posInNeighbour.z += cSimParams->uniGridCellSizes.z;
-          }  //end for z
-          posInNeighbour.y += cSimParams->uniGridCellSizes.y;
-        }  //end for y
-        posInNeighbour.x += cSimParams->uniGridCellSizes.x;
-      } //end for x
+                numRemainingNeighbourParticlesToInteract -= NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP;
+              }//end if(lwiID < numParticlesInOwnGroup)
+            }  //end for simGroupRunner     
+          }//endif(numRemainingNeighbourParticlesToInteract >0)
+          posInNeighbour.z += cSimParams->uniGridCellSizes.z;
+        }  //end for z
+        posInNeighbour.y += cSimParams->uniGridCellSizes.y;
+      }  //end for y
+      posInNeighbour.x += cSimParams->uniGridCellSizes.x;
+    } //end for x
+    
+    
+    //---------------------------------------------
       
-      if(lwiID < numParticlesInOwnGroup )
-      {
+    if(lwiID < numParticlesInOwnGroup )
+    {
      
-        {% block processSPHResults %}
-          {% comment %}
-            evalute SPH results: add force densities together compute collision forces with static geometry, trnasform to acceleration, 
-            add gravity...
-          {% endcomment %}      
-        {% endblock processSPHResults %}
+      {% block processSPHResults %}
+        {% comment %}
+          evalute SPH results: add force densities together compute collision forces with static geometry, trnasform to acceleration, 
+          add gravity...
+        {% endcomment %}      
+      {% endblock processSPHResults %}
 
 
-          //integrat only for valid particles, rest MUST stay at zero to not corrupt scans in rigid body calculations
-          if(! IS_INVALID_PARTICLE(ownParticleObjectID) )
-          {
+      //integrat only for valid particles, rest MUST stay at zero to not corrupt scans in rigid body calculations
+      if(! IS_INVALID_PARTICLE(ownParticleObjectID) )
+      {
           
-            {% block integrate %}
-              {% comment %}
-                calculate new positions and velocites from new accelerations and old poistions and velocities;
-              {% endcomment %}          
-            {% endblock integrate %}
+        {% block integrate %}
+          {% comment %}
+            calculate new positions and velocites from new accelerations and old poistions and velocities;
+          {% endcomment %}          
+        {% endblock integrate %}
 
-          } // end if(! IS_INVALID_PARTICLE() )
-
-
-        {% block calcZIndex %}      
+        {% block calcZIndex %}
+                  
         {% endblock calcZIndex %}
+            
 
         {% block uploadUpdatedParticleAttribs %}
           {% comment %}
             pattern:  g<attribute name plural>New[ lwiID ] = own<attribute name singular>;
           {% endcomment %} 
         {% endblock uploadUpdatedParticleAttribs %}
+
+      } // end if(! IS_INVALID_PARTICLE() )
       
-      } //end if(lwiID < numParticlesInOwnGroup )
-  }
+    } //end if(lwiID < numParticlesInOwnGroup )
+    
+    
+  } //end kernel function
   

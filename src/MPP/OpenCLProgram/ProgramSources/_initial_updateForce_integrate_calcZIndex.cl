@@ -1,5 +1,5 @@
   
-  {% extends updateForce_integrate_calcZIndex.cl %}
+  {% extends "updateForce_integrate_calcZIndex.cl" %}
   
   {% block documentHeader %}
     /**
@@ -21,7 +21,7 @@
       __constant uint* cGridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation
       __constant SimulationParameters* cSimParams,
       __global float4* gPositions,
-      __global uint* gZIndices,     
+      __global uint* gZIndices  
     )
     {
       gZIndices[get_global_id(0)] = getZIndex(gPositions[get_global_id(0)], cSimParams, cGridPosToZIndexLookupTable);

@@ -1,5 +1,5 @@
   
-  {% extends particleSimulationTemplate.cl %}
+  {% extends "particleSimulationTemplate.cl" %}
   
   {% block documentHeader %}
     /**
@@ -69,12 +69,11 @@
                       {
                         ownDensity +=
                           //mass 
-                          cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].mass
+                          cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle
                           //* kernel
                           * poly6( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams )
                           ;
                       }
-                    }
   //----------------------------------------------------------------------------------------------------
   {% endblock performSPHCalculations %}
 

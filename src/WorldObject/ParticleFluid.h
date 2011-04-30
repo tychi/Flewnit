@@ -38,8 +38,6 @@ class ParticleFluid
 public:
 	ParticleFluid();
 	virtual ~ParticleFluid();
-
-
 };
 
 

@@ -16,6 +16,15 @@
 namespace Flewnit
 {
 
+enum ParticleSimulationProgramType
+{
+	INIT_FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM,
+	DENSITIY_PARTICLE_SIM_PROGRAM,
+	FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM
+};
+
+
+
 class ParticleSimulationProgram
 	: public UniformGridRelatedProgram
 {
@@ -24,24 +33,25 @@ public:
 
 	virtual ~ParticleSimulationProgram();
 
-protected:
 
-	//Protected Constructor for derived classes:
 	// - _initial_updateForce_integrate_calcZIndex.cl
 	// - updateDensity.cl
 	// - updateForce_integrate_calcZIndex.cl
 	// - updateRigidBodies.cl
-	ParticleSimulationProgram(Path sourceFileName, UniformGrid* uniGrid, ParticleSceneRepresentation* partScene);
+	ParticleSimulationProgram(ParticleSimulationProgramType type, UniformGrid* uniGrid, ParticleSceneRepresentation* partScene);
+
+protected:
+
 
 
 	//calls UniformGridRelatedProgram::setupTemplateContext() and sets up particle simulation related template params;
 	virtual void setupTemplateContext(TemplateContextMap& contextMap);
 
 	//issue the several createKernel() calls with initial argument list etc;
-	virtual void createKernels()=0;
+	virtual void createKernels();
 
-
-	ParticleSceneRepresentation* mPartScene;
+	ParticleSceneRepresentation* mParticleSceneRepresentation;
+	ParticleSimulationProgramType mType;
 
 };
 

@@ -7,16 +7,60 @@
 
 #include "ParticleSimulationProgram.h"
 
+#include <grantlee/engine.h>
+#include "Scene/ParticleSceneRepresentation.h"
+
 namespace Flewnit
 {
 
-//ParticleSimulationProgram::ParticleSimulationProgram() {
-//	// TODO Auto-generated constructor stub
-//
-//}
-//
-//ParticleSimulationProgram::~ParticleSimulationProgram() {
-//	// TODO Auto-generated destructor stub
-//}
+ParticleSimulationProgram::ParticleSimulationProgram(
+		ParticleSimulationProgramType type, UniformGrid* uniGrid, ParticleSceneRepresentation* partScene)
+:
+	UniformGridRelatedProgram(
+		type == INIT_FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM
+			? "_initial_updateForce_integrate_calcZIndex.cl"
+			: (
+				type == DENSITIY_PARTICLE_SIM_PROGRAM
+				? "updateDensity.cl"
+				: "updateForce_integrate_calcZIndex.cl"
+			),
+			uniGrid,
+			MECHANICAL_SIM_DOMAIN
+	),
+	mParticleSceneRepresentation(partScene),
+	mType(type)
+{
+
+}
+
+ParticleSimulationProgram::~ParticleSimulationProgram()
+{
+	//nothing to do
+}
+
+
+//calls UniformGridRelatedProgram::setupTemplateContext() and sets up particle simulation related template params;
+void ParticleSimulationProgram::setupTemplateContext(TemplateContextMap& contextMap)
+{
+	UniformGridRelatedProgram::setupTemplateContext(contextMap);
+
+	contextMap.insert(
+		"numMaxParticlesPerRigidBody",
+		mParticleSceneRepresentation->getNumMaxParticlesPerRigidBody()
+	);
+
+
+	contextMap.insert(
+		"numFluidObjects",
+		mParticleSceneRepresentation->getNumMaxFluids()
+	);
+}
+
+
+void ParticleSimulationProgram::createKernels()
+{
+
+}
+
 
 }

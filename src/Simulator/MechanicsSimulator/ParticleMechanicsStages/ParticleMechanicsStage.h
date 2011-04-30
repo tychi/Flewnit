@@ -139,13 +139,13 @@ private:
 
 
 	//{
-		UpdateForce_Integrate_CalcZIndex_Program* mInitial_UpdateForce_Integrate_CalcZIndex_Program;
+		ParticleSimulationProgram* mInitial_UpdateForce_Integrate_CalcZIndex_Program;
 		//RadixSortProgram* mRadixSortProgram; 									//is in class RadixSorter
 		//ReorderParticleAttributesProgram* mReorderParticleAttributesProgram; 	//is in class ParticleSceneRepresentation
 		//UpdateUniformGridProgram* mUpdateUniformGridProgram;					//is in class UniformGrid
 		//SplitAndCompactUniformGridProgram* mSplitAndCompactUniformGridProgram;//is in class UniformGrid
-		UpdateDensityProgram* mUpdateDensityProgram;
-		UpdateForce_Integrate_CalcZIndex_Program* mUpdateForce_Integrate_CalcZIndex_Program;
+		ParticleSimulationProgram* mUpdateDensityProgram;
+		ParticleSimulationProgram* mUpdateForce_Integrate_CalcZIndex_Program;
 		UpdateRigidBodiesProgram* mCLProgram_updateRigidBodies;
 	//}
 
