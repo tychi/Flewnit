@@ -180,6 +180,97 @@ void RadixSortProgram::createKernels()
 	//----------------------------------------------------------------------------
 	//phase 2
 
+	mKernels["kernel_radixSort_globalScan_Phase"] = new CLKernel(
+			this,
+			"kernel_radixSort_globalScan_Phase",
+
+			new CLKernelWorkLoadParams(
+				//work group size ...
+				(mRadixSorter->mNumWorkGroups_TabulationAndReorderPhase / 2)
+				//... times number of work groups = total element count
+				* mRadixSorter->mNumComputeUnits_Base2Ceiled ,
+				//need half of the to-be-scanned-array-size work items to scan it
+				mRadixSorter->mNumWorkGroups_TabulationAndReorderPhase / 2
+			),
+
+			new CLKernelArguments(
+				{
+
+					//temporary buffers, grab them from IntermediateResultBuffersManager
+
+					new CLBufferKernelArgument("gSumsOfLocalRadixCountsToBeScanned",
+						CLProgramManager::getInstance().getIntermediateResultBuffersManager()
+							->getBuffer(1) //take the 2nd biggest buffer
+					),
+					new CLBufferKernelArgument("gPartiallyScannedSumsOfGlobalRadixCounts",
+						CLProgramManager::getInstance().getIntermediateResultBuffersManager()
+							->getBuffer(2) //take the 3rd biggest buffer
+					),
+					new CLBufferKernelArgument("gSumsOfPartialScansOfSumsOfGlobalRadixCounts",
+						CLProgramManager::getInstance().getIntermediateResultBuffersManager()
+							->getBuffer(3) //take the 4th biggest buffer
+					),
+
+
+					//the only non-buffer kernel arg I'm using so far X-D
+					//also variable
+					new CLValueKernelArgument<unsigned int>("numPass",0)
+
+				}
+			)
+		);
+
+
+	//----------------------------------------------------------------------------
+	//phase 3
+
+	mKernels["kernel_radixSort_reorder_Phase"] = new CLKernel(
+			this,
+			"kernel_radixSort_reorder_Phase",
+
+			new CLKernelWorkLoadParams(
+				mRadixSorter->mNumElements,
+				mRadixSorter->mNumElements / mRadixSorter->mNumWorkGroups_TabulationAndReorderPhase
+			),
+
+			new CLKernelArguments(
+				{
+					//init the key and "value indices" ping pong buffer arguments to null ptr,
+					//because the argument is variable, i.e. several different key buffers may want to be sorted
+					new CLBufferKernelArgument("gKeysToSort", 0),
+					new CLBufferKernelArgument("gReorderedKeys", 0),
+
+					new CLBufferKernelArgument("gOldIndices", 0),
+					new CLBufferKernelArgument("gReorderedOldIndices", 0),
+
+					//temporary buffers, grab them from IntermediateResultBuffersManager
+
+					new CLBufferKernelArgument("gLocallyScannedRadixCounters",
+						CLProgramManager::getInstance().getIntermediateResultBuffersManager()
+							->getBuffer(0) //take the biggest buffer
+					),
+
+					new CLBufferKernelArgument("gScannedSumsOfLocalRadixCounts",
+						CLProgramManager::getInstance().getIntermediateResultBuffersManager()
+							->getBuffer(1) //take the 2nd biggest buffer
+					),
+					new CLBufferKernelArgument("gPartiallyScannedSumsOfGlobalRadixCounts",
+						CLProgramManager::getInstance().getIntermediateResultBuffersManager()
+							->getBuffer(2) //take the 3rd biggest buffer
+					),
+					new CLBufferKernelArgument("gSumsOfPartialScansOfSumsOfGlobalRadixCounts",
+						CLProgramManager::getInstance().getIntermediateResultBuffersManager()
+							->getBuffer(3) //take the 4th biggest buffer
+					),
+
+
+					//the only non-buffer kernel arg I'm using so far X-D
+					//also variable
+					new CLValueKernelArgument<unsigned int>("numPass",0)
+
+				}
+			)
+		);
 
 
 }

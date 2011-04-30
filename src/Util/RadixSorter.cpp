@@ -10,6 +10,7 @@
 #include "Util/HelperFunctions.h"
 #include "Simulator/ParallelComputeManager.h"
 #include "MPP/OpenCLProgram/RadixSortProgram.h"
+#include "Util/Log/Log.h"
 
 
 //don't know if hardcode is necessary, but numbers deep in source code are even worse ;(
@@ -18,6 +19,9 @@
 
 #define FLEWNIT_FERMI_NUM_KEY_ELEMENTS_PER_RADIX_COUNTER 4
 #define FLEWNIT_NON_FERMI_NUM_KEY_ELEMENTS_PER_RADIX_COUNTER 8
+
+#define FLEWNIT_WARP_SIZE 32
+
 
 namespace Flewnit
 {
@@ -96,6 +100,24 @@ RadixSorter::RadixSorter(
 	assert( HelperFunctions::isPowerOfTwo(mNumElements) );
 	assert( (mNumBitsPerKey <= 32 ) && (mNumBitsPerKey >= 1) );
 
+	while(mNumWorkGroups_TabulationAndReorderPhase < 2 * FLEWNIT_WARP_SIZE)
+	{
+		//we seem to have quite few elements (<64k);
+		//global scan phase would have some idle threads; reduce mNumElementsPerRadixCounter to compensate ;)
+		if(mNumElementsPerRadixCounter > 1)
+		{
+			mNumElementsPerRadixCounter /= 2;
+			mNumWorkGroups_TabulationAndReorderPhase *= 2;
+		}
+		else
+		{
+			LOG<<WARNING_LOG_LEVEL<< "RadixSorter: your element count seems ridiculously low ( "
+				<<mNumElements <<" ); Be brave to increase it"
+				"to profit from the GPU power;\n";
+			break;
+		}
+	}
+
 
 	//create after assertions so that the RadixSortProgram class does not have to catch those cases;
 	mRadixSortProgram = new RadixSortProgram(this);
@@ -123,8 +145,10 @@ RadixSorter::~RadixSorter()
  * */
 void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer)
 {
-	//TODO
-	assert(0&&"TODO implement");
+	for(unsigned int currentPass = 0; currentPass < mNumRadixSortPasses; currentPass++)
+	{
+		//TODO
+	}
 }
 
 

@@ -48,13 +48,8 @@ ParticleMechanicsStage::~ParticleMechanicsStage()
 {
 	delete  mParticleSceneRepresentation;
 	// DON'T delete  mParticleUniformGrid; It is a worldobjects, hence managed by the scenegraph!;
-	//delete  mStaticTriangleUniformGrid; //for later ;)
-//TODO uncomment when implemented and initialized
 //	delete mSplitAndCompactedUniformGridCells;
-//
-//	delete mRadixSorter;
-//
-
+	delete mRadixSorter;
 }
 
 bool ParticleMechanicsStage::initStage()throw(SimulatorException)
