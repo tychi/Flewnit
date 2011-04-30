@@ -13,6 +13,8 @@
 #include "Scene/ParticleSceneRepresentation.h"
 #include "Simulator/ParallelComputeManager.h"
 #include "Scene/UniformGrid.h"
+#include "Util/RadixSorter.h"
+#include "Util/HelperFunctions.h"
 
 
 namespace Flewnit
@@ -25,7 +27,6 @@ ParticleMechanicsStage::ParticleMechanicsStage(ConfigStructNode* simConfigNode)
 	  mParticleSceneParentSceneNode(0),
 	  mParticleSceneRepresentation(0),
 	  mParticleUniformGrid(0),
-	  //mStaticTriangleUniformGrid(0), //for later ;)
 	  mSplitAndCompactedUniformGridCells(0),
 	  mNumCurrentSplitAndCompactedUniformGridCells(0),
 	  mRadixSorter(0),
@@ -102,10 +103,20 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 	//add to scene graph to be debug drawable
 	mParticleSceneParentSceneNode->addChild(mParticleUniformGrid);
 
-//	  //mStaticTriangleUniformGrid(0), //for later ;)
-//	  mSplitAndCompactedUniformGridCells(0),
-//	  mNumCurrentSplitAndCompactedUniformGridCells(0),
-//	  mRadixSorter(0),
+
+	mSplitAndCompactedUniformGridCells =
+		new UniformGridBufferSet(
+			"particleSplitAndCompactedUniformGridCells",
+			ConfigCaster::cast<int>( uniGridSettingsNode.get("numCellsPerDimension",0) )
+		);
+
+
+	  mRadixSorter = new RadixSorter(
+			  ConfigCaster::cast<int>( generalSettingsNode.get("numMaxParticles",0) ),
+			  HelperFunctions::log2ui(ConfigCaster::cast<int>( generalSettingsNode.get("numMaxParticles",0) ))
+	  	  	  //keep rest @ default values;
+	  );
+
 //	  mSimulationParametersBuffer(0),
 //	  mNumMaxUserForceControlPoints(0),
 //	  mUserForceControlPointBuffer(0),

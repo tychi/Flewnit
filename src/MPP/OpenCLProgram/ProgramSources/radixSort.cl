@@ -83,14 +83,16 @@
                                                                                                                                                                             
   //-------------------------------------------------------------------------------------
   //hardware dependent memory amounts determine how many radix counters a work group can own
-    {% ifequal nvidiaComputeCapabilityMajor "2" %}
-      //take 32 kB of 48kB available
-      #define LOCAL_MEM_FOR_RADIX_COUNTERS (32768)
-    {% endifequal %}
-    {% ifequal nvidiaComputeCapabilityMajor "1" %}
-      //take 8kB of 16kB available
-      #define LOCAL_MEM_FOR_RADIX_COUNTERS (8192)
-    {% endifequal %}
+     // new defined by app ;(
+     // { ifequal nvidiaComputeCapabilityMajor "2" }
+     //   //take 32 kB of 48kB available
+     //   #define LOCAL_MEM_FOR_RADIX_COUNTERS (32768)
+     // { endifequal }
+     // { ifequal nvidiaComputeCapabilityMajor "1" }
+     //   //take 8kB of 16kB available
+     //   #define LOCAL_MEM_FOR_RADIX_COUNTERS (8192)
+     // { endifequal }
+    #define LOCAL_MEM_FOR_RADIX_COUNTERS ( {{ localMemForRadixCounters }} )
     //for fermi architectures, this should be 2^15 Bytes / (2^2 BytesPerCounter * 2^6 radix counter arrays) = 2^7 = 128
     //for GT200 architectures, this should be 2^13 Bytes / (2^2 BytesPerCounter * 2^6 radix counter arrays) = 2^5 =  32
     #define NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ( LOCAL_MEM_FOR_RADIX_COUNTERS / ( 4 * NUM_RADICES_PER_PASS ) )

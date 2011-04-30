@@ -24,12 +24,13 @@ class RadixSorter
 public:
 	RadixSorter(
 		unsigned int numElements,
-		unsigned int numBitsPerKey,
-		unsigned int numRadicesPerPass,
-
-		//implementation dependent stuff, default values indicate that optimal
+		unsigned int numBitsPerKey  //should be log2ui(numPaxParticles)
+									//= 15 for 2^15== 32786
+									//= 18 for 2^18==262144
+		//implementation dependent stuff, default zero values indicate that optimal
 		//(e.g. hardware dependent) values shall be chosen automatically
-		unsigned int numElementsPerRadixCounter = 0
+		//unsigned int numRadicesPerPass=0,
+		//unsigned int numElementsPerRadixCounter = 0
 	);
 
 	virtual ~RadixSorter();
@@ -50,11 +51,13 @@ public:
 	void sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer);
 
 private:
+	friend class RadixSortProgram; //easy access for template context and kernel arguments binding;
 
 	unsigned int mNumElements;
 	unsigned int mNumBitsPerKey;
-	unsigned int mNumRadicesPerPass;
 
+	unsigned int mNumRadixSortPasses;
+	unsigned int mNumRadicesPerPass;
 	unsigned int mNumElementsPerRadixCounter;
 
 
@@ -88,6 +91,7 @@ private:
 		unsigned int mNumRadixCountersPerRadixAndWorkGroup;
 
 		//( mNumElements  / ( mNumRadixCountersPerRadixAndWorkGroup * mNumElementsPerRadixCounter)
+		//global scan phase has btw numElementsPerWorkGroup  = mNumWorkGroups_TabulationAndReorderPhase/2
 		unsigned int mNumWorkGroups_TabulationAndReorderPhase;
 	//}
 
