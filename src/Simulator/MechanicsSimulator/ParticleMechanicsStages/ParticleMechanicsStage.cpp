@@ -16,6 +16,16 @@
 #include "Util/RadixSorter.h"
 #include "Util/HelperFunctions.h"
 
+#define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+#include "MPP/OpenCLProgram/ProgramSources/common/physicsDataStructures.cl"
+#undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+
+#include "Buffer/Buffer.h"
+#include "Util/Time/Timer.h"
+
+#include "URE.h"
+#include "Util/Time/FPSCounter.h"
+
 
 namespace Flewnit
 {
@@ -30,6 +40,12 @@ ParticleMechanicsStage::ParticleMechanicsStage(ConfigStructNode* simConfigNode)
 	  mSplitAndCompactedUniformGridCells(0),
 	  mNumCurrentSplitAndCompactedUniformGridCells(0),
 	  mRadixSorter(0),
+
+	  mUseConstantTimeStep(false),
+	  mConstantTimeStep(0.01666f),
+	  mTimestepScale(1.0f),
+	  mTimer(0),
+
 	  mSimulationParametersBuffer(0),
 	  mNumMaxUserForceControlPoints(0),
 	  mUserForceControlPointBuffer(0),
@@ -50,6 +66,7 @@ ParticleMechanicsStage::~ParticleMechanicsStage()
 	// DON'T delete  mParticleUniformGrid; It is a worldobjects, hence managed by the scenegraph!;
 	delete mSplitAndCompactedUniformGridCells;
 	delete mRadixSorter;
+	delete mTimer;
 }
 
 bool ParticleMechanicsStage::initStage()throw(SimulatorException)
@@ -99,23 +116,73 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 	mParticleSceneParentSceneNode->addChild(mParticleUniformGrid);
 
 
-	mSplitAndCompactedUniformGridCells =
-		new UniformGridBufferSet(
-			"particleSplitAndCompactedUniformGridCells",
-			ConfigCaster::cast<int>( uniGridSettingsNode.get("numCellsPerDimension",0) )
+	mSplitAndCompactedUniformGridCells = new UniformGridBufferSet(
+		"particleSplitAndCompactedUniformGridCells",
+		ConfigCaster::cast<int>( uniGridSettingsNode.get("numCellsPerDimension",0) )
+	);
+
+
+	mRadixSorter = new RadixSorter(
+		ConfigCaster::cast<int>( generalSettingsNode.get("numMaxParticles",0) ),
+		HelperFunctions::log2ui(ConfigCaster::cast<int>( generalSettingsNode.get("numMaxParticles",0) ))
+	);
+
+
+	mUseConstantTimeStep = ConfigCaster::cast<bool>( generalSettingsNode.get("useConstantTimestep",0) );
+	mConstantTimeStep = ConfigCaster::cast<float>( generalSettingsNode.get("constantTimeStep",0) );
+	mTimestepScale = ConfigCaster::cast<float>( generalSettingsNode.get("timestepScale",0) );
+	mTimer = Timer::create();
+
+
+
+	mSimulationParametersBuffer = SimulationResourceManager::getInstance().createGeneralPurposeOpenCLBuffer(
+		String("particleSimulationParametersBuffer"),
+		//we only need one instance ;)
+		sizeof( CLShare::SimulationParameters ),
+		true
+	);
+
+	//inititialize the sim params:
+	getSimParams()->setUniformGridParams(
+			mParticleUniformGrid->getMinCornerPosition(),
+			mParticleUniformGrid->getExtendsOfOneCell());
+	getSimParams()->setSimulationDomainBorders(
+		ConfigCaster::cast<Vector4D>( generalSettingsNode.get("simulationDomainBorderMin",0) ),
+		ConfigCaster::cast<Vector4D>( generalSettingsNode.get("simulationDomainBorderMax",0) )
+	);
+	getSimParams()->setGravityAcceleration(
+		ConfigCaster::cast<Vector4D>( generalSettingsNode.get("gravityAcceleration",0) )
+	);
+
+	//init current num to zero
+	getSimParams()->setNumUserForceControlPoints(0);
+
+	getSimParams()->setPenaltyForceConstants(
+		ConfigCaster::cast<float>( generalSettingsNode.get("penaltyForceSpringConstant",0) ),
+		ConfigCaster::cast<float>( generalSettingsNode.get("penaltyForceDamperConstant",0) )
+	);
+
+	getSimParams()->setSPHsupportRadius(
+		ConfigCaster::cast<float>( generalSettingsNode.get("SPHSupportRadius",0) )
+	);
+
+	//init to mConstantTimeStep, because otherweise, the timestep would change every frame anyway;
+	getSimParams()->setTimeStep(
+		mConstantTimeStep
+	);
+
+
+	mNumMaxUserForceControlPoints =
+		ConfigCaster::cast<int>( generalSettingsNode.get("numMaxUserForceControlPoints",0) );
+	assert(mNumMaxUserForceControlPoints > 0);
+	mUserForceControlPointBuffer = SimulationResourceManager::getInstance().createGeneralPurposeOpenCLBuffer(
+			String("particleSimulationUserForceControlPointBuffer"),
+			mNumMaxUserForceControlPoints * sizeof( CLShare::UserForceControlPoint ),
+			true
 		);
 
 
-	  mRadixSorter = new RadixSorter(
-			  ConfigCaster::cast<int>( generalSettingsNode.get("numMaxParticles",0) ),
-			  HelperFunctions::log2ui(ConfigCaster::cast<int>( generalSettingsNode.get("numMaxParticles",0) ))
-	  	  	  //keep rest @ default values;
-	  );
 
-//	  mSimulationParametersBuffer(0),
-//	  mNumMaxUserForceControlPoints(0),
-//	  mUserForceControlPointBuffer(0),
-//
 //	  mInitial_UpdateForce_Integrate_CalcZIndex_Program(0),
 //	  mUpdateDensityProgram(0),
 //	  mUpdateForce_Integrate_CalcZIndex_Program(0),
@@ -130,9 +197,18 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 	//TODO
 
+
+//	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
+//	{
+//		//init step
+//		mTimer
+//	}
+
+
+
+
 	//TEST ONLY; DELETE CALL!
 	//mParticleSceneRepresentation->reorderAttributes();
-
 
 	return true;
 }
@@ -147,12 +223,10 @@ bool ParticleMechanicsStage::validateStage()throw(SimulatorException)
 
 //directly do re reinterpret_cast on mSimulationParametersBuffer, no dedicated object necessary;
 //read only acces for app
-CLshare::SimulationParameters* const ParticleMechanicsStage::getSimParams()const
+CLShare::SimulationParameters* const ParticleMechanicsStage::getSimParams()const
 {
-	//TODO
-	assert(0&&"TODO implement");
-
-	return 0;
+	//return a direct pointer to the host component of the CL buffer;
+	return reinterpret_cast<CLShare::SimulationParameters*>(mSimulationParametersBuffer->getCPUBufferHandle());
 }
 
 
@@ -160,7 +234,7 @@ CLshare::SimulationParameters* const ParticleMechanicsStage::getSimParams()const
 //the returne pointer points directly to the corresponding stride in the host-buffer representation;
 //So you can mod the CL behaviour by directly writing to the dereferenced object; The info will be uploaded automatically
 //at the begin of every simulation tick;
-CLshare::UserForceControlPoint* ParticleMechanicsStage::addUserForceControlPoint(
+CLShare::UserForceControlPoint* ParticleMechanicsStage::addUserForceControlPoint(
 		const Vector4D& forceOriginWorldPos,
 		float influenceRadius,
 		float intensity //positive: push away; negative: pull towards origin;

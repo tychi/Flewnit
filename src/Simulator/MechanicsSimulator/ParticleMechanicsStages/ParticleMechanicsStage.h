@@ -38,6 +38,14 @@
 #define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 #include "MPP/OpenCLProgram/ProgramSources/common/physicsDataStructures.cl"
 #undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+//
+//namespace CLShare
+//{
+//	struct ObjectGenericFeatures;
+//	struct UserForceControlPoint;
+//	struct ParticleRigidBody;
+//	struct SimulationParameters;
+//}
 
 
 namespace Flewnit
@@ -63,14 +71,14 @@ public:
 
 	//directly do re reinterpret_cast on mSimulationParametersBuffer, no dedicated object necessary;
 	//read only acces for app
-	CLshare::SimulationParameters* const getSimParams()const;
+	CLShare::SimulationParameters* const getSimParams()const;
 
 
 
 	//the returne pointer points directly to the corresponding stride in the host-buffer representation;
 	//So you can mod the CL behaviour by directly writing to the dereferenced object; The info will be uploaded automatically
 	//at the begin of every simulation tick;
-	CLshare::UserForceControlPoint* addUserForceControlPoint(
+	CLShare::UserForceControlPoint* addUserForceControlPoint(
 			const Vector4D& forceOriginWorldPos,
 			float influenceRadius,
 			float intensity //positive: push away; negative: pull towards origin;
@@ -112,6 +120,10 @@ private:
 
 	RadixSorter* mRadixSorter;
 
+	bool mUseConstantTimeStep;
+	float mConstantTimeStep;  //used alway as timestep if mUseConstantTimeStep is true
+	float mTimestepScale; //scale factor for elapsed time in seconds to be used if mUseConstantTimeStep is false
+	Timer* mTimer;
 
 
 	//---------------------------------------------------------------------------

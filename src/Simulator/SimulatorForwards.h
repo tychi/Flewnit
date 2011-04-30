@@ -19,16 +19,11 @@ namespace Flewnit
 {
 
 
-
+class Timer;
 class FPSCounter;
 class InputInterpreter;
 
 class AmendedTransform;
-
-
-//settings to configure a simulation step:
-//debug draw, time interval, etc;
-class SimStepSettings;
 
 
 
@@ -282,6 +277,19 @@ class MPP;
 	class CLKernelArgumentBase;
 	template<typename T> class CLValueKernelArgument;
 	class 	CLBufferKernelArgument;
+
+	//following data types actually defined in OpenCL source code, but also included by the c++ app;
+	//Code compatibility ensured by conditional compilation and careful alignment by hand via
+	//padding members;
+	//edit: doesn't work; typedef struct {...} StructureName; seems for the compiler not to be the same as
+	// struct StructureName {...};
+	//	namespace CLShare
+	//	{
+	//		struct ObjectGenericFeatures;
+	//		struct UserForceControlPoint;
+	//		struct ParticleRigidBody;
+	//		struct SimulationParameters;
+	//	}
 
 
 

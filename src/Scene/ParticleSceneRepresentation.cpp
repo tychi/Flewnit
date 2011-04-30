@@ -60,12 +60,11 @@ ParticleSceneRepresentation::ParticleSceneRepresentation(
 	mReorderParticleAttributesProgram(0)
 
 {
-
 	mObjectGenericFeaturesBuffer =
 		SimulationResourceManager::getInstance().createGeneralPurposeOpenCLBuffer(
 			String("particleSceneObjectGenericFeaturesBuffer"),
 			//+1 because of the invalid object feature;
-			(mNumMaxFluids + 1 + mNumMaxRigidBodies) * sizeof( CLshare::ObjectGenericFeatures ),
+			(mNumMaxFluids + 1 + mNumMaxRigidBodies) * sizeof( CLShare::ObjectGenericFeatures ),
 			true
 		);
 
@@ -75,7 +74,7 @@ ParticleSceneRepresentation::ParticleSceneRepresentation(
 	mRigidBodyBuffer =
 		SimulationResourceManager::getInstance().createGeneralPurposeOpenCLBuffer(
 			String("particleSceneRigidBodyBuffer"),
-		    mNumMaxRigidBodies * sizeof( CLshare::ParticleRigidBody ),
+		    mNumMaxRigidBodies * sizeof( CLShare::ParticleRigidBody ),
 			true
 		);
 

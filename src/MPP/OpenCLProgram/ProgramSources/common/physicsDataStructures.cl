@@ -21,9 +21,8 @@
 
 #ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 
-  namespace CLshare
-  {
-    
+  namespace CLShare
+  {    
     //provide typename compatibility;
     typedef Flewnit::Vector4D float4;
     typedef Flewnit::Matrix4x4 float16;
@@ -68,7 +67,9 @@
   
   typedef struct
   {
-  
+  #ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+  private:
+  #endif
     float4 forceOriginWorldPos; //where is  the control point?
     
     //how big shall be the region where the force has influence? 
@@ -81,17 +82,29 @@
      
      
     uint targetObjectID; //object which is influence by the force; a certain rigid body or a certain fluid object; 
+                         //NOTE: currently unused;
      
 
      //structure implicitely aligned to 2*(4*4)=32 bytes;
      
     #ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
       //setter for c++ app ;)
+      
+    public:
+      void setForceOriginWorldPos(float4 pos)
+      {
+        forceOriginWorldPos = pos;
+      }
       void setInfluenceRadius(float influenceRadius)
       {
         squaredInfluenceRadius = influenceRadius * influenceRadius;
         inverseSquaredInfluenceRadius = 1.0f/ squaredInfluenceRadius;
       }
+      void setIntensity(float intens)
+      {
+        intensity = intens;
+      }
+      
     #endif //FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
      
   } UserForceControlPoint;
@@ -168,6 +181,10 @@
   */
   typedef struct  
   {
+  #ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+  private:
+  #endif
+  
     //{ uniform grid params
     //calced by app to save offset calculations: worldPositionCenter - (( (float)(numCellsPerDimension) )*0.5f) * uniGridCellSizes
     float4 uniGridWorldPosLowerCorner;
@@ -227,6 +244,56 @@
                            //as this structure is in constant memory, read speed is as fast as register read speed
                            //and hence precomputation is a valid optimization here to replace a costly division by a cheaper multiplication;
    
+    #ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+      //setters for c++ app ;)
+    public:  
+      void setUniformGridParams(float4 worldPosLowerCorner, float4 cellSizes)
+      {
+        this->uniGridWorldPosLowerCorner = worldPosLowerCorner;
+        this->uniGridCellSizes = cellSizes;
+        this->inverseUniGridCellSizes = float4(1.0f/cellSizes.x, 1.0f/cellSizes.y, 1.0f/cellSizes.z, 0.0f);
+      }
+      
+      void setSimulationDomainBorders(float4 minCorner, float4 maxCorner)
+      {
+        this->simulationDomainBorders.minPos = minCorner;
+        this->simulationDomainBorders.minPos = maxCorner;
+      }
+      
+      void setGravityAcceleration(float4 accel)
+      {
+        this->gravityAcceleration = accel;
+      }
+    
+      void setNumUserForceControlPoints(uint val)
+      {
+        this->numUserForceControlPoints = val;
+      }
+      
+      void setPenaltyForceConstants(float springConstant, float damperConstant )
+      {
+        this->penaltyForceSpringConstant = springConstant;
+        this->penaltyForceDamperConstant = damperConstant;
+      }
+      
+      
+      void setSPHsupportRadius(float suppRad)
+      {
+        this->SPHsupportRadius = suppRad;
+        this->SPHsupportRadiusSquared = suppRad * suppRad;
+        this->poly6KernelConstantTerm =         ( 315.0f / ( 64.0f * M_PI * std::pow(suppRad, 9) ) );
+        this->gradientSpikyKernelConstantTerm = (  45.0f / (         M_PI * std::pow(suppRad, 6) ) );
+        this->laplacianViscosityConstantTerm=   (  45.0f / (         M_PI * std::pow(suppRad, 6) ) );
+      }
+
+      void setTimeStep(float t)
+      {
+        this->timestep = t;
+        this->squaredTimestep = t*t;
+        this->inverseTimestep = 1.0f/t;
+      }
+      
+    #endif //FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
     
   } SimulationParameters;
  
@@ -302,7 +369,7 @@
   
   
 #ifdef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
-  } //end namespace CLshare 
+  } //end namespace CLShare 
 #endif //FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
   
   

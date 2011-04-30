@@ -208,6 +208,13 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	}
 
+
+	if( (keyboard->getRecentKey() == GLFW_KEY_TAB) && (keyboard->getRecentStatus() == GLFW_PRESS) )
+	{
+		URE_INSTANCE->toggleDoDebugDraw();
+	}
+
+
 	if((keyboard->getRecentKey() == GLFW_KEY_SPACE) && (keyboard->getRecentStatus() == GLFW_PRESS))
 	{
 		mHideMouse = !mHideMouse;

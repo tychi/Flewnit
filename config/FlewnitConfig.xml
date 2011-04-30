@@ -82,14 +82,18 @@
 
       <windowTitle type="STRING" value="Flewnit" />
 
-      <fullScreen type="BOOL" value="false"/>
+      <fullScreen type="BOOL" value="true"/>
 
       <enforceCustomResolutionInFullScreen type="BOOL" value="false" />
-
+    
+      <!--
       <resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
+      -->
+      <resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
+      
       <position type="VEC2I" x="400" y="100" GUIVisibility="read" tweakConfigString="TODO"/>
 
-      <numMultiSamples type="INT" value ="4" />
+      <numMultiSamples type="INT" value ="1" />
 
     </windowSettings>
 
@@ -154,19 +158,28 @@
           <voxelSideLengthRepresentedByRigidBodyParticle type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
-
           <SPHSupportRadius type="FLOAT" value="1.0"		GUIVisibility="read/write" tweakConfigString="TODO"/>
           
-          <numMaxUserForceControlPoints type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           <!--as long i have no triangle-collision-mesh functionality, i have to keep the particles in a lame box ;( -->
+          <!-- to be as big as the uniform grid, it simulationDomainBorderMax-simulationDomainBorderMin should be
+               = extendsOfOneCell * ( numCellsPerDimension +1 )
+           -->
           <simulationDomainBorderMin  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <simulationDomainBorderMax  type="VEC4" x="33.0" y="33.0" z="33.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <simulationDomainBorderMax  type="VEC4" x="195.0" y="195.0" z="195.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
           <gravityAcceleration  type="VEC4" x="0.0" y="-0.1" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceSpringConstant type="FLOAT" value="0.1" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceDamperConstant type="FLOAT" value="0.1" GUIVisibility="read/write" tweakConfigString="TODO"/>
  
+          <numMaxUserForceControlPoints type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+          <useConstantTimestep type="BOOL" value ="true" GUIVisibility="read"	tweakConfigString="TODO"/>
+          <!-- used alway as timestep if useConstantTimestep;  1/60 seconds -->
+          <constantTimeStep    type="FLOAT" value ="0.0166666" GUIVisibility="read"	tweakConfigString="TODO"/>
+          <!-- scale factor for elapsed time in seconds to be used if !useConstantTimestep -->
+          <timestepScale    type="FLOAT" value ="1.0" GUIVisibility="read"	tweakConfigString="TODO"/>
+          
           
           <!-- following values currently unused -->
 	          <targetSimulationStepsPerSecond type="INT" value="60" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -204,8 +217,8 @@
             -->
             <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
           
-            <spawnAABBMin  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-            <spawnAABBMax  type="VEC4" x="33.0" y="33.0" z="33.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            <spawnAABBMin  type="VEC4" x="0.5" y="0.5" z="0.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            <spawnAABBMax  type="VEC4" x="32.5" y="32.5" z="32.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
              <ParticleLiquidVisualMaterial>
               <name type="STRING" value="coldWaterParticleLiquidVisualMaterial" />

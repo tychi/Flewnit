@@ -87,6 +87,7 @@ public:
     inline bool doValidateSimulationStepResults()const{return mDoValidateSimulationStepResults;}
     inline bool doProfileAndOptimizeSettings()const{return mDoProfileAndOptimizeSettings;}
     inline bool doProfilePerformance()const{return mDoProfilePerformance;}
+    inline void toggleDoDebugDraw(){mDoDebugDraw = !mDoDebugDraw;}
     inline bool doDebugDraw()const{return mDoDebugDraw;}
 
     SimulatorInterface* getSimulator(SimulationDomain sd)const throw(SimulatorException);

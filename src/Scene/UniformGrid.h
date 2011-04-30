@@ -83,6 +83,9 @@ public:
 	virtual ~UniformGrid();
 
 	inline unsigned int getNumCellsPerDimension()const{return mNumCellsPerDimension; }
+	inline const Vector4D& getMinCornerPosition()const{return mMinCornerPosition;}
+	inline const Vector4D& getExtendsOfOneCell()const{return mExtendsOfOneCell;}
+
 	inline unsigned int getNumMaxElementsPerSimulationWorkGroup()const{return mNumMaxElementsPerSimulationWorkGroup; }
 
 	inline Buffer* getZIndexLookupTable()const{return mZIndexLookupTable;}
