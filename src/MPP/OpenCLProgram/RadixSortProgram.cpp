@@ -8,10 +8,14 @@
 #include "RadixSortProgram.h"
 
 #include "Util/RadixSorter.h"
+#include "CLKernelArguments.h"
+
 #include "Simulator/ParallelComputeManager.h"
 #include "MPP/OpenCLProgram/CLProgramManager.h"
 #include "Buffer/IntermediateResultBuffersManager.h"
 #include "Util/HelperFunctions.h"
+
+#include "Buffer/Buffer.h"
 
 #include <grantlee/engine.h>
 
@@ -135,6 +139,48 @@ void RadixSortProgram::setupTemplateContext(TemplateContextMap& contextMap)
 //issue the several createKernel() calls with initial argument list etc;
 void RadixSortProgram::createKernels()
 {
+
+	//----------------------------------------------------------------------------
+	//phase 1
+
+	mKernels["kernel_radixSort_tabulate_localScan_Phase"] = new CLKernel(
+			this,
+			"kernel_radixSort_tabulate_localScan_Phase",
+
+			new CLKernelWorkLoadParams(
+				mRadixSorter->mNumElements,
+				mRadixSorter->mNumElements / mRadixSorter->mNumWorkGroups_TabulationAndReorderPhase
+			),
+
+			new CLKernelArguments(
+				{
+					//init the key buffer arguments to null ptr,
+					//because the argument is variable, i.e. several different key buffers may want to be sorted
+					new CLBufferKernelArgument("gKeysToSort", 0),
+
+
+					//temporary buffers, grab them from IntermediateResultBuffersManager
+					new CLBufferKernelArgument("gLocallyScannedRadixCounters",
+						CLProgramManager::getInstance().getIntermediateResultBuffersManager()
+							->getBuffer(0) //take the biggest buffer
+					),
+					new CLBufferKernelArgument("gSumsOfLocalRadixCounts",
+						CLProgramManager::getInstance().getIntermediateResultBuffersManager()
+							->getBuffer(1) //take the 2nd biggest buffer
+					),
+					//the only non-buffer kernel arg I'm using so far X-D
+					//also variable
+					new CLValueKernelArgument<unsigned int>("numPass",0)
+
+				}
+			)
+		);
+
+
+	//----------------------------------------------------------------------------
+	//phase 2
+
+
 
 }
 

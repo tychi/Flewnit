@@ -28,14 +28,6 @@
   
 */
 
-#pragma OPENCL EXTENSION cl_nv_pragma_unroll : enable
-#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
-//pragma OPENCL EXTENSION cl_khr_global_int32_extended_atomics : enable
-#pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics : enable
-//pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics : enable
-
-
-
   //####################################################################################
   //-------------------------------------------------------------------------------------
   {% include "scan.cl" %}
@@ -197,7 +189,7 @@
     
     uint radix = getRadix( gKeysToSort[get_global_id(0)] ,numPass);
     
-    atomic_inc( 
+    atom_inc( 
       lRadixCounters + 
       //select the counter array for the radix of the current value
       radix * PADDED_STRIDE(NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) + 
@@ -297,7 +289,7 @@
   //with the number of multiprocessors in a device; Hence, for perfect load balancing, we take 
   //pow2(ceil(log2(CL_DEVICE_MAX_COMPUTE_UNITS))) work groups (value calced by app), 
   //i.e. the number of multiprocessors, rounded to the next power of two
-  #define NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE  ( NUM_BASE2_CEILED_COMPUTE_UNITS )
+  #define NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE  ( NUM_COMPUTE_UNITS_BASE2_CEILED )
   //default value for Geforce GT  435M (fermi) : (64 / pow2(ceil(log2( 2))) = 32
   //default value for Geforce GTX 280  (GT200) : (64 / pow2(ceil(log2(30))) = 2
   //default value for Geforce GTX 570  (fermi) : (64 / pow2(ceil(log2(15))) = 4
@@ -364,6 +356,7 @@
      //becaus no bank conflicts can occur.  
      __local uint  lSumsOfGlobalRadixCounts[ NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE + 1 ];
   
+      __local uint lTotalRadixSum;
   
     uint lwiID = get_local_id(0); // short for "local work item ID"
     uint groupID = get_group_id(0);

@@ -1,5 +1,4 @@
-#pragma OPENCL EXTENSION cl_nv_pragma_unroll : enable
-#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
+
 
 /*
   Work efficient parallel prefix sum (scan);
@@ -8,7 +7,6 @@
   There is an issue with the padding macro for bank conflict avoidance in the paper; See bankConflictsAvoidance.cl for further info
   
 */
-
 
    {% include "common.cl" %}
    {% include "bankConflictsAvoidance.cl" %}
