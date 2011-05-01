@@ -114,6 +114,9 @@ namespace Flewnit
 	protected:
 		friend class CLKernel;
 
+		void writeBinaryToDisk(Path completePtxFilePath);
+		void buildProgramFromBinaryFromDisk(Path completePtxFilePath);
+
 		void validate()throw(SimulatorException);
 
 		//setup the context for template rendering:
@@ -131,6 +134,8 @@ namespace Flewnit
 
 		typedef std::map<String, CLKernel*> KernelMap;
 		KernelMap mKernels;
+
+		Timer* mTimer;
 
 	private:
 

@@ -198,11 +198,13 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 		new ParticleSimulationProgram(INIT_FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM,	this);
 
 //alloc and build when needed; to reduce compile times
-//	mUpdateDensityProgram =
-//		new ParticleSimulationProgram(DENSITIY_PARTICLE_SIM_PROGRAM, this);
-//
-//	mUpdateForce_Integrate_CalcZIndex_Program =
-//		new ParticleSimulationProgram(FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM, this);
+	//TODO
+
+	mUpdateDensityProgram =
+		new ParticleSimulationProgram(DENSITIY_PARTICLE_SIM_PROGRAM, this);
+
+	mUpdateForce_Integrate_CalcZIndex_Program =
+		new ParticleSimulationProgram(FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM, this);
 
 
 //	for later ;(
@@ -282,9 +284,14 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 				EventVector()
 			);
 
-		mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
-				"initialZIndexCalc",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() );
+//		mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+//				"initialZIndexCalc",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() );
 	}
+
+	mRadixSorter->sort(
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->getZIndicesPiPoBuffer(),
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->getOldIndicesPiPoBuffer()
+	);
 
 
 

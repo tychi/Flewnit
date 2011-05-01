@@ -192,44 +192,44 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 
 
-	for(unsigned int currentPass = 0; currentPass < mNumRadixSortPasses; currentPass++)
-	{
-		//--------------------------------------------------------------------------
-		//phase 1
-
-		//only the "numPass" argument - guess what - changes over the passes ;)
-		phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
-
-		phase1Kernel->run( EventVector{eventToWaitFor} );
-
-		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
-
-		//--------------------------------------------------------------------------
-		//phase 2
-
-		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
-
-		phase2Kernel->run( EventVector{eventToWaitFor} );
-
-		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
-
-		//--------------------------------------------------------------------------
-		//phase 3
-
-		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
-
-		phase3Kernel->run( EventVector{eventToWaitFor} );
-
-		//make phase 1 weit for phase 3 to finish:
-		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();
-
-
-		//##########################################################################
-		//do the buffer toggle
-		keysBuffer->toggleBuffers();
-		oldIndicesBuffer->toggleBuffers();
-
-	}
+//	for(unsigned int currentPass = 0; currentPass < mNumRadixSortPasses; currentPass++)
+//	{
+//		//--------------------------------------------------------------------------
+//		//phase 1
+//
+//		//only the "numPass" argument - guess what - changes over the passes ;)
+//		phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
+//
+//		phase1Kernel->run( EventVector{eventToWaitFor} );
+//
+//		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
+//
+//		//--------------------------------------------------------------------------
+//		//phase 2
+//
+//		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
+//
+//		phase2Kernel->run( EventVector{eventToWaitFor} );
+//
+//		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
+//
+//		//--------------------------------------------------------------------------
+//		//phase 3
+//
+//		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
+//
+//		phase3Kernel->run( EventVector{eventToWaitFor} );
+//
+//		//make phase 1 weit for phase 3 to finish:
+//		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();
+//
+//
+//		//##########################################################################
+//		//do the buffer toggle
+//		keysBuffer->toggleBuffers();
+//		oldIndicesBuffer->toggleBuffers();
+//
+//	}
 
 	//keysBuffer and oldIndicesBuffer should have their sorted resp reordered values in there active component
 	//now ;)

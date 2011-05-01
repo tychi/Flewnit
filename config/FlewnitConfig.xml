@@ -196,12 +196,13 @@
         </generalSettings>
         
         <UniformGrid>
-           <numCellsPerDimension type="INT" value="64" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <numCellsPerDimension type="INT" value="32" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
           
            <!--
-           <minCornerPosition  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-           -->
             <minCornerPosition  type="VEC4"  x="192.0" y="192.0" z="192.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           -->
+           <minCornerPosition  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
            <extendsOfOneCell  type="VEC4" x="3.0" y="3.0" z="3.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
 				    <!--

@@ -1,4 +1,4 @@
-#pragma OPENCL EXTENSION cl_nv_pragma_unroll : enable
+//pragma OPENCL EXTENSION cl_nv_pragma_unroll : enable
 #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
 #pragma OPENCL EXTENSION cl_khr_global_int32_extended_atomics : enable
 #pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics : enable
@@ -7,6 +7,7 @@
   
 #ifndef FLEWNIT_CL_PROGRAMS_COMMON_GUARD
 #define FLEWNIT_CL_PROGRAMS_COMMON_GUARD
+  
   
   //--------------------- numbers ------------------
   #define EPSILON (0.00001f)
