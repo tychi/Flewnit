@@ -140,8 +140,10 @@ void ParticleSceneRepresentation::reorderAttributes()
 //as features may have been changed by the user;
 void ParticleSceneRepresentation::flushObjectBuffers()
 {
-	mObjectGenericFeaturesBuffer->copyFromHostToGPU();
-	mRigidBodyBuffer->copyFromHostToGPU();
+	//TODO disable vlocking and thingk about possible hazards;
+	mObjectGenericFeaturesBuffer->copyFromHostToGPU(true);
+	mRigidBodyBuffer->copyFromHostToGPU(true);
+	mRigidBodyRelativePositionsBuffer->copyFromHostToGPU(true);
 }
 
 //to be called after a simulation step:
@@ -347,6 +349,8 @@ VertexBasedGeometry* ParticleSceneRepresentation::createGeometryFromAttributeBuf
 			particleCount
 			);
 
+	//----
+
 	pointGeo->setAttributeBuffer(
 		mParticleAttributeBuffers->getPositionsPiPoBuffer()
 	);
@@ -362,11 +366,11 @@ VertexBasedGeometry* ParticleSceneRepresentation::createGeometryFromAttributeBuf
 	);
 
 	pointGeo->setAttributeBuffer(
-		mParticleAttributeBuffers->getDensitiesPiPoBuffer()
+		mParticleAttributeBuffers->getLastStepsAccelerationsPiPoBuffer()
 	);
 
 	pointGeo->setAttributeBuffer(
-		mParticleAttributeBuffers->getLastStepsAccelerationsPiPoBuffer()
+		mParticleAttributeBuffers->getZIndicesPiPoBuffer()
 	);
 
 	//return to comput stuff
@@ -374,7 +378,6 @@ VertexBasedGeometry* ParticleSceneRepresentation::createGeometryFromAttributeBuf
 
 	return pointGeo;
 }
-
 
 
 

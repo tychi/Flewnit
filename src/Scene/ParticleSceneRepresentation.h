@@ -126,7 +126,6 @@ public:
 	void associateParticleAttributeBuffersWithRenderingResults(std::map<BufferSemantics,BufferInterface*>& renderingResults);
 
 
-
 private:
 
 	//internal helper routine for creating the geometry objects for fluid objects;

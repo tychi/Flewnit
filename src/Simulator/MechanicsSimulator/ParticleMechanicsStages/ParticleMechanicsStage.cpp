@@ -197,11 +197,12 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 	mInitial_UpdateForce_Integrate_CalcZIndex_Program =
 		new ParticleSimulationProgram(INIT_FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM,	this);
 
-	mUpdateDensityProgram =
-		new ParticleSimulationProgram(DENSITIY_PARTICLE_SIM_PROGRAM, this);
-
-	mUpdateForce_Integrate_CalcZIndex_Program =
-		new ParticleSimulationProgram(FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM, this);
+//alloc and build when needed; to reduce compile times
+//	mUpdateDensityProgram =
+//		new ParticleSimulationProgram(DENSITIY_PARTICLE_SIM_PROGRAM, this);
+//
+//	mUpdateForce_Integrate_CalcZIndex_Program =
+//		new ParticleSimulationProgram(FORCE_INTEGRATE_ZINDEX_PARTICLE_SIM_PROGRAM, this);
 
 
 //	for later ;(
@@ -262,26 +263,36 @@ void ParticleMechanicsStage::parseParticleScene()
 	}
 
 	mParticleSceneRepresentation->getParticleAttributeBuffers()->flushBuffers();
+	mParticleSceneRepresentation->flushObjectBuffers();
 }
 
 
 bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 {
+	//acquire and relase done already by mechanics simulator;
+	//PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 
-	//TODO
 
+	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
+	{
+		//init step
+		mInitial_UpdateForce_Integrate_CalcZIndex_Program->getKernel("kernel_initial_CalcZIndex")
+			->run(
+				//empty event vec, no dependencies
+				EventVector()
+			);
 
-//	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
-//	{
-//		//init step
-//		mTimer
-//	}
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+				"initialZIndexCalc",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() );
+	}
 
 
 
 
 	//TEST ONLY; DELETE CALL!
 	//mParticleSceneRepresentation->reorderAttributes();
+
+	//PARA_COMP_MANAGER->acquireSharedBuffersForGraphics();
 
 	return true;
 }

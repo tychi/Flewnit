@@ -15,6 +15,11 @@
 #include "MPP/OpenCLProgram/ProgramSources/common/physicsDataStructures.cl"
 #undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 
+#include "Util/HelperFunctions.h"
+#include "URE.h"
+
+
+#include "Util/Log/Log.h"
 
 
 namespace Flewnit
@@ -24,6 +29,7 @@ ParticleAttributeBuffers::ParticleAttributeBuffers(
 		unsigned int numTotalParticles,
 		unsigned int invalidObjectID,
 		bool initToInvalidObjectID)
+: mNumTotalParticles(numTotalParticles)
 {
 	BufferInfo glCLSharedIndexBufferInfo(
 		"particleIndexTableBuffer",
@@ -248,6 +254,90 @@ void ParticleAttributeBuffers::readBackBuffers()
 	mCorrectedVelocitiesPiPoBuffer->readBack();
 	mPredictedVelocitiesPiPoBuffer->readBack();
 	mLastStepsAccelerationsPiPoBuffer->readBack();
+}
+
+void ParticleAttributeBuffers::dumpBuffers(String dumpName, unsigned int frameNumber)
+{
+
+	readBackBuffers();
+
+	std::fstream fileStream;
+	Path path =
+		Path( FLEWNIT_DEFAULT_OPEN_CL_KERNEL_SOURCES_PATH )
+		/ String("bufferDumps")
+		/
+		Path(
+			String("bufferDump_")+ dumpName + String("_")+
+			HelperFunctions::toString(frameNumber)+String(".txt")
+		);
+
+
+	fileStream.open(
+		path.string().c_str(),
+		std::ios::out
+	);
+
+	Vector4D* positions =
+		reinterpret_cast<Vector4D*>(getPositionsPiPoBuffer()->getCPUBufferHandle());
+
+	Vector4D* predVels =
+		reinterpret_cast<Vector4D*>(getPredictedVelocitiesPiPoBuffer()->getCPUBufferHandle());
+
+	unsigned int* particleObjectInfos =
+		reinterpret_cast<unsigned int*>(getObjectInfoPiPoBuffer()->getCPUBufferHandle());
+
+	//used as index buffer for drawing the point clouds:
+	//(is permutated due to radix sort reordering, hence we cannot draw a fixed
+	//particle stride without index buffer ;( )
+	unsigned int* particleIndices =
+		reinterpret_cast<unsigned int*>(getParticleIndexTableBuffer()->getCPUBufferHandle());
+
+	unsigned int* zIndices =
+		reinterpret_cast<unsigned int*>(getZIndicesPiPoBuffer()->getCPUBufferHandle());
+
+
+
+
+	for(unsigned int i = 0 ; i< mNumTotalParticles; i++)
+	{
+		String zIndexString="";
+		for(unsigned int bitRunner = 0 ; bitRunner < 32 ; bitRunner++)
+		{
+			zIndexString.append(
+				( (zIndices[i] & (1<< (31-bitRunner) ) ) == 0 )
+				?"0":"1"
+			);
+		}
+
+
+		fileStream
+			<<"Particle number "<<i<<": "
+
+			<<"active Position("
+					<<positions[i].x<<","
+					<<positions[i].y<<","
+					<<positions[i].z<<","
+					<<positions[i].w<<"), "
+
+			<<"active predicted velocity("
+				<<predVels[i].x<<","
+				<<predVels[i].y<<","
+				<<predVels[i].z<<","
+				<<predVels[i].w<<"), "
+
+			<<"ZIndex: "<<zIndexString
+
+			<<"\n";
+	}
+
+
+	fileStream.close();
+
+	//shut down
+	assert(0&&"abort on purpose after programmer requested buffer dump :)");
+	//URE_INSTANCE->requestMainLoopQuit();
+
+
 }
 
 }

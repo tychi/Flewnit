@@ -140,10 +140,10 @@
           <maxTimestepPerSimulationStep type="FLOAT" value="0.01" GUIVisibility="read/write" tweakConfigString="TODO"/>
 
           <!--
-          <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          -->
           <numMaxParticles type="INT" value="262144" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          -->
+          <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
           
@@ -197,7 +197,12 @@
         
         <UniformGrid>
            <numCellsPerDimension type="INT" value="64" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+           <!--
            <minCornerPosition  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           -->
+            <minCornerPosition  type="VEC4"  x="192.0" y="192.0" z="192.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
            <extendsOfOneCell  type="VEC4" x="3.0" y="3.0" z="3.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
 				    <!--
 				      GPU-relevant "chunk-ization" size, denoting the max. element count processed by one OpenCL work group; 
@@ -217,16 +222,16 @@
           <ParticleFluid>
             <name type="STRING" value="coldWater" />
             <!--          
-            <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
             <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
-            -->
             <numContainingParticles type="INT" value="262144" GUIVisibility="read" tweakConfigString="TODO"/>
+            -->
+            <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
           
             <spawnAABBMin  type="VEC4" x="0.5" y="0.5" z="0.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             <!--          
-            <spawnAABBMax  type="VEC4" x="32.5" y="32.5" z="32.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-            -->  
             <spawnAABBMax  type="VEC4" x="64.5" y="64.5" z="64.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>     
+            -->  
+            <spawnAABBMax  type="VEC4" x="32.5" y="32.5" z="32.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
 
             <initialVelocity type="VEC4" x="0.0" y="0.0" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
  

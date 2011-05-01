@@ -51,11 +51,18 @@ public:
 	//but for debugging purposes during development, we will need the read-back functionality;
 	void readBackBuffers();
 
+	//read back and write out buffers to disc for analysis;
+	void dumpBuffers(String dumpName, unsigned int frameNumber);
+	// the dump files are qite big, so enforce max size;
+	#define FLEWNIT_MAX_BUFFER_DUMPS 10
+
 private:
 
 	friend class ParticleSceneRepresentation;
 	friend class ReorderParticleAttributesProgram; //make friend for accessing for kernel arg list generation
 
+
+	unsigned int mNumTotalParticles;
 
 	//tracking buffer for fluid objects and rigid bodies to find their belonging particles in the
 	//recurrently reordered attribute buffers;

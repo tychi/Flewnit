@@ -11,16 +11,34 @@
     __constant SimulationParameters* cSimParams,
     __constant uint* cGridPosToZIndexLookupTable )
   {
+  
+    position = remainder(
+      position - cSimParams->uniGridWorldPosLowerCorner,
+      NUM_UNIGRID_CELLS_PER_DIMENSION * cSimParams->uniGridCellSizes
+     );
+    position *= cSimParams->inverseUniGridCellSizes;
+    //position /= cSimParams->uniGridCellSizes;
+    uint4 cell3Dindex = convert_uint4_rtz(position); 
+  
     //calculate floating point cell index, convert to integral type and round to nearest zero
-    int4 cell3Dindex = convert_int4_rtz( 
-      (position - cSimParams->uniGridWorldPosLowerCorner ) *  cSimParams->inverseUniGridCellSizes    
-    );
+    //int4 cell3Dindex = convert_int4_rtz( 
+    //  (position - cSimParams->uniGridWorldPosLowerCorner ) *  cSimParams->inverseUniGridCellSizes    
+    //);
+    
+    //uint4 cell3Dindex = convert_uint4_rtz( 
+    //  (position - cSimParams->uniGridWorldPosLowerCorner ) *  cSimParams->inverseUniGridCellSizes    
+    //);
     
     //repeat infinitely in order to make simulation domain infinite
                     //%= NUM_UNIGRID_CELLS_PER_DIMENSION ;
-    cell3Dindex.x = BASE_2_MODULO( cell3Dindex.x, NUM_UNIGRID_CELLS_PER_DIMENSION ); 
-    cell3Dindex.y = BASE_2_MODULO( cell3Dindex.y, NUM_UNIGRID_CELLS_PER_DIMENSION ); 
-    cell3Dindex.z = BASE_2_MODULO( cell3Dindex.z, NUM_UNIGRID_CELLS_PER_DIMENSION ); 
+    //cell3Dindex.x = BASE_2_MODULO( cell3Dindex.x, NUM_UNIGRID_CELLS_PER_DIMENSION ); 
+    //cell3Dindex.y = BASE_2_MODULO( cell3Dindex.y, NUM_UNIGRID_CELLS_PER_DIMENSION ); 
+    //cell3Dindex.z = BASE_2_MODULO( cell3Dindex.z, NUM_UNIGRID_CELLS_PER_DIMENSION ); 
+        
+    //cell3Dindex.x = cell3Dindex.x % NUM_UNIGRID_CELLS_PER_DIMENSION ; 
+    //cell3Dindex.y = cell3Dindex.y % NUM_UNIGRID_CELLS_PER_DIMENSION ; 
+    //cell3Dindex.z = cell3Dindex.z % NUM_UNIGRID_CELLS_PER_DIMENSION ; 
+    
     
     return (
       cGridPosToZIndexLookupTable[ 0* NUM_UNIGRID_CELLS_PER_DIMENSION + cell3Dindex.x ]
