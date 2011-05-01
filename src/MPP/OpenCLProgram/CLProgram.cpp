@@ -207,39 +207,39 @@ void CLProgram::build()
 
     bool needToRebuildFromSource= true;
 
-//    if(	boost::filesystem::exists(	completePtxFilePath	) )
-//    {
-//    	struct stat linuxPtxFileStat;
-//
-//
-//    	int statErrorPtx = stat (completePtxFilePath.string().c_str(), &linuxPtxFileStat);
-//    	if (statErrorPtx != 0)
-//    	{ assert(0&& "wtf file must exist! i tested it  with boost! may never end here!");}
-//
-//    	LOG<< INFO_LOG_LEVEL<<"Time of last ptx file modification: "
-//    			<< linuxPtxFileStat.st_mtim.tv_sec
-//    			<<";\n";
-//
-//    	if(
-//    		linuxSourceFileStat.st_mtim.tv_sec < linuxPtxFileStat.st_mtim.tv_sec
-//    	)
-//    	{
-//    		LOG<< INFO_LOG_LEVEL<<"Source file is older than ptx file by"
-//    				<< linuxPtxFileStat.st_mtim.tv_sec	- linuxSourceFileStat.st_mtim.tv_sec
-//    				<<" seconds! Using hence ptx file!\n";
-//
-//    		needToRebuildFromSource = false;
-//    	}
-//    }
-//    //} end timestamp stuff
-
-
-
-    if(! needToRebuildFromSource)
+    if(	boost::filesystem::exists(	completePtxFilePath	) )
     {
-    	assert(0&& "ptx file loading TODO");
+    	struct stat linuxPtxFileStat;
+
+
+    	int statErrorPtx = stat (completePtxFilePath.string().c_str(), &linuxPtxFileStat);
+    	if (statErrorPtx != 0)
+    	{ assert(0&& "wtf file must exist! i tested it  with boost! may never end here!");}
+
+    	LOG<< INFO_LOG_LEVEL<<"Time of last ptx file modification: "
+    			<< linuxPtxFileStat.st_mtim.tv_sec
+    			<<";\n";
+
+    	if(
+    		linuxSourceFileStat.st_mtim.tv_sec < linuxPtxFileStat.st_mtim.tv_sec
+    	)
+    	{
+    		LOG<< INFO_LOG_LEVEL<<"Source file is older than ptx file by"
+    				<< linuxPtxFileStat.st_mtim.tv_sec	- linuxSourceFileStat.st_mtim.tv_sec
+    				<<" seconds! Using hence ptx file!\n";
+
+    		needToRebuildFromSource = false;
+    	}
     }
-    else
+    //} end timestamp stuff
+
+
+//segfaults for new excplicable reason :(
+//    if(! needToRebuildFromSource)
+//    {
+//    	buildProgramFromBinaryFromDisk(completePtxFilePath);
+//    }
+//    else
     {
         Grantlee::Engine *templateEngine = new Grantlee::Engine();
         Grantlee::FileSystemTemplateLoader::Ptr loader =
@@ -432,7 +432,8 @@ void CLProgram::buildProgramFromBinaryFromDisk(Path completePtxFilePath)
 	        fclose(fp);
 
 	cl::Program::Binaries binaries = {
-			{(const unsigned char**)&buffer, lSize }
+			//{(const unsigned char**)&buffer, lSize }
+			{& buffer, lSize }
 
 	};
 
@@ -443,12 +444,12 @@ void CLProgram::buildProgramFromBinaryFromDisk(Path completePtxFilePath)
   		{ PARA_COMP_MANAGER->getUsedDevice() },
   		binaries,
   		0,
-  		PARA_COMP_MANAGER->getLastCLErrorPtr()
+  		0//PARA_COMP_MANAGER->getLastCLErrorPtr()
     );
 
-    mCLProgram.build(
-    	{ PARA_COMP_MANAGER->getUsedDevice() }
-    );
+//    mCLProgram.build(
+//    	{ PARA_COMP_MANAGER->getUsedDevice() }
+//    );
 
 //	        cl_int status;
 //	        cpProgram = clCreateProgramWithBinary(cxGPUContext, 1, (const cl_device_id *)cdDevices,

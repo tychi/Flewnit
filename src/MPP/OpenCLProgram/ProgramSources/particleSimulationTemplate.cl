@@ -12,14 +12,6 @@
 {% endblock documentHeader %}
 
 
-{% block extensionDirectives %}
-  #pragma OPENCL EXTENSION cl_nv_pragma_unroll : enable
-  #pragma  OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
-  //pragma OPENCL EXTENSION cl_khr_global_int32_extended_atomics : enable
-  #pragma OPENCL EXTENSION cl_khr_local_int32_base_atomics : enable
-  //pragma OPENCL EXTENSION cl_khr_local_int32_extended_atomics : enable
-{% endblock extensionDirectives %}
-
 
 {% block inclusions %}
   {% include "physicsCommonFunctions.cl" %}
@@ -172,13 +164,13 @@
      
     float4 posInNeighbour = ownPosition - cSimParams->uniGridCellSizes;
     //iterate over all 3^3=27 neigbour voxels, includin the own one:
-    #pragma unroll
+   //#pragma unroll
     for(int x=-1;x<=1;x++)
     {
-      #pragma unroll
+     //#pragma unroll
       for(int y=-1;y<=1;y++)
       {
-        #pragma unroll
+       //#pragma unroll
         for(int z=-1;z<=1;z++)
         {            
           //get the "modulo" z-index, i.e border cells will interact with the border cells on the opposite side;
