@@ -181,14 +181,15 @@
     //is logically an array of NUM_RADICES_PER_PASS padded radix counter arrays;
     __local uint lRadixCounters[  PADDED_STRIDE( NUM_RADICES_PER_PASS * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) ]; 
                                    
-  
     __local uint lTotalRadixSum;
+  
+    uint radix = getRadix( gKeysToSort[get_global_id(0)] ,numPass);
   
     uint lwiID = get_local_id(0); // short for "local work item ID"
     
     uint localCounterIndex = lwiID / NUM_KEY_ELEMENTS_PER_RADIX_COUNTER;
     //localPaddedCounterIndex += CONFLICT_FREE_OFFSET(localCounterIndex );
-    uint localPaddedCounterIndex = CONFLICT_FREE_OFFSET(localCounterIndex );
+    //uint localPaddedCounterIndex = CONFLICT_FREE_OFFSET(localCounterIndex );
    
     //clear to local radix counters to zero
     //will be unrolled to be executed e.g.  8192*(1+1/32)/(512*(1+1/32))=8448/528=16 times without bank conflicts
@@ -216,7 +217,6 @@
     //increases the danger of bank conflicts
     barrier(CLK_LOCAL_MEM_FENCE);
     
-    uint radix = getRadix( gKeysToSort[get_global_id(0)] ,numPass);
     
     /*
     atom_inc( 
@@ -229,6 +229,7 @@
     );
     */
     
+/*
     atom_inc( 
       lRadixCounters + 
       //select the counter array for the radix of the current value
@@ -238,12 +239,26 @@
         localCounterIndex 
        )
     );
+*/
+
+    atom_inc( 
+      &(
+        lRadixCounters[
+          //select the counter array for the radix of the current value
+          CONFLICT_FREE_INDEX( 
+            radix * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  +
+            //select the appropriate counter
+            localCounterIndex 
+          )
+        ]
+      )
+    );
     
     
     //------------------------------------------------------------------------------------------
     
     //do the "local" radix scan on every radix, partially in parallel to use all work items:
-    //TODO chek if an unroll yields better performance 
+    //TODO check if an unroll yields better performance 
     for(uint i= 0; i < ( NUM_RADICES_PER_PASS / NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL ) ; i++)
     {
       //divide work items in several sets with interval [0..half length of one radix counter array], 
@@ -304,14 +319,27 @@
           radixToScan * NUM_TOTAL_RADIX_COUNTERS_PER_RADIX 
           + get_group_id(0) * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP
           //write the i'th half of the current array with the  NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP/2 work items
-          + i * (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) + workItemOffsetID
+            + i * (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1)
+            + workItemOffsetID
         ] 
         = lRadixCounters[
           //select "radix row" in pseudo 2d array taking padding into account
-          radixToScan * PADDED_STRIDE( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  )
+           CONFLICT_FREE_INDEX( 
+              radixToScan * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP
+             //write the i'th half of the current array with the  NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP/2 work items
+              + i * (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) + 
+              workItemOffsetID 
+           )
+        ];
+
+/*
+        = lRadixCounters[
+          //select "radix row" in pseudo 2d array taking padding into account
+           PADDED_STRIDE( radixToScan * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  )
           //write the i'th half of the current array with the  NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP/2 work items
           + CONFLICT_FREE_INDEX( i*  (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) + workItemOffsetID )
         ];
+*/
       }
 
     } //endfor sequential part of scanning the NUM_RADICES_PER_PASS radix counters
