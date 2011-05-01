@@ -12,6 +12,10 @@
 #include "Simulator/SimulatorMetaInfo.h"
 
 
+#define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+#include "MPP/OpenCLProgram/ProgramSources/common/physicsDataStructures.cl"
+#undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+
 
 namespace Flewnit
 {
@@ -75,6 +79,8 @@ public:
 
 	inline ParticleAttributeBuffers* getParticleAttributeBuffers()const{return mParticleAttributeBuffers;}
 
+	CLShare::ObjectGenericFeatures* getObjectGenericFeatures(unsigned int i);
+
 	//}
 
 	//{ factory routines
@@ -83,10 +89,13 @@ public:
 	ParticleFluid* createParticleFluid(
 			String name,
 			uint numParticles,
+			const AABB& spawnRegion,
+			const Vector4D& initialVelocity,
 			//should be a ParticleLiquidVisualMaterial, but when simulating smoke, it would be a different one..
 			//I'm tired of all those base class stubs; Maybe whis will be refactored once..
 			VisualMaterial* visMat,
-			ParticleFluidMechMat* mechMat) throw(BufferException);
+			ParticleFluidMechMat* mechMat
+	) throw(BufferException);
 
 	//factory function; exception if not enough unassigned particles are left in the ParticleAttributeBuffers;
 	ParticleRigidBody* createParticleRigidBody(
@@ -121,7 +130,8 @@ public:
 private:
 
 	//internal helper routine for creating the geometry objects for fluid objects;
-	VertexBasedGeometry* createGeometryFromAttributeBuffers(unsigned int particleStartIndex, unsigned int particleCount);
+	VertexBasedGeometry* createGeometryFromAttributeBuffers( String name,
+			unsigned int particleStartIndex, unsigned int particleCount);
 
 	//{ numeric members
 	unsigned int mNumTotalParticles;

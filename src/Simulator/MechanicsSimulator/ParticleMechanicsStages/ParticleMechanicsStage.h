@@ -88,9 +88,11 @@ public:
 	void setSPHSupportRadius(float val);
 
 
-
-
 private:
+
+	void parseParticleScene();
+
+
 	friend class ParticleSimulationProgram;
 
 	//if true, the particles move the faster the more powerful the hardware is;

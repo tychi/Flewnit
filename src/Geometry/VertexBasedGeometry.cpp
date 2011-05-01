@@ -177,8 +177,10 @@ void VertexBasedGeometry::setAttributeBuffer(BufferInterface* buffi, BufferSeman
 			//if one wants save memory, then the GL_HALF data type shall be used
 			//(though I didn't test it in the glm library)
 		GLenum elementTypeGL= GL_FLOAT;
-		if(buffi->getBufferInfo().elementInfo.internalGPU_DataType != GPU_DATA_TYPE_FLOAT){
-			if(buffi->getBufferInfo().elementInfo.internalGPU_DataType == GPU_DATA_TYPE_UINT){
+		if(buffi->getBufferInfo().elementInfo.internalGPU_DataType != GPU_DATA_TYPE_FLOAT)
+		{
+			if(buffi->getBufferInfo().elementInfo.internalGPU_DataType == GPU_DATA_TYPE_UINT)
+			{
 				switch(buffi->getBufferInfo().elementInfo.bitsPerChannel)
 				{
 				case 8:  elementTypeGL= GL_UNSIGNED_BYTE; 	break;
@@ -481,17 +483,58 @@ void VertexBasedGeometry::validateBufferIntegrity()throw(BufferException)
 				assert("number of elements all the same"&&
 						(numElements == mAttributeBuffers[i]->getBufferInfo().numElements));
 			}
-			assert("must be four component" && ((mAttributeBuffers[i]->getBufferInfo().elementInfo.numChannels ) == 4));
-			assert( "indirectly testing for 32 bit size of single data element" &&
-				( (mAttributeBuffers[i]->getBufferInfo().bufferSizeInByte /
-				  (mAttributeBuffers[i]->getBufferInfo().numElements)       % (4*sizeof(float))) == 0));
-			assert(
-				(
-						(mAttributeBuffers[i]->getBufferInfo().elementType == TYPE_VEC4F) ||
-						(mAttributeBuffers[i]->getBufferInfo().elementType == TYPE_VEC4I32) ||
-						(mAttributeBuffers[i]->getBufferInfo().elementType == TYPE_VEC4UI32)
+
+
+			if(
+				( mAttributeBuffers[i]->getBufferInfo().bufferSemantics == POSITION_SEMANTICS )
+				||
+				( mAttributeBuffers[i]->getBufferInfo().bufferSemantics == VELOCITY_SEMANTICS )
+				||
+				( mAttributeBuffers[i]->getBufferInfo().bufferSemantics == FORCE_SEMANTICS )
+			)
+			{
+				assert("must be four component" && ((mAttributeBuffers[i]->getBufferInfo().elementInfo.numChannels ) == 4));
+
+				assert( "indirectly testing for 32 bit size of single data element" &&
+					( (mAttributeBuffers[i]->getBufferInfo().bufferSizeInByte /
+					  (mAttributeBuffers[i]->getBufferInfo().numElements)       % (4*sizeof(float))) == 0));
+
+				assert(
+					(
+							(mAttributeBuffers[i]->getBufferInfo().elementType == TYPE_VEC4F) ||
+							(mAttributeBuffers[i]->getBufferInfo().elementType == TYPE_VEC4I32) ||
+							(mAttributeBuffers[i]->getBufferInfo().elementType == TYPE_VEC4UI32)
+					)
+				&& "due to design mistake currently nothing else allowed" //<--may 2011 : can't remember what design error that should be ;(
+				);
+			}
+			else
+			{
+				if(
+					( mAttributeBuffers[i]->getBufferInfo().bufferSemantics == DENSITY_SEMANTICS )
+					||
+					( mAttributeBuffers[i]->getBufferInfo().bufferSemantics == Z_INDEX_SEMANTICS )
+					||
+					( mAttributeBuffers[i]->getBufferInfo().bufferSemantics == MASS_SEMANTICS )
 				)
-			&& "due to design mistake currently nothing else allowed" );
+				{
+					assert("must be single component" && ((mAttributeBuffers[i]->getBufferInfo().elementInfo.numChannels ) == 1));
+
+					assert( "indirectly testing for 32 bit size of single data element" &&
+						( (mAttributeBuffers[i]->getBufferInfo().bufferSizeInByte /
+						  (mAttributeBuffers[i]->getBufferInfo().numElements)  % (sizeof(unsigned int))) == 0));
+
+					assert(
+						(
+								(mAttributeBuffers[i]->getBufferInfo().elementType == TYPE_FLOAT) ||
+								(mAttributeBuffers[i]->getBufferInfo().elementType == TYPE_INT32) ||
+								(mAttributeBuffers[i]->getBufferInfo().elementType == TYPE_UINT32)
+						)
+					);
+				}
+			}
+
+
 		}
 	}
 

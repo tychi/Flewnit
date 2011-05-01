@@ -24,6 +24,10 @@
 #include "MPP/OpenCLProgram/CLKernelArguments.h"
 #include "MPP/OpenCLProgram/ReorderParticleAttributesProgram.h"
 #include "MPP/OpenCLProgram/CLProgramManager.h"
+#include "Material/ParticleFluidMechMat.h"
+#include "WorldObject/ParticleFluid.h"
+#include "Geometry/Geometry.h"
+#include "Geometry/VertexBasedGeometry.h"
 
 
 namespace Flewnit
@@ -150,21 +154,158 @@ void ParticleSceneRepresentation::synchronizeRigidBodies()
 }
 
 
+CLShare::ObjectGenericFeatures* ParticleSceneRepresentation::getObjectGenericFeatures(unsigned int i)
+{
+	assert(i < mNumMaxFluids+1+mNumMaxRigidBodies );
+
+//i'm not that familiar with pointer arithmetics, hence the below version ;(
+//	return reinterpret_cast<CLShare::ObjectGenericFeatures*>(
+//			mObjectGenericFeaturesBuffer->getCPUBufferHandle())
+//			+i;
+
+	return
+		& (
+			reinterpret_cast<CLShare::ObjectGenericFeatures*>(
+					mObjectGenericFeaturesBuffer->getCPUBufferHandle()
+			)[i]
+		);
+
+}
+
+
+
 //--------------------------------------------------------------------------------
 
 //factory function; exception if not enough unassigned particles are left in the ParticleAttributeBuffers;
 ParticleFluid* ParticleSceneRepresentation::createParticleFluid(
 	String name,
 	uint numParticles,
+	const AABB& spawnRegion,
+	const Vector4D& initialVelocity,
 	//should be a ParticleLiquidVisualMaterial, but when simulating smoke, it would be a different one..
 	//I'm tired of all those base class stubs; Maybe whis will be refactored once..
 	VisualMaterial* visMat,
-	ParticleFluidMechMat* mechMat) throw(BufferException)
+	ParticleFluidMechMat* mechMat
+	) throw(BufferException)
 {
-	//TODO
-	assert(0&&"TODO implement");
+	assert(mNumCurrentFluids< mNumMaxFluids);
 
-	return 0;
+	unsigned int particleStartIndexInAttributeBuffers=
+		(mNumCurrentFluids == 0)
+		? 0
+		:   getObjectGenericFeatures(mNumCurrentFluids)->offsetInIndexTableBuffer
+		  + getObjectGenericFeatures(mNumCurrentFluids)->particleCount;
+
+	ID fluidObjectID = mNumCurrentFluids++;
+
+	getObjectGenericFeatures(fluidObjectID)->massPerParticle =
+			mechMat->mMassPerParticle;
+	getObjectGenericFeatures(fluidObjectID)->restDensity =
+				mechMat->mRestDensity;
+	getObjectGenericFeatures(fluidObjectID)->gasConstant =
+				mechMat->mGasConstant;
+	getObjectGenericFeatures(fluidObjectID)->viscosity =
+				mechMat->mViscosity;
+
+	getObjectGenericFeatures(fluidObjectID)->offsetInIndexTableBuffer =
+			particleStartIndexInAttributeBuffers;
+	getObjectGenericFeatures(mNumCurrentFluids)->particleCount =
+			numParticles;
+
+
+	//init pos and vel buffers;
+
+	Vector4D* positions =
+		reinterpret_cast<Vector4D*>(mParticleAttributeBuffers->getPositionsPiPoBuffer()->getCPUBufferHandle());
+	Vector4D* velocities =
+		//initial velocities to PREDICTED buffer; See
+		//_initial_updateForce_integrate_calcZIndex.cl for an explanation
+		reinterpret_cast<Vector4D*>(mParticleAttributeBuffers->getPredictedVelocitiesPiPoBuffer()->getCPUBufferHandle());
+	unsigned int* particleObjectInfos =
+		reinterpret_cast<unsigned int*>(mParticleAttributeBuffers->getObjectInfoPiPoBuffer()->getCPUBufferHandle());
+
+	//used as index buffer for drawing the point clouds:
+	//(is permutated due to radix sort reordering, hence we cannot draw a fixed
+	//particle stride without index buffer ;( )
+	unsigned int* particleIndices =
+		reinterpret_cast<unsigned int*>(mParticleAttributeBuffers->getParticleIndexTableBuffer()->getCPUBufferHandle());
+
+
+	unsigned int numParticlesPerDimension;
+	if( ( HelperFunctions::log2ui(numParticles) % 3 ) == 0 )
+	{
+		//third root of numParticles is an integer value; we can compute the third root like this:
+		//2^(log2(numParticle)/3)
+		numParticlesPerDimension = 1 <<
+				( HelperFunctions::log2ui(numParticles) / 3 );
+		//example: 2^15 particles --> log2(2^15)= 15 --> 15/3 = 5; 1<<5 = 2^5 = 32;
+		//		   probe: (2^5)^3 = 2^18; correct ;)
+	}
+	else
+	{
+		//take float third root, truncate it and add one
+		numParticlesPerDimension =
+			(unsigned int)
+			( std::pow((float)(numParticles),1.0f/3.0f) )
+			+1;
+		//example: 2^14 particles --> (2^14)^(1/3) = 25.39 --> trunc: 25 --> +1: 26
+		//		  probe: 26^3 = 17576; this is bigger than 16384, i.e. we can work with this number, given
+		//				we break the setup loop in time;
+	}
+
+
+	Vector4D stepSizes = (spawnRegion.getMax() - spawnRegion.getMin()) / numParticlesPerDimension;
+
+	Vector4D currentParticlePos = spawnRegion.getMin();
+	unsigned int currentParticleID =0;
+	for(unsigned int z=0; z < (numParticlesPerDimension) && (currentParticleID < numParticles);  z++)
+	{
+		for( unsigned int y=0; y < (numParticlesPerDimension) && (currentParticleID < numParticles);  y++)
+		{
+			for(unsigned int x=0; x < (numParticlesPerDimension) && (currentParticleID < numParticles);  x++)
+			{
+				//non-spectecular index: it begins unpermutated in descending order;
+				//it becomes only interesting during and after radix sort ;(
+				particleIndices[currentParticleID] = currentParticleID;
+
+				positions[currentParticleID] = currentParticlePos;
+				velocities[currentParticleID] = initialVelocity;
+
+				particleObjectInfos[currentParticleID] =0; //init
+				SET_OBJECT_ID( particleObjectInfos[currentParticleID], fluidObjectID);
+				SET_PARTICLE_ID( particleObjectInfos[currentParticleID],currentParticleID);
+
+				currentParticleID++;
+
+				currentParticlePos.x += stepSizes.x;
+			}
+			currentParticlePos.x = spawnRegion.getMin().x;
+			currentParticlePos.y += stepSizes.y;
+		}
+		currentParticlePos.y = spawnRegion.getMin().y;
+		currentParticlePos.z += stepSizes.z;
+	}
+
+	//dont copy buffers to GPU yet, there may be other fluid and/or rigid body objects following;
+
+
+
+	VertexBasedGeometry* geo = createGeometryFromAttributeBuffers(
+			name,
+			particleStartIndexInAttributeBuffers,numParticles);
+
+	mParticleFluids.push_back(
+		new ParticleFluid(
+			name,
+			fluidObjectID,
+			visMat,
+			mechMat,
+			geo
+		)
+	);
+
+
+	return mParticleFluids[fluidObjectID];
 }
 
 //factory function; exception if not enough unassigned particles are left in the ParticleAttributeBuffers;
@@ -186,14 +327,52 @@ ParticleRigidBody* ParticleSceneRepresentation::createParticleRigidBody(
 }
 
 
-//internal helper routine for creating the geometry objects for fluid objects;
+//internal helper routine for creating the geometry objects for fluid objects, maybe the particle of rigid body
+//objects (t.b.d.);
 VertexBasedGeometry* ParticleSceneRepresentation::createGeometryFromAttributeBuffers(
+		String name,
 		unsigned int particleStartIndex, unsigned int particleCount)
 {
-	//TODO
-	assert(0&&"TODO implement");
+	//doing graphics stuff here
+	PARA_COMP_MANAGER->acquireSharedBuffersForGraphics();
 
-	return 0;
+	VertexBasedGeometry* pointGeo = new VertexBasedGeometry(
+			name,
+			VERTEX_BASED_POINT_CLOUD
+	);
+
+	pointGeo->setIndexBuffer(
+			mParticleAttributeBuffers->getParticleIndexTableBuffer(),
+			particleStartIndex,
+			particleCount
+			);
+
+	pointGeo->setAttributeBuffer(
+		mParticleAttributeBuffers->getPositionsPiPoBuffer()
+	);
+
+	pointGeo->setAttributeBuffer(
+			//TODO decide if to use corrected or predicted velocitiese for drawing
+			//(if we use it for drawing anyway ;( )
+			mParticleAttributeBuffers->getPredictedVelocitiesPiPoBuffer()
+	);
+
+	pointGeo->setAttributeBuffer(
+		mParticleAttributeBuffers->getDensitiesPiPoBuffer()
+	);
+
+	pointGeo->setAttributeBuffer(
+		mParticleAttributeBuffers->getDensitiesPiPoBuffer()
+	);
+
+	pointGeo->setAttributeBuffer(
+		mParticleAttributeBuffers->getLastStepsAccelerationsPiPoBuffer()
+	);
+
+	//return to comput stuff
+	PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
+
+	return pointGeo;
 }
 
 

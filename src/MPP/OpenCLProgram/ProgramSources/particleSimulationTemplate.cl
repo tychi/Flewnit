@@ -68,12 +68,15 @@
 {% block particleAttributesBufferKernelArgs %}
     
       //better a parameter list with in some kernels unused params than eternal confusion..
+      
+      //don't toggle this buffer after the kernel invocation
       __global uint* gParticleObjectInfos,
 
-      //write-only buffer; IMPORTANT: bind hence inactive ping pong comnponent to this argument, so that we can to a consitent toggle
-      //on all attribute buffers after the SPH kernel invocations
+      //write-only buffer; IMPORTANT: bind the activ ping pong ccomponent to this arg, although it is a write arg;
+      //don't toggle this buffer after the kernel invocation
       __global uint* gZindicesNew,
       
+      //toggle all following particle attribute buffers after kernel invocation:
       __global float4* gPositionsOld,
       __global float4* gPositionsNew,
       

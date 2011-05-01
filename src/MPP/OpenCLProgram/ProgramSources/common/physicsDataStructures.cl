@@ -59,8 +59,9 @@
     //as it depends on the particle count of the objects with lower ObjectID;
     //so lets store this offset here;
     uint offsetInIndexTableBuffer;
+    uint particleCount; //not really needed, but for convenience in the c++ app; and since we have to pad anyway...
     
-    uint padTo2,padTo3,padTo4;
+    uint padTo3,padTo4;
     
   } ObjectGenericFeatures;
   

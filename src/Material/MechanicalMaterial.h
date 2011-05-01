@@ -31,13 +31,16 @@ public:
 
 	virtual bool operator==(const Material& rhs) const = 0;
 
-	//keep it pure
+	//make it non-pure emtpy, because not every physics simulation needs this functionality
 	virtual void activate(
 			SimulationPipelineStage* currentStage,
-			SubObject* currentUsingSuboject) throw(SimulatorException)=0;
-	//undoing stuff, like re-enable depth test etc.
+			SubObject* currentUsingSuboject) throw(SimulatorException)
+	{}
+
+	//make it non-pure emtpy, because not every physics simulation needs this functionality
 	virtual void deactivate(SimulationPipelineStage* currentStage,
-			SubObject* currentUsingSuboject) throw(SimulatorException)=0;
+			SubObject* currentUsingSuboject) throw(SimulatorException)
+	{}
 
 protected:
 

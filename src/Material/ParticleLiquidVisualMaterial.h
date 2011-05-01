@@ -29,9 +29,9 @@ public:
 	ParticleLiquidVisualMaterial(String name,
 			const Vector4D & liquidColor, float particleDrawRadius,
 			const Vector4D & foamColor, float foamGenerationAcceleration,
-			float refractivity, //"brechungsindex", for Fresnel effect
 			float shininess,
 			float reflectivity,
+			float refractivity, //"brechungsindex", for Fresnel effect
 			unsigned int numCurvatureFlowRelaxationSteps
 			//Texture* noiseTexture, <-- perlin noise is procedurally generated.. isn't it?
 			//Texture2DCube* envmap <-- grab globally managed one

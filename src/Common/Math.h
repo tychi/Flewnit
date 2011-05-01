@@ -111,7 +111,8 @@ namespace Flewnit
 	{
 	public:
 		AABB(): mMin(0),mMax(0){}
-		AABB(const Vector4D min, const Vector4D max  ): mMin(min),mMax(max){}
+		AABB(const Vector4D& min, const Vector4D& max  ): mMin(min),mMax(max){}
+		AABB(const AABB& rhs): mMin(rhs.getMin()),mMax(rhs.getMax()){}
 
 		inline const Vector4D& getMin()const{return mMin;}
 		inline const Vector4D& getMax()const{return mMax;}

@@ -54,6 +54,8 @@ typedef boost::filesystem::path Path;
 #define FLEWNIT_INVALID_ID ((ID) (-1))
 #define FLEWNIT_UNSPECIFIED_NAME "none_specified"
 
+#define FLEWNIT_EPSILON 0.0001f
+
 //convert c++-code to a string ;)
 #define FLEWNIT_STRINGIFY(word) Flewnit::String(#word)
 

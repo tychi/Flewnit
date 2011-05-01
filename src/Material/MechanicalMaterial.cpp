@@ -7,15 +7,32 @@
 
 #include "MechanicalMaterial.h"
 
-namespace Flewnit {
+namespace Flewnit
+{
 
-//MechanicalMaterial::MechanicalMaterial() {
-//	// TODO Auto-generated constructor stub
-//
-//}
-//
-//MechanicalMaterial::~MechanicalMaterial() {
-//	// TODO Auto-generated destructor stub
-//}
+MechanicalMaterial::MechanicalMaterial(String name, float mass)
+:
+	Material(name, MECHANICAL_SIM_DOMAIN),
+	mMass(mass),
+	mFriction(0.01f),
+	mRestitution(0.5f)
+{
+
+}
+
+MechanicalMaterial::MechanicalMaterial(String name, float mass, float friction, float restitution)
+:
+	Material(name, MECHANICAL_SIM_DOMAIN),
+	mMass(mass),
+	mFriction(friction),
+	mRestitution(restitution)
+{
+
+}
+
+MechanicalMaterial::~MechanicalMaterial()
+{
+
+}
 
 }

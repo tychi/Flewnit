@@ -13,9 +13,9 @@ namespace Flewnit {
 ParticleLiquidVisualMaterial::ParticleLiquidVisualMaterial(String name,
 		const Vector4D & liquidColor, float particleDrawRadius,
 		const Vector4D & foamColor, float foamGenerationAcceleration,
-		float refractivity, //"brechungsindex", for Fresnel effect
 		float shininess,
 		float reflectivity,
+		float refractivity, //"brechungsindex", for Fresnel effect
 		unsigned int numCurvatureFlowRelaxationSteps
 //		Texture* noiseTexture,
 //		Texture2DCube* envmap
@@ -24,7 +24,7 @@ ParticleLiquidVisualMaterial::ParticleLiquidVisualMaterial(String name,
 	: DebugDrawVisualMaterial(
 			name,
 			liquidColor,
-			false /*not instanced!*/,
+			false, /*not instanced!*/
 			VERTEX_BASED_POINT_CLOUD )
 
 {

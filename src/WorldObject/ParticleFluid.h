@@ -16,18 +16,6 @@
 namespace Flewnit
 {
 
-//struct FluidConstructionInfo
-//{
-//	unsigned int numParticles; //should be power of two
-//
-//	CLshare::ObjectGenericFeatures fluidFeatures;
-//
-//	CLshare::AABB spawnVolume;
-//
-//	Vector4D color; //transparency in alpha channel
-//	float refractivity;
-//	float sprayGenerationSpeed;
-//};
 
 
 
@@ -36,8 +24,21 @@ class ParticleFluid
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
-	ParticleFluid();
+
 	virtual ~ParticleFluid();
+
+private:
+	friend class ParticleSceneRepresentation;
+	ParticleFluid(
+		String name,
+		ID particleFluidID, //ID to associate to an index in the ParticleSceneRepresentation's
+									  //object Buffers
+		VisualMaterial* visMat,
+		ParticleFluidMechMat* mechMat,
+		VertexBasedGeometry* visualAndMechanicalGeometry
+	);
+
+	ID mParticleFluidID;
 };
 
 

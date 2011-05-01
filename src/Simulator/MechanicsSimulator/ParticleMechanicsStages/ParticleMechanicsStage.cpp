@@ -28,6 +28,10 @@
 
 
 #include "MPP/OpenCLProgram/ParticleSimulationProgram.h"
+#include "Material/ParticleLiquidVisualMaterial.h"
+#include "Material/ParticleFluidMechMat.h"
+#include "WorldObject/ParticleFluid.h"
+#include "Scene/ParticleAttributeBuffers.h"
 
 
 namespace Flewnit
@@ -203,7 +207,61 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 //	for later ;(
 //	  mCLProgram_updateRigidBodies(0)
 
+
+	parseParticleScene();
+
+
+
 	return true;
+}
+
+
+void ParticleMechanicsStage::parseParticleScene()
+{
+	ConfigStructNode& particleSceneConfigNode = mSimConfigNode->get("ParticleScene",0);
+	unsigned int numParticleFluids = particleSceneConfigNode.get("ParticleFluid").size();
+	assert(numParticleFluids <= mParticleSceneRepresentation->getNumMaxFluids());
+
+	for(unsigned int fluidRunner = 0; fluidRunner< numParticleFluids; fluidRunner++ )
+	{
+		ConfigStructNode& fluidNode  = particleSceneConfigNode.get("ParticleFluid",fluidRunner);
+		ConfigStructNode& fluidVisMatNode  = fluidNode.get("ParticleLiquidVisualMaterial",fluidRunner);
+		ConfigStructNode& fluidMechMatNode  = fluidNode.get("ParticleFluidMechMat",fluidRunner);
+
+		mParticleSceneParentSceneNode->addChild(
+			mParticleSceneRepresentation->createParticleFluid(
+				ConfigCaster::cast<String>( fluidNode.get("name",0) ),
+				ConfigCaster::cast<int>( fluidNode.get("numContainingParticles",0) ),
+				AABB(
+					ConfigCaster::cast<Vector4D>( fluidNode.get("spawnAABBMin",0) ),
+					ConfigCaster::cast<Vector4D>( fluidNode.get("spawnAABBMax",0) )
+				),
+				ConfigCaster::cast<Vector4D>( fluidNode.get("initialVelocity",0) ),
+				new ParticleLiquidVisualMaterial(
+					ConfigCaster::cast<String>( fluidVisMatNode.get("name",0) ),
+					ConfigCaster::cast<Vector4D>( fluidVisMatNode.get("liquidColor",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("particleDrawRadius",0) ),
+					ConfigCaster::cast<Vector4D>( fluidVisMatNode.get("foamColor",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("foamGenerationAcceleration",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("shininess",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("reflectivity",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("refractivity",0) ),
+					ConfigCaster::cast<int>( fluidVisMatNode.get("numCurvatureFlowRelaxationSteps",0) )
+				),
+				new ParticleFluidMechMat(
+					ConfigCaster::cast<String>( fluidMechMatNode.get("name",0) ),
+					ConfigCaster::cast<int>( fluidNode.get("numContainingParticles",0) ),
+					ConfigCaster::cast<float>( fluidMechMatNode.get("massPerParticle",0) ),
+					ConfigCaster::cast<float>( fluidMechMatNode.get("restDensity",0) ),
+					ConfigCaster::cast<float>( fluidMechMatNode.get("gasConstant",0) ),
+					ConfigCaster::cast<float>( fluidMechMatNode.get("viscosity",0) )
+				)
+			)
+		)
+		;
+	}
+
+	mParticleSceneRepresentation->getParticleAttributeBuffers()->flushBuffers();
 }
 
 
