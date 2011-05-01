@@ -179,14 +179,16 @@
   {
     //(e.g. 64*(128+4)=8448 elements for fermi. 64*(32+2)=2176 elements for GT200 );
     //is logically an array of NUM_RADICES_PER_PASS padded radix counter arrays;
-    __local uint lRadixCounters[ NUM_RADICES_PER_PASS * PADDED_STRIDE( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) ]; 
+    __local uint lRadixCounters[  PADDED_STRIDE( NUM_RADICES_PER_PASS * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) ]; 
                                    
   
     __local uint lTotalRadixSum;
   
     uint lwiID = get_local_id(0); // short for "local work item ID"
-    uint localPaddedCounterIndex = lwiID / NUM_KEY_ELEMENTS_PER_RADIX_COUNTER;
-    localPaddedCounterIndex += CONFLICT_FREE_OFFSET(localPaddedCounterIndex );
+    
+    uint localCounterIndex = lwiID / NUM_KEY_ELEMENTS_PER_RADIX_COUNTER;
+    //localPaddedCounterIndex += CONFLICT_FREE_OFFSET(localCounterIndex );
+    uint localPaddedCounterIndex = CONFLICT_FREE_OFFSET(localCounterIndex );
    
     //clear to local radix counters to zero
     //will be unrolled to be executed e.g.  8192*(1+1/32)/(512*(1+1/32))=8448/528=16 times without bank conflicts
@@ -216,6 +218,7 @@
     
     uint radix = getRadix( gKeysToSort[get_global_id(0)] ,numPass);
     
+    /*
     atom_inc( 
       lRadixCounters + 
       //select the counter array for the radix of the current value
@@ -224,6 +227,18 @@
       //select the appropriate counter with padding
       localPaddedCounterIndex 
     );
+    */
+    
+    atom_inc( 
+      lRadixCounters + 
+      //select the counter array for the radix of the current value
+      PADDED_STRIDE( 
+        radix * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  +
+        //select the appropriate counter
+        localCounterIndex 
+       )
+    );
+    
     
     //------------------------------------------------------------------------------------------
     
@@ -237,7 +252,8 @@
       //default (GT200): [0..256] % (32/2) --> 16 occurences of interval [0..16] <-- on half warp scans another array than the other.. 
       //                                                                              but the control flow should not diverge worse 
       //                                                                              than when scanning only one array with few elements...                                                      
-      uint workItemOffsetID = lwiID % ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 );
+      uint workItemOffsetID = 
+                              lwiID % ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 );
                               //BASE_2_MODULO( lwiID,  (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) );  
 
       //radix in whose scan the curren work item will participate = 
@@ -247,7 +263,8 @@
         //big loop offset 
         i * NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL 
         //+ work item id / (half size of one local radix counter array)
-        + ( lwiID << 1 ) / ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ); 
+        + ( lwiID ) / ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 ); 
+        //+ ( lwiID << 1 ) / ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ); <-- strang notation without any computational advantage, in the contrary!
 
       
    /*
