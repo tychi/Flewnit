@@ -191,6 +191,7 @@
     //clear to local radix counters to zero
     //will be unrolled to be executed e.g.  8192*(1+1/32)/(512*(1+1/32))=8448/528=16 times without bank conflicts
     //#pragma unroll
+    /*
     for ( uint offset =0; 
           offset < PADDED_STRIDE(NUM_LOCAL_RADIX_COUNTER_ELEMENTS); 
           offset += PADDED_STRIDE(NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE)
@@ -198,6 +199,16 @@
     {
       lRadixCounters[offset + localPaddedCounterIndex] = 0;
     }
+    */
+    
+    for ( uint offset =0; 
+          offset < NUM_LOCAL_RADIX_COUNTER_ELEMENTS;
+          offset += NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE
+    )
+    {
+      lRadixCounters[ CONFLICT_FREE_INDEX( offset + lwiID ) ] = 0;
+    }
+    
     //synchronize, because the tabulation of an element is not necessaryly performed by the same work item having done the copy
     //there is no way to circumvent the synch withour causing bank conflicts, i.e. "transposing" the pseudo 2d array
     //increases the danger of bank conflicts
@@ -208,7 +219,8 @@
     atom_inc( 
       lRadixCounters + 
       //select the counter array for the radix of the current value
-      radix * PADDED_STRIDE(NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) + 
+      //radix * PADDED_STRIDE(NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) + 
+      PADDED_STRIDE( radix * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) +
       //select the appropriate counter with padding
       localPaddedCounterIndex 
     );
@@ -225,8 +237,8 @@
       //default (GT200): [0..256] % (32/2) --> 16 occurences of interval [0..16] <-- on half warp scans another array than the other.. 
       //                                                                              but the control flow should not diverge worse 
       //                                                                              than when scanning only one array with few elements...                                                      
-      uint workItemOffsetID =  BASE_2_MODULO( lwiID,  (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) );   
-                              //lwiID % ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 )
+      uint workItemOffsetID = lwiID % ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 );
+                              //BASE_2_MODULO( lwiID,  (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) );  
 
       //radix in whose scan the curren work item will participate = 
       //default (fermi): [0..7] *  8 + (2* [0..511])/128 --> [0..7] *  8 + [0 .. 8]
@@ -238,6 +250,7 @@
         + ( lwiID << 1 ) / ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ); 
 
       
+   /*
         scanExclusive(
           //calculate the pointer to the first element in the "array of radix counter arrays"
           lRadixCounters + radixToScan * PADDED_STRIDE( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  ), 
@@ -250,7 +263,7 @@
           workItemOffsetID
         );
         
-              
+      
       //write the total sum of the local counter array to global memory
       if(workItemOffsetID == 0)
       {
@@ -262,6 +275,8 @@
         ] = lTotalRadixSum;
       }
       
+   */
+        
       //write the scan results to global memory: as one work item scans two counters, it also has to write out two of them
       //TODO precompute some index stuff? would save calculations but disturb superscalarity... subject to experimentation
       //#pragma unroll
@@ -281,10 +296,9 @@
           + CONFLICT_FREE_INDEX( i*  (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) + workItemOffsetID )
         ];
       }
-   /*
-   */
-      
+
     } //endfor sequential part of scanning the NUM_RADICES_PER_PASS radix counters
+      
    
 
    

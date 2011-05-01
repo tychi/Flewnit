@@ -155,35 +155,45 @@ RadixSorter::~RadixSorter()
 void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer)
 {
 	cl::Event eventToWaitFor;
+	EventVector eventVec; //haxx for first pass debugging TODO remove when radix sort works;
 	switch (URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames()) {
 		case 0:
 			eventToWaitFor =
 				CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
 					->getKernel("kernel_initial_CalcZIndex")->getEventOfLastKernelExecution();
+			eventVec.push_back(eventToWaitFor);
 			break;
 		case 1:
 			eventToWaitFor =
 				CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
 					->getKernel("kernel_initial_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
+			//TODO uncomment when finished with debugging the first pass;
+			//eventVec.push_back(eventToWaitFor);
 			break;
 		default:
 			eventToWaitFor =
 				CLProgramManager::getInstance().getProgram("updateForce_integrate_calcZIndex.cl")
 					->getKernel("kernel_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
+			//TODO uncomment when finished with debugging the first pass;
+			//eventVec.push_back(eventToWaitFor);
 			break;
 	}
 
 	CLKernel* phase1Kernel = mRadixSortProgram->getKernel("kernel_radixSort_tabulate_localScan_Phase");
+
 	//set key buffer argument, not changing over the passes but via toggling, and toggle is handled
 	//CLBufferKernelArgument class automatically
 	phase1Kernel->getCLKernelArguments()->getBufferArg("gKeysToSort")->set(keysBuffer);
+
 
 
 	CLKernel* phase2Kernel = mRadixSortProgram->getKernel("kernel_radixSort_globalScan_Phase");
 	//only intermediate buffers for phase 2, all "fixed", no "changing buffer bindings" to set
 
 
+
 	CLKernel* phase3Kernel = mRadixSortProgram->getKernel("kernel_radixSort_reorder_Phase");
+
 	//bind active key buffer for reading
 	phase3Kernel->getCLKernelArguments()->getBufferArg("gKeysToSort")->set(keysBuffer,false);
 	//inactive for writing
@@ -197,7 +207,9 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 	//{
 		//test first run TODO delete
 	phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(0);
-	phase1Kernel->run( EventVector{} );
+	phase1Kernel->run( eventVec );
+	dumpBuffers("initialRadixSortPhase1Dump",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+			0, keysBuffer,oldIndicesBuffer);
 	//}
 
 
@@ -302,7 +314,8 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 //	unsigned int* sumsOfPartialScansOfSumsOfGlobalRadixCounts =
 //		reinterpret_cast<unsigned int*>(imrm->getBuffer(3)->getCPUBufferHandle());
 
-
+	//to fight the hangups due to huge dump files :(
+#define FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP 5000
 
 
 	unsigned int* keys =
@@ -318,7 +331,8 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 	fileStream
 		<<"Radix sort buffer dump; Current radix pass: "<<currentRadixPass<<";\n\n ";
 
-	for(unsigned int localCounterRunner = 0 ; localCounterRunner< numTotalRadixCounters; localCounterRunner++)
+	for(unsigned int localCounterRunner = 0 ; localCounterRunner< FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP; localCounterRunner++)
+	//for(unsigned int localCounterRunner = 0 ; localCounterRunner< numTotalRadixCounters; localCounterRunner++)
 	{
 		fileStream
 			<<"local Radix Counter number "<<localCounterRunner<<": ";
@@ -366,7 +380,7 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 		}
 
 		fileStream
-			<<"### following locally scanned radix counters: ###"
+			<<"### following locally scanned radix counters: ### \n"
 			;
 
 		for(unsigned int radixRunner = 0 ; radixRunner< mNumRadicesPerPass; radixRunner++)
@@ -381,7 +395,7 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 				  		//grab the element belonging to this sepcific local counter set
 				  		localCounterRunner
 				  	]
-				<<"), ";
+				<<"),\n";
 
 		}
 
