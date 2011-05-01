@@ -204,36 +204,38 @@ void CLProgram::build()
 			<< linuxSourceFileStat.st_mtim.tv_sec
 			<<";\n";
 
+//segfaults within clCreateProgramWithBinary for new excplicable reason :(
+//hence commented out following source/binary delegation stuff :(
 
-    bool needToRebuildFromSource= true;
-
-    if(	boost::filesystem::exists(	completePtxFilePath	) )
-    {
-    	struct stat linuxPtxFileStat;
-
-
-    	int statErrorPtx = stat (completePtxFilePath.string().c_str(), &linuxPtxFileStat);
-    	if (statErrorPtx != 0)
-    	{ assert(0&& "wtf file must exist! i tested it  with boost! may never end here!");}
-
-    	LOG<< INFO_LOG_LEVEL<<"Time of last ptx file modification: "
-    			<< linuxPtxFileStat.st_mtim.tv_sec
-    			<<";\n";
-
-    	if(
-    		linuxSourceFileStat.st_mtim.tv_sec < linuxPtxFileStat.st_mtim.tv_sec
-    	)
-    	{
-    		LOG<< INFO_LOG_LEVEL<<"Source file is older than ptx file by"
-    				<< linuxPtxFileStat.st_mtim.tv_sec	- linuxSourceFileStat.st_mtim.tv_sec
-    				<<" seconds! Using hence ptx file!\n";
-
-    		needToRebuildFromSource = false;
-    	}
-    }
-    //} end timestamp stuff
-
-
+//    bool needToRebuildFromSource= true;
+//
+//    if(	boost::filesystem::exists(	completePtxFilePath	) )
+//    {
+//    	struct stat linuxPtxFileStat;
+//
+//
+//    	int statErrorPtx = stat (completePtxFilePath.string().c_str(), &linuxPtxFileStat);
+//    	if (statErrorPtx != 0)
+//    	{ assert(0&& "wtf file must exist! i tested it  with boost! may never end here!");}
+//
+//    	LOG<< INFO_LOG_LEVEL<<"Time of last ptx file modification: "
+//    			<< linuxPtxFileStat.st_mtim.tv_sec
+//    			<<";\n";
+//
+//    	if(
+//    		linuxSourceFileStat.st_mtim.tv_sec < linuxPtxFileStat.st_mtim.tv_sec
+//    	)
+//    	{
+//    		LOG<< INFO_LOG_LEVEL<<"Source file is older than ptx file by"
+//    				<< linuxPtxFileStat.st_mtim.tv_sec	- linuxSourceFileStat.st_mtim.tv_sec
+//    				<<" seconds! Using hence ptx file!\n";
+//
+//    		needToRebuildFromSource = false;
+//    	}
+//    }
+//    //} end timestamp stuff
+//
+//
 //segfaults for new excplicable reason :(
 //    if(! needToRebuildFromSource)
 //    {
@@ -439,7 +441,6 @@ void CLProgram::buildProgramFromBinaryFromDisk(Path completePtxFilePath)
 
 
     mCLProgram = cl::Program(
-
     	PARA_COMP_MANAGER->getCLContext(),
   		{ PARA_COMP_MANAGER->getUsedDevice() },
   		binaries,

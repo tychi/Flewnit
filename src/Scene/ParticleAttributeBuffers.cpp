@@ -336,8 +336,6 @@ void ParticleAttributeBuffers::dumpBuffers(String dumpName, unsigned int frameNu
 	//shut down
 	assert(0&&"abort on purpose after programmer requested buffer dump :)");
 	//URE_INSTANCE->requestMainLoopQuit();
-
-
 }
 
 }

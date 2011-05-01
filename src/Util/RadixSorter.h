@@ -50,7 +50,15 @@ public:
 	 * */
 	void sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer);
 
+	//read back and write out buffers to disc for analysis;
+	void dumpBuffers(String dumpName, unsigned int frameNumber,unsigned int currentRadixPass,
+			PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer);
+
 private:
+
+	//internal helper for buffer dump:
+	uint getRadix(uint key, uint numPass);
+
 	friend class RadixSortProgram; //easy access for template context and kernel arguments binding;
 
 	unsigned int mNumElements;

@@ -92,6 +92,7 @@
     //default (fermi) : 128*64 = 8192
     //default (GT200) :  32*64 = 2048
     #define NUM_LOCAL_RADIX_COUNTER_ELEMENTS (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_RADICES_PER_PASS)
+    
     //default (fermi): (128+128/32) * 64 = (128+4) * 64 = 8448
     //#define RADIX_COUNTERS_PADDED_STRIDE ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP + NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP/NUM_BANKS ) 
     //default (fermi): (128+32) * 64 =160
@@ -102,15 +103,30 @@
     //one work item per key element, to that each work item can copy a key to __local memory
     //default (fermi): 128 radix counters per radix * 4 elements per radix counter = 512
     //default (GT200):  32 radix counters per radix * 8 elements per radix counter = 256
-    #define NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER)
+    #define NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE \
+      ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER )
     //define explicitely the numbers of elements per tabulation work group: default: same as number of work items per work group
-    #define NUM_ELEMENTS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER)
+    #define NUM_ELEMENTS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE \
+      ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER )
     //default (fermi) : 2^18/( 2^7 * 2^2) = 2^9 = 512
     //default (GT200) : 2^18/( 2^5 * 2^3) = 2^10 = 1024
     #define NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE ( NUM_TOTAL_ELEMENTS_TO_SCAN  / (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER) )
     
- 
-    #define NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL ( (2*NUM_ELEMENTS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE ) / NUM_LOCAL_RADIX_COUNTER_ELEMENTS )
+    //one local radix counter array can be scanned by half of its lenghtwork items;
+    //example: local radix counter array lenght : 128 ; can be scanned by 128/2 = 64 elements
+    //we have 64 of those arrays; we have 512 work items we can scan 512 / ( 128/2 ) = 8 arrays in parallel
+    #define NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL                              \
+      (                                                                               \
+        NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE /               \
+        ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 )                           \
+      ) 
+      
+    //BULLSHIT! :
+    //#define NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL (                          \
+    // (NUM_LOCAL_RADIX_COUNTER_ELEMENTS)                                             \
+    //  /                                                                             \
+    //  ( 2 * (NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE) ) )
+    //#define NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL ( (2*NUM_ELEMENTS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE ) / NUM_LOCAL_RADIX_COUNTER_ELEMENTS )
   //-------------------------------------------------------------------------------------
 
 
@@ -174,7 +190,7 @@
    
     //clear to local radix counters to zero
     //will be unrolled to be executed e.g.  8192*(1+1/32)/(512*(1+1/32))=8448/528=16 times without bank conflicts
-    #pragma unroll
+    //#pragma unroll
     for ( uint offset =0; 
           offset < PADDED_STRIDE(NUM_LOCAL_RADIX_COUNTER_ELEMENTS); 
           offset += PADDED_STRIDE(NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE)
@@ -211,6 +227,7 @@
       //                                                                              than when scanning only one array with few elements...                                                      
       uint workItemOffsetID =  BASE_2_MODULO( lwiID,  (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) );   
                               //lwiID % ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 )
+
       //radix in whose scan the curren work item will participate = 
       //default (fermi): [0..7] *  8 + (2* [0..511])/128 --> [0..7] *  8 + [0 .. 8]
       //default (GT200): [0..4] * 16 + (2* [0..255])/ 32 --> [0..7] *  8 + [0 ..16]
@@ -247,7 +264,7 @@
       
       //write the scan results to global memory: as one work item scans two counters, it also has to write out two of them
       //TODO precompute some index stuff? would save calculations but disturb superscalarity... subject to experimentation
-      #pragma unroll
+      //#pragma unroll
       for(int i=0; i<2; i++)
       {
         gLocallyScannedRadixCounters[ 
@@ -264,8 +281,11 @@
           + CONFLICT_FREE_INDEX( i*  (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) + workItemOffsetID )
         ];
       }
+   /*
+   */
       
     } //endfor sequential part of scanning the NUM_RADICES_PER_PASS radix counters
+   
 
    
   }
@@ -548,7 +568,7 @@
         
       //for fermi default: 4* [0..128]
       uint localRadixCounterCopyIndex = BASE_2_MODULO( lwiID, NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP );
-      #pragma unroll
+      //#pragma unroll
       //default fermi:  8192/512=16
       for(uint i= 0; i < ( NUM_LOCAL_RADIX_COUNTER_ELEMENTS / NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE ) ; i++)
       {
@@ -627,7 +647,7 @@
         uint radix;
         
         //TODO check if unroll amortizes or not
-        #pragma unroll
+        //#pragma unroll
         for(uint i=0 ; i< NUM_KEY_ELEMENTS_PER_RADIX_COUNTER; i++ )
         {
           //default (fermi): 4* [0..127] + [0..3]

@@ -18,6 +18,9 @@
 #include "MPP/OpenCLProgram/CLProgramManager.h"
 #include "MPP/OpenCLProgram/CLKernelArguments.h"
 
+#include "Buffer/Buffer.h"
+#include "Buffer/IntermediateResultBuffersManager.h"
+
 
 //don't know if hardcode is necessary, but numbers deep in source code are even worse ;(
 //TODO outsource to XML
@@ -191,6 +194,12 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 	phase3Kernel->getCLKernelArguments()->getBufferArg("gReorderedOldIndices")->set(oldIndicesBuffer, true);
 
 
+	//{
+		//test first run TODO delete
+	phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(0);
+	phase1Kernel->run( EventVector{} );
+	//}
+
 
 //	for(unsigned int currentPass = 0; currentPass < mNumRadixSortPasses; currentPass++)
 //	{
@@ -235,6 +244,157 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 	//now ;)
 }
 
+
+//internal helper for buffer dump:
+uint RadixSorter::getRadix(uint key, uint numPass)
+{
+	static const int log2NumRadicesPerPass = HelperFunctions::log2ui(mNumRadicesPerPass);
+    //shift relevant radix to LSB, mask higher bits
+    return ( key >> (numPass * log2NumRadicesPerPass ) ) & (mNumRadicesPerPass -1) ;
+}
+
+
+void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigned int currentRadixPass,
+		PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer)
+{
+	static const unsigned int log2NumRadicesPerPass = HelperFunctions::log2ui(mNumRadicesPerPass);
+
+	keysBuffer->readBack(true);
+	oldIndicesBuffer->readBack(true);
+
+	IntermediateResultBuffersManager* imrm =
+			CLProgramManager::getInstance().getIntermediateResultBuffersManager();
+
+	imrm->getBuffer(0)->readBack(true);
+	imrm->getBuffer(1)->readBack(true);
+	imrm->getBuffer(2)->readBack(true);
+	imrm->getBuffer(3)->readBack(true);
+
+
+	std::fstream fileStream;
+	Path path =
+		Path( FLEWNIT_DEFAULT_OPEN_CL_KERNEL_SOURCES_PATH )
+		/ String("bufferDumps")
+		/
+		Path(
+			String("bufferDump_")+ dumpName + String("_")+
+			HelperFunctions::toString(frameNumber)+String(".txt")
+		);
+
+
+	fileStream.open(
+		path.string().c_str(),
+		std::ios::out
+	);
+
+
+
+	unsigned int* locallyScannedRadixCounters =
+		reinterpret_cast<unsigned int*>(imrm->getBuffer(0)->getCPUBufferHandle());
+
+	unsigned int* scannedSumsOfLocalRadixCounts =
+		reinterpret_cast<unsigned int*>(imrm->getBuffer(1)->getCPUBufferHandle());
+
+	//later
+//	unsigned int* partiallyScannedSumsOfGlobalRadixCounts =
+//		reinterpret_cast<unsigned int*>(imrm->getBuffer(2)->getCPUBufferHandle());
+//
+//	unsigned int* sumsOfPartialScansOfSumsOfGlobalRadixCounts =
+//		reinterpret_cast<unsigned int*>(imrm->getBuffer(3)->getCPUBufferHandle());
+
+
+
+
+	unsigned int* keys =
+		reinterpret_cast<unsigned int*>(keysBuffer->getCPUBufferHandle());
+
+	unsigned int* oldIndices =
+		reinterpret_cast<unsigned int*>(oldIndicesBuffer->getCPUBufferHandle());
+
+
+
+	unsigned int numTotalRadixCounters = mNumElements/mNumElementsPerRadixCounter;
+
+	fileStream
+		<<"Radix sort buffer dump; Current radix pass: "<<currentRadixPass<<";\n\n ";
+
+	for(unsigned int localCounterRunner = 0 ; localCounterRunner< numTotalRadixCounters; localCounterRunner++)
+	{
+		fileStream
+			<<"local Radix Counter number "<<localCounterRunner<<": ";
+
+		for(unsigned int elementRunner = 0 ; elementRunner< mNumElementsPerRadixCounter; elementRunner++)
+		{
+			uint currentElementIndex = mNumElementsPerRadixCounter * localCounterRunner + elementRunner;
+
+			String keyBitString="";
+			for(unsigned int bitRunner = 0 ; bitRunner < 32 ; bitRunner++)
+			{
+				keyBitString.append(
+					( (keys[ currentElementIndex ] & (1<< (31-bitRunner) ) ) == 0 )
+					?"0":"1"
+				);
+			}
+
+			uint currentRadix = getRadix(keys[ currentElementIndex ], currentRadixPass);
+			String radixBitString="";
+			for(unsigned int bitRunner = 0 ; bitRunner < log2NumRadicesPerPass ; bitRunner++)
+			{
+				radixBitString.append(
+					( (keys[ currentElementIndex ] & (1<< ((log2NumRadicesPerPass-1)-bitRunner) ) ) == 0 )
+					?"0":"1"
+				);
+			}
+
+
+			fileStream
+				<<"||Key element number "<<currentElementIndex<<": "
+
+				<<"decimal key value("
+					<<keys[ currentElementIndex ]
+				<<"), "
+				<<"binary key value("
+					<<keyBitString
+				<<"), "
+				<<"decimal current radix value("
+					<<currentRadix
+				<<"), "
+				<<"binary current radix value("
+					<<radixBitString
+				<<") "
+				<<"|| ";
+		}
+
+		fileStream
+			<<"### following locally scanned radix counters: ###"
+			;
+
+		for(unsigned int radixRunner = 0 ; radixRunner< mNumRadicesPerPass; radixRunner++)
+		{
+			fileStream
+				<<"Counter number "<<radixRunner<<":"
+				<<"value("
+				<<
+					locallyScannedRadixCounters[
+				  	   //select out of up to 64 counter arrays
+					    radixRunner * numTotalRadixCounters +
+				  		//grab the element belonging to this sepcific local counter set
+				  		localCounterRunner
+				  	]
+				<<"), ";
+
+		}
+
+
+	}
+
+
+	fileStream.close();
+
+	//shut down
+	assert(0&&"abort on purpose after programmer requested buffer dump :)");
+	//URE_INSTANCE->requestMainLoopQuit();
+}
 
 
 }

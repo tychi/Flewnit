@@ -36,7 +36,7 @@ RadixSortProgram::RadixSortProgram(RadixSorter* radixSorter)
 				// - Kernel: 	phase 1 and 3
 				// - arg:	 	gLocallyScannedRadixCounters in both phases
 				// - size:		self explaining, see below;
-				//				(e.g. 64 * 64k elements for 64*256k/4 );
+				//				(e.g. 64 * 64k elements for 64 radices per pass * 256k elements to sort / 4 elements per radix counter );
 				(size_t) ( sizeof(unsigned int)
 					* mRadixSorter->mNumRadicesPerPass
 					* ( mRadixSorter->mNumElements / mRadixSorter->mNumElementsPerRadixCounter)
