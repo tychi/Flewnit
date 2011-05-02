@@ -208,8 +208,8 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		//test first run TODO delete
 	phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(0);
 	phase1Kernel->run( eventVec );
-//	dumpBuffers("initialRadixSortPhase1Dump",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-//			0, keysBuffer,oldIndicesBuffer);
+	dumpBuffers("initialRadixSortPhase1Dump",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+			0, keysBuffer,oldIndicesBuffer);
 	//}
 
 
@@ -331,6 +331,58 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 	fileStream
 		<<"Radix sort buffer dump; Current radix pass: "<<currentRadixPass<<";\n\n ";
 
+	fileStream
+			<<"scannedSumsOfLocalRadixCounts dump:\n ";
+
+	uint* probeSums = new uint[mNumWorkGroups_TabulationAndReorderPhase];
+	uint totalSum=0;
+	for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
+	{
+		probeSums[globalCounterRunner]=0;
+	}
+
+	for(unsigned int globalRadixRunner = 0 ; globalRadixRunner< mNumRadicesPerPass; globalRadixRunner++)
+	{
+		fileStream
+				<<"Current radix: "<<globalRadixRunner<<";\n ";
+		for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
+			{
+			probeSums[globalCounterRunner] +=
+					scannedSumsOfLocalRadixCounts[
+					   globalRadixRunner *  mNumRadicesPerPass + globalCounterRunner ];
+			totalSum += scannedSumsOfLocalRadixCounts[
+			       globalRadixRunner *  mNumRadicesPerPass + globalCounterRunner ];
+
+				fileStream
+					<<"el.("<< globalCounterRunner <<"),"
+					<<"val("
+					<<"("
+					<< scannedSumsOfLocalRadixCounts[
+					     globalRadixRunner *  mNumRadicesPerPass + globalCounterRunner ]
+					<<"), ";
+			}
+		fileStream <<"\n\n";
+	}
+
+	fileStream <<"Probed sums:\n";
+	for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
+	{
+		fileStream
+						<<"tabWorkGroup("<< globalCounterRunner <<"),"
+						<<"val("
+						<<"("
+						<< probeSums[globalCounterRunner]
+						<<"), ";
+	}
+
+
+	fileStream
+		<<"total sum: "<<totalSum
+
+		<<"\n\n\nFollowing locally scanned radix counters:\n\n";
+
+	totalSum=0;
+
 	for(unsigned int localCounterRunner = 0 ; localCounterRunner< FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP; localCounterRunner++)
 	//for(unsigned int localCounterRunner = 0 ; localCounterRunner< numTotalRadixCounters; localCounterRunner++)
 	{
@@ -383,6 +435,7 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 			<<"### following locally scanned radix counters: ### \n"
 			;
 
+		totalSum=0;
 		for(unsigned int radixRunner = 0 ; radixRunner< mNumRadicesPerPass; radixRunner++)
 		{
 			fileStream
@@ -397,8 +450,17 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 				  	]
 				<<"),\n";
 
+			totalSum+=
+				locallyScannedRadixCounters[
+			      //select out of up to 64 counter arrays
+			      radixRunner * numTotalRadixCounters +
+			      //grab the element belonging to this sepcific local counter set
+			      localCounterRunner
+			    ];
 		}
 
+		fileStream
+				<<"total sum of local radix counters: "<<totalSum<<";\n";
 
 	}
 

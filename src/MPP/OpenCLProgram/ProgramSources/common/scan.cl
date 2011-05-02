@@ -83,12 +83,15 @@
       //note: total sum copy and clear to zero of last element is done here;
       //      reason: save one if() statement + when only the total sum is needed instead of a complete scan,
       //      one can call this routine directly;
-      if (workItemOffsetID == 0) 
       { 
+      if (workItemOffsetID == 0) 
         {% ifequal numArraysToScanInParallel "1" %}
         
-          (*lTotalSum) = arrayToScan[ CONFLICT_FREE_INDEX( numElements - 1 ) ];
-          arrayToScan[ CONFLICT_FREE_INDEX(numElements - 1) ] = 0; // clear the last element
+  //COMMETNED OUT FOR DEBUG
+     //     *(lTotalSum) = arrayToScan[ CONFLICT_FREE_INDEX( numElements - 1 ) ];
+      *(lTotalSum) =get_local_id(0);    
+       
+          arrayToScan[ CONFLICT_FREE_INDEX( numElements - 1) ] = 0; // clear the last element
           
         {% endifequal %}
         {% ifnotequal numArraysToScanInParallel "1" %}
@@ -98,7 +101,7 @@
               //lTotalSum[elemRunner] = arrayToScan[ elemRunner * paddedNumElements + CONFLICT_FREE_INDEX( numElements - 1 ) ];
               //arrayToScan[ elemRunner * paddedNumElements + CONFLICT_FREE_INDEX(numElements - 1) ] = 0;// clear the last element 
               
-              lTotalSum[elemRunner] = arrayToScan[ CONFLICT_FREE_INDEX( elemRunner * numElements +  numElements - 1 ) ];
+//              lTotalSum[elemRunner] = arrayToScan[ CONFLICT_FREE_INDEX( elemRunner * numElements +  numElements - 1 ) ];
               arrayToScan[ CONFLICT_FREE_INDEX( elemRunner * numElements + numElements - 1) ] = 0;// clear the last element 
             }
         {% endifnotequal %}
@@ -184,8 +187,20 @@
       
       //ensure that the caller can read any value without hazard;
       barrier(CLK_LOCAL_MEM_FENCE);  
-   
-      //return totalSum;
+      
+      
+      
+        /*
+        debug test stuff
+             if (workItemOffsetID == 0) 
+         
+              {       
+                  *(lTotalSum) = arrayToScan[ CONFLICT_FREE_INDEX( numElements - 1 ) ];
+                }
+         barrier(CLK_LOCAL_MEM_FENCE);  
+        */
+                 
+
    }
    
    
