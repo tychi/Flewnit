@@ -209,37 +209,15 @@
           offset += NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE
     )
     {
-      lRadixCounters[ CONFLICT_FREE_INDEX( offset + lwiID ) ] = 0;
+        lRadixCounters[ CONFLICT_FREE_INDEX( offset + lwiID ) ] = 0;
+        //lRadixCounters[ CONFLICT_FREE_INDEX( offset + lwiID ) ] = 1;
     }
     
     //synchronize, because the tabulation of an element is not necessaryly performed by the same work item having done the copy
     //there is no way to circumvent the synch withour causing bank conflicts, i.e. "transposing" the pseudo 2d array
     //increases the danger of bank conflicts
     barrier(CLK_LOCAL_MEM_FENCE);
-    
-    
-    /*
-    atom_inc( 
-      lRadixCounters + 
-      //select the counter array for the radix of the current value
-      //radix * PADDED_STRIDE(NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) + 
-      PADDED_STRIDE( radix * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) +
-      //select the appropriate counter with padding
-      localPaddedCounterIndex 
-    );
-    */
-    
-/*
-    atom_inc( 
-      lRadixCounters + 
-      //select the counter array for the radix of the current value
-      PADDED_STRIDE( 
-        radix * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  +
-        //select the appropriate counter
-        localCounterIndex 
-       )
-    );
-*/
+   
 
     atom_inc( 
       &(
@@ -253,6 +231,24 @@
         ]
       )
     );
+
+
+
+/*
+    atom_inc( 
+      &(
+        lRadixCounters[
+          //select the counter array for the radix of the current value
+          CONFLICT_FREE_INDEX( 
+             localCounterIndex * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  +
+             //select the appropriate counter
+             radix
+          )
+        ]
+      )
+    );
+*/
+
     
     
     //------------------------------------------------------------------------------------------
@@ -283,6 +279,7 @@
 
 
      
+
         scanExclusive(
           //calculate the pointer to the first element in the "array of radix counter arrays"
           //lRadixCounters +  PADDED_STRIDE( radixToScan * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  ),
@@ -297,6 +294,8 @@
           //indepentently of its actual work item id
           workItemOffsetID
         );
+
+
    
         
    /*    
@@ -336,14 +335,6 @@
            )
         ];
 
-/*
-        = lRadixCounters[
-          //select "radix row" in pseudo 2d array taking padding into account
-           PADDED_STRIDE( radixToScan * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  )
-          //write the i'th half of the current array with the  NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP/2 work items
-          + CONFLICT_FREE_INDEX( i*  (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) + workItemOffsetID )
-        ];
-*/
       }
 
     } //endfor sequential part of scanning the NUM_RADICES_PER_PASS radix counters

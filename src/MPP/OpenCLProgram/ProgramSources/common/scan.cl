@@ -72,12 +72,14 @@
             }
             
           {% endifnotequal %}
+          
+           //indexOffset *= 2; 
         }
         //indexOffset <<= 1; //indexOffset *= 2; 
         indexOffset *= 2; 
       }  
       
-      /*
+      
       //note: total sum copy and clear to zero of last element is done here;
       //      reason: save one if() statement + when only the total sum is needed instead of a complete scan,
       //      one can call this routine directly;
@@ -101,7 +103,7 @@
             }
         {% endifnotequal %}
       } 
-      */
+      
       
       
   }
@@ -178,7 +180,7 @@
         //arrayToScan[ CONFLICT_FREE_INDEX(numElements - 1) ] = 0;// clear the last element
       //} 
       
-      //scanExclusive_downSweep(arrayToScan, numElements, workItemOffsetID);
+      scanExclusive_downSweep(arrayToScan, numElements, workItemOffsetID);
       
       //ensure that the caller can read any value without hazard;
       barrier(CLK_LOCAL_MEM_FENCE);  
