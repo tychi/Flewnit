@@ -220,32 +220,33 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		//only the "numPass" argument - guess what - changes over the passes ;)
 		phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
 
-		phase1Kernel->run( EventVector{eventToWaitFor} );
-		//phase1Kernel->run( EventVector{} );
+		//phase1Kernel->run( EventVector{eventToWaitFor} );
+		phase1Kernel->run( EventVector{} );
 
 		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
 
-		dumpBuffers("initialRadixSortPhase1Dump",
-				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-				false,//DONT abort
-				currentPass,0,
-				keysBuffer,oldIndicesBuffer);
+//		dumpBuffers("initialRadixSortPhase1Dump",
+//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//				false,//DONT abort
+//				currentPass,0,
+//				keysBuffer,oldIndicesBuffer);
 
 		//--------------------------------------------------------------------------
 		//phase 2
 
 		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
 
-		phase2Kernel->run( EventVector{eventToWaitFor} );
+		//phase2Kernel->run( EventVector{eventToWaitFor} );
+		phase2Kernel->run( EventVector{} );
 
 		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
 
-		dumpBuffers("initialRadixSortPhase2Dump",
-				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-				//false,
-				true,
-				currentPass,1,
-				keysBuffer,oldIndicesBuffer);
+//		dumpBuffers("initialRadixSortPhase2Dump",
+//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//				//false,
+//				true,
+//				currentPass,1,
+//				keysBuffer,oldIndicesBuffer);
 
 //		//--------------------------------------------------------------------------
 //		//phase 3
@@ -436,8 +437,8 @@ void RadixSorter::dumpBuffers(
 
 	totalSum=0;
 
-	for(unsigned int localCounterRunner = 0 ; localCounterRunner< FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP; localCounterRunner++)
-	//for(unsigned int localCounterRunner = 0 ; localCounterRunner< numTotalRadixCounters; localCounterRunner++)
+	//for(unsigned int localCounterRunner = 0 ; localCounterRunner< FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP; localCounterRunner++)
+	for(unsigned int localCounterRunner = 0 ; localCounterRunner< numTotalRadixCounters; localCounterRunner++)
 	{
 		fileStream <<"local Radix Counter number "<<localCounterRunner<<":\n";
 
