@@ -504,7 +504,7 @@
           lwiID
         );
         
-      barrier(CLK_LOCAL_MEM_FENCE); //TODO remove, this should be completely unneccessary because the last instruction in 
+      //barrier(CLK_LOCAL_MEM_FENCE); //TODO remove, this should be completely unneccessary because the last instruction in 
                                     //scanExclusive is ab barrier; but to be save from compiler bugs and 
                                     //error in reasoning, in case of doubt, do a barrier;
         
@@ -522,19 +522,28 @@
     
       
       barrier(CLK_LOCAL_MEM_FENCE); //ensure all values are written to global mem;
-      barrier(CLK_GLOBAL_MEM_FENCE); //TODO delete semes unneccessary to me ;(; but to be sure...
+      //barrier(CLK_GLOBAL_MEM_FENCE); //TODO delete semes unneccessary to me ;(; but to be sure...
       
       
     } //end sequential "scan of parallel scans" ;)
    
-     barrier(CLK_LOCAL_MEM_FENCE); //TODO is it necessary?
+     //barrier(CLK_LOCAL_MEM_FENCE); //TODO is it necessary?
+    
     //in the end, write the results of the scan of the work-group-assigned interval of the total radix sums
     //back to global memory:
     if(lwiID < NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE)
     {
       gPartiallyScannedSumsOfGlobalRadixCounts[radixStart + lwiID] = lSumsOfGlobalRadixCounts[lwiID];
     }
-
+    
+    if(lwiID == 0)
+    {
+      //set the total sum of the sequential scan of the total sums of the global radix counters
+      //(is in the last element of the [NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE +1]-elements lSumsOfGlobalRadixCounts array)
+      gSumsOfPartialScansOfSumsOfGlobalRadixCounts[ groupID ] = 
+        lSumsOfGlobalRadixCounts[NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE];
+    }
+    
   }
   //=====================================================================================
   
