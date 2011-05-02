@@ -51,7 +51,10 @@ public:
 	void sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer);
 
 	//read back and write out buffers to disc for analysis;
-	void dumpBuffers(String dumpName, unsigned int frameNumber,unsigned int currentRadixPass,
+	void dumpBuffers(
+			String dumpName,
+			unsigned int frameNumber, bool abortAfterDump,
+			unsigned int currentRadixPass, unsigned int currentPhase,
 			PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer);
 
 private:

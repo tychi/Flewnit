@@ -5,6 +5,8 @@ src/MPP/Shader/ShaderSources/backup/
 src/MPP/Shader/ShaderSources/__generated/GenericLightingUberShader*
 src/MPP/OpenCLProgram/ProgramSources/__generated/_GEN_*
 src/MPP/OpenCLProgram/ProgramSources/__generated/INFO_LOG_*
+src/MPP/OpenCLProgram/ProgramSources/bufferDumps/bufferDump_*
+src/MPP/OpenCLProgram/ProgramSources/backup/*
 assets/textures/currently unneeded/
 assets/blendfiles/misc_notInRepo/
 assets/blendfiles/raptor/notInRepo/

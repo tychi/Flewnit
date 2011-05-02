@@ -155,13 +155,13 @@ RadixSorter::~RadixSorter()
 void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer)
 {
 	cl::Event eventToWaitFor;
-	EventVector eventVec; //haxx for first pass debugging TODO remove when radix sort works;
+	//EventVector debugEventVec; //haxx for first pass debugging TODO remove when radix sort works;
 	switch (URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames()) {
 		case 0:
 			eventToWaitFor =
 				CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
 					->getKernel("kernel_initial_CalcZIndex")->getEventOfLastKernelExecution();
-			eventVec.push_back(eventToWaitFor);
+			//eventVec.push_back(eventToWaitFor);
 			break;
 		case 1:
 			eventToWaitFor =
@@ -204,27 +204,34 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 	phase3Kernel->getCLKernelArguments()->getBufferArg("gReorderedOldIndices")->set(oldIndicesBuffer, true);
 
 
-	//{
-		//test first run TODO delete
-	phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(0);
-	phase1Kernel->run( eventVec );
-	dumpBuffers("initialRadixSortPhase1Dump",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-			0, keysBuffer,oldIndicesBuffer);
-	//}
+//	//{
+//		//test first run TODO delete
+//	phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(0);
+//	phase1Kernel->run( eventVec );
+//
+//	//}
 
 
-//	for(unsigned int currentPass = 0; currentPass < mNumRadixSortPasses; currentPass++)
-//	{
-//		//--------------------------------------------------------------------------
-//		//phase 1
-//
-//		//only the "numPass" argument - guess what - changes over the passes ;)
-//		phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
-//
-//		phase1Kernel->run( EventVector{eventToWaitFor} );
-//
-//		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
-//
+	for(unsigned int currentPass = 0; currentPass < mNumRadixSortPasses; currentPass++)
+	{
+		//--------------------------------------------------------------------------
+		//phase 1
+
+		//only the "numPass" argument - guess what - changes over the passes ;)
+		phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
+
+		//phase1Kernel->run( EventVector{eventToWaitFor} );
+		phase1Kernel->run( EventVector{} );
+
+		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
+
+//		dumpBuffers("initialRadixSortPhase1Dump",
+//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//				//false,
+//				true,
+//				currentPass,0,
+//				keysBuffer,oldIndicesBuffer);
+
 //		//--------------------------------------------------------------------------
 //		//phase 2
 //
@@ -250,7 +257,7 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 //		keysBuffer->toggleBuffers();
 //		oldIndicesBuffer->toggleBuffers();
 //
-//	}
+	}
 
 	//keysBuffer and oldIndicesBuffer should have their sorted resp reordered values in there active component
 	//now ;)
@@ -266,7 +273,10 @@ uint RadixSorter::getRadix(uint key, uint numPass)
 }
 
 
-void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigned int currentRadixPass,
+void RadixSorter::dumpBuffers(
+		String dumpName,
+		unsigned int frameNumber, bool abortAfterDump,
+		unsigned int currentRadixPass, unsigned int currentPhase,
 		PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer)
 {
 	static const unsigned int log2NumRadicesPerPass = HelperFunctions::log2ui(mNumRadicesPerPass);
@@ -307,12 +317,12 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 	unsigned int* scannedSumsOfLocalRadixCounts =
 		reinterpret_cast<unsigned int*>(imrm->getBuffer(1)->getCPUBufferHandle());
 
-	//later
-//	unsigned int* partiallyScannedSumsOfGlobalRadixCounts =
-//		reinterpret_cast<unsigned int*>(imrm->getBuffer(2)->getCPUBufferHandle());
-//
-//	unsigned int* sumsOfPartialScansOfSumsOfGlobalRadixCounts =
-//		reinterpret_cast<unsigned int*>(imrm->getBuffer(3)->getCPUBufferHandle());
+
+	unsigned int* partiallyScannedSumsOfGlobalRadixCounts =
+		reinterpret_cast<unsigned int*>(imrm->getBuffer(2)->getCPUBufferHandle());
+
+	unsigned int* sumsOfPartialScansOfSumsOfGlobalRadixCounts =
+		reinterpret_cast<unsigned int*>(imrm->getBuffer(3)->getCPUBufferHandle());
 
 	//to fight the hangups due to huge dump files :(
 #define FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP 5000
@@ -325,14 +335,11 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 		reinterpret_cast<unsigned int*>(oldIndicesBuffer->getCPUBufferHandle());
 
 
-
 	unsigned int numTotalRadixCounters = mNumElements/mNumElementsPerRadixCounter;
 
-	fileStream
-		<<"Radix sort buffer dump; Current radix pass: "<<currentRadixPass<<";\n\n ";
+	fileStream<<"Radix sort buffer dump; Current radix pass: "<<currentRadixPass<<";\n\n ";
 
-	fileStream
-			<<"scannedSumsOfLocalRadixCounts dump:\n ";
+	fileStream<<"scannedSumsOfLocalRadixCounts dump:\n ";
 
 	uint* probeSums = new uint[mNumWorkGroups_TabulationAndReorderPhase];
 	uint totalSum=0;
@@ -343,26 +350,9 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 
 	for(unsigned int globalRadixRunner = 0 ; globalRadixRunner< mNumRadicesPerPass; globalRadixRunner++)
 	{
-		fileStream
-				<<"Current radix: "<<globalRadixRunner<<";\n ";
+		fileStream<<"Current radix: "<<globalRadixRunner<<";\n ";
 		for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
 			{
-/*
- * 			probeSums[globalCounterRunner] +=
-					scannedSumsOfLocalRadixCounts[
-					   globalRadixRunner *  mNumRadicesPerPass + globalCounterRunner ];
-			totalSum += scannedSumsOfLocalRadixCounts[
-			       globalRadixRunner *  mNumRadicesPerPass + globalCounterRunner ];
-
-				fileStream
-					<<"el.("<< globalCounterRunner <<"),"
-					<<"val("
-					<<"("
-					<< scannedSumsOfLocalRadixCounts[
-					     globalRadixRunner *  mNumRadicesPerPass + globalCounterRunner ]
-					<<"), ";
-			}
- * */
 				probeSums[globalCounterRunner] += scannedSumsOfLocalRadixCounts[
 				   globalRadixRunner *  mNumWorkGroups_TabulationAndReorderPhase + globalCounterRunner
 				 ];
@@ -373,7 +363,7 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 
 							fileStream
 								<<"el.("<< globalCounterRunner <<"),"
-								<<"val("
+								<<"val"
 								<<"("
 								<< scannedSumsOfLocalRadixCounts[
 								     globalRadixRunner *  mNumWorkGroups_TabulationAndReorderPhase + globalCounterRunner ]
@@ -388,26 +378,22 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 	for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
 	{
 		fileStream
-						<<"tabWorkGroup("<< globalCounterRunner <<"),"
-						<<"val("
-						<<"("
-						<< probeSums[globalCounterRunner]
-						<<"), ";
+			<<"tabWorkGroup("<< globalCounterRunner <<"),"
+			<<"val("
+			<<"("
+			<< probeSums[globalCounterRunner]
+			<<"), ";
 	}
 
 
-	fileStream
-		<<"total sum: "<<totalSum
-
-		<<"\n\n\nFollowing locally scanned radix counters:\n\n";
+	fileStream<<"total sum: "<<totalSum<<"\n\n\nFollowing locally scanned radix counters:\n\n";
 
 	totalSum=0;
 
 	for(unsigned int localCounterRunner = 0 ; localCounterRunner< FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP; localCounterRunner++)
 	//for(unsigned int localCounterRunner = 0 ; localCounterRunner< numTotalRadixCounters; localCounterRunner++)
 	{
-		fileStream
-			<<"local Radix Counter number "<<localCounterRunner<<":\n";
+		fileStream <<"local Radix Counter number "<<localCounterRunner<<":\n";
 
 		for(unsigned int elementRunner = 0 ; elementRunner< mNumElementsPerRadixCounter; elementRunner++)
 		{
@@ -432,7 +418,6 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 				);
 			}
 
-
 			fileStream
 				<<"||Key element number "<<currentElementIndex<<": "
 
@@ -451,9 +436,7 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 				<<"||\n ";
 		}
 
-		fileStream
-			<<"### following locally scanned radix counters: ### \n"
-			;
+		fileStream <<"### following locally scanned radix counters: ### \n";
 
 		totalSum=0;
 		for(unsigned int radixRunner = 0 ; radixRunner< mNumRadicesPerPass; radixRunner++)
@@ -478,17 +461,17 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 			      localCounterRunner
 			    ];
 		}
-
-		fileStream
-				<<"total sum of local radix counters: "<<totalSum<<";\n";
-
+		fileStream <<"total sum of local radix counters: "<<totalSum<<";\n";
 	}
 
 
 	fileStream.close();
 
-	//shut down
-	assert(0&&"abort on purpose after programmer requested buffer dump :)");
+
+	if(abortAfterDump)
+	{
+		assert(0&&"abort on purpose after programmer requested buffer dump :)");
+	}
 	//URE_INSTANCE->requestMainLoopQuit();
 }
 
