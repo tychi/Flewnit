@@ -13,17 +13,18 @@
       #define NUM_BANKS 16
       #define LOG2_NUMBANKS 4
     {% endifequal %}
+
+    /*
     #define CONFLICT_FREE_OFFSET(n)  ( (n) >> (LOG2_NUMBANKS) )   
     #define CONFLICT_FREE_INDEX(n)  ( (n) + ( (n) >> (LOG2_NUMBANKS) ) )
     //same formula as above, but for readability:    
     #define PADDED_STRIDE(size)  ( (size) + ( (size) >> (LOG2_NUMBANKS) ) )  
+    */
      
-    /*
     #define CONFLICT_FREE_OFFSET(n) (0)
     #define CONFLICT_FREE_INDEX(n)  (n)
     //same formula as above, but for readability:    
     #define PADDED_STRIDE(size)  ( size )  
-    */
   //-------------------------------------------------------------------------------------
   
 #endif //BANK_CONFLICTS_AVOIDANCE_INCLUDE_GUARD

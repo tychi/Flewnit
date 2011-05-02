@@ -95,7 +95,8 @@ void RadixSortProgram::setupTemplateContext(TemplateContextMap& contextMap)
 	//default, different value currently only used in updateRigidBodies.cl
 	contextMap.insert(
 		"numArraysToScanInParallel",
-		1
+		//1 <-- BUG: {% ifnotequal numArraysToScanInParallel "1" %} becomes true with the integer value!!11
+		"1"
 	);
 
 	contextMap.insert(

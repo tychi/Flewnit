@@ -181,7 +181,7 @@
     //is logically an array of NUM_RADICES_PER_PASS padded radix counter arrays;
     __local uint lRadixCounters[  PADDED_STRIDE( NUM_RADICES_PER_PASS * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) ]; 
                                    
-    __local uint lTotalRadixSum;
+    __local uint lTotalLocalRadixSums[ NUM_RADICES_PER_PASS ];
   
     uint radix = getRadix( gKeysToSort[get_global_id(0)] ,numPass);
   
@@ -263,8 +263,8 @@
     {
       //divide work items in several sets with interval [0..half length of one radix counter array], 
       //as each work item can scan two radix counter elements
-      //default (fermi): [0..511] % (128/2) --> 8 occurences of interval [0..64]
-      //default (GT200): [0..256] % (32/2) --> 16 occurences of interval [0..16] <-- on half warp scans another array than the other.. 
+      //default (fermi): [0..511] % (128/2) --> 8 occurences of interval [0..63]
+      //default (GT200): [0..256] % (32/2) --> 16 occurences of interval [0..15] <-- on half warp scans another array than the other.. 
       //                                                                              but the control flow should not diverge worse 
       //                                                                              than when scanning only one array with few elements...                                                      
       uint workItemOffsetID = 
@@ -272,8 +272,8 @@
                               //BASE_2_MODULO( lwiID,  (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) );  
 
       //radix in whose scan the curren work item will participate = 
-      //default (fermi): [0..7] *  8 + (2* [0..511])/128 --> [0..7] *  8 + [0 .. 8]
-      //default (GT200): [0..4] * 16 + (2* [0..255])/ 32 --> [0..7] *  8 + [0 ..16]
+      //default (fermi): [0..7] *  8 + (2* [0..511])/128 --> [0..7] *  8 + [0 .. 7]
+      //default (GT200): [0..4] * 16 + (2* [0..255])/ 32 --> [0..7] *  8 + [0 ..15]
       uint radixToScan = 
         //big loop offset 
         i * NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL 
@@ -281,21 +281,25 @@
         + ( lwiID ) / ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 ); 
         //+ ( lwiID << 1 ) / ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ); <-- strang notation without any computational advantage, in the contrary!
 
-      
-   /*
+
+     
         scanExclusive(
           //calculate the pointer to the first element in the "array of radix counter arrays"
-          lRadixCounters + radixToScan * PADDED_STRIDE( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  ), 
+          //lRadixCounters +  PADDED_STRIDE( radixToScan * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  ),
+          &(
+            lRadixCounters[ PADDED_STRIDE( radixToScan * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ) ]
+          ), 
           //grab the total sum
-          & lTotalRadixSum,
+          & ( lTotalLocalRadixSums[ radixToScan ] ),
           //as many elements to scan as we have radix counter elements per radix
           NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP, 
           //communicate the stride [0.. half size of one radix counter array] to the scan function so that it can operate
           //indepentently of its actual work item id
           workItemOffsetID
         );
+   
         
-      
+   /*    
       //write the total sum of the local counter array to global memory
       if(workItemOffsetID == 0)
       {
@@ -304,7 +308,7 @@
           radixToScan * NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE
           //entry in counter array corresponds to work group
           + get_group_id(0)
-        ] = lTotalRadixSum;
+        ] = lTotalLocalRadixSums[ radixToScan ];
       }
       
    */
