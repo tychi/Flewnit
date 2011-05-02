@@ -29,6 +29,8 @@ public:
 
 	static int countBits(int num);
 
+	static String getBitString(unsigned int value, unsigned int numStringifiedBits = 32 );
+
 
 
 	static unsigned int ceilToNextMultiple(unsigned int valToCeil, unsigned int multipleToBeCeiledTo);

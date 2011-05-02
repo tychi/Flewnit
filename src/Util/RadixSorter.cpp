@@ -220,8 +220,8 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		//only the "numPass" argument - guess what - changes over the passes ;)
 		phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
 
-		//phase1Kernel->run( EventVector{eventToWaitFor} );
-		phase1Kernel->run( EventVector{} );
+		phase1Kernel->run( EventVector{eventToWaitFor} );
+		//phase1Kernel->run( EventVector{} );
 
 		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
 
@@ -236,34 +236,43 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
 
-		//phase2Kernel->run( EventVector{eventToWaitFor} );
-		phase2Kernel->run( EventVector{} );
+		phase2Kernel->run( EventVector{eventToWaitFor} );
+		//phase2Kernel->run( EventVector{} );
 
 		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
 
 //		dumpBuffers("initialRadixSortPhase2Dump",
 //				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-//				//false,
-//				true,
+//				false, //don't abort
+//				//true,
 //				currentPass,1,
 //				keysBuffer,oldIndicesBuffer);
 
-//		//--------------------------------------------------------------------------
-//		//phase 3
-//
-//		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
-//
-//		phase3Kernel->run( EventVector{eventToWaitFor} );
-//
-//		//make phase 1 weit for phase 3 to finish:
-//		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();
-//
-//
-//		//##########################################################################
-//		//do the buffer toggle
+		//--------------------------------------------------------------------------
+		//phase 3
+
+		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
+
+		//phase3Kernel->run( EventVector{eventToWaitFor} );
+		phase3Kernel->run( EventVector{} );
+
+		//make phase 1 wait for phase 3 to finish:
+		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();
+
+
+		dumpBuffers("initialRadixSortPhase3Dump",
+						URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+						//false,//DONT abort
+						true, //abort for validation
+						currentPass,2,
+						keysBuffer,oldIndicesBuffer);
+
+
+		//##########################################################################
+		//do the buffer toggle
 //		keysBuffer->toggleBuffers();
 //		oldIndicesBuffer->toggleBuffers();
-//
+
 	}
 
 	//keysBuffer and oldIndicesBuffer should have their sorted resp reordered values in there active component
@@ -286,10 +295,23 @@ void RadixSorter::dumpBuffers(
 		unsigned int currentRadixPass, unsigned int currentPhase,
 		PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer)
 {
+	//note: if this is phase 3, we assume  at the moment that the toggle has not been done yet;
+
 	static const unsigned int log2NumRadicesPerPass = HelperFunctions::log2ui(mNumRadicesPerPass);
 
+	unsigned int numTotalRadixCounters = mNumElements/mNumElementsPerRadixCounter;
+
+
+	PARA_COMP_MANAGER->barrierCompute();
+
+
 	keysBuffer->readBack(true);
+	//read also the pong components back for comparison!
+	keysBuffer->getInactiveBuffer()->readBack(true);
+
 	oldIndicesBuffer->readBack(true);
+	//read also the pong components back for comparison!
+	oldIndicesBuffer->getInactiveBuffer()->readBack(true);
 
 	IntermediateResultBuffersManager* imrm =
 			CLProgramManager::getInstance().getIntermediateResultBuffersManager();
@@ -335,23 +357,94 @@ void RadixSorter::dumpBuffers(
 #define FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP 5000
 
 
-	unsigned int* keys =
+	unsigned int* keysSoBeSorted =
 		reinterpret_cast<unsigned int*>(keysBuffer->getCPUBufferHandle());
 
-	unsigned int* oldIndices =
+	unsigned int* oldIndicesToBeReordered =
 		reinterpret_cast<unsigned int*>(oldIndicesBuffer->getCPUBufferHandle());
 
+	unsigned int* sortedKeys =
+		reinterpret_cast<unsigned int*>(keysBuffer->getInactiveBuffer()->getCPUBufferHandle());
 
-	unsigned int numTotalRadixCounters = mNumElements/mNumElementsPerRadixCounter;
+	unsigned int* reorderedOldIndices =
+		reinterpret_cast<unsigned int*>(oldIndicesBuffer->getInactiveBuffer()->getCPUBufferHandle());
+
+
+
+
 
 	fileStream<<"Radix sort buffer dump;"
 			<<" Current radix pass: "<<currentRadixPass<<";\n\n "
 			<<" Current radix sort phase(1,2 or 3): "<<currentPhase+1<<";\n\n ";
 
+	if(currentPhase==2)
+	{
+		fileStream<<"we are in phase 3; so let's check out the the sorting status of the keys and the\n"
+				<<"non-reordered and reordered old indices:\n\n";
+
+		for(unsigned int elementRunner = 0 ; elementRunner< mNumElements; elementRunner++)
+		{
+			unsigned int unsortedKey = keysSoBeSorted[elementRunner];
+			unsigned int radixUnsortedKey = getRadix(unsortedKey,currentRadixPass);
+			unsigned int sortedKey = sortedKeys[elementRunner];
+			unsigned int radixSortedKey = getRadix(sortedKey,currentRadixPass);
+
+			unsigned int oldIndex =
+					(currentRadixPass ==0)
+					?  elementRunner
+					: oldIndicesToBeReordered[elementRunner];
+
+			unsigned int reorderedOldIndex = reorderedOldIndices[elementRunner];
+
+
+			fileStream
+				<<"Current buffer index :"<<elementRunner<<"; "
+
+				<<"  sorted key value (decimal)			: "<<sortedKey<<"; "
+				<<"  sorted key value (binary)			: "<<HelperFunctions::getBitString(sortedKey)<<"; "
+				<<"  sorted key current radix (decimal)	: "<<radixSortedKey<<"; "
+				<<"  sorted key current radix (binary)	: "<<HelperFunctions::getBitString(radixSortedKey,log2NumRadicesPerPass)<<"; "
+
+
+				<<"unsorted key value (decimal)			: "<<unsortedKey<<"; "
+				<<"unsorted key value (binary)			: "<<HelperFunctions::getBitString(unsortedKey)<<"; "
+				<<"unsorted key current radix (decimal)	: "<<radixUnsortedKey<<"; "
+				<<"unsorted key current radix (binary)	: "<<HelperFunctions::getBitString(radixUnsortedKey,log2NumRadicesPerPass)<<"; "
+
+
+				<<"\n ";
+
+//					String unsortedKeyBitString="";
+//					for(unsigned int bitRunner = 0 ; bitRunner < 32 ; bitRunner++)
+//					{
+//						keyBitString.append(
+//							( (keysSoBeSorted[ currentElementIndex ] & (1<< (31-bitRunner) ) ) == 0 )
+//							?"0":"1"
+//						);
+//					}
+//
+//					uint currentRadix = getRadix(keysSoBeSorted[ currentElementIndex ], currentRadixPass);
+//					String radixBitString="";
+//					for(unsigned int bitRunner = 0 ; bitRunner < log2NumRadicesPerPass ; bitRunner++)
+//					{
+//						radixBitString.append(
+//							( (keysSoBeSorted[ currentElementIndex ] & (1<< ((log2NumRadicesPerPass-1)-bitRunner) ) ) == 0 )
+//							?"0":"1"
+//						);
+//					}
+//
+
+				}
+
+	}
+
+
+
 	if(currentPhase > 0)
 	{
-		//we are in phase 2 or 3; so let's check out the partiallyScannedSumsOfGlobalRadixCounts
-		//and the sumsOfPartialScansOfSumsOfGlobalRadixCounts
+		fileStream<<"we are in phase 2 or 3; so let's check out the partiallyScannedSumsOfGlobalRadixCounts\n"
+				<<"and the sumsOfPartialScansOfSumsOfGlobalRadixCounts:\n\n";
+
 		for(unsigned int partiallyScannedSumsOfGlobalRadixCountsRunner = 0 ;
 				partiallyScannedSumsOfGlobalRadixCountsRunner< mNumRadicesPerPass;
 				partiallyScannedSumsOfGlobalRadixCountsRunner++)
@@ -446,39 +539,41 @@ void RadixSorter::dumpBuffers(
 		{
 			uint currentElementIndex = mNumElementsPerRadixCounter * localCounterRunner + elementRunner;
 
-			String keyBitString="";
-			for(unsigned int bitRunner = 0 ; bitRunner < 32 ; bitRunner++)
-			{
-				keyBitString.append(
-					( (keys[ currentElementIndex ] & (1<< (31-bitRunner) ) ) == 0 )
-					?"0":"1"
-				);
-			}
+//			String keyBitString="";
+//			for(unsigned int bitRunner = 0 ; bitRunner < 32 ; bitRunner++)
+//			{
+//				keyBitString.append(
+//					( (keysSoBeSorted[ currentElementIndex ] & (1<< (31-bitRunner) ) ) == 0 )
+//					?"0":"1"
+//				);
+//			}
 
-			uint currentRadix = getRadix(keys[ currentElementIndex ], currentRadixPass);
-			String radixBitString="";
-			for(unsigned int bitRunner = 0 ; bitRunner < log2NumRadicesPerPass ; bitRunner++)
-			{
-				radixBitString.append(
-					( (keys[ currentElementIndex ] & (1<< ((log2NumRadicesPerPass-1)-bitRunner) ) ) == 0 )
-					?"0":"1"
-				);
-			}
+			uint currentRadix = getRadix(keysSoBeSorted[ currentElementIndex ], currentRadixPass);
+
+//			String radixBitString="";
+//			for(unsigned int bitRunner = 0 ; bitRunner < log2NumRadicesPerPass ; bitRunner++)
+//			{
+//				radixBitString.append(
+//					( (keysSoBeSorted[ currentElementIndex ] & (1<< ((log2NumRadicesPerPass-1)-bitRunner) ) ) == 0 )
+//					?"0":"1"
+//				);
+//			}
 
 			fileStream
 				<<"||Key element number "<<currentElementIndex<<": "
 
 				<<"decimal key value("
-					<<keys[ currentElementIndex ]
+					<<keysSoBeSorted[ currentElementIndex ]
 				<<"), "
 				<<"binary key value("
-					<<keyBitString
+					//<<keyBitString
+					<< HelperFunctions::getBitString( keysSoBeSorted[ currentElementIndex ], 32 )
 				<<"), "
 				<<"decimal current radix value("
 					<<currentRadix
 				<<"), "
 				<<"binary current radix value("
-					<<radixBitString
+					<<HelperFunctions::getBitString( currentRadix, log2NumRadicesPerPass )
 				<<") "
 				<<"||\n ";
 		}

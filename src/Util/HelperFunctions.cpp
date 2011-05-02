@@ -47,6 +47,22 @@ int HelperFunctions::countBits(int num)
 }
 
 
+String HelperFunctions::getBitString(unsigned int value, unsigned int numStringifiedBits)
+{
+
+	String bitString="";
+	for(unsigned int bitRunner = 0 ; bitRunner < numStringifiedBits ; bitRunner++)
+	{
+		bitString.append(
+			( ( value & ( 1 << ( numStringifiedBits -1 - bitRunner) ) ) == 0 )
+			?"0":"1"
+		);
+	}
+
+	return bitString;
+}
+
+
 unsigned int HelperFunctions::log2ui(unsigned int val)
 {
 	assert("HelperFunctions::log2ui(uint) is atm only defined for values already being a power of two;( "
