@@ -196,7 +196,7 @@
         </generalSettings>
         
         <UniformGrid>
-           <numCellsPerDimension type="INT" value="64" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <numCellsPerDimension type="INT" value="32" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
            <!--
@@ -204,7 +204,7 @@
            -->
            <minCornerPosition  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
-           <extendsOfOneCell  type="VEC4" x="1.0" y="1.0" z="1.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <extendsOfOneCell  type="VEC4" x="3.0" y="3.0" z="3.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
 				    <!--
 				      GPU-relevant "chunk-ization" size, denoting the max. element count processed by one OpenCL work group; 
 				      default: 32, because this is the warp size; 

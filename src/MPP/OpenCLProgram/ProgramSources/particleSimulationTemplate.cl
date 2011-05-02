@@ -33,8 +33,7 @@
 {% block constantBufferKernelArgs %} {%comment%}/*usually the same for all physics kernels*/{%endcomment%}
       
       __constant SimulationParameters* cSimParams,
-//      __constant uint* cGridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation
-      __global uint* cGridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation
+      __constant uint* cGridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation
       //RIGID_BODY_OFFSET + numRigidBodies elements; contains (amongs other properties) the masses of the fluid particles, 
       //then the masses of the respective rigid bodies; this way, we can grab the masses without any branching :).      
       //__constant float* cObjectMassesPerParticle, 
