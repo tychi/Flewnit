@@ -220,8 +220,8 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		//only the "numPass" argument - guess what - changes over the passes ;)
 		phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
 
-		//phase1Kernel->run( EventVector{eventToWaitFor} );
-		phase1Kernel->run( EventVector{} );
+		phase1Kernel->run( EventVector{eventToWaitFor} );
+		//phase1Kernel->run( EventVector{} );
 
 		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
 
@@ -232,15 +232,22 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 //				currentPass,0,
 //				keysBuffer,oldIndicesBuffer);
 
-//		//--------------------------------------------------------------------------
-//		//phase 2
-//
-//		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
-//
-//		phase2Kernel->run( EventVector{eventToWaitFor} );
-//
-//		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
-//
+		//--------------------------------------------------------------------------
+		//phase 2
+
+		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
+
+		phase2Kernel->run( EventVector{eventToWaitFor} );
+
+		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
+
+		dumpBuffers("initialRadixSortPhase2Dump",
+				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+				//false,
+				true,
+				currentPass,1,
+				keysBuffer,oldIndicesBuffer);
+
 //		//--------------------------------------------------------------------------
 //		//phase 3
 //

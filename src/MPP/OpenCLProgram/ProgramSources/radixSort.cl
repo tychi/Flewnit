@@ -448,13 +448,16 @@
      //becaus no bank conflicts can occur.  
      __local uint  lSumsOfGlobalRadixCounts[ NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE + 1 ];
   
-      __local uint lTotalRadixSum;
+      //__local uint lTotalRadixSum;
+      //grab the total sum frome the global scan of ech radix;
+      //this value is needed to create the partial scan of the total sum of each radix counter array 
+      __local uint lTempTotalSumOfCurrentGlobalRadixCounterArray;
   
     uint lwiID = get_local_id(0); // short for "local work item ID"
     uint groupID = get_group_id(0);
     
-    uint radixStart = groupID *   NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE;
-    uint radixEnd   = groupID * ( NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE +1 );
+    uint radixStart =  groupID     *   NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE;
+    uint radixEnd   = (groupID +1) *   NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE - 1;
     
     if(lwiID == 0)
     {
@@ -462,9 +465,16 @@
       lSumsOfGlobalRadixCounts[0] = 0;
     }
     
+    //barrier(CLK_LOCAL_MEM_FENCE); //barrier so that lSumsOfGlobalRadixCounts is zero for every work item
+    
+    uint paddedLocalLowerIndex  = CONFLICT_FREE_INDEX( lwiID );
+    uint paddedLocalHigherIndex = CONFLICT_FREE_INDEX( lwiID + (NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE/2) );
+    
+
     //do not unroll, too much code
-    for(int currentRadix= radixStart; currentRadix < radixEnd; currentRadix++ )
+    for(int currentRadix= radixStart; currentRadix <= radixEnd; currentRadix++ ) //smaller or EQUAL
     {   
+    
       //{ index calculation for global and local element arrays:   
       uint globalLowerIndex = 
           //select the counter array for the recently scanned radix counter array
@@ -473,40 +483,51 @@
           + lwiID;
       //TODO optimize for super scalarity: better repeat calculations instead of provoḱing a read-after-write-hazard?
       //uint globalHigherIndex = globalLowerIndex + (NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE/2);
-      uint globalHigherIndex =  currentRadix * NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE
+      uint globalHigherIndex =  
+          currentRadix * NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE
           //entry in counter array corresponds to work item + half the size of array to scan
           + lwiID + (NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE/2);
       
-      uint localLowerIndex  = CONFLICT_FREE_INDEX( lwiID );
-      uint localHigherIndex = CONFLICT_FREE_INDEX( lwiID + (NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE/2) );
       //}
      
       //read coalesced from global memory
-      lSumsOfLocalRadixCounts[ localLowerIndex  ] =   gSumsOfLocalRadixCountsToBeScanned[ globalLowerIndex  ];
-      lSumsOfLocalRadixCounts[ localHigherIndex ] =   gSumsOfLocalRadixCountsToBeScanned[ globalHigherIndex ];
+      lSumsOfLocalRadixCounts[ paddedLocalLowerIndex  ] =   gSumsOfLocalRadixCountsToBeScanned[ globalLowerIndex  ];
+      lSumsOfLocalRadixCounts[ paddedLocalHigherIndex ] =   gSumsOfLocalRadixCountsToBeScanned[ globalHigherIndex ];
+
+      barrier(CLK_LOCAL_MEM_FENCE); //ensure all values are read from global mem;
       
         scanExclusive(
           lSumsOfLocalRadixCounts,
-          & lTotalRadixSum, 
+          & lTempTotalSumOfCurrentGlobalRadixCounterArray, 
           //as many elements to scan as we have radix counter elements per radix
           NUM_ELEMENTS_TO_SCAN_PER_WORK_GROUP__GLOBAL_SCAN_PHASE, 
           lwiID
         );
+        
+      barrier(CLK_LOCAL_MEM_FENCE); //TODO remove, this should be completely unneccessary because the last instruction in 
+                                    //scanExclusive is ab barrier; but to be save from compiler bugs and 
+                                    //error in reasoning, in case of doubt, do a barrier;
         
       if(lwiID == 0)
       {
         uint localIndexSumsOfGlobalRadix = currentRadix - radixStart;
         //sequential scan of the total count of each radix ocurrence;
         lSumsOfGlobalRadixCounts[localIndexSumsOfGlobalRadix + 1 ] = 
-            lSumsOfGlobalRadixCounts[ localIndexSumsOfGlobalRadix ] + lTotalRadixSum;
+            lSumsOfGlobalRadixCounts[ localIndexSumsOfGlobalRadix ] + lTempTotalSumOfCurrentGlobalRadixCounterArray;
       }
       
       //write back coalesced to global memory
-      gSumsOfLocalRadixCountsToBeScanned[ globalLowerIndex  ] =   lSumsOfLocalRadixCounts[ localLowerIndex  ];
-      gSumsOfLocalRadixCountsToBeScanned[ globalHigherIndex ] =   lSumsOfLocalRadixCounts[ localHigherIndex ];
+      gSumsOfLocalRadixCountsToBeScanned[ globalLowerIndex  ] =   lSumsOfLocalRadixCounts[ paddedLocalLowerIndex  ];
+      gSumsOfLocalRadixCountsToBeScanned[ globalHigherIndex ] =   lSumsOfLocalRadixCounts[ paddedLocalHigherIndex ];
+    
       
-    }
+      barrier(CLK_LOCAL_MEM_FENCE); //ensure all values are written to global mem;
+      barrier(CLK_GLOBAL_MEM_FENCE); //TODO delete semes unneccessary to me ;(; but to be sure...
+      
+      
+    } //end sequential "scan of parallel scans" ;)
    
+     barrier(CLK_LOCAL_MEM_FENCE); //TODO is it necessary?
     //in the end, write the results of the scan of the work-group-assigned interval of the total radix sums
     //back to global memory:
     if(lwiID < NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE)
