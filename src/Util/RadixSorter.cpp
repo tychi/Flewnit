@@ -347,7 +347,8 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 				<<"Current radix: "<<globalRadixRunner<<";\n ";
 		for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
 			{
-			probeSums[globalCounterRunner] +=
+/*
+ * 			probeSums[globalCounterRunner] +=
 					scannedSumsOfLocalRadixCounts[
 					   globalRadixRunner *  mNumRadicesPerPass + globalCounterRunner ];
 			totalSum += scannedSumsOfLocalRadixCounts[
@@ -361,6 +362,25 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 					     globalRadixRunner *  mNumRadicesPerPass + globalCounterRunner ]
 					<<"), ";
 			}
+ * */
+				probeSums[globalCounterRunner] += scannedSumsOfLocalRadixCounts[
+				   globalRadixRunner *  mNumWorkGroups_TabulationAndReorderPhase + globalCounterRunner
+				 ];
+
+				totalSum += scannedSumsOfLocalRadixCounts[
+					globalRadixRunner *  mNumWorkGroups_TabulationAndReorderPhase + globalCounterRunner
+				];
+
+							fileStream
+								<<"el.("<< globalCounterRunner <<"),"
+								<<"val("
+								<<"("
+								<< scannedSumsOfLocalRadixCounts[
+								     globalRadixRunner *  mNumWorkGroups_TabulationAndReorderPhase + globalCounterRunner ]
+								<<"), ";
+						}
+
+
 		fileStream <<"\n\n";
 	}
 

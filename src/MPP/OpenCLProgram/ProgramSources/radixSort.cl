@@ -253,19 +253,24 @@
     
     //------------------------------------------------------------------------------------------
     
-    //do the "local" radix scan on every radix, partially in parallel to use all work items:
-    //TODO check if an unroll yields better performance 
-    for(uint i= 0; i < ( NUM_RADICES_PER_PASS / NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL ) ; i++)
-    {
       //divide work items in several sets with interval [0..half length of one radix counter array], 
       //as each work item can scan two radix counter elements
       //default (fermi): [0..511] % (128/2) --> 8 occurences of interval [0..63]
       //default (GT200): [0..256] % (32/2) --> 16 occurences of interval [0..15] <-- on half warp scans another array than the other.. 
       //                                                                              but the control flow should not diverge worse 
       //                                                                              than when scanning only one array with few elements...                                                      
-      uint workItemOffsetID = 
-                              lwiID % ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 );
-                              //BASE_2_MODULO( lwiID,  (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) );  
+      uint workItemIDForScanOfOneCounterArray = 
+       ( lwiID ) % ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 );
+
+                              
+      uint radixOffsetWhereWorkItemParticipates =
+        ( lwiID ) / ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 ); 
+    
+    
+    //do the "local" radix scan on every radix, partially in parallel to use all work items:
+    //TODO check if an unroll yields better performance 
+    for(uint i= 0; i < ( NUM_RADICES_PER_PASS / NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL ) ; i++)
+    {
 
       //radix in whose scan the curren work item will participate = 
       //default (fermi): [0..7] *  8 + (2* [0..511])/128 --> [0..7] *  8 + [0 .. 7]
@@ -274,9 +279,13 @@
         //big loop offset 
         i * NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL 
         //+ work item id / (half size of one local radix counter array)
-        + ( lwiID ) / ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP / 2 ); 
-        //+ ( lwiID << 1 ) / ( NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ); <-- strang notation without any computational advantage, in the contrary!
-
+        + radixOffsetWhereWorkItemParticipates;
+/*
+      uint radixToScan = 
+        i * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP /  NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL 
+        + ( lwiID ) / ( NUM_LOCAL_RADIX_COUNTERS_TO_SCAN_IN_PARALLEL  / 2 ); 
+*/
+    
 
      
 
@@ -292,13 +301,13 @@
           NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP, 
           //communicate the stride [0.. half size of one radix counter array] to the scan function so that it can operate
           //indepentently of its actual work item id
-          workItemOffsetID
+          workItemIDForScanOfOneCounterArray
         );
 
 
       
       //write the total sum of the local counter array to global memory
-      if(workItemOffsetID == 0)
+      if( workItemIDForScanOfOneCounterArray == 0)
       {
         gSumsOfLocalRadixCounts[
           //select the counter array for the recently scanned radix counte array
@@ -306,6 +315,15 @@
           //entry in counter array corresponds to work group
           + get_group_id(0)
         ] = lTotalLocalRadixSums[ radixToScan ];
+
+/*
+        gSumsOfLocalRadixCounts[
+          //select the counter array for the recently scanned radix counte array
+          get_group_id(0) * NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE
+          //entry in counter array corresponds to work group
+          + radixToScan
+        ] = lTotalLocalRadixSums[ radixToScan ];
+*/
       }
       
         
@@ -320,17 +338,20 @@
           + get_group_id(0) * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP
           //write the i'th half of the current array with the  NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP/2 work items
             + i * (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1)
-            + workItemOffsetID
+            + workItemIDForScanOfOneCounterArray
         ] 
+        //= get_local_id(0);
+
         = lRadixCounters[
           //select "radix row" in pseudo 2d array taking padding into account
            CONFLICT_FREE_INDEX( 
               radixToScan * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP
              //write the i'th half of the current array with the  NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP/2 work items
               + i * (NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP >> 1) + 
-              workItemOffsetID 
+              workItemIDForScanOfOneCounterArray 
            )
         ];
+
 
       }
 
