@@ -225,12 +225,11 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
 
-//		dumpBuffers("initialRadixSortPhase1Dump",
-//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-//				//false,
-//				true,
-//				currentPass,0,
-//				keysBuffer,oldIndicesBuffer);
+		dumpBuffers("initialRadixSortPhase1Dump",
+				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+				false,//DONT abort
+				currentPass,0,
+				keysBuffer,oldIndicesBuffer);
 
 		//--------------------------------------------------------------------------
 		//phase 2
@@ -344,7 +343,47 @@ void RadixSorter::dumpBuffers(
 
 	unsigned int numTotalRadixCounters = mNumElements/mNumElementsPerRadixCounter;
 
-	fileStream<<"Radix sort buffer dump; Current radix pass: "<<currentRadixPass<<";\n\n ";
+	fileStream<<"Radix sort buffer dump;"
+			<<" Current radix pass: "<<currentRadixPass<<";\n\n "
+			<<" Current radix sort phase(1,2 or 3): "<<currentPhase+1<<";\n\n ";
+
+	if(currentPhase > 0)
+	{
+		//we are in phase 2 or 3; so let's check out the partiallyScannedSumsOfGlobalRadixCounts
+		//and the sumsOfPartialScansOfSumsOfGlobalRadixCounts
+		for(unsigned int partiallyScannedSumsOfGlobalRadixCountsRunner = 0 ;
+				partiallyScannedSumsOfGlobalRadixCountsRunner< mNumRadicesPerPass;
+				partiallyScannedSumsOfGlobalRadixCountsRunner++)
+		{
+			fileStream
+				<<"radix("<< partiallyScannedSumsOfGlobalRadixCountsRunner <<"),"
+				<<"partialScanValue("
+				<< partiallyScannedSumsOfGlobalRadixCounts[
+				      partiallyScannedSumsOfGlobalRadixCountsRunner]
+				<<"),\n ";
+		}
+		fileStream<<";\n sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner:\n";
+
+		for(unsigned int sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner = 0 ;
+				sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner
+					//TODO wtf storw this value as a member named
+					//"mNumWorkGroups_GlobalScanPhase" in case I change my mind concering this "hard code work load distribution!!111
+					< HelperFunctions::ceilToNextPowerOfTwo(
+							PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxComputeUnits) ;
+				sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner++)
+		{
+			fileStream
+				<<"work group ID creating this sum("<< sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner <<"),"
+				<<"partialScanSum("
+				<< sumsOfPartialScansOfSumsOfGlobalRadixCounts[
+				       sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner]
+				<<"),\n ";
+		}
+		fileStream<<";\n\n\n";
+	}
+
+
+
 
 	fileStream<<"scannedSumsOfLocalRadixCounts dump:\n ";
 

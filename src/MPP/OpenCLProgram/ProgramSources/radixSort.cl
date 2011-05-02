@@ -527,7 +527,7 @@
       
     } //end sequential "scan of parallel scans" ;)
    
-     //barrier(CLK_LOCAL_MEM_FENCE); //TODO is it necessary?
+     barrier(CLK_LOCAL_MEM_FENCE); //TODO is it necessary?
     
     //in the end, write the results of the scan of the work-group-assigned interval of the total radix sums
     //back to global memory:
