@@ -18,7 +18,8 @@
     //Kernel used only once for initialization;
     //During simulation, the Z-index is calculated within the SPH simulation kernel in order to save one kernel invocation;
     __kernel void kernel_initial_CalcZIndex(
-      __constant uint* cGridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation
+//      __constant uint* cGridPosToZIndexLookupTable, //lookup table to save some costly bit operations for z-Index calculation
+    __global uint* cGridPosToZIndexLookupTable,
       __constant SimulationParameters* cSimParams,
       __global float4* gPositions,
       __global uint* gZIndices  

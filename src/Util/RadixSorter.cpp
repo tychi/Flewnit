@@ -208,8 +208,8 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		//test first run TODO delete
 	phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(0);
 	phase1Kernel->run( eventVec );
-	dumpBuffers("initialRadixSortPhase1Dump",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-			0, keysBuffer,oldIndicesBuffer);
+//	dumpBuffers("initialRadixSortPhase1Dump",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//			0, keysBuffer,oldIndicesBuffer);
 	//}
 
 
@@ -335,7 +335,7 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 	//for(unsigned int localCounterRunner = 0 ; localCounterRunner< numTotalRadixCounters; localCounterRunner++)
 	{
 		fileStream
-			<<"local Radix Counter number "<<localCounterRunner<<": ";
+			<<"local Radix Counter number "<<localCounterRunner<<":\n";
 
 		for(unsigned int elementRunner = 0 ; elementRunner< mNumElementsPerRadixCounter; elementRunner++)
 		{
@@ -376,7 +376,7 @@ void RadixSorter::dumpBuffers(String dumpName, unsigned int frameNumber, unsigne
 				<<"binary current radix value("
 					<<radixBitString
 				<<") "
-				<<"|| ";
+				<<"||\n ";
 		}
 
 		fileStream

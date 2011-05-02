@@ -9,16 +9,22 @@
   uint getZIndex(
     float4 position,
     __constant SimulationParameters* cSimParams,
-    __constant uint* cGridPosToZIndexLookupTable )
+    //__constant uint* cGridPosToZIndexLookupTable 
+    __global uint* cGridPosToZIndexLookupTable 
+    )
   {
   
     position = remainder(
       position - cSimParams->uniGridWorldPosLowerCorner,
       NUM_UNIGRID_CELLS_PER_DIMENSION * cSimParams->uniGridCellSizes
      );
+     
+     
     position *= cSimParams->inverseUniGridCellSizes;
     //position /= cSimParams->uniGridCellSizes;
-    uint4 cell3Dindex = convert_uint4_rtz(position); 
+    //uint4 cell3Dindex = convert_uint4_rtz(position); 
+    uint4 cell3Dindex = convert_uint4(position); 
+    return cell3Dindex.x;
   
     //calculate floating point cell index, convert to integral type and round to nearest zero
     //int4 cell3Dindex = convert_int4_rtz( 
@@ -39,6 +45,14 @@
     //cell3Dindex.y = cell3Dindex.y % NUM_UNIGRID_CELLS_PER_DIMENSION ; 
     //cell3Dindex.z = cell3Dindex.z % NUM_UNIGRID_CELLS_PER_DIMENSION ; 
     
+    /*
+    return (
+      cGridPosToZIndexLookupTable[ 0* NUM_UNIGRID_CELLS_PER_DIMENSION + (int)(position.x) ]
+      |
+      cGridPosToZIndexLookupTable[ 1* NUM_UNIGRID_CELLS_PER_DIMENSION + (int)(position.y) ]
+      |
+      cGridPosToZIndexLookupTable[ 2* NUM_UNIGRID_CELLS_PER_DIMENSION + (int)(position.z) ]
+    );
     
     return (
       cGridPosToZIndexLookupTable[ 0* NUM_UNIGRID_CELLS_PER_DIMENSION + cell3Dindex.x ]
@@ -47,6 +61,16 @@
       |
       cGridPosToZIndexLookupTable[ 2* NUM_UNIGRID_CELLS_PER_DIMENSION + cell3Dindex.z ]
     );
+
+    
+        return (
+      cGridPosToZIndexLookupTable[ 0* NUM_UNIGRID_CELLS_PER_DIMENSION + (int)(48.5f) ]
+      |
+      cGridPosToZIndexLookupTable[ 1* NUM_UNIGRID_CELLS_PER_DIMENSION + (int)(48.5f) ]
+      |
+      cGridPosToZIndexLookupTable[ 2* NUM_UNIGRID_CELLS_PER_DIMENSION + (int)(48.5f) ]
+    );
+    */
   }
   
   //-------------------------------------------------------------------------

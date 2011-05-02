@@ -296,9 +296,7 @@
         );
 
 
-   
-        
-   /*    
+      
       //write the total sum of the local counter array to global memory
       if(workItemOffsetID == 0)
       {
@@ -310,7 +308,6 @@
         ] = lTotalLocalRadixSums[ radixToScan ];
       }
       
-   */
         
       //write the scan results to global memory: as one work item scans two counters, it also has to write out two of them
       //TODO precompute some index stuff? would save calculations but disturb superscalarity... subject to experimentation

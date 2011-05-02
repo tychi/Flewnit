@@ -28,6 +28,7 @@
 
 #include "URE.h"
 #include "Util/Time/FPSCounter.h"
+#include "Util/Log/Log.h"
 
 
 namespace Flewnit
@@ -340,7 +341,6 @@ void UniformGrid::setupZIndexLookUpTable() //called by constructor
 					<<
 					(
 						(3 * currentBitPos)
-						+
 						// Shifting this "scattered bit" in addition by 'axis' bits, the scttered bit pattern gets
 						//an offset so that
 						// 	   uintPtr[0* mNumCellsPerDimension + cell3Dindex.x]
@@ -348,7 +348,7 @@ void UniformGrid::setupZIndexLookUpTable() //called by constructor
 						//	|  uintPtr[2* mNumCellsPerDimension + cell3Dindex.z]
 						//yields the final z-index ;
 						//see http://en.wikipedia.org/wiki/Z-order_curve for further info about Z-order curves
-						axis
+						+ axis
 					)
 					;
 			}
@@ -356,7 +356,15 @@ void UniformGrid::setupZIndexLookUpTable() //called by constructor
 	}
 
 	//write to memory
-	mZIndexLookupTable->copyFromHostToGPU();
+	mZIndexLookupTable->copyFromHostToGPU(true);
+
+
+	mZIndexLookupTable->readBack(true);
+	for(unsigned int i = 0; i < 3* mNumCellsPerDimension; i++ )
+	{
+		LOG<< DEBUG_LOG_LEVEL <<"mZIndexLookupTable["<<i<<"]:"
+				<<uintPtr[i]<<";\n";
+	}
 
 
 }
