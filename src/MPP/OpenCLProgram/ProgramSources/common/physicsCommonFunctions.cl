@@ -19,11 +19,14 @@
       NUM_UNIGRID_CELLS_PER_DIMENSION * cSimParams->uniGridCellSizes
      );
      
+    float4 uniGridFloatIndex =  (position - cSimParams->uniGridWorldPosLowerCorner) / cSimParams->uniGridCellSizes;
+    int4 cell3Dindex = convert_int4(uniGridFloatIndex); 
      
     position *= cSimParams->inverseUniGridCellSizes;
     //position /= cSimParams->uniGridCellSizes;
     //uint4 cell3Dindex = convert_uint4_rtz(position); 
-    uint4 cell3Dindex = convert_uint4(position); 
+    //uint4 cell3Dindex = convert_uint4(position); 
+    
     return cell3Dindex.x;
   
     //calculate floating point cell index, convert to integral type and round to nearest zero
