@@ -83,16 +83,17 @@
       //note: total sum copy and clear to zero of last element is done here;
       //      reason: save one if() statement + when only the total sum is needed instead of a complete scan,
       //      one can call this routine directly;
-      { 
+
+      barrier(CLK_LOCAL_MEM_FENCE);  
+      
       if (workItemOffsetID == 0) 
+      {
         {% ifequal numArraysToScanInParallel "1" %}
         
-  
          *(lTotalSum) = arrayToScan[ CONFLICT_FREE_INDEX( numElements - 1 ) ];
-          //*(lTotalSum) =get_local_id(0);    <--debug only
        
           arrayToScan[ CONFLICT_FREE_INDEX( numElements - 1) ] = 0; // clear the last element
-          
+     
         {% endifequal %}
         {% ifnotequal numArraysToScanInParallel "1" %}
             //#pragma unroll
