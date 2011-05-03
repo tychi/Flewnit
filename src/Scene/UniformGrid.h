@@ -45,7 +45,15 @@ public:
 	inline Buffer* getStartIndices()const{return  mStartIndices;}
 	inline Buffer* getElementCounts()const{return mElementCounts;}
 
+	void dumpBuffers(
+			String dumpName,
+			unsigned int frameNumber,
+			bool abortAfterDump
+	);
+
 private:
+
+	unsigned int mNumCellsPerDimension;
 
 	//Buffers with numCellsPerDimension^3 elements of type uint
 	Buffer* mStartIndices;
@@ -99,7 +107,7 @@ public:
 	//this buffer mUniformGridBufferSet->mElementCounts contains (particleEndIndex+1);
 	//this is "fixed" within splitAndCompactCells();
 	//see updateUniformGrid.cl and splitAndCompactUniformGrid.cl for further info
-	void updateCells(String bufferSetName, PingPongBuffer* sortedZIndicesKeyBuffer);
+	void updateCells(String bufferSetName, BufferInterface* sortedZIndicesKeyBuffer);
 	//returns the number of non-empty split cells;
 	//(this value implies to the ParticleMechanicsStage
 	//how many work groups it must launch for SPH particle physics simulation Kernels)

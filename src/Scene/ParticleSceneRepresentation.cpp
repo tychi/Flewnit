@@ -122,14 +122,14 @@ void ParticleSceneRepresentation::reorderAttributes()
 	//to be read, and the inactive one is the one to be written to,
 	//everything should be alright.
 
-	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() ==0)
-	{
-		mParticleAttributeBuffers->dumpBuffers(
-			"AttributeBufferDump_BEFORE_Reordering",
-			URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-			false //don't abort
-		);
-	}
+//	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() ==0)
+//	{
+//		mParticleAttributeBuffers->dumpBuffers(
+//			"AttributeBufferDump_BEFORE_Reordering",
+//			URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//			false //don't abort
+//		);
+//	}
 
 
 	mReorderParticleAttributesProgram->getKernel("kernel_reorderParticleAttributes")->run(
@@ -146,14 +146,14 @@ void ParticleSceneRepresentation::reorderAttributes()
 	//toggle to make the least recently written buffers the active ones
 	mParticleAttributeBuffers->toggleAllBuffersButZIndicesAndOldIndices();
 
-	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() ==0)
-	{
-		mParticleAttributeBuffers->dumpBuffers(
-			"AttributeBufferDump_AFTER_Reordering",
-			URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-			false
-		);
-	}
+//	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() ==0)
+//	{
+//		mParticleAttributeBuffers->dumpBuffers(
+//			"AttributeBufferDump_AFTER_Reordering",
+//			URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//			false
+//		);
+//	}
 
 
 }

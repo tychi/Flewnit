@@ -40,6 +40,8 @@ UniformGridBufferSet::UniformGridBufferSet(String name, unsigned int numCellsPer
 	//generic simulation domain, becaus a uniform grid has many purposes :P
 	SimulationObject(name, GENERIC_SIM_DOMAIN),
 
+	mNumCellsPerDimension(numCellsPerDimension),
+
 	mStartIndices(
 		SimulationResourceManager::getInstance().createGeneralPurposeOpenCLBuffer(
 			name + String("StartIndices"),
@@ -57,14 +59,16 @@ UniformGridBufferSet::UniformGridBufferSet(String name, unsigned int numCellsPer
 		)
 	)
 {
-	//init CPU component of elem count buffer to zero;
-	memset( mElementCounts->getCPUBufferHandle(), 0, mElementCounts->getBufferInfo().bufferSizeInByte );
-	mElementCounts->copyFromHostToGPU();
+	clearElementCounts();
 
-	//actually unneccessary to init startindices, but to be sure...
-	memset( mStartIndices->getCPUBufferHandle(), 0, mStartIndices->getBufferInfo().bufferSizeInByte );
-	//copy blocking initially
-	mStartIndices->copyFromHostToGPU(true);
+//	//init CPU component of elem count buffer to zero;
+//	memset( mElementCounts->getCPUBufferHandle(), 0, mElementCounts->getBufferInfo().bufferSizeInByte );
+//	mElementCounts->copyFromHostToGPU();
+//
+//	//actually unneccessary to init startindices, but to be sure...
+//	memset( mStartIndices->getCPUBufferHandle(), 0, mStartIndices->getBufferInfo().bufferSizeInByte );
+//	//copy blocking initially
+//	mStartIndices->copyFromHostToGPU(true);
 }
 
 
@@ -83,7 +87,7 @@ UniformGridBufferSet::~UniformGridBufferSet()
 //The "kernel_updateUniformGrid" waiting for the mClearElementCountEvent makes security "perfect" ;).
 cl::Event UniformGridBufferSet::clearElementCounts()
 {
-	//son't use the BufferInterface abstraction here, because it does'nt allow event stuff
+	//son't use the BufferInterface abstraction here, because it does'nt allow event stuff;
 	//adding this event stuff wouln't be taht hard, but time pressure and the fact that we need it only once
 	//in this simulation allows me to legitimate this hack ;)
 
@@ -96,28 +100,36 @@ cl::Event UniformGridBufferSet::clearElementCounts()
 
 	//---------------------------------------------------
 	EventVector eventVec;
-	cl::Event default_kernelEvent = CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")->
-			getKernel("kernel_initial_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
 
-	//the kernels may not have been enqueueud yet; filter them out (zero indicates this);
-	if(default_kernelEvent()  != 0)	{
-		//we are in a pass > 1
-		eventVec.push_back(default_kernelEvent);
-	}
-	else{
-		cl::Event initial_kernelEvent =
-			CLProgramManager::getInstance().
-				getProgram("updateForce_integrate_calcZIndex.cl")->
-				getKernel("kernel_updateForce_integrate_calcZIndex")->
-				getEventOfLastKernelExecution();
+	try
+	{
+		cl::Event default_kernelEvent = CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")->
+				getKernel("kernel_initial_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
 
-		if( initial_kernelEvent() != 0 ){
-			//we are in pass 1; dependency: initial physics copmutation kernel
-			eventVec.push_back(initial_kernelEvent);
+		//the kernels may not have been enqueueud yet; filter them out (zero indicates this);
+		if(default_kernelEvent()  != 0)	{
+			//we are in a pass > 1
+			eventVec.push_back(default_kernelEvent);
 		}
-		//else{
-			//we are in pass 0; zero dependencies here
-		//}
+		else{
+			cl::Event initial_kernelEvent =
+				CLProgramManager::getInstance().
+					getProgram("updateForce_integrate_calcZIndex.cl")->
+					getKernel("kernel_updateForce_integrate_calcZIndex")->
+					getEventOfLastKernelExecution();
+
+			if( initial_kernelEvent() != 0 ){
+				//we are in pass 1; dependency: initial physics copmutation kernel
+				eventVec.push_back(initial_kernelEvent);
+			}
+			//else{
+				//we are in pass 0; zero dependencies here
+			//}
+		}
+	}
+	catch(SimulatorException ex)
+	{
+		LOG<<INFO_LOG_LEVEL<<"UniformGridBufferSet::clearElementCounts(): no program existing yet to depend from ;)\n";
 	}
 	//-------------------------------------------------
 
@@ -141,6 +153,47 @@ cl::Event UniformGridBufferSet::clearElementCounts()
 
 	PARA_COMP_MANAGER->setBlockAfterEnqueue(blockGlobalTmp);
 	return mClearElementCountEvent;
+}
+
+
+void UniformGridBufferSet::dumpBuffers(
+		String dumpName,
+		unsigned int frameNumber,
+		bool abortAfterDump
+)
+{
+	std::fstream fileStream;
+
+	Path path =
+		Path( FLEWNIT_DEFAULT_OPEN_CL_KERNEL_SOURCES_PATH )
+		/ String("bufferDumps")
+		/
+		Path(
+		String("bufferDump_")+ dumpName +
+		String("_frame_")+
+		HelperFunctions::toString(frameNumber)
+		+String(".txt")
+	);
+
+
+	fileStream.open(
+		path.string().c_str(),
+		std::ios::out
+	);
+
+
+
+
+
+	fileStream.close();
+
+
+	if(abortAfterDump)
+	{
+		assert(0&&"abort on purpose after programmer requested UniformGridBufferSet buffer dump :)");
+		//URE_INSTANCE->requestMainLoopQuit();
+	}
+
 }
 
 
@@ -223,7 +276,7 @@ UniformGridBufferSet* UniformGrid::getBufferSet(String name)const throw(BufferEx
 }
 
 
-void UniformGrid::updateCells(String bufferSetName, PingPongBuffer* sortedZIndicesKeyBuffer)
+void UniformGrid::updateCells(String bufferSetName, BufferInterface* sortedZIndicesKeyBuffer)
 {
 	CLKernel* currentKernel = mUpdateUniformGridProgram->getKernel("kernel_updateUniformGrid");
 	EventVector eventsToWaitFor =
@@ -238,6 +291,10 @@ void UniformGrid::updateCells(String bufferSetName, PingPongBuffer* sortedZIndic
 			getBufferSet(bufferSetName)->getClearElementCountEvent()
 		);
 	}
+
+//	getBufferSet(bufferSetName)->dumpBuffers(
+//
+//	);
 
 
 	currentKernel->getCLKernelArguments()->getBufferArg("gSortedZIndices")

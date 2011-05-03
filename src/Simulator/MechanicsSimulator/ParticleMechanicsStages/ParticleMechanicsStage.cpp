@@ -16,6 +16,9 @@
 #include "Util/RadixSorter.h"
 #include "Util/HelperFunctions.h"
 
+#include "Buffer/PingPongBuffer.h"
+
+
 #define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 #include "MPP/OpenCLProgram/ProgramSources/common/physicsDataStructures.cl"
 #undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
@@ -284,8 +287,8 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 				EventVector()
 			);
 
-		mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
-				"initialZIndexCalc",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(), false );
+//		mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+//				"initialZIndexCalc",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(), false );
 	}
 
 	mRadixSorter->sort(
@@ -295,13 +298,15 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 	mParticleSceneRepresentation->reorderAttributes();
 
+	mParticleUniformGrid->updateCells(
+		"particles",
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->getZIndicesPiPoBuffer()
+	);
 
 
 
-	//TEST ONLY; DELETE CALL!
-	//mParticleSceneRepresentation->reorderAttributes();
-
-	//PARA_COMP_MANAGER->acquireSharedBuffersForGraphics();
+	//reset element counts to zero
+	mParticleUniformGrid->getBufferSet("particles")->clearElementCounts();
 
 	return true;
 }

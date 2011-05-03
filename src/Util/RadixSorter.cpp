@@ -242,13 +242,13 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
 
 		//if(currentPass == 1)
-		{
-			dumpBuffers("initialRadixSortPhase1Dump",
-				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-				false,//DONT abort
-				currentPass,0,
-				keysBuffer,oldIndicesBuffer);
-		}
+//		{
+//			dumpBuffers("initialRadixSortPhase1Dump",
+//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//				false,//DONT abort
+//				currentPass,0,
+//				keysBuffer,oldIndicesBuffer);
+//		}
 
 		//--------------------------------------------------------------------------
 		//phase 2
@@ -261,14 +261,14 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
 
 		//if(currentPass == 1)
-		{
-			dumpBuffers("initialRadixSortPhase2Dump",
-				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-				false, //don't abort
-				//true,
-				currentPass,1,
-				keysBuffer,oldIndicesBuffer);
-		}
+//		{
+//			dumpBuffers("initialRadixSortPhase2Dump",
+//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//				false, //don't abort
+//				//true,
+//				currentPass,1,
+//				keysBuffer,oldIndicesBuffer);
+//		}
 
 		//--------------------------------------------------------------------------
 		//phase 3
@@ -282,29 +282,27 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();
 
 
-		CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->readBack(true);
-		uint numBuffOverFLows =
-				reinterpret_cast<uint*>(
-										CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->getCPUBufferHandle()
-										)[2];
-		LOG<<"num bufferOverFlows:"<< numBuffOverFLows
+//		CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->readBack(true);
+//		uint numBuffOverFLows =
+//				reinterpret_cast<uint*>(
+//										CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->getCPUBufferHandle()
+//										)[2];
+//		LOG<<"num bufferOverFlows:"<< numBuffOverFLows<<";\n";
 
-		<<";\n";
-		//assert(0);
 
-		bool abort = false;
-		//if(numBuffOverFLows >0)
-		if(currentPass == 2)
-		{
-			abort=true;
-		}
-			dumpBuffers("initialRadixSortPhase3Dump",
-						URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-						//false,//DONT abort
-						//true, //abort for validation
-						abort,
-						currentPass,2,
-						keysBuffer,oldIndicesBuffer);
+//		bool abort = false;
+//		//if(numBuffOverFLows >0)
+//		if(currentPass == 2)
+//		{
+//			abort=true;
+//		}
+//			dumpBuffers("initialRadixSortPhase3Dump",
+//						URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//						//false,//DONT abort
+//						//true, //abort for validation
+//						abort,
+//						currentPass,2,
+//						keysBuffer,oldIndicesBuffer);
 
 		//##########################################################################
 		//do the buffer toggle
@@ -335,7 +333,7 @@ void RadixSorter::dumpBuffers(
 {
 	//note: if this is phase 3, we assume  at the moment that the toggle has not been done yet;
 
-	return;
+	//return;
 
 	static const unsigned int log2NumRadicesPerPass = HelperFunctions::log2ui(mNumRadicesPerPass);
 
