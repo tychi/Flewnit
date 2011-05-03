@@ -673,12 +673,87 @@
         //non-initial pass: old indices have already been subverted by previous scatters; grab those from buffer;
         lOldIndices[ paddedLocalCopyIndex ] = gOldIndices[gwiID];
       }
+      
+      
+      //{ lame not fully parallel radix download for bug hunting :(
+        if(lwiID < NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP )
+        {
+          for(uint currentRadix = 0; currentRadix < NUM_RADICES_PER_PASS; currentRadix++)
+          {
+             lLocallyScannedRadixCounters[
+                  //select "radix row"
+                  currentRadix * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  
+                  //select element in "radix row"
+                  + lwiID                                      
+                 ]
+                 = 
+                 gLocallyScannedRadixCounters[
+                  //select "radix row"
+                  currentRadix * NUM_TOTAL_RADIX_COUNTERS_PER_RADIX
+                  //select "work group radix stripe"
+                  + groupID * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP
+                  //select element in "work group radix stripe"
+                  + lwiID
+                 ];  
+          }
+        }
+      //}
+      
         
+ /*
       //for fermi default: 4* [0..128]
       uint localRadixCounterCopyIndex = 
         lwiID % NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ; //TODO restor base2 stuff when stable
         //BASE_2_MODULO( lwiID, NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP );
+     
+        
+      //{ parallel local radix download...
+       
+        //e.g. 512/128 = 4
+        #define NUM_RADICES_TO_DOWLOAD_IN_PARALLEL  \
+          ( NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE \
+            / NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP   )
+        
+        #define NUM_RADIX_DOWLOAD_ITERATIONS \
+          ( NUM_RADICES_PER_PASS / NUM_RADICES_TO_DOWLOAD_IN_PARALLEL )
+        
+        
+        //work item id / (size of one local radix counter array)
+        //default (fermi): [0..511]/128= [ 128*0,128*1,128*2,128*3 ]
+        uint radixOffsetToParticipateInDowload = lwiID / NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP; 
+        
+        for(uint i= 0; i < NUM_RADIX_DOWLOAD_ITERATIONS; i++)
+        {
+          //radix in whose copy the current work item will participate = 
+          uint radixToCopy = 
+            i * NUM_RADICES_TO_DOWLOAD_IN_PARALLEL
+            + radixOffsetToParticipateInDowload;
+            
+          lLocallyScannedRadixCounters[
+              //select "radix row"
+              radixToCopy * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  
+              //select element in "radix row"
+              + localRadixCounterCopyIndex                                      
+             ]
+             = 
+             gLocallyScannedRadixCounters[
+              //select "radix row"
+              radixToCopy * NUM_TOTAL_RADIX_COUNTERS_PER_RADIX
+              //select "work group radix stripe"
+              + groupID * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP
+              //select element in "work group radix stripe"
+              + localRadixCounterCopyIndex  
+             ];  
+        }
       
+      //}
+      
+ 
+ */
+      
+      
+/*
+  following is possibly correct, but imo not that readable ;(
       //#pragma unroll
       //default fermi:  8192/512=16
       for(uint i= 0; i < ( NUM_LOCAL_RADIX_COUNTER_ELEMENTS / NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE ) ; i++)
@@ -688,7 +763,7 @@
           //big loop offset
           //default (fermi): [0..15]*4 
           i * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER 
-          //+ work item id / (size of one local radix counter array)
+          //work item id / (size of one local radix counter array)
           //default (fermi): [0..511]/128= [ 128*0,128*1,128*2,128*3 ]
           + lwiID / NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP; //TODO optimize LOG_2_DIVIDE
      
@@ -709,6 +784,7 @@
             + localRadixCounterCopyIndex  
            ];  
       }
+*/
       
       //-------------------------------------------------
       if(lwiID < NUM_RADICES_PER_PASS )
@@ -765,9 +841,85 @@
       }
 
 
-    
+     barrier(CLK_LOCAL_MEM_FENCE); //nont necessary; just to be sure..
 
 
+
+    //{
+      //the first threads do the radix increment and sequential scatter to ensure that a warp doesn't diverge 
+      //and that only a few warps stay active
+      
+        uint key;
+        uint oldIndex;
+        uint radix;
+        
+        //TODO check if unroll amortizes or not
+        //#pragma unroll
+        for(uint i=0 ; i< NUM_KEY_ELEMENTS_PER_RADIX_COUNTER; i++ )
+        {
+          if(lwiID < NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP)
+          {
+          
+            //default (fermi): 4* [0..127] + [0..3]
+            uint localElementIndex = 
+              lwiID * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER  
+              + i;
+            uint localpaddedElementIndex = CONFLICT_FREE_INDEX( localElementIndex );
+                    
+            //strided access requiring padding
+            key = lKeysToSort[ localpaddedElementIndex ];
+            oldIndex = lOldIndices[ localpaddedElementIndex ]; 
+            radix = getRadix( key,numPass);
+            
+            uint newIndexInSortedArray =
+              
+              //level 3 offset: "global" offset to previous radices
+              //offset by the "scan of the partial scans of the total radix counts":
+              lSumsOfPartialScansOfSumsOfGlobalRadixCounts[ 
+                //CONFLICT_FREE_INDEX (  radix / NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE ) <<-- horribly wrong! shame on me ;(
+                CONFLICT_FREE_INDEX (  radix  / NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE )
+              ] 
+              
+              //level 2 offset: "local" offset to previous radices
+              //offset by the "partial scans of the total radix counts":
+              + lPartiallyScannedSumsOfGlobalRadixCounts [ radix ]
+              
+              //level 1 offset: "global" offset within own radix
+              //offset by the "global radix count" for the current radix:
+              + gScannedSumsOfLocalRadixCounts[ 
+                radix * NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE 
+                + groupID 
+               ]
+               
+              //level 0 offset: "local" offset within own radix
+              //offset by the "local radix count" for the current radix and increment the radix counter
+              //so that the following key/value pair of the element group sharing the same counter with possibly the same radix
+              //is offset one position further than the preceding one:
+              + 
+              (   
+                  lLocallyScannedRadixCounters[ 
+                    radix * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  
+                    //+ localElementIndex   <<-- another time a horrible indexing mistake! shame on me again;(
+                    +lwiID // <-- this is the local radix counter index for the current element;
+                  ]
+                  ++ //<-- hope there is no driver bug .. post increment on a buffer value .. who knows..
+              );
+              
+              //and, at last, after in total around 800 lines of code and comments, do the SCATTER!!!1
+              gReorderedKeys[newIndexInSortedArray] = key;
+              gReorderedOldIndices[newIndexInSortedArray] = oldIndex;
+            }
+            
+            barrier(CLK_LOCAL_MEM_FENCE); //not necessary.. .bughunting..
+        }//endfor
+     
+    //}
+
+
+
+
+
+/*
     //{
       //the first threads do the radix increment and sequential scatter to ensure that a warp doesn't diverge 
       //and that only a few warps stay active
@@ -832,6 +984,7 @@
         }
       }
     //}
+*/
 
 
     

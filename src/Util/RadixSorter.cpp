@@ -225,11 +225,11 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
 
-//		dumpBuffers("initialRadixSortPhase1Dump",
-//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-//				false,//DONT abort
-//				currentPass,0,
-//				keysBuffer,oldIndicesBuffer);
+		dumpBuffers("initialRadixSortPhase1Dump",
+				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+				false,//DONT abort
+				currentPass,0,
+				keysBuffer,oldIndicesBuffer);
 
 		//--------------------------------------------------------------------------
 		//phase 2
@@ -241,12 +241,12 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
 
-//		dumpBuffers("initialRadixSortPhase2Dump",
-//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-//				false, //don't abort
-//				//true,
-//				currentPass,1,
-//				keysBuffer,oldIndicesBuffer);
+		dumpBuffers("initialRadixSortPhase2Dump",
+				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+				false, //don't abort
+				//true,
+				currentPass,1,
+				keysBuffer,oldIndicesBuffer);
 
 		//--------------------------------------------------------------------------
 		//phase 3
@@ -400,16 +400,19 @@ void RadixSorter::dumpBuffers(
 			fileStream
 				<<"Current buffer index :"<<elementRunner<<"; "
 
+				<<"  old index	: "<<oldIndex<<"; "
+				<<"  reordered old index 	: "<<reorderedOldIndex<<"; "
+
 				<<"  sorted key value (decimal)			: "<<sortedKey<<"; "
 				<<"  sorted key value (binary)			: "<<HelperFunctions::getBitString(sortedKey)<<"; "
-				<<"  sorted key current radix (decimal)	: "<<radixSortedKey<<"; "
-				<<"  sorted key current radix (binary)	: "<<HelperFunctions::getBitString(radixSortedKey,log2NumRadicesPerPass)<<"; "
+				<<"  sorted key radix (decimal)	: "<<radixSortedKey<<"; "
+				<<"  sorted key radix (binary)	: "<<HelperFunctions::getBitString(radixSortedKey,log2NumRadicesPerPass)<<"; "
 
 
 				<<"unsorted key value (decimal)			: "<<unsortedKey<<"; "
 				<<"unsorted key value (binary)			: "<<HelperFunctions::getBitString(unsortedKey)<<"; "
-				<<"unsorted key current radix (decimal)	: "<<radixUnsortedKey<<"; "
-				<<"unsorted key current radix (binary)	: "<<HelperFunctions::getBitString(radixUnsortedKey,log2NumRadicesPerPass)<<"; "
+				<<"unsorted key radix (decimal)	: "<<radixUnsortedKey<<"; "
+				<<"unsorted key radix (binary)	: "<<HelperFunctions::getBitString(radixUnsortedKey,log2NumRadicesPerPass)<<"; "
 
 
 				<<"\n ";
