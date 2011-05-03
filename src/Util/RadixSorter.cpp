@@ -179,6 +179,17 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 			break;
 	}
 
+
+	//ATTENTION DEBUG STUFF AS LONG AS I HAVE NO PHYSICS KERNEL EXECUTING!
+	//always set to init zinex thing, as this is the only kernel really executed before...
+	//TODO delete in time!!1
+	eventToWaitFor =
+				CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
+					->getKernel("kernel_initial_CalcZIndex")->getEventOfLastKernelExecution();
+
+
+
+
 	CLKernel* phase1Kernel = mRadixSortProgram->getKernel("kernel_radixSort_tabulate_localScan_Phase");
 
 	//set key buffer argument, not changing over the passes but via toggling, and toggle is handled
@@ -324,7 +335,7 @@ void RadixSorter::dumpBuffers(
 {
 	//note: if this is phase 3, we assume  at the moment that the toggle has not been done yet;
 
-	//return;
+	return;
 
 	static const unsigned int log2NumRadicesPerPass = HelperFunctions::log2ui(mNumRadicesPerPass);
 

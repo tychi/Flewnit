@@ -284,8 +284,8 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 				EventVector()
 			);
 
-//		mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
-//				"initialZIndexCalc",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() );
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+				"initialZIndexCalc",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() );
 	}
 
 	mRadixSorter->sort(

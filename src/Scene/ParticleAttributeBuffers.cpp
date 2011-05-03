@@ -327,7 +327,7 @@ void ParticleAttributeBuffers::dumpBuffers(String dumpName, unsigned int frameNu
 				<<predVels[i].z<<","
 				<<predVels[i].w<<"), "
 
-			<<"ZIndex: "<<zIndexString
+			<<"ZIndex: "<<HelperFunctions::getBitString(zIndices[i])
 
 			<<"\n";
 	}
@@ -336,7 +336,7 @@ void ParticleAttributeBuffers::dumpBuffers(String dumpName, unsigned int frameNu
 	fileStream.close();
 
 	//shut down
-	assert(0&&"abort on purpose after programmer requested buffer dump :)");
+	//assert(0&&"abort on purpose after programmer requested buffer dump :)");
 	//URE_INSTANCE->requestMainLoopQuit();
 }
 
