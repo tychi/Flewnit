@@ -68,6 +68,7 @@ ParticleAttributeBuffers::ParticleAttributeBuffers(
 		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
 		Z_INDEX_SEMANTICS,
 		TYPE_UINT32,
+		//numTotalParticles *2,
 		numTotalParticles,
 		BufferElementInfo(1,GPU_DATA_TYPE_UINT,32,false),
 		VERTEX_ATTRIBUTE_BUFFER_TYPE,
@@ -86,6 +87,7 @@ ParticleAttributeBuffers::ParticleAttributeBuffers(
 						  //hence it has no real semantics, it is just a helper buffer for sorting;
 						  //but maybe for debug purposes, one would want to bind it anyway ;(...
 		TYPE_UINT32,
+		//numTotalParticles *2,
 		numTotalParticles,
 		BufferElementInfo(1,GPU_DATA_TYPE_UINT,32,false),
 		VERTEX_ATTRIBUTE_BUFFER_TYPE,

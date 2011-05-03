@@ -675,6 +675,7 @@
       }
       
       
+/*
       //{ lame not fully parallel radix download for bug hunting :(
         if(lwiID < NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP )
         {
@@ -698,9 +699,11 @@
           }
         }
       //}
+
+*/
       
         
- /*
+
       //for fermi default: 4* [0..128]
       uint localRadixCounterCopyIndex = 
         lwiID % NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP ; //TODO restor base2 stuff when stable
@@ -749,43 +752,6 @@
       //}
       
  
- */
-      
-      
-/*
-  following is possibly correct, but imo not that readable ;(
-      //#pragma unroll
-      //default fermi:  8192/512=16
-      for(uint i= 0; i < ( NUM_LOCAL_RADIX_COUNTER_ELEMENTS / NUM_WORK_ITEMS_PER_WORK_GROUP__TABULATION_PHASE_REORDER_PHASE ) ; i++)
-      {
-        //radix in whose copy the current work item will participate = 
-        uint radixToCopy = 
-          //big loop offset
-          //default (fermi): [0..15]*4 
-          i * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER 
-          //work item id / (size of one local radix counter array)
-          //default (fermi): [0..511]/128= [ 128*0,128*1,128*2,128*3 ]
-          + lwiID / NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP; //TODO optimize LOG_2_DIVIDE
-     
-        
-        lLocallyScannedRadixCounters[
-            //select "radix row"
-            radixToCopy * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  
-            //select element in "radix row"
-            + localRadixCounterCopyIndex                                      
-           ]
-           = 
-           gLocallyScannedRadixCounters[
-            //select "radix row"
-            radixToCopy * NUM_TOTAL_RADIX_COUNTERS_PER_RADIX
-            //select "work group radix stripe"
-            + groupID * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP
-            //select element in "work group radix stripe"
-            + localRadixCounterCopyIndex  
-           ];  
-      }
-*/
-      
       //-------------------------------------------------
       if(lwiID < NUM_RADICES_PER_PASS )
       {
@@ -818,11 +784,6 @@
       //becaus it uses barrier(), it must be called by every work item, else corruption occurs!
       //never call barrier in a code segmant not executed by ALL work items!!11
       scanExclusive(lSumsOfPartialScansOfSumsOfGlobalRadixCounts, & lDummyScanTotalSum, NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE, lwiID );
-    
-      //if( lwiID < (NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE/2) )
-      //{
-      //  scanExclusive(lSumsOfPartialScansOfSumsOfGlobalRadixCounts, & lDummyScanTotalSum, NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE, lwiID );
-      //}
       
     #else
       if( lwiID == 0 )
@@ -832,97 +793,8 @@
       barrier(CLK_LOCAL_MEM_FENCE);
     #endif
     //}
-    
-      //for debugging only, can be removed
-      /*
-      if( (groupID == 0) && (lwiID < NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE) )
-      {
-        gSumsOfPartialScansOfSumsOfGlobalRadixCounts[lwiID] =
-           lSumsOfPartialScansOfSumsOfGlobalRadixCounts[lwiID];         
-      }
-      */
 
-
-     barrier(CLK_LOCAL_MEM_FENCE); //nont necessary; just to be sure..
-
-
-
-    //{
-      //the first threads do the radix increment and sequential scatter to ensure that a warp doesn't diverge 
-      //and that only a few warps stay active
-      
-        uint key;
-        uint oldIndex;
-        uint radix;
-        
-        //TODO check if unroll amortizes or not
-        //#pragma unroll
-        for(uint i=0 ; i< NUM_KEY_ELEMENTS_PER_RADIX_COUNTER; i++ )
-        {
-          if(lwiID < NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP)
-          {
-          
-            //default (fermi): 4* [0..127] + [0..3]
-            uint localElementIndex = 
-              lwiID * NUM_KEY_ELEMENTS_PER_RADIX_COUNTER  
-              + i;
-            uint localpaddedElementIndex = CONFLICT_FREE_INDEX( localElementIndex );
-                    
-            //strided access requiring padding
-            key = lKeysToSort[ localpaddedElementIndex ];
-            oldIndex = lOldIndices[ localpaddedElementIndex ]; 
-            barrier(CLK_LOCAL_MEM_FENCE); //not necessary.. .bughunting..
-            radix = getRadix( key,numPass);
-            
-            uint newIndexInSortedArray =
-              
-              //level 3 offset: "global" offset to previous radices
-              //offset by the "scan of the partial scans of the total radix counts":
-              lSumsOfPartialScansOfSumsOfGlobalRadixCounts[ 
-                //CONFLICT_FREE_INDEX (  radix / NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE ) <<-- horribly wrong! shame on me ;(
-                CONFLICT_FREE_INDEX (  radix  / NUM_RADICES_PER_WORK_GROUP__GLOBAL_SCAN_PHASE )
-              ] 
-              
-              //level 2 offset: "local" offset to previous radices
-              //offset by the "partial scans of the total radix counts":
-              + lPartiallyScannedSumsOfGlobalRadixCounts [ radix ]
-              
-              //level 1 offset: "global" offset within own radix
-              //offset by the "global radix count" for the current radix:
-              + gScannedSumsOfLocalRadixCounts[ 
-                radix * NUM_WORK_GROUPS__TABULATION_PHASE_REORDER_PHASE 
-                + groupID 
-               ]
-               
-              //level 0 offset: "local" offset within own radix
-              //offset by the "local radix count" for the current radix and increment the radix counter
-              //so that the following key/value pair of the element group sharing the same counter with possibly the same radix
-              //is offset one position further than the preceding one:
-              + 
-              (   
-                  (lLocallyScannedRadixCounters[ 
-                    radix * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  
-                    //+ localElementIndex   <<-- another time a horrible indexing mistake! shame on me again;(
-                    +lwiID // <-- this is the local radix counter index for the current element;
-                  ])
-                  ++ //<-- hope there is no driver bug .. post increment on a buffer value .. who knows..
-              );
-              
-              //and, at last, after in total around 800 lines of code and comments, do the SCATTER!!!1
-              gReorderedKeys[newIndexInSortedArray] = key;
-              gReorderedOldIndices[newIndexInSortedArray] = oldIndex;
-            }
-            
-            barrier(CLK_LOCAL_MEM_FENCE); //not necessary.. .bughunting..
-        }//endfor
-     
-    //}
-
-
-
-
-
-/*
+       
     //{
       //the first threads do the radix increment and sequential scatter to ensure that a warp doesn't diverge 
       //and that only a few warps stay active
@@ -982,12 +854,79 @@
             );
             
             //and, at last, after in total around 800 lines of code and comments, do the SCATTER!!!1
+            
             gReorderedKeys[newIndexInSortedArray] = key;
             gReorderedOldIndices[newIndexInSortedArray] = oldIndex;
+            
+            
+            //debug: track buffer overflows:
+            if( newIndexInSortedArray >= get_global_size(0))
+            {
+              atom_inc(gSumsOfPartialScansOfSumsOfGlobalRadixCounts +2);             
+            }
+            
+            //gReorderedKeys[oldIndex] =  get_global_size(0);
+             //gReorderedKeys[oldIndex] =  1337;
+            //gReorderedOldIndices[oldIndex] = newIndexInSortedArray;
+            
+            
+            
+            
+/*
+            if( newIndexInSortedArray < get_global_size(0))
+            {
+              gReorderedKeys[newIndexInSortedArray] = key;
+              gReorderedOldIndices[newIndexInSortedArray] = oldIndex; 
+              
+              //atom_inc(gSumsOfPartialScansOfSumsOfGlobalRadixCounts +2);             
+            }
+            else
+            {
+              
+              gReorderedOldIndices[get_global_size(0) + atom_inc(gSumsOfPartialScansOfSumsOfGlobalRadixCounts +2) ]
+                = newIndexInSortedArray;
+            }
+*/
+
+           /*
+            else
+            {
+               //if(gwiID == (get_num_groups(0)-1) )
+               {
+                //gReorderedOldIndices[get_global_size(0)] = bufferOverflowCounter;
+                //gReorderedOldIndices[get_global_size(0)+1] = newIndexInSortedArray;
+                
+                gReorderedKeys[get_global_size(0) ] = 18;
+                  gReorderedOldIndices[get_global_size(0) ] = 81;
+  ;
+                 for(int i=0 ; i< 20; i++ )
+                 {
+                  gReorderedKeys[get_global_size(0) -i] = 18;
+                  gReorderedOldIndices[get_global_size(0) -i] = 81;
+                 }
+
+              
+
+                 for(uint i=0 ; i< 4000; i++ )
+                 {
+   //                 gReorderedKeys[get_global_size(0) + i ] = as_uint((float)(i));
+                    gReorderedOldIndices[get_global_size(0) +i ] =as_uint((float)(i*10));
+                    if( ((i+1)%4) == 0)
+                    {
+     //                 gReorderedKeys[get_global_size(0) + i ] = as_uint((float)(1));
+                      gReorderedOldIndices[get_global_size(0) +i ] =as_uint((float)(1));
+                    }
+                 }
+               } 
+            }
+
+           */
+            
+
         }
       }
     //}
-*/
+
 
 
     

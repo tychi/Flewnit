@@ -214,6 +214,11 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 	for(unsigned int currentPass = 0; currentPass < mNumRadixSortPasses; currentPass++)
 	{
+		reinterpret_cast<uint*>(
+				CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->getCPUBufferHandle()
+				)[2]=0;
+		CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->copyFromHostToGPU(true);
+
 		//--------------------------------------------------------------------------
 		//phase 1
 
@@ -225,11 +230,14 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
 
-		dumpBuffers("initialRadixSortPhase1Dump",
+		//if(currentPass == 1)
+		{
+			dumpBuffers("initialRadixSortPhase1Dump",
 				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
 				false,//DONT abort
 				currentPass,0,
 				keysBuffer,oldIndicesBuffer);
+		}
 
 		//--------------------------------------------------------------------------
 		//phase 2
@@ -241,17 +249,20 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
 
-		dumpBuffers("initialRadixSortPhase2Dump",
+		//if(currentPass == 1)
+		{
+			dumpBuffers("initialRadixSortPhase2Dump",
 				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
 				false, //don't abort
 				//true,
 				currentPass,1,
 				keysBuffer,oldIndicesBuffer);
+		}
 
 		//--------------------------------------------------------------------------
 		//phase 3
 
-		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
+		phase3Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
 
 		phase3Kernel->run( EventVector{eventToWaitFor} );
 		//phase3Kernel->run( EventVector{} );
@@ -260,18 +271,34 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();
 
 
-		dumpBuffers("initialRadixSortPhase3Dump",
+		CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->readBack(true);
+		uint numBuffOverFLows =
+				reinterpret_cast<uint*>(
+										CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->getCPUBufferHandle()
+										)[2];
+		LOG<<"num bufferOverFlows:"<< numBuffOverFLows
+
+		<<";\n";
+		//assert(0);
+
+		bool abort = false;
+		//if(numBuffOverFLows >0)
+		if(currentPass == 2)
+		{
+			abort=true;
+		}
+			dumpBuffers("initialRadixSortPhase3Dump",
 						URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
 						//false,//DONT abort
-						true, //abort for validation
+						//true, //abort for validation
+						abort,
 						currentPass,2,
 						keysBuffer,oldIndicesBuffer);
 
-
 		//##########################################################################
 		//do the buffer toggle
-//		keysBuffer->toggleBuffers();
-//		oldIndicesBuffer->toggleBuffers();
+		keysBuffer->toggleBuffers();
+		oldIndicesBuffer->toggleBuffers();
 
 	}
 
@@ -296,6 +323,8 @@ void RadixSorter::dumpBuffers(
 		PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer)
 {
 	//note: if this is phase 3, we assume  at the moment that the toggle has not been done yet;
+
+	//return;
 
 	static const unsigned int log2NumRadicesPerPass = HelperFunctions::log2ui(mNumRadicesPerPass);
 
@@ -328,8 +357,11 @@ void RadixSorter::dumpBuffers(
 		/ String("bufferDumps")
 		/
 		Path(
-			String("bufferDump_")+ dumpName + String("_")+
-			HelperFunctions::toString(frameNumber)+String(".txt")
+			String("bufferDump_")+ dumpName + String("_pass_")+
+			HelperFunctions::toString(currentRadixPass)+
+			String("_frame_")+
+			HelperFunctions::toString(frameNumber)
+			+String(".txt")
 		);
 
 
@@ -354,7 +386,7 @@ void RadixSorter::dumpBuffers(
 		reinterpret_cast<unsigned int*>(imrm->getBuffer(3)->getCPUBufferHandle());
 
 	//to fight the hangups due to huge dump files :(
-#define FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP 5000
+#define FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP 2000
 
 
 	unsigned int* keysSoBeSorted =
@@ -382,7 +414,8 @@ void RadixSorter::dumpBuffers(
 		fileStream<<"we are in phase 3; so let's check out the the sorting status of the keys and the\n"
 				<<"non-reordered and reordered old indices:\n\n";
 
-		for(unsigned int elementRunner = 0 ; elementRunner< mNumElements; elementRunner++)
+		//for(unsigned int elementRunner = 0 ; elementRunner< mNumElements * 2; elementRunner++)
+		for(unsigned int elementRunner = 0 ; elementRunner< mNumElements +1024; elementRunner++)
 		{
 			unsigned int unsortedKey = keysSoBeSorted[elementRunner];
 			unsigned int radixUnsortedKey = getRadix(unsortedKey,currentRadixPass);
@@ -416,198 +449,166 @@ void RadixSorter::dumpBuffers(
 
 
 				<<"\n ";
+		}
 
-//					String unsortedKeyBitString="";
-//					for(unsigned int bitRunner = 0 ; bitRunner < 32 ; bitRunner++)
-//					{
-//						keyBitString.append(
-//							( (keysSoBeSorted[ currentElementIndex ] & (1<< (31-bitRunner) ) ) == 0 )
-//							?"0":"1"
-//						);
-//					}
-//
-//					uint currentRadix = getRadix(keysSoBeSorted[ currentElementIndex ], currentRadixPass);
-//					String radixBitString="";
-//					for(unsigned int bitRunner = 0 ; bitRunner < log2NumRadicesPerPass ; bitRunner++)
-//					{
-//						radixBitString.append(
-//							( (keysSoBeSorted[ currentElementIndex ] & (1<< ((log2NumRadicesPerPass-1)-bitRunner) ) ) == 0 )
-//							?"0":"1"
-//						);
-//					}
-//
+	}
+	else
+	{
+		if(currentPhase > 0)
+		{
+			fileStream<<"we are in phase 2; so let's check out the partiallyScannedSumsOfGlobalRadixCounts\n"
+					<<"and the sumsOfPartialScansOfSumsOfGlobalRadixCounts:\n\n";
 
+			for(unsigned int partiallyScannedSumsOfGlobalRadixCountsRunner = 0 ;
+					partiallyScannedSumsOfGlobalRadixCountsRunner< mNumRadicesPerPass;
+					partiallyScannedSumsOfGlobalRadixCountsRunner++)
+			{
+				fileStream
+					<<"radix("<< partiallyScannedSumsOfGlobalRadixCountsRunner <<"),"
+					<<"partialScanValue("
+					<< partiallyScannedSumsOfGlobalRadixCounts[
+						  partiallyScannedSumsOfGlobalRadixCountsRunner]
+					<<"),\n ";
+			}
+			fileStream<<";\n sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner:\n";
+
+			for(unsigned int sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner = 0 ;
+					sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner
+						//TODO wtf storw this value as a member named
+						//"mNumWorkGroups_GlobalScanPhase" in case I change my mind concering this "hard code work load distribution!!111
+						< HelperFunctions::ceilToNextPowerOfTwo(
+								PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxComputeUnits) ;
+					sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner++)
+			{
+				fileStream
+					<<"work group ID creating this sum("<< sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner <<"),"
+					<<"partialScanSum("
+					<< sumsOfPartialScansOfSumsOfGlobalRadixCounts[
+						   sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner]
+					<<"),\n ";
+			}
+			fileStream<<";\n\n\n";
+		}
+		else
+		{
+
+			fileStream<<"we are in phase 1; so let's check out the local and global radix counters:\n\n";
+
+
+			fileStream<<"scannedSumsOfLocalRadixCounts dump:\n ";
+
+			uint* probeSums = new uint[mNumWorkGroups_TabulationAndReorderPhase];
+			uint totalSum=0;
+			for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
+			{
+				probeSums[globalCounterRunner]=0;
+			}
+
+			for(unsigned int globalRadixRunner = 0 ; globalRadixRunner< mNumRadicesPerPass; globalRadixRunner++)
+			{
+				fileStream<<"Current radix: "<<globalRadixRunner<<";\n ";
+				for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
+					{
+						probeSums[globalCounterRunner] += scannedSumsOfLocalRadixCounts[
+						   globalRadixRunner *  mNumWorkGroups_TabulationAndReorderPhase + globalCounterRunner
+						 ];
+
+						totalSum += scannedSumsOfLocalRadixCounts[
+							globalRadixRunner *  mNumWorkGroups_TabulationAndReorderPhase + globalCounterRunner
+						];
+
+									fileStream
+										<<"el.("<< globalCounterRunner <<"),"
+										<<"val"
+										<<"("
+										<< scannedSumsOfLocalRadixCounts[
+											 globalRadixRunner *  mNumWorkGroups_TabulationAndReorderPhase + globalCounterRunner ]
+										<<"), ";
+								}
+
+
+				fileStream <<"\n\n";
+			}
+
+			fileStream <<"Probed sums:\n";
+			for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
+			{
+				fileStream
+					<<"tabWorkGroup("<< globalCounterRunner <<"),"
+					<<"val("
+					<<"("
+					<< probeSums[globalCounterRunner]
+					<<"), ";
+			}
+
+
+			fileStream<<"total sum: "<<totalSum<<"\n\n\nFollowing locally scanned radix counters:\n\n";
+
+			totalSum=0;
+
+			for(unsigned int localCounterRunner = 0 ; localCounterRunner< FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP; localCounterRunner++)
+			//for(unsigned int localCounterRunner = 0 ; localCounterRunner< numTotalRadixCounters; localCounterRunner++)
+			{
+				fileStream <<"local Radix Counter number "<<localCounterRunner<<":\n";
+
+				for(unsigned int elementRunner = 0 ; elementRunner< mNumElementsPerRadixCounter; elementRunner++)
+				{
+					uint currentElementIndex = mNumElementsPerRadixCounter * localCounterRunner + elementRunner;
+
+
+					uint currentRadix = getRadix(keysSoBeSorted[ currentElementIndex ], currentRadixPass);
+
+
+					fileStream
+						<<"||Key element number "<<currentElementIndex<<": "
+
+						<<"decimal key value("
+							<<keysSoBeSorted[ currentElementIndex ]
+						<<"), "
+						<<"binary key value("
+							//<<keyBitString
+							<< HelperFunctions::getBitString( keysSoBeSorted[ currentElementIndex ], 32 )
+						<<"), "
+						<<"decimal current radix value("
+							<<currentRadix
+						<<"), "
+						<<"binary current radix value("
+							<<HelperFunctions::getBitString( currentRadix, log2NumRadicesPerPass )
+						<<") "
+						<<"||\n ";
 				}
 
-	}
+				fileStream <<"### following locally scanned radix counters: ### \n";
 
+				totalSum=0;
+				for(unsigned int radixRunner = 0 ; radixRunner< mNumRadicesPerPass; radixRunner++)
+				{
+					fileStream
+						<<"Counter number "<<radixRunner<<":"
+						<<"value("
+						<<
+							locallyScannedRadixCounters[
+							   //select out of up to 64 counter arrays
+								radixRunner * numTotalRadixCounters +
+								//grab the element belonging to this sepcific local counter set
+								localCounterRunner
+							]
+						<<"),\n";
 
+					totalSum+=
+						locallyScannedRadixCounters[
+						  //select out of up to 64 counter arrays
+						  radixRunner * numTotalRadixCounters +
+						  //grab the element belonging to this sepcific local counter set
+						  localCounterRunner
+						];
+				}
+				fileStream <<"total sum of local radix counters: "<<totalSum<<";\n";
+			}
 
-	if(currentPhase > 0)
-	{
-		fileStream<<"we are in phase 2 or 3; so let's check out the partiallyScannedSumsOfGlobalRadixCounts\n"
-				<<"and the sumsOfPartialScansOfSumsOfGlobalRadixCounts:\n\n";
+		}//end phase 1 or two
+	}//end else phase 3
 
-		for(unsigned int partiallyScannedSumsOfGlobalRadixCountsRunner = 0 ;
-				partiallyScannedSumsOfGlobalRadixCountsRunner< mNumRadicesPerPass;
-				partiallyScannedSumsOfGlobalRadixCountsRunner++)
-		{
-			fileStream
-				<<"radix("<< partiallyScannedSumsOfGlobalRadixCountsRunner <<"),"
-				<<"partialScanValue("
-				<< partiallyScannedSumsOfGlobalRadixCounts[
-				      partiallyScannedSumsOfGlobalRadixCountsRunner]
-				<<"),\n ";
-		}
-		fileStream<<";\n sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner:\n";
-
-		for(unsigned int sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner = 0 ;
-				sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner
-					//TODO wtf storw this value as a member named
-					//"mNumWorkGroups_GlobalScanPhase" in case I change my mind concering this "hard code work load distribution!!111
-					< HelperFunctions::ceilToNextPowerOfTwo(
-							PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxComputeUnits) ;
-				sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner++)
-		{
-			fileStream
-				<<"work group ID creating this sum("<< sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner <<"),"
-				<<"partialScanSum("
-				<< sumsOfPartialScansOfSumsOfGlobalRadixCounts[
-				       sumsOfPartialScansOfSumsOfGlobalRadixCountsRunner]
-				<<"),\n ";
-		}
-		fileStream<<";\n\n\n";
-	}
-
-
-
-
-	fileStream<<"scannedSumsOfLocalRadixCounts dump:\n ";
-
-	uint* probeSums = new uint[mNumWorkGroups_TabulationAndReorderPhase];
-	uint totalSum=0;
-	for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
-	{
-		probeSums[globalCounterRunner]=0;
-	}
-
-	for(unsigned int globalRadixRunner = 0 ; globalRadixRunner< mNumRadicesPerPass; globalRadixRunner++)
-	{
-		fileStream<<"Current radix: "<<globalRadixRunner<<";\n ";
-		for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
-			{
-				probeSums[globalCounterRunner] += scannedSumsOfLocalRadixCounts[
-				   globalRadixRunner *  mNumWorkGroups_TabulationAndReorderPhase + globalCounterRunner
-				 ];
-
-				totalSum += scannedSumsOfLocalRadixCounts[
-					globalRadixRunner *  mNumWorkGroups_TabulationAndReorderPhase + globalCounterRunner
-				];
-
-							fileStream
-								<<"el.("<< globalCounterRunner <<"),"
-								<<"val"
-								<<"("
-								<< scannedSumsOfLocalRadixCounts[
-								     globalRadixRunner *  mNumWorkGroups_TabulationAndReorderPhase + globalCounterRunner ]
-								<<"), ";
-						}
-
-
-		fileStream <<"\n\n";
-	}
-
-	fileStream <<"Probed sums:\n";
-	for(unsigned int globalCounterRunner = 0 ; globalCounterRunner< mNumWorkGroups_TabulationAndReorderPhase; globalCounterRunner++)
-	{
-		fileStream
-			<<"tabWorkGroup("<< globalCounterRunner <<"),"
-			<<"val("
-			<<"("
-			<< probeSums[globalCounterRunner]
-			<<"), ";
-	}
-
-
-	fileStream<<"total sum: "<<totalSum<<"\n\n\nFollowing locally scanned radix counters:\n\n";
-
-	totalSum=0;
-
-	//for(unsigned int localCounterRunner = 0 ; localCounterRunner< FLEWNIT_MAX_LOCAL_COUNTERS_TO_DUMP; localCounterRunner++)
-	for(unsigned int localCounterRunner = 0 ; localCounterRunner< numTotalRadixCounters; localCounterRunner++)
-	{
-		fileStream <<"local Radix Counter number "<<localCounterRunner<<":\n";
-
-		for(unsigned int elementRunner = 0 ; elementRunner< mNumElementsPerRadixCounter; elementRunner++)
-		{
-			uint currentElementIndex = mNumElementsPerRadixCounter * localCounterRunner + elementRunner;
-
-//			String keyBitString="";
-//			for(unsigned int bitRunner = 0 ; bitRunner < 32 ; bitRunner++)
-//			{
-//				keyBitString.append(
-//					( (keysSoBeSorted[ currentElementIndex ] & (1<< (31-bitRunner) ) ) == 0 )
-//					?"0":"1"
-//				);
-//			}
-
-			uint currentRadix = getRadix(keysSoBeSorted[ currentElementIndex ], currentRadixPass);
-
-//			String radixBitString="";
-//			for(unsigned int bitRunner = 0 ; bitRunner < log2NumRadicesPerPass ; bitRunner++)
-//			{
-//				radixBitString.append(
-//					( (keysSoBeSorted[ currentElementIndex ] & (1<< ((log2NumRadicesPerPass-1)-bitRunner) ) ) == 0 )
-//					?"0":"1"
-//				);
-//			}
-
-			fileStream
-				<<"||Key element number "<<currentElementIndex<<": "
-
-				<<"decimal key value("
-					<<keysSoBeSorted[ currentElementIndex ]
-				<<"), "
-				<<"binary key value("
-					//<<keyBitString
-					<< HelperFunctions::getBitString( keysSoBeSorted[ currentElementIndex ], 32 )
-				<<"), "
-				<<"decimal current radix value("
-					<<currentRadix
-				<<"), "
-				<<"binary current radix value("
-					<<HelperFunctions::getBitString( currentRadix, log2NumRadicesPerPass )
-				<<") "
-				<<"||\n ";
-		}
-
-		fileStream <<"### following locally scanned radix counters: ### \n";
-
-		totalSum=0;
-		for(unsigned int radixRunner = 0 ; radixRunner< mNumRadicesPerPass; radixRunner++)
-		{
-			fileStream
-				<<"Counter number "<<radixRunner<<":"
-				<<"value("
-				<<
-					locallyScannedRadixCounters[
-				  	   //select out of up to 64 counter arrays
-					    radixRunner * numTotalRadixCounters +
-				  		//grab the element belonging to this sepcific local counter set
-				  		localCounterRunner
-				  	]
-				<<"),\n";
-
-			totalSum+=
-				locallyScannedRadixCounters[
-			      //select out of up to 64 counter arrays
-			      radixRunner * numTotalRadixCounters +
-			      //grab the element belonging to this sepcific local counter set
-			      localCounterRunner
-			    ];
-		}
-		fileStream <<"total sum of local radix counters: "<<totalSum<<";\n";
-	}
 
 
 	fileStream.close();
@@ -616,8 +617,8 @@ void RadixSorter::dumpBuffers(
 	if(abortAfterDump)
 	{
 		assert(0&&"abort on purpose after programmer requested buffer dump :)");
+		//URE_INSTANCE->requestMainLoopQuit();
 	}
-	//URE_INSTANCE->requestMainLoopQuit();
 }
 
 
