@@ -834,11 +834,13 @@
     //}
     
       //for debugging only, can be removed
+      /*
       if( (groupID == 0) && (lwiID < NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE) )
       {
         gSumsOfPartialScansOfSumsOfGlobalRadixCounts[lwiID] =
            lSumsOfPartialScansOfSumsOfGlobalRadixCounts[lwiID];         
       }
+      */
 
 
      barrier(CLK_LOCAL_MEM_FENCE); //nont necessary; just to be sure..
@@ -869,6 +871,7 @@
             //strided access requiring padding
             key = lKeysToSort[ localpaddedElementIndex ];
             oldIndex = lOldIndices[ localpaddedElementIndex ]; 
+            barrier(CLK_LOCAL_MEM_FENCE); //not necessary.. .bughunting..
             radix = getRadix( key,numPass);
             
             uint newIndexInSortedArray =
@@ -897,11 +900,11 @@
               //is offset one position further than the preceding one:
               + 
               (   
-                  lLocallyScannedRadixCounters[ 
+                  (lLocallyScannedRadixCounters[ 
                     radix * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  
                     //+ localElementIndex   <<-- another time a horrible indexing mistake! shame on me again;(
                     +lwiID // <-- this is the local radix counter index for the current element;
-                  ]
+                  ])
                   ++ //<-- hope there is no driver bug .. post increment on a buffer value .. who knows..
               );
               

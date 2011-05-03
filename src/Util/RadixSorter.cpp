@@ -253,8 +253,8 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		phase2Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(currentPass);
 
-		//phase3Kernel->run( EventVector{eventToWaitFor} );
-		phase3Kernel->run( EventVector{} );
+		phase3Kernel->run( EventVector{eventToWaitFor} );
+		//phase3Kernel->run( EventVector{} );
 
 		//make phase 1 wait for phase 3 to finish:
 		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();
