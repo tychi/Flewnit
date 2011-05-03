@@ -1,3 +1,72 @@
 Dienstag, 3.5. 2011, 14.30; Status 8 Müller
 
 WIEDER PER SKYPE!!11
+
+
+Status:
+Gute und schlechte nachricht:
+Die schlechte: ich kann immer noch kein Fluid simulieren; ich habe mich gewaltig verschätzt mit dem integrationsaufwand der 
+Kernels in mein Framework; Erst vor wenigen Tagen konnte ich das erste OpenCL-Programm compilen  und den ersten Kernel erstellen;
+Von Ausführung der CL-PRogramme konnte immer noch keine Rede sein;
+
+Seit 2 Tagen steht der Frameworkkontext hinreichend, und ich kann die Kernels ausführen;
+Der Status dieser GPU-Programme ist bisher wie folgt:
+  Die Z-Index-Berechnung und der vollständigradix sort funktionieren; Dabei war meine gefürchtete "Trockenprogrammierung"
+  (weil alles coden ohne code completion, syntax check, testcompile unt test run)
+  weitgehend korrekt, zwei Konstanten hatte ich falsch definiert, ein paar Probleme mit den "barrier()"-Funktionen
+ und die (remainder())-funktion brachte mich fast ins Grab (ich suchte den floating point-modulor-operator, und 
+ remainder()gab ständig nur werte zischen 0 und 47 zurück., ohne dass ich bis jetzt verstehe, warum; fmod() hat das problem dann gelöst)
+ Seit heut morgen funktioniert der Radix sort; ich dumpe sämtliche buffers relativ gut formatiert als textdatei auf die festplatte,
+ kann sämtlichen state damit nachvollziehen; Ich habe sogar einen mechnismus eingebaut, nach bufferoverflows zu suchen, aber es treten keine auf,
+ das rordering ist eine perfekte permutation des input-arrays;
+ 
+ Mit den Radix Sort kernels ist klar, dass der "work efficient parallel scan" funktioniert, der Dreh.und angelpunkt
+ der OpenCL-Funktionalität meines Frameworks;
+ Somit werden de folgenden Kernels aufgrund funktionierender benutzt routinen schneller zum Laufen zu kriegen sein;
+ Außerdem ist der redix sort neben den SPH-related kernels der komplexeste algrorithmus und es ist ein gutes Omen, dass ich den
+ mit meinem Frameworkiintegriert  in 1,5 Tagen zum Laufen bekommen habe;
+ Es gab viel Ärger und Bugs, die meisten jedoch perverserweise, weil ich die buffer falsch gedumpt/falsch interpretiert habe, 
+ obwohl sie korrekt waren X-D.
+ 
+ Die wichtigsten Framework Features sind: 
+
+  - CLKernelArguments class und CLKernelArgumentBase,CLBufferArgument und template-CLValueArgument class;
+    mithilfer dieser klassen kann man relativ bequem argmumente binden, einmal korrekt initialisiert, sind sie per string
+    Zugreifbar und nicht so nervig per index; Das wichtigstes ist, dass Ping pong buffers automatisch gehandlet werden, man muss also 
+    nicht nach jedem buffer toggle die argumente neu binden; Es reicht, beim CLBufferArgument mit anzugeben, ob man die
+    aktive oder die inaktive pingpong-komponente ans jeweilige argument gebunden haben will; der rest geshcieht zur laufzeit automatisch;
+    
+  - Hardware queries von local memory size, sompute capability, number of compute units etc;
+    Anhand dieser werte werden optimale parameter für Radix Sort berechnet, als Grantlee-Template-parameter gesetzt,
+    der OpenCL-Template code von grantlee gerendert und so automatisch hardwareabhängige optimierungen vorgenommen,
+    wie z.b. die anzahl an Key-Elementen pro radix counter, anzahl an bits pro radix und pass etc, "global svan phase" work group
+    size etc;
+    
+  - Hochoptimierung dank "eigens entwickeltem" "Multiparallel scan": 
+    aufgrund von knappen local memory könenn maximal 128 radix counters pro Work group existieren,
+    davon jedoch bis zu 64 stück, die alle für sich gescannt werden müssen; * Rechne rechne * zum Scan von einem 128-element array
+    brauchen wir nur 64 work items; Wenn wir vier key- elemente pro counter haben, nehmen wir 4*128=512  work items pro work group;
+    damit haben wir genug work items, um 512/64 = 8 radix counnter array parallel zu scannen; Und es wird gemacht! :).
+    Eine weitergehende optimierung, die neun scans in ennem einziegen control-flow ausführt, ist in updatedRigidBodies.cl zu finden;
+    Das ist allerding nocht nicht getestet ;(.
+    
+    
+ Wie gehts nun weiter:
+    Die Implemetierungsfrist ist rum, und nichts in Sachen Fluid funktioniert; Ich steh jedoch wirklich kurz davor; Ich gebe mir noch zwei,
+    maximal drei tage (inklusive heute), um die verbliebenen teilweise deutlich einfacherern kernelss zum Leben zu erwecken;
+    Wenn die genaus fehler-arm programmiert sind wie der radix-sort und scan-kram ist das möglich;
+    In dieser Hinsicht lasse ich trotz aller guten Ratshcläge nicht mit mir diskutieren, ich steh zu kurz davor, um
+    nun fluidsimulation als gescheitert zu betrachten; Alles was ich bisher an meinem Framework programmiert habe, 
+    hat zwar eine hohe entwickliungszeit, hat am ende aber jedoch immer geklappt wie ich es mir vorgestellt habe.
+    Das rendering wird komplett auf der Strecke bleiben, das ist auch in ordnung für mich, ich bin shcon froh, dass der CL-kram
+    nahtlos zu funktionieren scheint;
+    
+  Mein Vorschlag: wir manchen baldest möglich einen neuen Termin aus, wo Sie dann die ersten 10-20 seiten meines 
+  bis dahin geschriebenen Drafts empfangen werden, um sicher zu gehen, dass ich mich nciht in der weiteren implementierung verrennne;
+  Ich werde heute und morgen noch ausschließlich der programmierung widmen, danach Die Dokumentation beginnen, und
+  falss ich noch nicht fertig mit der  Implementierung der FLuid-mechanik bin, dann max. 2 stunden pro tag damit verbringen;
+  
+  Ich weiß, es ist riskant, aber so kurz davor nach all den Mühen müssen Sie einfahc verständnis haben, dass ich das nun zu einem
+  minmalst-Fluid-Ende bringen will ;). So viel schlafender code in diesem Kontext, es darf nicht für die Katz sein;
+  
+    

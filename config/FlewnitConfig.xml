@@ -82,18 +82,18 @@
 
       <windowTitle type="STRING" value="Flewnit" />
 
-      <fullScreen type="BOOL" value="false"/>
+      <fullScreen type="BOOL" value="true"/>
 
       <enforceCustomResolutionInFullScreen type="BOOL" value="false" />
     
-      <resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
       <!--
-      <resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
+      <resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
       -->
+      <resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
       
       <position type="VEC2I" x="400" y="100" GUIVisibility="read" tweakConfigString="TODO"/>
 
-      <numMultiSamples type="INT" value ="1" />
+      <numMultiSamples type="INT" value ="4" />
 
     </windowSettings>
 
