@@ -181,7 +181,26 @@ void UniformGridBufferSet::dumpBuffers(
 		std::ios::out
 	);
 
+	mStartIndices->readBack(true);
+	mElementCounts->readBack(true);
 
+
+	uint* startIndices = reinterpret_cast<uint*>(mStartIndices->getCPUBufferHandle());
+	uint* elemCounts = reinterpret_cast<uint*>(mElementCounts->getCPUBufferHandle());
+
+	const uint totalNumGridCells = mNumCellsPerDimension*mNumCellsPerDimension*mNumCellsPerDimension;
+
+	for(uint cellrunner = 0; cellrunner < totalNumGridCells; cellrunner++)
+	{
+		fileStream
+			<< "cell ZIndex: "
+				<<"bin.: "<<HelperFunctions::getBitString(cellrunner)<<", "
+				<<"dec.: "<<cellrunner<<"; "
+			<<"elem. startIndex: "<<startIndices[cellrunner]<<"; "
+			<<"elem. cnt. resp. endIndex+1: "<<elemCounts[cellrunner]<<"; "
+			<<";\n "
+			;
+	}
 
 
 
@@ -292,9 +311,14 @@ void UniformGrid::updateCells(String bufferSetName, BufferInterface* sortedZIndi
 		);
 	}
 
-//	getBufferSet(bufferSetName)->dumpBuffers(
-//
-//	);
+	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames()==0)
+	{
+		getBufferSet(bufferSetName)->dumpBuffers(
+				String("UniGridBuffSet_")+bufferSetName+String("_BEFORE_Update"),
+				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+				false
+		);
+	}
 
 
 	currentKernel->getCLKernelArguments()->getBufferArg("gSortedZIndices")
@@ -306,7 +330,22 @@ void UniformGrid::updateCells(String bufferSetName, BufferInterface* sortedZIndi
 	currentKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementEndIndexPlus1")
 		->set( getBufferSet(bufferSetName)->getElementCounts() );
 
-	currentKernel->run( eventsToWaitFor );
+	//currentKernel->run( eventsToWaitFor );
+	currentKernel->run( eventsToWaitFor,
+		CLKernelWorkLoadParams(
+			sortedZIndicesKeyBuffer->getBufferInfo().numElements,
+			HelperFunctions::floorToNextPowerOfTwo(PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize)
+		)
+	);
+
+	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
+	{
+		getBufferSet(bufferSetName)->dumpBuffers(
+				String("UniGridBuffSet_")+bufferSetName+String("_AFTER_Update"),
+				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+				false
+		);
+	}
 
 
 }

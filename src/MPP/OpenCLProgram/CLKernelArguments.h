@@ -25,9 +25,9 @@ namespace Flewnit
 
 
 class CLKernelWorkLoadParams
-	: 	public BasicObject
+	//: 	public BasicObject
 {
-		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+		//FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
 		CLKernelWorkLoadParams(
 			//if work load params aren't know a priori, default params help maskin validation

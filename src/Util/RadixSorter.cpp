@@ -225,10 +225,16 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 	for(unsigned int currentPass = 0; currentPass < mNumRadixSortPasses; currentPass++)
 	{
+
+		//{ debug stuff
 		reinterpret_cast<uint*>(
 				CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->getCPUBufferHandle()
 				)[2]=0;
 		CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->copyFromHostToGPU(true);
+
+		uint currentFrame = URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames();
+		//}
+
 
 		//--------------------------------------------------------------------------
 		//phase 1
@@ -241,14 +247,14 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
 
-		//if(currentPass == 1)
-//		{
-//			dumpBuffers("initialRadixSortPhase1Dump",
-//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-//				false,//DONT abort
-//				currentPass,0,
-//				keysBuffer,oldIndicesBuffer);
-//		}
+		if( (currentPass == 2) && (currentFrame ==0 ))
+		{
+			dumpBuffers("initialRadixSortPhase1Dump",
+				currentFrame,
+				false,//DONT abort
+				currentPass,0,
+				keysBuffer,oldIndicesBuffer);
+		}
 
 		//--------------------------------------------------------------------------
 		//phase 2
@@ -260,15 +266,16 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
 
-		//if(currentPass == 1)
-//		{
-//			dumpBuffers("initialRadixSortPhase2Dump",
-//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-//				false, //don't abort
-//				//true,
-//				currentPass,1,
-//				keysBuffer,oldIndicesBuffer);
-//		}
+		if( (currentPass == 2) && (currentFrame ==0 ))
+		{
+			dumpBuffers("initialRadixSortPhase2Dump",
+				currentFrame,
+				false, //don't abort
+				//true,
+				currentPass,
+				1,
+				keysBuffer,oldIndicesBuffer);
+		}
 
 		//--------------------------------------------------------------------------
 		//phase 3
@@ -296,13 +303,16 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 //		{
 //			abort=true;
 //		}
-//			dumpBuffers("initialRadixSortPhase3Dump",
-//						URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-//						//false,//DONT abort
-//						//true, //abort for validation
-//						abort,
-//						currentPass,2,
-//						keysBuffer,oldIndicesBuffer);
+		if( (currentPass == 2) && (currentFrame ==0 ))
+		{
+			dumpBuffers("initialRadixSortPhase3Dump",
+				currentFrame,
+				false,
+				currentPass,
+				2,
+				keysBuffer,oldIndicesBuffer);
+		}
+
 
 		//##########################################################################
 		//do the buffer toggle

@@ -66,20 +66,26 @@
       //index of own element is definitely the start index of the cell it lies in:
       //obsolete because is zero anyway: <-- o'rly? i suppose that only the endindex resp element count buffer is set to zero
       gUniGridCells_ElementStartIndex[ lSortedZIndices[ 0 ] ]= 0; 
-      return;     
+      return;   //return because nothing  is left, so no end index to set;  
     }
     //rightmost global element?
     if(gwiID == (get_global_size(0) -1) )
     {
       //(index of own element +1) is definitely the (end index +1) of the cell it lies in:
       gUniGridCells_ElementEndIndexPlus1[ lSortedZIndices[ LOCAL_OWN_INDEX ] ] = get_global_size(0);
-      return;      
+      
+      //DON't return as we possibly have to set the ElementEndIndexPlus1 of the left element :)
+      //return;      
     }
-    //} end check the special cases where no neighbours exist at all  
+    
+    //} end check the special cases where some neighbours  don't exist
      
     //left and right neighbours do exist in the following code, otherwise, the element would have been masked by the above code
     
     //grab left index from local memory unless it is the leftmost element in work group, then grab from global memory
+    //note: i see no way to do this more efficiently; we need to grab one more element than we have work items;
+    //cangin one element to the left involves another control flow overhead.. so just grabbing the most left elem from global mem
+    //seems the least bad way of handling this ;(
     uint leftZIndex = ( (lwiID > 0) ?  (lSortedZIndices[ LOCAL_LEFT_INDEX ]) : (gSortedZIndices[ GLOBAL_LEFT_INDEX ]) );
     uint ownZIndex = lSortedZIndices[ LOCAL_OWN_INDEX ] ;
 

@@ -37,15 +37,16 @@ void UpdateUniformGridProgram::createKernels()
 	mKernels["kernel_updateUniformGrid"] = new CLKernel(
 		this,
 		"kernel_updateUniformGrid",
-
-		new CLKernelWorkLoadParams(
-			//getNumCellsPerDimension() ^3 work items, one per cell
-			mUniGrid->getNumCellsPerDimension()*mUniGrid->getNumCellsPerDimension()*mUniGrid->getNumCellsPerDimension(),
-			//maximum possible work group size, but floored to power of two
-			HelperFunctions::floorToNextPowerOfTwo(
-				PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize
-			)
-		),
+		//element size is unkknown
+		new CLKernelWorkLoadParams(),
+//		new CLKernelWorkLoadParams(
+//			//getNumCellsPerDimension() ^3 work items, one per cell
+//			mUniGrid->getNumCellsPerDimension()*mUniGrid->getNumCellsPerDimension()*mUniGrid->getNumCellsPerDimension(),
+//			//maximum possible work group size, but floored to power of two
+//			HelperFunctions::floorToNextPowerOfTwo(
+//				PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize
+//			)
+//		),
 
 		new CLKernelArguments(
 			{
