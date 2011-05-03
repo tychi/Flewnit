@@ -28,6 +28,8 @@
 #include "WorldObject/ParticleFluid.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/VertexBasedGeometry.h"
+#include "URE.h"
+#include "Util/Time/FPSCounter.h"
 
 
 namespace Flewnit
@@ -120,6 +122,16 @@ void ParticleSceneRepresentation::reorderAttributes()
 	//to be read, and the inactive one is the one to be written to,
 	//everything should be alright.
 
+	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() ==0)
+	{
+		mParticleAttributeBuffers->dumpBuffers(
+			"AttributeBufferDump_BEFORE_Reordering",
+			URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+			false //don't abort
+		);
+	}
+
+
 	mReorderParticleAttributesProgram->getKernel("kernel_reorderParticleAttributes")->run(
 		//wait for the event that the last radix sort reorder phase has finished; only after finishing,
 		//mParticleAttributeBuffers->mOldIndicesPiPoBuffer has valid values usable for reordering
@@ -132,7 +144,17 @@ void ParticleSceneRepresentation::reorderAttributes()
 	);
 
 	//toggle to make the least recently written buffers the active ones
-	mParticleAttributeBuffers->toggleBuffers();
+	mParticleAttributeBuffers->toggleAllBuffersButZIndicesAndOldIndices();
+
+	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() ==0)
+	{
+		mParticleAttributeBuffers->dumpBuffers(
+			"AttributeBufferDump_AFTER_Reordering",
+			URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+			false
+		);
+	}
+
 
 }
 

@@ -12,13 +12,18 @@
   __kernel 
   void kernel_reorderParticleAttributes(
   
-    //__constant ObjectGenericFeatures* cObjectGenericFeatures,
     __constant ObjectGenericFeatures* cObjectGenericFeatures,
-      
+     
+    //lookup of old index whose element is to be copied to the current index (global work item ID) 
     __global uint* gReorderedOldIndices,
 
+    //tracker to follow where the particles belonging to a meta object (Fluid, Rigid body) are;
+    //used as OpenGL index buffer for fluids, OpenGL index buffer for rigid body degug draw and for
+    //acquisition of the relevant particles for the ridgid-body meta info calculation 
+    //(centre of mass, linear and angular velocity, transform)
     __global uint* gParticleIndexTable, 
     
+    //needed to identify for a particle to which meta object is belongs (fluid, rigid body or invalid )
     __global uint* gParticleObjectInfosOld,
     __global uint* gParticleObjectInfosReordered,
 

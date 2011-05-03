@@ -32,9 +32,11 @@ public:
 
 
 	inline Buffer* getParticleIndexTableBuffer()const{return mParticleIndexTableBuffer;}
+
+	inline PingPongBuffer* getOldIndicesPiPoBuffer()const{return mOldIndicesPiPoBuffer;}
 	inline PingPongBuffer* getObjectInfoPiPoBuffer()const{return mObjectInfoPiPoBuffer;}
 	inline PingPongBuffer* getZIndicesPiPoBuffer()const{return mZIndicesPiPoBuffer;}
-	inline PingPongBuffer* getOldIndicesPiPoBuffer()const{return mOldIndicesPiPoBuffer;}
+
 	inline PingPongBuffer* getPositionsPiPoBuffer()const{return mPositionsPiPoBuffer;}
 	inline PingPongBuffer* getDensitiesPiPoBuffer()const{return mDensitiesPiPoBuffer;}
 	inline PingPongBuffer* getCorrectedVelocitiesPiPoBuffer()const{return mCorrectedVelocitiesPiPoBuffer;}
@@ -43,7 +45,10 @@ public:
 
 
 	// convenience function to toggle all ping pong particle attribute/index buffers at once
-	void toggleBuffers();
+	//void toggleAllAllBuffers();
+	//toggle everything but z indices and old indices, as they aren't reordered but wer USED for reordering ;)
+	//a baaad name, but better a bad name than always loosing track of what is toggled an what isn't!!!11
+	void toggleAllBuffersButZIndicesAndOldIndices();
 	//after all fluids and rigid bodies have been initialized, they have to be uploaded to the
 	//cl device;
 	void flushBuffers();
@@ -52,7 +57,10 @@ public:
 	void readBackBuffers();
 
 	//read back and write out buffers to disc for analysis;
-	void dumpBuffers(String dumpName, unsigned int frameNumber);
+	void dumpBuffers(
+			String dumpName,
+			unsigned int frameNumber,
+			bool abortAfterDump);
 	// the dump files are qite big, so enforce max size;
 	#define FLEWNIT_MAX_BUFFER_DUMPS 10
 
@@ -70,13 +78,12 @@ private:
 	//mNumTotalParticles elements;
 	//no ping pong necessary as no read/write or similar hazard can occur;
 	Buffer* mParticleIndexTableBuffer;
+
+
 	/*
 	 * note: the following buffers must all be ping pong buffers, because scattered reading
 	 * 		 when reordering after sorting would raise hazards otherwise;
 	 * */
-	//used to associate a particle with its owning fluid or rigid body object
-	//and its particle ID within this object;
-	PingPongBuffer* mObjectInfoPiPoBuffer; //uint ping pong buffer
 
 	PingPongBuffer* mZIndicesPiPoBuffer; //uint ping pong buffer
 	//the "backtracking" values for reordering of physical attributes,
@@ -86,6 +93,13 @@ private:
 	//After sorting, this buffer is only used for reordering, afterwards, its values are irrelevant
 	//and are overwritten with the next radix sort pass;
 	PingPongBuffer* mOldIndicesPiPoBuffer; //uint ping pong buffer
+
+
+	//used to associate a particle with its owning fluid or rigid body object
+	//and its particle ID within this object;
+	PingPongBuffer* mObjectInfoPiPoBuffer; //uint ping pong buffer
+
+
 	PingPongBuffer* mPositionsPiPoBuffer; //vec4 ping pong buffer;
 	PingPongBuffer* mDensitiesPiPoBuffer;
 	PingPongBuffer* mCorrectedVelocitiesPiPoBuffer;

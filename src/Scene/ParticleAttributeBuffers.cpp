@@ -31,6 +31,9 @@ ParticleAttributeBuffers::ParticleAttributeBuffers(
 		bool initToInvalidObjectID)
 : mNumTotalParticles(numTotalParticles)
 {
+	Buffer* ping;
+	Buffer* pong;
+
 	BufferInfo glCLSharedIndexBufferInfo(
 		"particleIndexTableBuffer",
 		//all three contexts;
@@ -44,23 +47,7 @@ ParticleAttributeBuffers::ParticleAttributeBuffers(
 	);
 	mParticleIndexTableBuffer = new Buffer(	glCLSharedIndexBufferInfo,	true, 0 );
 
-
-	BufferInfo glCLSharedObjectInfoBufferInfo(
-		"particleObjectInfoBufferPing",
-		//all three contexts;
-		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
-		PRIMITIVE_ID_SEMANTICS,
-		TYPE_UINT32,
-		numTotalParticles,
-		BufferElementInfo(1,GPU_DATA_TYPE_UINT,32,false),
-		VERTEX_ATTRIBUTE_BUFFER_TYPE,
-		NO_CONTEXT_TYPE
-	);
-	Buffer* ping = new Buffer(	glCLSharedObjectInfoBufferInfo,	true, 0 );
-	glCLSharedObjectInfoBufferInfo.name = "particleObjectInfoBufferPong";
-	Buffer* pong = new Buffer(	glCLSharedObjectInfoBufferInfo,	true, 0 );
-	mObjectInfoPiPoBuffer = new PingPongBuffer("particleObjectInfoPiPoBuffer",ping,pong);
-
+	//----- following the differnt index ping pong buffers
 
 	BufferInfo glCLSharedZIndicesBufferInfo(
 		"particleZIndicesBufferPing",
@@ -78,6 +65,7 @@ ParticleAttributeBuffers::ParticleAttributeBuffers(
 	glCLSharedZIndicesBufferInfo.name = "particleZIndicesBufferPong";
 	pong = new Buffer(	glCLSharedZIndicesBufferInfo,	true, 0 );
 	mZIndicesPiPoBuffer = new PingPongBuffer("particleZIndicesPiPoBuffer",ping,pong);
+
 
 	BufferInfo glCLSharedOldIndicesBufferInfo(
 		"particleOldIndicesBufferPing",
@@ -97,6 +85,29 @@ ParticleAttributeBuffers::ParticleAttributeBuffers(
 	glCLSharedOldIndicesBufferInfo.name = "particleOldIndicesBufferPong";
 	pong = new Buffer(	glCLSharedOldIndicesBufferInfo,	true, 0 );
 	mOldIndicesPiPoBuffer = new PingPongBuffer("particleOldIndicesPiPoBuffer",ping,pong);
+
+
+
+	BufferInfo glCLSharedObjectInfoBufferInfo(
+		"particleObjectInfoBufferPing",
+		//all three contexts;
+		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
+		PRIMITIVE_ID_SEMANTICS,
+		TYPE_UINT32,
+		numTotalParticles,
+		BufferElementInfo(1,GPU_DATA_TYPE_UINT,32,false),
+		VERTEX_ATTRIBUTE_BUFFER_TYPE,
+		NO_CONTEXT_TYPE
+	);
+	ping = new Buffer(	glCLSharedObjectInfoBufferInfo,	true, 0 );
+	glCLSharedObjectInfoBufferInfo.name = "particleObjectInfoBufferPong";
+	pong = new Buffer(	glCLSharedObjectInfoBufferInfo,	true, 0 );
+	mObjectInfoPiPoBuffer = new PingPongBuffer("particleObjectInfoPiPoBuffer",ping,pong);
+
+
+
+
+
 
 
 	//-------------------------------------------------------------------------------------------------------------------
@@ -201,17 +212,17 @@ ParticleAttributeBuffers::~ParticleAttributeBuffers()
 
 
 
-void ParticleAttributeBuffers::toggleBuffers()
+void ParticleAttributeBuffers::toggleAllBuffersButZIndicesAndOldIndices()
 {
-	mObjectInfoPiPoBuffer->toggleBuffers();
-	mZIndicesPiPoBuffer->toggleBuffers();
 
 	//the ping pong functionality of mOldIndicesPiPoBuffer is only needed
 	//because of the several passes during radix sort;
 	//After sorting, this buffer is only used for reordering, afterwards, its values are irrelevant
 	//and are overwritten with the next radix sort pass;
-	//hence, we can toggle this buffer together with the others for logical consistency, and no one gives a sh** ;);
-	mOldIndicesPiPoBuffer->toggleBuffers();
+	//mZIndicesPiPoBuffer->toggleBuffers();
+	//mOldIndicesPiPoBuffer->toggleBuffers();
+
+	mObjectInfoPiPoBuffer->toggleBuffers();
 
 	mPositionsPiPoBuffer->toggleBuffers();
 	mDensitiesPiPoBuffer->toggleBuffers();
@@ -229,9 +240,10 @@ void ParticleAttributeBuffers::flushBuffers()
 
 	mParticleIndexTableBuffer->copyFromHostToGPU();
 
-	mObjectInfoPiPoBuffer->copyFromHostToGPU();
 	mZIndicesPiPoBuffer->copyFromHostToGPU();
 	mOldIndicesPiPoBuffer->copyFromHostToGPU();
+	mObjectInfoPiPoBuffer->copyFromHostToGPU();
+
 	mPositionsPiPoBuffer->copyFromHostToGPU();
 	mDensitiesPiPoBuffer->copyFromHostToGPU();
 	mCorrectedVelocitiesPiPoBuffer->copyFromHostToGPU();
@@ -246,22 +258,34 @@ void ParticleAttributeBuffers::readBackBuffers()
 {
 	//what an amazing piece of code this routine is ;)
 
-	mParticleIndexTableBuffer->readBack();
+	//read back with forced barrier; this will be slow, but this is a degug routine!
 
-	mObjectInfoPiPoBuffer->readBack();
-	mZIndicesPiPoBuffer->readBack();
-	mOldIndicesPiPoBuffer->readBack();
-	mPositionsPiPoBuffer->readBack();
-	mDensitiesPiPoBuffer->readBack();
-	mCorrectedVelocitiesPiPoBuffer->readBack();
-	mPredictedVelocitiesPiPoBuffer->readBack();
-	mLastStepsAccelerationsPiPoBuffer->readBack();
+	mParticleIndexTableBuffer->readBack(true);
+
+	mZIndicesPiPoBuffer->readBack(true);
+	mOldIndicesPiPoBuffer->readBack(true);
+	mObjectInfoPiPoBuffer->readBack(true);
+
+	mPositionsPiPoBuffer->readBack(true);
+	mDensitiesPiPoBuffer->readBack(true);
+	mCorrectedVelocitiesPiPoBuffer->readBack(true);
+	mPredictedVelocitiesPiPoBuffer->readBack(true);
+	mLastStepsAccelerationsPiPoBuffer->readBack(true);
 }
 
-void ParticleAttributeBuffers::dumpBuffers(String dumpName, unsigned int frameNumber)
+void ParticleAttributeBuffers::dumpBuffers(String dumpName, unsigned int frameNumber,bool abortAfterDump)
 {
-
+	//read back active components;
 	readBackBuffers();
+//	//read back inactive components
+//	//{
+//		toggleBuffers();
+//		readBackBuffers();
+//	//}
+//	//restore to "real" active buffers;
+//	toggleBuffers();
+
+
 
 	std::fstream fileStream;
 	Path path =
@@ -279,65 +303,118 @@ void ParticleAttributeBuffers::dumpBuffers(String dumpName, unsigned int frameNu
 		std::ios::out
 	);
 
-	Vector4D* positions =
-		reinterpret_cast<Vector4D*>(getPositionsPiPoBuffer()->getCPUBufferHandle());
 
-	Vector4D* predVels =
-		reinterpret_cast<Vector4D*>(getPredictedVelocitiesPiPoBuffer()->getCPUBufferHandle());
 
-	unsigned int* particleObjectInfos =
-		reinterpret_cast<unsigned int*>(getObjectInfoPiPoBuffer()->getCPUBufferHandle());
+	uint* particleIndexTableBuffer =
+		reinterpret_cast<uint*>(mParticleIndexTableBuffer->getCPUBufferHandle());
 
-	//used as index buffer for drawing the point clouds:
-	//(is permutated due to radix sort reordering, hence we cannot draw a fixed
-	//particle stride without index buffer ;( )
-	unsigned int* particleIndices =
-		reinterpret_cast<unsigned int*>(getParticleIndexTableBuffer()->getCPUBufferHandle());
+	uint* activeOldIndices =
+		reinterpret_cast<uint*>(mOldIndicesPiPoBuffer->getCPUBufferHandle());
+//irrelevant radix sort internal stuff, must be correct wehn radix sort is correct
+//	uint* inactiveOldIndices =
+//		reinterpret_cast<uint*>(mOldIndicesPiPoBuffer->getInactiveBuffer()->getCPUBufferHandle());
 
-	unsigned int* zIndices =
-		reinterpret_cast<unsigned int*>(getZIndicesPiPoBuffer()->getCPUBufferHandle());
+	uint* activeObjectInfos =
+		reinterpret_cast<uint*>(mObjectInfoPiPoBuffer->getCPUBufferHandle());
+//	uint* inactiveObjectInfos =
+//		reinterpret_cast<uint*>(mObjectInfoPiPoBuffer->getInactiveBuffer()->getCPUBufferHandle());
+
+	uint* activeZIndices =
+		reinterpret_cast<uint*>(mZIndicesPiPoBuffer->getCPUBufferHandle());
+//	uint* inactiveZIndices =
+//		reinterpret_cast<uint*>(mZIndicesPiPoBuffer->getInactiveBuffer()->getCPUBufferHandle());
+
+
+
+	Vector4D* activePositions =
+		reinterpret_cast<Vector4D*>(mPositionsPiPoBuffer->getCPUBufferHandle());
+	Vector4D* inactivePositions =
+		reinterpret_cast<Vector4D*>(mPositionsPiPoBuffer->getInactiveBuffer()->getCPUBufferHandle());
+
+	float* activeDensities =
+		reinterpret_cast<float*>(mDensitiesPiPoBuffer->getCPUBufferHandle());
+	float* inactiveDensities =
+		reinterpret_cast<float*>(mDensitiesPiPoBuffer->getInactiveBuffer()->getCPUBufferHandle());
+
+
+	Vector4D* activeCorrectedVelocities =
+		reinterpret_cast<Vector4D*>(mCorrectedVelocitiesPiPoBuffer->getCPUBufferHandle());
+	Vector4D* inactiveCorrectedVelocities =
+		reinterpret_cast<Vector4D*>(mCorrectedVelocitiesPiPoBuffer->getInactiveBuffer()->getCPUBufferHandle());
+
+	Vector4D* activePredictedVelocities =
+		reinterpret_cast<Vector4D*>(mPredictedVelocitiesPiPoBuffer->getCPUBufferHandle());
+	Vector4D* inactivePredictedVelocities =
+		reinterpret_cast<Vector4D*>(mPredictedVelocitiesPiPoBuffer->getInactiveBuffer()->getCPUBufferHandle());
+
+	Vector4D* activeAccelerations =
+		reinterpret_cast<Vector4D*>(mLastStepsAccelerationsPiPoBuffer->getCPUBufferHandle());
+	Vector4D* inactiveAccelerations =
+		reinterpret_cast<Vector4D*>(mLastStepsAccelerationsPiPoBuffer->getInactiveBuffer()->getCPUBufferHandle());
+
+
+
+
+
+
+
+
 
 
 
 
 	for(unsigned int i = 0 ; i< mNumTotalParticles; i++)
 	{
-		String zIndexString="";
-		for(unsigned int bitRunner = 0 ; bitRunner < 32 ; bitRunner++)
-		{
-			zIndexString.append(
-				( (zIndices[i] & (1<< (31-bitRunner) ) ) == 0 )
-				?"0":"1"
-			);
-		}
-
 
 		fileStream
-			<<"Particle number "<<i<<": "
+			<<"current buffer index: "<<i<<": "
+			<<"particle being initially (at the begin of the simulation) at this index is now at index "
+				<<particleIndexTableBuffer[i]<<";\n"
 
-			<<"active Position("
-					<<positions[i].x<<","
-					<<positions[i].y<<","
-					<<positions[i].z<<","
-					<<positions[i].w<<"), "
+			<<"Before the last reordering, this particle was at buffer index "
+				<<activeOldIndices[i]<<";\n"
 
-			<<"active predicted velocity("
-				<<predVels[i].x<<","
-				<<predVels[i].y<<","
-				<<predVels[i].z<<","
-				<<predVels[i].w<<"), "
+			<<"Z-Index bin.("
+				 	<<HelperFunctions::getBitString(activeZIndices[i])<<"), "
+			<<"Z-Index dec.("
+			 	<<activeZIndices[i]<<");\n"
 
-			<<"ZIndex: "<<HelperFunctions::getBitString(zIndices[i])
+			<<"pos("
+					<<activePositions[i].x<<","
+					<<activePositions[i].y<<","
+					<<activePositions[i].z<<","
+					<<activePositions[i].w<<"), "
 
-			<<"\n";
+			<<"dens("<<activeDensities[i]<<"),"
+
+			<<"pred.vel("
+				<<activePredictedVelocities[i].x<<","
+				<<activePredictedVelocities[i].y<<","
+				<<activePredictedVelocities[i].z<<","
+				<<activePredictedVelocities[i].w<<"), "
+			<<"corr.vel("
+				<<activeCorrectedVelocities[i].x<<","
+				<<activeCorrectedVelocities[i].y<<","
+				<<activeCorrectedVelocities[i].z<<","
+				<<activeCorrectedVelocities[i].w<<"), "
+
+			<<"accel.("
+				<<activeAccelerations[i].x<<","
+				<<activeAccelerations[i].y<<","
+				<<activeAccelerations[i].z<<","
+				<<activeAccelerations[i].w<<"),"
+			<<"\n\n";
 	}
 
 
 	fileStream.close();
 
-	//shut down
-	//assert(0&&"abort on purpose after programmer requested buffer dump :)");
-	//URE_INSTANCE->requestMainLoopQuit();
+	if(abortAfterDump)
+	{
+		//shut down
+		assert(0&&"abort on purpose after programmer requested buffer dump :)");
+		//URE_INSTANCE->requestMainLoopQuit();
+	}
 }
 
 }
