@@ -74,9 +74,11 @@
                           * poly6( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams )
                           ;
                           
-                          //DEBUG
-                          //debugVariable++;
+
                       }
+                      
+                      //DEBUG
+//debugVariable++;   //<-- indicator for number of interacted-with neighbour particles       
 
   //----------------------------------------------------------------------------------------------------
   {% endblock performSPHCalculations %}

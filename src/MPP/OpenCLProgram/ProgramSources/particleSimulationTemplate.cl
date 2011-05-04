@@ -206,6 +206,7 @@
           //particles land in the same "buckets" which aren't spacially adjacent, hence such calculations are in vain;
           uint neighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
           
+          //TODO if() this global mem acces; damns the screwed control flow when barrier()'s or mem accesses are involved
           uint numRemainingNeighbourParticlesToInteractWith = gUniGridCells_NumParticles[ neighbourZIndex ];
           
 
@@ -214,13 +215,10 @@
           //alternate notation with the same application logic, but hopefully better suited to work around the compilerbug
           //(see splitAndCompactUniformGrid.cl for more info about this bug)
           //note: no work item divergence here, hence the continue should NOT corrupt the barrier();          
-          //if(numRemainingNeighbourParticlesToInteractWith == 0) continue; 
+          //if(numRemainingNeighbourParticlesToInteractWith == 0) continue; <-- bugs, and i dont know why :(
           //if(numRemainingNeighbourParticlesToInteractWith > 0)
           //====================== "break point" here in case of empty neighbour cell, same for all work groups, no divergence =====
-          
-  //debugVariable++;      
-          
-
+                
           
             uint neighbourParticleStartIndex = gUniGridCells_ParticleStartIndex[ neighbourZIndex ];
             uint numNeighbourSimWorkGroups = GET_NUM_SIM_WORK_GROUPS_OF_CELL( numRemainingNeighbourParticlesToInteractWith ); 
@@ -230,12 +228,24 @@
             //TODO check if this is true ;(
             for(uint simGroupRunner=0; simGroupRunner < numNeighbourSimWorkGroups; simGroupRunner++ )
             {
-     
-     debugVariable++;      
-                                             
+            
+   //debugVariable++;   //<-- indicator for number of neighbour simulation groups  
+   
+              uint numCurrentNeighbourSimGroupParticles = 
+                //is not last simulation group in neighbour  voxel?
+                ( simGroupRunner < ( numNeighbourSimWorkGroups - 1 ) )
+                //for all but the last group, there are 32 elements in each sim work group
+                ? NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP
+                : numRemainingNeighbourParticlesToInteractWith
+                ;
+
+
+        
               //grab all neighbours in particle stride
-              if(lwiID < numRemainingNeighbourParticlesToInteractWith)
+              if(lwiID < numCurrentNeighbourSimGroupParticles)
               {
+                  
+           
                 lCurrentNeighbourPositions[ lwiID ] = gPositionsOld[ neighbourParticleStartIndex + lwiID ];
                 lCurrentNeighbourParticleObjectIDs[ lwiID ] = 
                     GET_OBJECT_ID( gParticleObjectInfos[ neighbourParticleStartIndex + lwiID ] );
@@ -249,24 +259,27 @@
                 {% endblock kernelDependentNeighbourParticleAttribsDownload %} 
                                 
                            
-              } //end if(lwiID < numRemainingNeighbourParticlesToInteractWith)   
+              } //end if(lwiID < numCurrentNeighbourSimGroupParticles)   
             
 
-         
               barrier(CLK_LOCAL_MEM_FENCE); //all freshly downloaded current neighbours shall be available to any work item
             
-    
-                  
+     
   
               //accum SPH calculations in sequence for each neigbour particle ...
               //the compiler bug should not occur here, because again, there is no work item divergence;
-              for(uint interactingLocalIndex=0; interactingLocalIndex < numRemainingNeighbourParticlesToInteractWith; interactingLocalIndex++ )
+              for(  uint interactingLocalIndex=0; 
+                    interactingLocalIndex < numCurrentNeighbourSimGroupParticles;
+                    interactingLocalIndex++ )
               {
                                     
                 //for each particle in own simulation group in parallel do...
                 if(lwiID < numParticlesInOwnGroup)
                 {  
-                
+       //DEBUG
+debugVariable++;   //<-- indicator for number of interacted-with neighbour particles       
+
+         
                   {% block performSPHCalculations %}
                   //----------------------------------------------------------------------------------------------------
                     {% comment %}

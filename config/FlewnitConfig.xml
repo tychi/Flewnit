@@ -210,9 +210,9 @@
           
            <!--
            <extendsOfOneCell  type="VEC4" x="1.0" y="1.0" z="1.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-           <extendsOfOneCell  type="VEC4" x="5.0" y="5.0" z="5.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-           -->
            <extendsOfOneCell  type="VEC4" x="2.0" y="2.0" z="2.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           -->
+           <extendsOfOneCell  type="VEC4" x="5.0" y="5.0" z="5.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
            
 				    <!--
 				      GPU-relevant "chunk-ization" size, denoting the max. element count processed by one OpenCL work group; 
