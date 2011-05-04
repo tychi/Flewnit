@@ -23,7 +23,9 @@
     //    0      residing particles --> 0 simulation work groups
     //  [ 1..32] residing particles --> 1 simulation work group
     //  [33..64] residing particles --> 2 simulation work groups etc. )
-    #define GET_NUM_SIM_WORK_GROUPS_OF_CELL( numResidingElements ) ( ( (numResidingElements) + (NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP-1) ) >> LOG2_NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP )  
+    #define GET_NUM_SIM_WORK_GROUPS_OF_CELL( numResidingElements ) \
+      (  ( ( numResidingElements ) + ( NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP - 1 ) )    \
+         >> LOG2_NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP                        )  
   //} end uniform grid definitions
   //--------------------------------------------------------
   
