@@ -20,6 +20,10 @@
     //default log2(32) = 5;
     #define LOG2_NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP ( {{ log2NumMaxElementsPerSimulationWorkGroup }} )
     
+    //damn the "for-loop-condition"compiler bug!!11
+    //in the long term, this value should be 2 or 4;
+    #define  NUM_MAX_ALLOWED_UNIGRID_CELL_SPLIT_FACTOR ( {{ numMaxAllowedUniGridCellSplitFactor|default:"32" }} )
+    
     //    0      residing particles --> 0 simulation work groups
     //  [ 1..32] residing particles --> 1 simulation work group
     //  [33..64] residing particles --> 2 simulation work groups etc. )

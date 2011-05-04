@@ -46,29 +46,35 @@ void CLKernelWorkLoadParams::validateAgainst(CLKernel* kernel)const throw(Simula
 			PARA_COMP_MANAGER->getUsedDevice(),
 			PARA_COMP_MANAGER->getLastCLErrorPtr()
 	);
-	LOG<<INFO_LOG_LEVEL<<"Validation of work load params for kernel "<< kernel->mKernelName << ":\n";
-	LOG<<INFO_LOG_LEVEL<<"  Specified desired     work group size of kernel: "<<mNumWorkItemsPerWorkGroup<< ";\n";
-	LOG<<INFO_LOG_LEVEL<<"  Technical maximum     work group size of kernel: "<<maxPossibleWorkGRoupSizeOfThisKernel<< ";\n";
 
 	cl::size_t<3> compileTimeRequiredWorkGRoupSizes =
 			kernel->mKernel.getWorkGroupInfo<CL_KERNEL_COMPILE_WORK_GROUP_SIZE>(
 				PARA_COMP_MANAGER->getUsedDevice(),
 				PARA_COMP_MANAGER->getLastCLErrorPtr()
 		);
-	LOG<<INFO_LOG_LEVEL<<"  Compile time specified work group sizes of kernel: "
-			<<
-			Vector3Dui(
-					(uint)(compileTimeRequiredWorkGRoupSizes[0]),
-					(uint)(compileTimeRequiredWorkGRoupSizes[1]),
-					(uint)(compileTimeRequiredWorkGRoupSizes[2])
-			)<< ";\n";
 
 	cl_ulong usedLocalMemByKernel =
 		kernel->mKernel.getWorkGroupInfo<CL_KERNEL_LOCAL_MEM_SIZE>(
 				PARA_COMP_MANAGER->getUsedDevice(),
 				PARA_COMP_MANAGER->getLastCLErrorPtr()
 		);
-	LOG<<INFO_LOG_LEVEL<<"  Local memory used by this kernel (bytes): "<<usedLocalMemByKernel<< ";\n";
+
+
+//	LOG<<INFO_LOG_LEVEL<<"Validation of work load params for kernel "<< kernel->mKernelName << ":\n";
+//	LOG<<INFO_LOG_LEVEL<<"  Specified desired     work group size of kernel: "<<mNumWorkItemsPerWorkGroup<< ";\n";
+//	LOG<<INFO_LOG_LEVEL<<"  Technical maximum     work group size of kernel: "<<maxPossibleWorkGRoupSizeOfThisKernel<< ";\n";
+//
+//	LOG<<INFO_LOG_LEVEL<<"  Compile time specified work group sizes of kernel: "
+//			<<
+//			Vector3Dui(
+//					(uint)(compileTimeRequiredWorkGRoupSizes[0]),
+//					(uint)(compileTimeRequiredWorkGRoupSizes[1]),
+//					(uint)(compileTimeRequiredWorkGRoupSizes[2])
+//			)<< ";\n";
+//	LOG<<INFO_LOG_LEVEL<<"  Local memory used by this kernel (bytes): "<<usedLocalMemByKernel<< ";\n";
+
+
+
 
 	if(maxPossibleWorkGRoupSizeOfThisKernel < mNumWorkItemsPerWorkGroup)
 	{

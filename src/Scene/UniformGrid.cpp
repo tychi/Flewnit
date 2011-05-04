@@ -381,47 +381,45 @@ unsigned int UniformGrid::splitAndCompactCells(String bufferSetName,UniformGridB
 	}
 
 
-//	//-----------------------------------------------------------------------------------------------------------
-//	//finish scan anc split&compact phase
-//
-//	CLKernel* splitNCompactKernel = mSplitAndCompactUniformGridProgram->getKernel("kernel_splitAndCompactUniformGrid");
-//
-//
-//	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementStartIndex")
-//		->set( getBufferSet(bufferSetName)->getStartIndices() );
-//
-//	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_NumElements")
-//		->set( getBufferSet(bufferSetName)->getElementCounts() );
-//
-//	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gCompactedUniGridCells_ElementStartIndex")
-//		->set( compactionResultBufferSet->getStartIndices() );
-//
-//	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gCompactedUniGridCells_NumElements")
-//		->set( compactionResultBufferSet->getElementCounts() );
-//
-//	//nothing else to set as argument for this kernel, intermediate buffers are already bound
-//	splitNCompactKernel->run(
-//		EventVector{
-//			//wait for the scan kernel to return (invocated above)
-//			scanKernel->getEventOfLastKernelExecution()
-//		}
-//	);
-//
-//	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
-//	{
-//		compactionResultBufferSet->dumpBuffers(
-//				String("UniGridBuffSet_")+bufferSetName+String("afterCompaction"),
-//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-//				false
-//		);
-//	}
-//
-//	//------------------------------------------------------------------------------------
-//	//read back total count:
-//	return mSplitAndCompactUniformGridProgram->readBackNumGeneratedNonEmptySplitCells();
+	//-----------------------------------------------------------------------------------------------------------
+	//finish scan and split&compact phase
 
-	//DEBUG!
-	return 1337;
+	CLKernel* splitNCompactKernel = mSplitAndCompactUniformGridProgram->getKernel("kernel_splitAndCompactUniformGrid");
+
+
+	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementStartIndex")
+		->set( getBufferSet(bufferSetName)->getStartIndices() );
+
+	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_NumElements")
+		->set( getBufferSet(bufferSetName)->getElementCounts() );
+
+	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gCompactedUniGridCells_ElementStartIndex")
+		->set( compactionResultBufferSet->getStartIndices() );
+
+	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gCompactedUniGridCells_NumElements")
+		->set( compactionResultBufferSet->getElementCounts() );
+
+	//nothing else to set as argument for this kernel, intermediate buffers are already bound
+	splitNCompactKernel->run(
+		EventVector{
+			//wait for the scan kernel to return (invocated above)
+			scanKernel->getEventOfLastKernelExecution()
+		}
+	);
+
+	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
+	{
+		compactionResultBufferSet->dumpBuffers(
+				String("UniGridBuffSet_")+bufferSetName+String("afterCompaction"),
+				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+				false
+		);
+	}
+
+	//------------------------------------------------------------------------------------
+	//read back total count:
+	return mSplitAndCompactUniformGridProgram->readBackNumGeneratedNonEmptySplitCells();
+
 
 }
 
