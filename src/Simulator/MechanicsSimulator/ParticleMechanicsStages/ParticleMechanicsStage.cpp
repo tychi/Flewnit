@@ -35,6 +35,7 @@
 #include "Material/ParticleFluidMechMat.h"
 #include "WorldObject/ParticleFluid.h"
 #include "Scene/ParticleAttributeBuffers.h"
+#include "Util/Log/Log.h"
 
 
 namespace Flewnit
@@ -298,10 +299,30 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 	mParticleSceneRepresentation->reorderAttributes();
 
+	//{ uniform grid stuff
+
 	mParticleUniformGrid->updateCells(
 		"particles",
 		mParticleSceneRepresentation->getParticleAttributeBuffers()->getZIndicesPiPoBuffer()
 	);
+
+	unsigned int numCurrentSPHSimulationWorkGroups =
+		mParticleUniformGrid->splitAndCompactCells(
+			"particles",
+			mSplitAndCompactedUniformGridCells
+		);
+
+	LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
+			<< numCurrentSPHSimulationWorkGroups << ";\n";
+
+	//}
+
+	//{ SPH stuff
+		//TODO
+
+
+	//}
+
 
 
 

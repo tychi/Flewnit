@@ -82,7 +82,8 @@
   
   //=====================================================================================
   __kernel __attribute__((reqd_work_group_size(NUM_WORK_ITEMS_PER_WORK_GROUP,1,1))) 
-  void kernel_scan_localPar_globalSeq(
+  void kernel_scan_localPar_globalSeq
+  (
     
     {% block tabulationArgs %} 
       __global uint* gValuesToTabulate, //NUM_TOTAL_ELEMENTS_TO_SCAN  elements

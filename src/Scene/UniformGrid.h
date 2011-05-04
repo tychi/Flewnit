@@ -114,8 +114,14 @@ public:
 	unsigned int splitAndCompactCells(String bufferSetName, UniformGridBufferSet* compactionResultBufferSet);
 
 
-
 private:
+
+	//debug routine to check what kernel_scan_localPar_globalSeq produced as input for
+	//kernel_splitAndCompactUniformGrid
+	void dumpIntermediateScanBuffers(
+			unsigned int frameNumber,
+			bool abortAfterDump
+	);
 
 	unsigned int mNumCellsPerDimension; //usually 64
 	Vector4D mMinCornerPosition;

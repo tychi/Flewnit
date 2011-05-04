@@ -242,7 +242,7 @@ void SplitAndCompactUniformGridProgram::createKernels()
 
 
 //to be called after kernel run to grab the total sum of the scan process;
-unsigned int SplitAndCompactUniformGridProgram::readBackNumGeneratedNonEmptySplijtCells()
+unsigned int SplitAndCompactUniformGridProgram::readBackNumGeneratedNonEmptySplitCells()
 {
 	BufferInterface* bufferWithTotalScanSum =
 		getKernel("kernel_splitAndCompactUniformGrid")->getCLKernelArguments()

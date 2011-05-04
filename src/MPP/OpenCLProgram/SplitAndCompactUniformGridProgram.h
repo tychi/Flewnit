@@ -25,7 +25,7 @@ public:
 	SplitAndCompactUniformGridProgram(UniformGrid* uniGrid);
 
 	//to be called after kernel run to grab the total sum of the scan process;
-	unsigned int readBackNumGeneratedNonEmptySplijtCells();
+	unsigned int readBackNumGeneratedNonEmptySplitCells();
 
 protected:
 

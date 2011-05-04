@@ -29,6 +29,7 @@
 #include "URE.h"
 #include "Util/Time/FPSCounter.h"
 #include "Util/Log/Log.h"
+#include "Buffer/IntermediateResultBuffersManager.h"
 
 
 namespace Flewnit
@@ -371,39 +372,168 @@ unsigned int UniformGrid::splitAndCompactCells(String bufferSetName,UniformGridB
 		}
 	);
 
+	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
+	{
+		dumpIntermediateScanBuffers(
+				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+				false
+		);
+	}
 
-	//-----------------------------------------------------------------------------------------------------------
-	//finish scan anc split&compact phase
 
-	CLKernel* splitNCompactKernel = mSplitAndCompactUniformGridProgram->getKernel("kernel_splitAndCompactUniformGrid");
+//	//-----------------------------------------------------------------------------------------------------------
+//	//finish scan anc split&compact phase
+//
+//	CLKernel* splitNCompactKernel = mSplitAndCompactUniformGridProgram->getKernel("kernel_splitAndCompactUniformGrid");
+//
+//
+//	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementStartIndex")
+//		->set( getBufferSet(bufferSetName)->getStartIndices() );
+//
+//	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_NumElements")
+//		->set( getBufferSet(bufferSetName)->getElementCounts() );
+//
+//	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gCompactedUniGridCells_ElementStartIndex")
+//		->set( compactionResultBufferSet->getStartIndices() );
+//
+//	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gCompactedUniGridCells_NumElements")
+//		->set( compactionResultBufferSet->getElementCounts() );
+//
+//	//nothing else to set as argument for this kernel, intermediate buffers are already bound
+//	splitNCompactKernel->run(
+//		EventVector{
+//			//wait for the scan kernel to return (invocated above)
+//			scanKernel->getEventOfLastKernelExecution()
+//		}
+//	);
+//
+//	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
+//	{
+//		compactionResultBufferSet->dumpBuffers(
+//				String("UniGridBuffSet_")+bufferSetName+String("afterCompaction"),
+//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//				false
+//		);
+//	}
+//
+//	//------------------------------------------------------------------------------------
+//	//read back total count:
+//	return mSplitAndCompactUniformGridProgram->readBackNumGeneratedNonEmptySplitCells();
+
+	//DEBUG!
+	return 1337;
+
+}
+
+//debug routine to check what kernel_scan_localPar_globalSeq produced as input for
+//kernel_splitAndCompactUniformGrid
+void UniformGrid::dumpIntermediateScanBuffers(
+	unsigned int frameNumber,
+	bool abortAfterDump
+)
+{
+	IntermediateResultBuffersManager* imrm =
+			CLProgramManager::getInstance().getIntermediateResultBuffersManager();
+
+	imrm->getBuffer(0)->readBack(true);
+	imrm->getBuffer(1)->readBack(true);
+	imrm->getBuffer(2)->readBack(true);
+	imrm->getBuffer(3)->readBack(true);
 
 
-	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_ElementStartIndex")
-		->set( getBufferSet(bufferSetName)->getStartIndices() );
+	std::fstream fileStream;
 
-	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gUniGridCells_NumElements")
-		->set( getBufferSet(bufferSetName)->getElementCounts() );
+	Path path =
+		Path( FLEWNIT_DEFAULT_OPEN_CL_KERNEL_SOURCES_PATH )
+		/ String("bufferDumps")
+		/
+		Path(
+			String("bufferDump_")
+			+ "UniformGrid_IntermediateScanBuffers"
+			+ String("_frame_")
+			+ HelperFunctions::toString(frameNumber)
+			+ String(".txt")
+		);
 
-	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gCompactedUniGridCells_ElementStartIndex")
-		->set( compactionResultBufferSet->getStartIndices() );
 
-	splitNCompactKernel->getCLKernelArguments()->getBufferArg("gCompactedUniGridCells_NumElements")
-		->set( compactionResultBufferSet->getElementCounts() );
-
-	//nothing else to set as argument for this kernel, intermediate buffers are already bound
-	splitNCompactKernel->run(
-		EventVector{
-			//wait for the scan kernel to return (invocated above)
-			scanKernel->getEventOfLastKernelExecution()
-		}
+	fileStream.open(
+		path.string().c_str(),
+		std::ios::out
 	);
 
 
-	//------------------------------------------------------------------------------------
-	//read back total count:
-	return mSplitAndCompactUniformGridProgram->readBackNumGeneratedNonEmptySplijtCells();
+    //__global uint* gLocallyScannedTabulatedValues, //NUM_TOTAL_ELEMENTS_TO_SCAN  elements
+    //__global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_ELEMENTS__GLOBAL_SCAN elements
+    //__global uint* gSumsOfPartialGlobalScans  //at least NUM_BASE2_CEILED_COMPUTE_UNITS + 1  elements;
+
+	unsigned int* locallyScannedTabulatedValues =
+		reinterpret_cast<unsigned int*>(imrm->getBuffer(0)->getCPUBufferHandle());
+
+	unsigned int* partiallyGloballyScannedTabulatedValues =
+		reinterpret_cast<unsigned int*>(imrm->getBuffer(1)->getCPUBufferHandle());
+
+
+	unsigned int* sumsOfPartialGlobalScans =
+		reinterpret_cast<unsigned int*>(imrm->getBuffer(2)->getCPUBufferHandle());
+
+	uint numTotalCells = mNumCellsPerDimension * mNumCellsPerDimension * mNumCellsPerDimension;
+	//corresponds to the NUM_ELEMENTS__GLOBAL_SCAN macro value in scan_localPar_globalSeq.cl
+	uint numGlobalScanElements  =
+		numTotalCells
+		/
+		( 2 * HelperFunctions::floorToNextPowerOfTwo(PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize ) )  ;
+	uint numLocalScanElements = numTotalCells / numGlobalScanElements;
+
+	fileStream <<"Following sums of partial global scans:\n\n";
+	for(uint i = 0;
+		i < HelperFunctions::ceilToNextPowerOfTwo(PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxComputeUnits)  ;
+		i++)
+	{
+		fileStream
+		<<"index:"<< i  <<"; "
+		<<"value: " << sumsOfPartialGlobalScans[ i ] <<"; "
+		<<"\n"
+		;
+	}
+	fileStream <<"\n\n";
+
+	fileStream <<"Following partial global scans:\n\n";
+	for(uint globalStrideRunner = 0; globalStrideRunner < numGlobalScanElements ; globalStrideRunner++)
+	{
+		fileStream
+			<<"global stride index:"<< globalStrideRunner  <<"; "
+			<<"scanned value: " << partiallyGloballyScannedTabulatedValues[ globalStrideRunner ] <<"; "
+			<<"\n"
+			;
+	}
+	fileStream <<"\n\n";
+
+
+
+	fileStream <<"Following local scans:\n\n";
+	for(uint globalStrideRunner = 0; globalStrideRunner < numGlobalScanElements ; globalStrideRunner++)
+	{
+		fileStream <<"global stride "<< globalStrideRunner  <<";\n";
+		for(uint localStrideRunner = 0; localStrideRunner < numLocalScanElements ; localStrideRunner++)
+		{
+			fileStream
+						<<"global index:"<< globalStrideRunner * numLocalScanElements + localStrideRunner <<"; "
+						<<"local index:"<< localStrideRunner<<"; "
+						<<"scanned value: "
+							<< locallyScannedTabulatedValues[
+							       globalStrideRunner * numLocalScanElements + localStrideRunner ] <<"; "
+						<<"\n"
+						;
+		}
+	}
+
+
+
+
+
 
 }
+
 
 void UniformGrid::setupZIndexLookUpTable() //called by constructor
 {
