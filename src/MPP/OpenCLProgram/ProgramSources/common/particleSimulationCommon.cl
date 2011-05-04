@@ -53,8 +53,8 @@
     #define IS_RIGID_BODY_PARTICLE( particleObjectID ) ( ( particleObjectID ) >= RIGID_BODY_OBJECT_START_INDEX )                       
     #define BELONGS_TO_RIGID_BODY( particleObjectID )  ( ( particleObjectID ) >= RIGID_BODY_OBJECT_START_INDEX )
     
-    #define IS_INVALID_PARTICLE( particleObjectID )       ( ( particleObjectID ) <  INVALID_OBJECT_ID )
-    #define BELONGS_TO_INVALID_OBJECT( particleObjectID )        ( ( particleObjectID ) <  INVALID_OBJECT_ID )   
+    #define IS_INVALID_PARTICLE( particleObjectID )       ( ( particleObjectID ) ==  INVALID_OBJECT_ID )
+    #define BELONGS_TO_INVALID_OBJECT( particleObjectID )        ( ( particleObjectID ) ==  INVALID_OBJECT_ID )  
     
                              
     //convenience macros to handle offset stuff for rigid bodies

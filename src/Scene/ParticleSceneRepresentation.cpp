@@ -74,6 +74,8 @@ ParticleSceneRepresentation::ParticleSceneRepresentation(
 			true
 		);
 
+	//TODO init invalid object feature to the correct values (mass=0, density=infinite)
+
 	//NOTE: even if mNumMaxRigidBodies == 0, we create a 128 byte buffer;
 	//why? Because OpenCL kernels bug  if the don't get valid buffers passed to their
 	//buffer arguments; NULL pointers don't seem to exist for kernel args ;(

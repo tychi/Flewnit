@@ -27,6 +27,16 @@
       *cSimParams->inverseUniGridCellSizes
     ;    
     
+    //the mod for negative vals doesnt work like on the CPU :(
+    //int4 uniGridIntIndex = convert_int4( uniGridFloatIndex ) % NUM_UNIGRID_CELLS_PER_DIMENSION  ;
+    
+    
+    
+    //shift to positive domain if negative:
+    //the screwed spce defines to return PLUS 1 for negative scalar floats, 
+    //but to return MINUS 1 in each intn component for negative components of vector floats; wtf!
+    uniGridFloatIndex -= convert_float4(signbit(uniGridFloatIndex)) * ( (float)(NUM_UNIGRID_CELLS_PER_DIMENSION) );
+    
     return (
       cGridPosToZIndexLookupTable[ 0* NUM_UNIGRID_CELLS_PER_DIMENSION + (uint)(uniGridFloatIndex.x) ]
       |

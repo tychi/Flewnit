@@ -73,7 +73,11 @@
                           //* kernel
                           * poly6( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams )
                           ;
+                          
+                          //DEBUG
+                          //debugVariable++;
                       }
+
   //----------------------------------------------------------------------------------------------------
   {% endblock performSPHCalculations %}
 
@@ -92,9 +96,25 @@
       pattern:  g<attribute name plural>New[ lwiID ] = own<attribute name singular>;
     {% endcomment %}
       
-    if( BELONGS_TO_FLUID( ownParticleObjectID  ) )
+    if( IS_FLUID_PARTICLE( ownParticleObjectID  ) )
     {
-      gDensitiesNew[ ownGlobalAttributeIndex ] = ownDensity;      
+      gDensitiesNew[ ownGlobalAttributeIndex ] = ownDensity;   
+      
+      gDensitiesNew[ ownGlobalAttributeIndex ] = (float) ( debugVariable );
+      
+      //int4 signbits = signbit((float4)(1.0f,-1.0f,-1.0f,1.0f));
+      
+     //gDensitiesNew[ ownGlobalAttributeIndex ] =
+       //getZIndex(  ownPosition - cSimParams->uniGridCellSizes , cSimParams, cGridPosToZIndexLookupTable );
+       //getZIndex( (float4)(-1.0f,-1.0f,-1.0f,1.0f) , cSimParams, cGridPosToZIndexLookupTable );
+       //getZIndex( (float4)(1.0f,1.0f,1.0f,1.0f) , cSimParams, cGridPosToZIndexLookupTable );
+       //fmod(-1.0f,64.0f);
+       //(float)( (int)(-1) % (int)(NUM_UNIGRID_CELLS_PER_DIMENSION ) ); //<-- wtf -1! should be NUM_UNIGRID_CELLS_PER_DIMENSION-1 !! fffuu
+       //(float)(signbit(1.0f)); //<-- returns int 0
+       //(float)(signbit(-1.0f)); //<-- returns int 1
+       //signbits.x; //<-- returns int  0 if signbits = signbit((float4)( 1.0f,1.0f,1.0f,1.0f));
+       //signbits.x; //<-- returns int -1 if signbits = signbit((float4)(-1.0f,-1.0f,-1.0f,1.0f)); wtf, another spec for vecs than for scalars fffuu
+      
     }
     else
     {
@@ -102,7 +122,10 @@
       gDensitiesNew[ ownGlobalAttributeIndex ] =  cObjectGenericFeatures[ ownParticleObjectID ].restDensity;
       //see member definition of the SimulationParameters structure for further info on this value 
       //* cSimParams->inverseRigidBodyParticleizationVoxelVolume ;
+      
+      //gDensitiesNew[ ownGlobalAttributeIndex ] = 666.0f;
     }
+    
 
   {% endblock uploadUpdatedParticleAttribs %}
   

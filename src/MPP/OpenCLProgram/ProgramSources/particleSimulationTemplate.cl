@@ -119,34 +119,45 @@
 {% endblock triangleBufferKernelArgs %}
   )
   {
-  
+    //DEBUG
+    uint debugVariable=0;
   
     {% block getCL_IDs %}
      uint lwiID = get_local_id(0); // short for "local work item ID"
      uint gwiID = get_global_id(0); // short for "global work item ID"
      uint groupID =  get_group_id(0);
     {% endblock getCL_IDs %}
+     
   
-  
-    uint numParticlesInOwnGroup = gUniGridCells_NumParticles[ groupID ];
-    uint ownGlobalAttributeIndex = gUniGridCells_ParticleStartIndex[ groupID ] + lwiID;
+    //uint numParticlesInOwnGroup = gUniGridCells_NumParticles[ groupID ]; <-- BULLSHIT! shame on me ;(
+    //uint ownGlobalAttributeIndex = gUniGridCells_ParticleStartIndex[ groupID ] + lwiID;
+    
+    uint numParticlesInOwnGroup =  gSimWorkGroups_NumParticles[ groupID ];
+    uint ownGlobalAttributeIndex = gSimWorkGroups_ParticleStartIndex[ groupID ] + lwiID;
 
-    /*alloc local mem for neighbrours, grab needed attributes for own particles, store them to private mem*/  
-    float4 ownPosition;
-    __local float4 lCurrentNeighbourPositions[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
-    uint ownParticleObjectID;
-    __local uint lCurrentNeighbourParticleObjectIDs[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
-   
+     
+    //{ alloc local mem for neighbours, grab needed attributes for own particles, store them to private mem 
+    
+      float4 ownPosition;
+      __local float4 lCurrentNeighbourPositions[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
       
-{% block kernelDependentParticleAttribsMalloc %} 
-  {% comment %} pattern:
-    for each needed attribute: 
-      <attribute type> own<attribute name singular>;
-      optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ]; 
-  {% endcomment %}
+      uint ownParticleObjectID;
+      //note: here are really __object__ IDs (not the compound named "object info", consisting ob object ID and particle index within object)
+      //stored, i.e. no particle index info is in it;
+      __local uint lCurrentNeighbourParticleObjectIDs[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
+     
+        
+      {% block kernelDependentParticleAttribsMalloc %} 
+        {% comment %} pattern:
+          for each needed attribute: 
+            <attribute type> own<attribute name singular>;
+            optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ]; 
+        {% endcomment %}
 
-      
-{% endblock kernelDependentParticleAttribsMalloc %}
+            
+      {% endblock kernelDependentParticleAttribsMalloc %}
+    
+    //}
       
       
     if(lwiID < numParticlesInOwnGroup )
@@ -155,66 +166,107 @@
       ownParticleObjectID = GET_OBJECT_ID( gParticleObjectInfos[ ownGlobalAttributeIndex ] );
         
         
-{% block kernelDependentOwnParticleAttribsInit %} 
-     
-{% endblock kernelDependentOwnParticleAttribsInit %}
+    {% block kernelDependentOwnParticleAttribsInit %} 
+         
+    {% endblock kernelDependentOwnParticleAttribsInit %}
     
         
-    }//end if(lwiID < numParticlesInOwnGroup )
+    } //end if(lwiID < numParticlesInOwnGroup )
+    //note: no barrier() necessary here;
      
-    float4 posInNeighbour = ownPosition - cSimParams->uniGridCellSizes;
-    //iterate over all 3^3=27 neigbour voxels, includin the own one:
-   //#pragma unroll
-    for(int x=-1;x<=1;x++)
+    //note: I don't know if it is possible to efficiently compute the 3D-neighbour from a z-index;
+    //      This is why I compute a 3D position from the own particles 3D position, and compute from this
+    //      3D neighbour position the neighbour's z-Index; TODO research a more direct/ more efficient way;
+    float4 posInNeighbour;
+    posInNeighbour.w = 1.0f; //dunno if necessary...
+    
+          //init neighbour position so that it is in the "left lower behind" neighbour voxel;
+          //float4 posInNeighbour = ownPosition -  cSimParams->uniGridCellSizes;
+    
+    //iterate over all 3^3=27 neigbour voxels, including the own one:
+    
+    //set neighbour position so that it starts in the "behind" neighbour voxel;
+    posInNeighbour.z = ownPosition.z -  cSimParams->uniGridCellSizes.z;
+    //#pragma unroll
+    for(int z=-1;z<=1;z++)
     {
-     //#pragma unroll
+      //(re-)set neighbour position so that it starts in the lower neighbour voxel;
+      posInNeighbour.y = ownPosition.y -  cSimParams->uniGridCellSizes.y;
+      //#pragma unroll
       for(int y=-1;y<=1;y++)
       {
-       //#pragma unroll
-        for(int z=-1;z<=1;z++)
+        //(re-)set neighbour position so that it starts in the left neighbour voxel;
+        posInNeighbour.x = ownPosition.x -  cSimParams->uniGridCellSizes.x;
+        //#pragma unroll   
+        for(int x=-1;x<=1;x++)
         {            
           //get the "modulo" z-index, i.e border cells will interact with the border cells on the opposite side;
           //we accept this performance penalty, as we get en unlimited simulation domain this way, though performance
           //drastically decreases when particle are not all in "one rest group" of the uniform grid, because then,
           //particles land in the same "buckets" which aren't spacially adjacent, hence such calculations are in vain;
           uint neighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
-          uint numRemainingNeighbourParticlesToInteract = gUniGridCells_NumParticles[ neighbourZIndex ];
           
-          if(numRemainingNeighbourParticlesToInteract > 0)
-          {
+          uint numRemainingNeighbourParticlesToInteractWith = gUniGridCells_NumParticles[ neighbourZIndex ];
+          
+
+       
+          //neighbour cell not empty?
+          //alternate notation with the same application logic, but hopefully better suited to work around the compilerbug
+          //(see splitAndCompactUniformGrid.cl for more info about this bug)
+          //note: no work item divergence here, hence the continue should NOT corrupt the barrier();          
+          //if(numRemainingNeighbourParticlesToInteractWith == 0) continue; 
+          //if(numRemainingNeighbourParticlesToInteractWith > 0)
+          //====================== "break point" here in case of empty neighbour cell, same for all work groups, no divergence =====
+          
+  //debugVariable++;      
+          
+
+          
             uint neighbourParticleStartIndex = gUniGridCells_ParticleStartIndex[ neighbourZIndex ];
-            uint numNeighbourSimWorkGroups = GET_NUM_SIM_WORK_GROUPS_OF_CELL( numRemainingNeighbourParticlesToInteract ); 
+            uint numNeighbourSimWorkGroups = GET_NUM_SIM_WORK_GROUPS_OF_CELL( numRemainingNeighbourParticlesToInteractWith ); 
+            
+            //sequential work on neighbours simulation work groups
+            //the compiler bug should not occur here, because again, there is no work item divergence;
+            //TODO check if this is true ;(
             for(uint simGroupRunner=0; simGroupRunner < numNeighbourSimWorkGroups; simGroupRunner++ )
-            {       
+            {
+     
+     debugVariable++;      
+                                             
               //grab all neighbours in particle stride
-              if(lwiID < numRemainingNeighbourParticlesToInteract)
+              if(lwiID < numRemainingNeighbourParticlesToInteractWith)
               {
                 lCurrentNeighbourPositions[ lwiID ] = gPositionsOld[ neighbourParticleStartIndex + lwiID ];
-                lCurrentNeighbourParticleObjectIDs[ lwiID ] = GET_OBJECT_ID( gParticleObjectInfos[ neighbourParticleStartIndex + lwiID ] );
+                lCurrentNeighbourParticleObjectIDs[ lwiID ] = 
+                    GET_OBJECT_ID( gParticleObjectInfos[ neighbourParticleStartIndex + lwiID ] );
                  
                   
                 {% block kernelDependentNeighbourParticleAttribsDownload %} 
                   {% comment %}
                     pattern:  lCurrentNeighbour<attribute name plural>[ lwiID ] = g<attribute name singular>Old[ neighbourParticleStartIndex + lwiID ]; 
                   {% endcomment %}
-                                  
+                                                    
+                {% endblock kernelDependentNeighbourParticleAttribsDownload %} 
+                                
+                           
+              } //end if(lwiID < numRemainingNeighbourParticlesToInteractWith)   
+            
 
-                                      
-                {% endblock kernelDependentNeighbourParticleAttribsDownload %}                 
-                 
-                 
-              } //end if(lwiID < numRemainingNeighbourParticlesToInteract)  
-              
-              barrier(CLK_LOCAL_MEM_FENCE); //all current neighvours shall be available to any work item
+         
+              barrier(CLK_LOCAL_MEM_FENCE); //all freshly downloaded current neighbours shall be available to any work item
+            
+    
                   
-              //for each particle in own simulation group in parallel do...
-              if(lwiID < numParticlesInOwnGroup)
-              {    
-                //accum SPH calculations
-                for(uint interactingLocalIndex=0; interactingLocalIndex < numRemainingNeighbourParticlesToInteract; interactingLocalIndex++ )
-                {
-                    
-                    
+  
+              //accum SPH calculations in sequence for each neigbour particle ...
+              //the compiler bug should not occur here, because again, there is no work item divergence;
+              for(uint interactingLocalIndex=0; interactingLocalIndex < numRemainingNeighbourParticlesToInteractWith; interactingLocalIndex++ )
+              {
+                                    
+                //for each particle in own simulation group in parallel do...
+                if(lwiID < numParticlesInOwnGroup)
+                {  
+                
                   {% block performSPHCalculations %}
                   //----------------------------------------------------------------------------------------------------
                     {% comment %}
@@ -225,18 +277,31 @@
                   {% endblock performSPHCalculations %}
 
 
-                }  //end accum SPH calculations
-                neighbourParticleStartIndex += NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP;
-                numRemainingNeighbourParticlesToInteract -= NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP;
-              }//end if(lwiID < numParticlesInOwnGroup)
-            }  //end for simGroupRunner     
-          }//endif(numRemainingNeighbourParticlesToInteract >0)
-          posInNeighbour.z += cSimParams->uniGridCellSizes.z;
-        }  //end for z
+                } //end if(lwiID < numParticlesInOwnGroup)  
+                
+                
+              }//end accum SPH calculations 
+            
+            
+            
+              neighbourParticleStartIndex += NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP;
+              numRemainingNeighbourParticlesToInteractWith -= NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP;
+            
+            
+              //synch, because not every local particle may have finished its loop over the currently stored neighbours 
+              //before new neighbour particles are downloaded to local mem;
+              barrier(CLK_LOCAL_MEM_FENCE); 
+               
+          
+            }// end sequential work on one neighbour's simulation work groups
+          
+          
+          posInNeighbour.x +=  cSimParams->uniGridCellSizes.x;
+        }  //end for x
         posInNeighbour.y += cSimParams->uniGridCellSizes.y;
       }  //end for y
-      posInNeighbour.x += cSimParams->uniGridCellSizes.x;
-    } //end for x
+      posInNeighbour.z +=  cSimParams->uniGridCellSizes.z;
+    } //end for z
     
     
     //---------------------------------------------
