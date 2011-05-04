@@ -278,9 +278,33 @@
           uint numSimWorkGroupsOfThisCell = GET_NUM_SIM_WORK_GROUPS_OF_CELL( currentNumResidentElements ); 
         //}
    
-        uint currentElementStartIndex = gUniGridCells_ElementStartIndex[ globalNonCompatcedCellIndex ];
            
-        //split
+        //split ------------------------------------------------------------------------------------------
+        
+        //NOTE: There is either a bug in the OpenCL compiler, orthere is a very hidden limitation of the language spcification: 
+        //      the computer completely freezes for several seconds and aborts the program with a cl::Error afterwards,
+        //      if the following codintions are existant: there is 
+        //        - a loop condition depending on the work item ID and
+        //        - a memory access depending on the loop variable; 
+        //      I suspect that the scheduler issues memory accesses  for ALL work items 
+        //      BEFORE possibly deactivating several work items; memory access for those work items is not actually executed, 
+        //      but even the fact that there is an adress whose calculation parameters 'logically' don't exist, 
+        //      seems to screw up the scheduling; Just some speculation; 
+        //
+        //      My work around: 
+        //      Guess a priori a global maximum of expected iterations, make this the loop condition, 
+        //      and inside the loop, do a break if the work item dependent 'real' loop condition is false; HAXX;  :(
+        //
+        //      Because on-the-fly computation of the max. split cell size via atomics is too expensive, we have to guess
+        //      a global maximum; If this maximum is exceeded, the simuilation will be corrupted;
+        //      If the maximum is too large, we possibly waste computation time (if the break is implemented in a strage way...
+        //      I don't know at the moment ).
+        //      We have to be very careful with this value; For the beginning, better choose it to big than too small, 
+        //      For the sake of correctness
+        
+        //TODO if() - the memory grab; screwed control flow thanks to the compiler bug
+        uint currentElementStartIndex = gUniGridCells_ElementStartIndex[ globalNonCompatcedCellIndex ];
+        
         //for(uint simGroupRunner=0; simGroupRunner < numSimWorkGroupsOfThisCell; simGroupRunner++ )
         for(uint simGroupRunner=0; simGroupRunner <  NUM_MAX_ALLOWED_UNIGRID_CELL_SPLIT_FACTOR; simGroupRunner++ )
         {
@@ -302,9 +326,14 @@
                 //for all but the last group, there are 32 elements in each sim work group
                 ? (NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP)
                 //the last sim work group gets the rest of the elements, namely currentNumResidentElements%32
-                  //: ( BASE_2_MODULO( currentNumResidentElements, NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP) ) 
-                : ( currentNumResidentElements % NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP ) 
+                //: ( BASE_2_MODULO( currentNumResidentElements, NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP) ) 
+                //: ( currentNumResidentElements % NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP ) <-- bullshit: 32 --> 0 ; meap!
+                :currentNumResidentElements
               ); 
+            //subtract so that in the end, there is a value in [1..32] to be uploaded; tryning to compute this val vie modulo screws up;
+            //because is unsigned, can become incredibly large; but in this case, the loop is exited anyway and this value not read
+            //anymore
+            currentNumResidentElements -= NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP;
 
             gCompactedUniGridCells_ElementStartIndex[ compactedIndex + simGroupRunner ] = 
               currentElementStartIndex
@@ -317,75 +346,7 @@
         }//endif(currentNumResidentElements >0)
         
         globalNonCompatcedCellIndex += (NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN/2);
-      }
-      
-          
-          
-          
-
-/*
-  //working but ugly-hacked experimentalversion
-  
-      //TODO check if unroll amortizes or not
-      //#pragma unroll
-      //for(uint i=0 ; i < 2; i++ )
-      {      
-        uint currentNumResidentElements =  gUniGridCells_NumElements[  globalNonCompatcedCellIndex ];
-        //uint numSimWorkGroupsOfThisCell = GET_NUM_SIM_WORK_GROUPS_OF_CELL( currentNumResidentElements );
-        uint numSimWorkGroupsOfThisCell = GET_NUM_SIM_WORK_GROUPS_OF_CELL( currentNumResidentElements );
-
-        uint compactedIndex = groupCompactionOffset + gLocallyScannedTabulatedValues[ globalNonCompatcedCellIndex ];
-        
-        //split
-        for(uint simGroupRunner=0; simGroupRunner < numSimWorkGroupsOfThisCell; simGroupRunner++ )
-        //for(uint simGroupRunner=0; simGroupRunner < 1; simGroupRunner++ )
-        {
-          //write out only non-empty grid cells!
-          //not that the buffer entries beyond lTotalSimWorkGroupCount aren't written and are hence undefined;
-          //but thats not a problem, becaus we don't use them!
-          
-          if( ( currentNumResidentElements == 0 ) ||  (simGroupRunner < numSimWorkGroupsOfThisCell) ) { break; }
-          
-          //if( currentNumResidentElements > 0 )
-          {
-            uint currentElementStartIndex = gUniGridCells_ElementStartIndex[ globalNonCompatcedCellIndex ];
-            //uint compactedIndex = groupCompactionOffset + gLocallyScannedTabulatedValues[ globalNonCompatcedCellIndex ];
-           
-            //gCompactedUniGridCells_NumElements[globalNonCompatcedCellIndex ] = 
-            //  simGroupRunner;
-
-            //compact
-
-            gCompactedUniGridCells_NumElements[compactedIndex + simGroupRunner] = 
-              ( 
-                ( simGroupRunner < (numSimWorkGroupsOfThisCell - 1 ) )
-                //for all but the last group, there are 32 elements in each sim work group
-                ? (NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP)
-                //the last sim work group gets the rest of the elements, namely currentNumResidentElements%32
-                  //: ( BASE_2_MODULO( currentNumResidentElements, NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP) ) 
-                : ( currentNumResidentElements % NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP ) 
-              ); 
-              
-            gCompactedUniGridCells_ElementStartIndex[ compactedIndex + simGroupRunner ] = 
-              currentElementStartIndex
-              //increment start index by intervals of 32
-              + (simGroupRunner << LOG2_NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP);  
-
-              
-            //DEBUG
-            //gCompactedUniGridCells_NumElements[compactedIndex + simGroupRunner] = 
-            // GET_NUM_SIM_WORK_GROUPS_OF_CELL( currentNumResidentElements );
-            //numSimWorkGroupsOfThisCell;
-          }  
-           
-        }//endif(currentNumResidentElements >0)
-        
-        globalNonCompatcedCellIndex += (NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN/2);
-      }
-
-*/
-
-        
+      }   
     
     }
     
