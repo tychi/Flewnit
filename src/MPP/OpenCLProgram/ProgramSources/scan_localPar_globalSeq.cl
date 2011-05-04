@@ -111,9 +111,11 @@
     
     if(lwiID == 0)
     {
-      //init start to zero (we do exclusive scans throughout the whole simulation)
+      //init start to zero (we do EXclusive scans (in contrast to INclusive) throughout the whole simulation)
       lPartiallyGloballyScannedTabulatedValues[0] = 0;
     }
+    //no barrier() necessary here, because this values is used not until efter the first exclusive scan,
+    //and before this point, there will be issued several barriers() anyway;
     
     uint globalLowerIndex = 
       groupID * NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY * NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN
@@ -123,6 +125,8 @@
                 //actually: +(NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN/2)
       + lwiID + NUM_WORK_ITEMS_PER_WORK_GROUP ;
       
+      
+      
     for(int localScanIntervalRunner = 0 ;  localScanIntervalRunner < NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY;  localScanIntervalRunner++)
     {      
     
@@ -130,7 +134,9 @@
         //tabulate global values and store them to local mem for scan
         lLocallyScannedTabulatedValues[ paddedLocalLowerIndex  ] = gValuesToTabulate[ globalLowerIndex  ];
         lLocallyScannedTabulatedValues[ paddedLocalHigherIndex ] = gValuesToTabulate[ globalHigherIndex ];
-      {% endblock tabulation %} 
+      {% endblock tabulation %}
+      
+      barrier(CLK_LOCAL_MEM_FENCE); //ensure current to-be-scanned-locally stride is available for every work item;
     
 
       //do the local parallel scan, grab the respective total sum
@@ -138,7 +144,8 @@
         lLocallyScannedTabulatedValues,
         & lTotalSumOfLocalScan,
         NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN,
-        lwiID );
+        lwiID 
+      );
       
       //write local scan results to global memory
       gLocallyScannedTabulatedValues[ globalLowerIndex  ] = lLocallyScannedTabulatedValues[ paddedLocalLowerIndex  ];
@@ -151,10 +158,14 @@
           lPartiallyGloballyScannedTabulatedValues[ localScanIntervalRunner ] + lTotalSumOfLocalScan;
       }  
       
+      //add one  "local stride" size so tha in the next iteration,
+      //the next stride is locally scanned (and contributes to the partial global scan ;) )
       globalLowerIndex  +=  NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN;
       globalHigherIndex +=  NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN;
             
     }//end sequential partial scan of parallel local scans
+    
+    
     
     if(lwiID < NUM_LOCAL_INTERVALS_TO_TREAT_SEQUENTIALLY )
     {
