@@ -36,6 +36,8 @@
 #include "WorldObject/ParticleFluid.h"
 #include "Scene/ParticleAttributeBuffers.h"
 #include "Util/Log/Log.h"
+#include "MPP/OpenCLProgram/CLKernelArguments.h"
+#include "MPP/OpenCLProgram/CLProgramManager.h"
 
 
 namespace Flewnit
@@ -299,6 +301,8 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 	mParticleSceneRepresentation->reorderAttributes();
 
+
+
 	//{ uniform grid stuff
 
 	mParticleUniformGrid->updateCells(
@@ -312,12 +316,37 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 			mSplitAndCompactedUniformGridCells
 		);
 
-//	LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
-//			<< numCurrentSPHSimulationWorkGroups << ";\n";
+	//	LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
+	//			<< numCurrentSPHSimulationWorkGroups << ";\n";
 
 	//}
 
 	//{ SPH stuff
+
+		CLKernelWorkLoadParams currentSPHKErnelWorkLoadParams(numCurrentSPHSimulationWorkGroups * mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup(),
+				mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup()
+		);
+
+		mUpdateDensityProgram->getKernel("kernel_updateDensity")->run(
+			EventVector{
+				CLProgramManager::getInstance().getProgram("splitAndCompactUniformGrid.cl")
+					->getKernel("kernel_splitAndCompactUniformGrid")
+					->getEventOfLastKernelExecution()
+			},
+			currentSPHKErnelWorkLoadParams
+		);
+
+
+		if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() ==0)
+		{
+			mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+				"AttributeBufferDump_DensityComputation",
+				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+				false
+			);
+		}
+
+
 		//TODO
 
 

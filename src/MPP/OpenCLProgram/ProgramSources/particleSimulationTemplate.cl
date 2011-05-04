@@ -193,18 +193,19 @@
                 lCurrentNeighbourParticleObjectIDs[ lwiID ] = GET_OBJECT_ID( gParticleObjectInfos[ neighbourParticleStartIndex + lwiID ] );
                  
                   
-{% block kernelDependentNeighbourParticleAttribsDownload %} 
-  {% comment %}
-    pattern:  lCurrentNeighbour<attribute name plural>[ lwiID ] = g<attribute name singular>Old[ neighbourParticleStartIndex + lwiID ]; 
-  {% endcomment %}
-                  
+                {% block kernelDependentNeighbourParticleAttribsDownload %} 
+                  {% comment %}
+                    pattern:  lCurrentNeighbour<attribute name plural>[ lwiID ] = g<attribute name singular>Old[ neighbourParticleStartIndex + lwiID ]; 
+                  {% endcomment %}
+                                  
 
-                      
-{% endblock kernelDependentNeighbourParticleAttribsDownload %}                 
+                                      
+                {% endblock kernelDependentNeighbourParticleAttribsDownload %}                 
                  
                  
               } //end if(lwiID < numRemainingNeighbourParticlesToInteract)  
-              barrier(CLK_LOCAL_MEM_FENCE);
+              
+              barrier(CLK_LOCAL_MEM_FENCE); //all current neighvours shall be available to any work item
                   
               //for each particle in own simulation group in parallel do...
               if(lwiID < numParticlesInOwnGroup)
@@ -214,14 +215,14 @@
                 {
                     
                     
-{% block performSPHCalculations %}
-//----------------------------------------------------------------------------------------------------
-  {% comment %}
-    the core of the physics simulation: accumulate all relevant values (density, pressure force, viscosity force etc ...)
-  {% endcomment %}
-  
-//----------------------------------------------------------------------------------------------------
-{% endblock performSPHCalculations %}
+                  {% block performSPHCalculations %}
+                  //----------------------------------------------------------------------------------------------------
+                    {% comment %}
+                      the core of the physics simulation: accumulate all relevant values (density, pressure force, viscosity force etc ...)
+                    {% endcomment %}
+                    
+                  //----------------------------------------------------------------------------------------------------
+                  {% endblock performSPHCalculations %}
 
 
                 }  //end accum SPH calculations
