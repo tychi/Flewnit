@@ -172,17 +172,23 @@
                = extendsOfOneCell * ( numCellsPerDimension +1 )
            -->
           <simulationDomainBorderMin  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!--
           <simulationDomainBorderMax  type="VEC4" x="195.0" y="195.0" z="195.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          -->
+          <simulationDomainBorderMax  type="VEC4" x="96.0" y="96.0" z="96.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
-          <gravityAcceleration  type="VEC4" x="0.0" y="-0.01" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <penaltyForceSpringConstant type="FLOAT" value="0.001" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <penaltyForceDamperConstant type="FLOAT" value="0.001" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <gravityAcceleration  type="VEC4" x="0.01" y="-0.05" z="0.02" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <penaltyForceSpringConstant type="FLOAT" value="0.8" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <penaltyForceDamperConstant type="FLOAT" value="10.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
  
           <numMaxUserForceControlPoints type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           <useConstantTimestep type="BOOL" value ="true" GUIVisibility="read"	tweakConfigString="TODO"/>
           <!-- used alway as timestep if useConstantTimestep;  1/60 seconds -->
+          <!--
           <constantTimeStep    type="FLOAT" value ="0.0166666" GUIVisibility="read"	tweakConfigString="TODO"/>
+          -->
+          <constantTimeStep    type="FLOAT" value ="0.166666" GUIVisibility="read"	tweakConfigString="TODO"/>
           <!-- scale factor for elapsed time in seconds to be used if !useConstantTimestep -->
           <timestepScale    type="FLOAT" value ="1.0" GUIVisibility="read"	tweakConfigString="TODO"/>
           

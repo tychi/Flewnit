@@ -258,7 +258,7 @@
       void setSimulationDomainBorders(float4 minCorner, float4 maxCorner)
       {
         this->simulationDomainBorders.minPos = minCorner;
-        this->simulationDomainBorders.minPos = maxCorner;
+        this->simulationDomainBorders.maxPos = maxCorner;
       }
       
       void setGravityAcceleration(float4 accel)
