@@ -197,20 +197,20 @@
     //set neighbour position so that it starts in the "behind" neighbour voxel;
     posInNeighbour.z = ownPosition.z -  cSimParams->uniGridCellSizes.z;
     //#pragma unroll
-    //for(int z=-1;z<=1;z++)
-    for(int z=-1;z<0;z++)
+    for(int z=-1;z<=1;z++)
+    //for(int z=-1;z<0;z++)
     {
       //(re-)set neighbour position so that it starts in the lower neighbour voxel;
       posInNeighbour.y = ownPosition.y -  cSimParams->uniGridCellSizes.y;
       //#pragma unroll
-     // for(int y=-1;y<=1;y++)
-      for(int y=-1;y<0;y++)
+      for(int y=-1;y<=1;y++)
+     // for(int y=-1;y<0;y++)
       {
         //(re-)set neighbour position so that it starts in the left neighbour voxel;
         posInNeighbour.x = ownPosition.x -  cSimParams->uniGridCellSizes.x;
         //#pragma unroll   
-        //for(int x=-1;x<=1;x++)
-        for(int x=-1;x<0;x++)
+       for(int x=-1;x<=1;x++)
+       // for(int x=-1;x<0;x++)
         {            
         
         
@@ -223,8 +223,8 @@
 if(lwiID == (NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP/2))
 {
 
-  lCurrentNeighbourZIndex = getZIndex( ownPosition, cSimParams, cGridPosToZIndexLookupTable );
- // lCurrentNeighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
+ // lCurrentNeighbourZIndex = getZIndex( ownPosition, cSimParams, cGridPosToZIndexLookupTable );
+  lCurrentNeighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
 }
 barrier(CLK_LOCAL_MEM_FENCE); 
 
