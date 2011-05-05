@@ -38,6 +38,7 @@
           
     //init to zero because the SPH calculations accumulate stuff in this variable;
     ownDensity = 1.0f;
+    //ownDensity = 0.0f;
        
   {% endblock kernelDependentOwnParticleAttribsInit %}
 
@@ -67,6 +68,7 @@
                       //
                       if( BELONGS_TO_FLUID( lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ) )
                       {
+
                         ownDensity +=
                           //mass 
                           cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle
@@ -82,7 +84,7 @@
                       //   optimized out by the compiler, this way not revealing the programmingf error;
                       //   when incrementing the debugg variable, the loop body wasn't optimized out and so the error was generated;
                       //
-                       debugVariable++;   //<-- indicator for number of interacted-with neighbour particles   
+                       //debugVariable++;   //<-- indicator for number of interacted-with neighbour particles   
 
                       }
                       

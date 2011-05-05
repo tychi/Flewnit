@@ -249,7 +249,6 @@
 
   {% block performSPHCalculations %}
   //----------------------------------------------------------------------------------------------------
-
                   // 
                   //  Pressure force
                   //
@@ -273,6 +272,7 @@
                       * gradSpiky( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams ).xyz
                       ;
                       
+/*
                   // 
                   //  Viscosity force 
                   //
@@ -291,7 +291,7 @@
                   // 
                   //   TODO maybe later Surface tension force
                   //
-
+*/
   //----------------------------------------------------------------------------------------------------
   {% endblock performSPHCalculations %}
 

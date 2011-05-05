@@ -136,6 +136,9 @@
     
     uint numParticlesInOwnGroup =  gSimWorkGroups_NumParticles[ groupID ];
     uint ownGlobalAttributeIndex = gSimWorkGroups_ParticleStartIndex[ groupID ] + lwiID;
+    
+    
+
 
      
     //{ alloc local mem for neighbours, grab needed attributes for own particles, store them to private mem 
@@ -168,9 +171,9 @@
       ownParticleObjectID = GET_OBJECT_ID( gParticleObjectInfos[ ownGlobalAttributeIndex ] );
         
         
-    {% block kernelDependentOwnParticleAttribsInit %} 
-         
-    {% endblock kernelDependentOwnParticleAttribsInit %}
+      {% block kernelDependentOwnParticleAttribsInit %} 
+           
+      {% endblock kernelDependentOwnParticleAttribsInit %}
     
         
     } //end if(lwiID < numParticlesInOwnGroup )
@@ -189,23 +192,28 @@
  
  
  
- /*
+
     
     //set neighbour position so that it starts in the "behind" neighbour voxel;
     posInNeighbour.z = ownPosition.z -  cSimParams->uniGridCellSizes.z;
     //#pragma unroll
-    for(int z=-1;z<=1;z++)
+    //for(int z=-1;z<=1;z++)
+    for(int z=-1;z<0;z++)
     {
       //(re-)set neighbour position so that it starts in the lower neighbour voxel;
       posInNeighbour.y = ownPosition.y -  cSimParams->uniGridCellSizes.y;
       //#pragma unroll
-      for(int y=-1;y<=1;y++)
+     // for(int y=-1;y<=1;y++)
+      for(int y=-1;y<0;y++)
       {
         //(re-)set neighbour position so that it starts in the left neighbour voxel;
         posInNeighbour.x = ownPosition.x -  cSimParams->uniGridCellSizes.x;
         //#pragma unroll   
-        for(int x=-1;x<=1;x++)
+        //for(int x=-1;x<=1;x++)
+        for(int x=-1;x<0;x++)
         {            
+        
+        
           //get the "modulo" z-index, i.e border cells will interact with the border cells on the opposite side;
           //we accept this performance penalty, as we get en unlimited simulation domain this way, though performance
           //drastically decreases when particle are not all in "one rest group" of the uniform grid, because then,
@@ -215,8 +223,8 @@
 if(lwiID == (NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP/2))
 {
 
-//  lCurrentNeighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
   lCurrentNeighbourZIndex = getZIndex( ownPosition, cSimParams, cGridPosToZIndexLookupTable );
+ // lCurrentNeighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
 }
 barrier(CLK_LOCAL_MEM_FENCE); 
 
@@ -265,6 +273,7 @@ barrier(CLK_LOCAL_MEM_FENCE);
                 lCurrentNeighbourParticleObjectIDs[ lwiID ] = 
                     GET_OBJECT_ID( gParticleObjectInfos[ neighbourParticleStartIndex + lwiID ] );
                  
+
                   
                 {% block kernelDependentNeighbourParticleAttribsDownload %} 
                   {% comment %}
@@ -272,11 +281,10 @@ barrier(CLK_LOCAL_MEM_FENCE);
                   {% endcomment %}
                                                     
                 {% endblock kernelDependentNeighbourParticleAttribsDownload %} 
-                                
+                              
                            
               } //end if(lwiID < numCurrentNeighbourSimGroupParticles)   
             
-
               barrier(CLK_LOCAL_MEM_FENCE); //all freshly downloaded current neighbours shall be available to any work item
             
      
@@ -291,6 +299,7 @@ barrier(CLK_LOCAL_MEM_FENCE);
                 //for each particle in own simulation group in parallel do...
                 if(lwiID < numParticlesInOwnGroup)
                 {  
+
 //DEBUG
 //debugVariable++;   //<-- indicator for number of interacted-with neighbour particles       
 
@@ -303,6 +312,7 @@ barrier(CLK_LOCAL_MEM_FENCE);
                     
                   //----------------------------------------------------------------------------------------------------
                   {% endblock performSPHCalculations %}
+
 
 
                 } //end if(lwiID < numParticlesInOwnGroup)  
@@ -330,7 +340,7 @@ barrier(CLK_LOCAL_MEM_FENCE);
       }  //end for y
       posInNeighbour.z +=  cSimParams->uniGridCellSizes.z;
     } //end for z
- */   
+
     
     //---------------------------------------------
       

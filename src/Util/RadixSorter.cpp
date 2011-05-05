@@ -155,28 +155,39 @@ RadixSorter::~RadixSorter()
 void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuffer)
 {
 	cl::Event eventToWaitFor;
-	//EventVector debugEventVec; //haxx for first pass debugging TODO remove when radix sort works;
-	switch (URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames()) {
-		case 0:
-			eventToWaitFor =
-				CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
-					->getKernel("kernel_initial_CalcZIndex")->getEventOfLastKernelExecution();
-			//eventVec.push_back(eventToWaitFor);
-			break;
-		case 1:
-			eventToWaitFor =
-				CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
-					->getKernel("kernel_initial_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
-			//TODO uncomment when finished with debugging the first pass;
-			//eventVec.push_back(eventToWaitFor);
-			break;
-		default:
-			eventToWaitFor =
-				CLProgramManager::getInstance().getProgram("updateForce_integrate_calcZIndex.cl")
-					->getKernel("kernel_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
-			//TODO uncomment when finished with debugging the first pass;
-			//eventVec.push_back(eventToWaitFor);
-			break;
+
+	try
+	{
+		//EventVector debugEventVec; //haxx for first pass debugging TODO remove when radix sort works;
+		switch (URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames()) {
+			case 0:
+				eventToWaitFor =
+					CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
+						->getKernel("kernel_initial_CalcZIndex")->getEventOfLastKernelExecution();
+				//eventVec.push_back(eventToWaitFor);
+				break;
+			case 1:
+				eventToWaitFor =
+					CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
+						->getKernel("kernel_initial_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
+				//TODO uncomment when finished with debugging the first pass;
+				//eventVec.push_back(eventToWaitFor);
+				break;
+			default:
+				eventToWaitFor =
+					CLProgramManager::getInstance().getProgram("updateForce_integrate_calcZIndex.cl")
+						->getKernel("kernel_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
+				//TODO uncomment when finished with debugging the first pass;
+				//eventVec.push_back(eventToWaitFor);
+				break;
+		}
+	}
+	catch(std::exception e)
+	{
+		eventToWaitFor =
+							CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
+								->getKernel("kernel_initial_CalcZIndex")->getEventOfLastKernelExecution();
+
 	}
 
 

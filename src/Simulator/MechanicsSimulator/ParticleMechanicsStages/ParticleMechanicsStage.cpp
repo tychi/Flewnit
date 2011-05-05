@@ -159,6 +159,7 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 	getSimParams()->setUniformGridParams(
 			mParticleUniformGrid->getMinCornerPosition(),
 			mParticleUniformGrid->getExtendsOfOneCell());
+
 	getSimParams()->setSimulationDomainBorders(
 		ConfigCaster::cast<Vector4D>( generalSettingsNode.get("simulationDomainBorderMin",0) ),
 		ConfigCaster::cast<Vector4D>( generalSettingsNode.get("simulationDomainBorderMax",0) )
@@ -404,36 +405,24 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 		}
 
-			//mParticleSceneRepresentation->getParticleAttributeBuffers()->getZIndicesPiPoBuffer()->toggleBuffers(); <--ping ponging only needed during radix sort!
-			mParticleSceneRepresentation->getParticleAttributeBuffers()->getPositionsPiPoBuffer()->toggleBuffers();
-			mParticleSceneRepresentation->getParticleAttributeBuffers()->getCorrectedVelocitiesPiPoBuffer()->toggleBuffers();
-			mParticleSceneRepresentation->getParticleAttributeBuffers()->getPredictedVelocitiesPiPoBuffer()->toggleBuffers();
-			mParticleSceneRepresentation->getParticleAttributeBuffers()->getLastStepsAccelerationsPiPoBuffer()->toggleBuffers();
+		//mParticleSceneRepresentation->getParticleAttributeBuffers()->getZIndicesPiPoBuffer()->toggleBuffers(); <--ping ponging only needed during radix sort!
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->getPositionsPiPoBuffer()->toggleBuffers();
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->getCorrectedVelocitiesPiPoBuffer()->toggleBuffers();
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->getPredictedVelocitiesPiPoBuffer()->toggleBuffers();
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->getLastStepsAccelerationsPiPoBuffer()->toggleBuffers();
 
+		if(
+		    (URE_INSTANCE->bufferDumpCondition() )
+		)
+		{
+			mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+				"AttributeBufferDump_ForceIntrZIndComputation_AfterToggle",
+				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+				false
+			);
+		}
 
-
-//
-//				if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() < 3)
-//				{
-//					mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
-//						"AttributeBufferDump_ForceIntrZIndComputation_BeforeToggle",
-//						URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-//						false
-//					);
-//				}
-
-
-				if(
-				    (URE_INSTANCE->bufferDumpCondition() )
-				)
-				{
-					mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
-						"AttributeBufferDump_ForceIntrZIndComputation_AfterToggle",
-						URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-						false
-					);
-				}
-	//}
+	//} //end SPH
 
 
 
