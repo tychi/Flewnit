@@ -137,15 +137,15 @@
         	<useFrameRateIndependentSimulationTimestep type="BOOL" value="TRUE" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <!-- value is always used as timestep if useFrameRateIndependentSimulationTimestep==true;
 	             this values is to ensure stability, at the cost of maybe a slow-motion simulation -->
-          <maxTimestepPerSimulationStep type="FLOAT" value="0.005" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <maxTimestepPerSimulationStep type="FLOAT" value="0.08" GUIVisibility="read/write" tweakConfigString="TODO"/>
 
           <!--
           <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="262144" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="16384" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          -->
           <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          -->
+          <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
           
@@ -173,9 +173,10 @@
            -->
           <simulationDomainBorderMin  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <!--
+          <simulationDomainBorderMax  type="VEC4" x="96.0" y="96.0" z="96.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <simulationDomainBorderMax  type="VEC4" x="195.0" y="195.0" z="195.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           -->
-          <simulationDomainBorderMax  type="VEC4" x="96.0" y="96.0" z="96.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <simulationDomainBorderMax  type="VEC4" x="64.0" y="64.0" z="64.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
           <gravityAcceleration  type="VEC4" x="0.0" y="-0.0075" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceSpringConstant type="FLOAT" value="1.75" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -243,10 +244,10 @@
             <!--          
             <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="262144" GUIVisibility="read" tweakConfigString="TODO"/>
-            <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="16384" GUIVisibility="read" tweakConfigString="TODO"/>
-            -->
             <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+            -->
+            <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
           
             <!--          
             <spawnAABBMin  type="VEC4" x="0.25" y="0.25" z="0.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -280,7 +281,7 @@
               <massPerParticle  type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <restDensity      type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <gasConstant      type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <viscosity        type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
+              <viscosity        type="FLOAT" value="0.125" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
             </ParticleFluidMechMat>
              
           </ParticleFluid>
