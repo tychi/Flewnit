@@ -164,9 +164,9 @@
   {% block performSPHCalculations %}
   //----------------------------------------------------------------------------------------------------
 
-                  /* 
-                    Pressure force
-                  */
+                  // 
+                  //  Pressure force
+                  //
                                            //MINUS!!     
                   ownPressureForceDensityNew.xyz -=
                       ( 
@@ -187,10 +187,10 @@
                       * gradSpiky( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams ).xyz
                       ;
                       
-                  /* 
-                    Viscosity force 
-                  */
-/*
+                  // 
+                  //  Viscosity force 
+                  //
+
                   ownViscosityForceDensityNew.xyz += 
                       //mass 
                       cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle
@@ -200,11 +200,11 @@
                       //kernel
                       * laplacianViscosity( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams ) 
                       ;    
-*/                 
+                 
                       
-                  /* 
-                     TODO maybe later Surface tension force
-                  */
+                  // 
+                  //   TODO maybe later Surface tension force
+                  //
 
   //----------------------------------------------------------------------------------------------------
   {% endblock performSPHCalculations %}
@@ -231,7 +231,7 @@
         ( (ownPressureForceDensityNew + ownViscosityForceDensityNew ) / ownDensity ) //TODO native_divide or precompute inverse;
         //add gravity term, is already an acceleration
         + cSimParams->gravityAcceleration
-        + staticGeomCollisionAcceleration
+        //+ staticGeomCollisionAcceleration
         ;
         
       

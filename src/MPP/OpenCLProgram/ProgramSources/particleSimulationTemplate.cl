@@ -121,6 +121,8 @@
   {
     //DEBUG
     uint debugVariable=0;
+    
+    __local uint lCurrentNeighbourZIndex;
   
     {% block getCL_IDs %}
      uint lwiID = get_local_id(0); // short for "local work item ID"
@@ -184,6 +186,10 @@
           //float4 posInNeighbour = ownPosition -  cSimParams->uniGridCellSizes;
     
     //iterate over all 3^3=27 neigbour voxels, including the own one:
+ 
+ 
+ 
+ /*
     
     //set neighbour position so that it starts in the "behind" neighbour voxel;
     posInNeighbour.z = ownPosition.z -  cSimParams->uniGridCellSizes.z;
@@ -204,10 +210,19 @@
           //we accept this performance penalty, as we get en unlimited simulation domain this way, though performance
           //drastically decreases when particle are not all in "one rest group" of the uniform grid, because then,
           //particles land in the same "buckets" which aren't spacially adjacent, hence such calculations are in vain;
-          uint neighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
+          //uint neighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
+
+if(lwiID == (NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP/2))
+{
+
+//  lCurrentNeighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
+  lCurrentNeighbourZIndex = getZIndex( ownPosition, cSimParams, cGridPosToZIndexLookupTable );
+}
+barrier(CLK_LOCAL_MEM_FENCE); 
+
           
           //TODO if() this global mem acces; damns the screwed control flow when barrier()'s or mem accesses are involved
-          uint numRemainingNeighbourParticlesToInteractWith = gUniGridCells_NumParticles[ neighbourZIndex ];
+          uint numRemainingNeighbourParticlesToInteractWith = gUniGridCells_NumParticles[ lCurrentNeighbourZIndex ];
           
 
        
@@ -220,7 +235,7 @@
           //====================== "break point" here in case of empty neighbour cell, same for all work groups, no divergence =====
                 
           
-            uint neighbourParticleStartIndex = gUniGridCells_ParticleStartIndex[ neighbourZIndex ];
+            uint neighbourParticleStartIndex = gUniGridCells_ParticleStartIndex[ lCurrentNeighbourZIndex ];
             uint numNeighbourSimWorkGroups = GET_NUM_SIM_WORK_GROUPS_OF_CELL( numRemainingNeighbourParticlesToInteractWith ); 
             
             //sequential work on neighbours simulation work groups
@@ -315,7 +330,7 @@
       }  //end for y
       posInNeighbour.z +=  cSimParams->uniGridCellSizes.z;
     } //end for z
-    
+ */   
     
     //---------------------------------------------
       

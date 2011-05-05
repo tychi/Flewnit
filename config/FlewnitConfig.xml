@@ -174,7 +174,7 @@
           <simulationDomainBorderMin  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <simulationDomainBorderMax  type="VEC4" x="195.0" y="195.0" z="195.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
-          <gravityAcceleration  type="VEC4" x="0.0" y="-0.001" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <gravityAcceleration  type="VEC4" x="0.0" y="-0.01" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceSpringConstant type="FLOAT" value="0.001" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceDamperConstant type="FLOAT" value="0.001" GUIVisibility="read/write" tweakConfigString="TODO"/>
  

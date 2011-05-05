@@ -37,7 +37,7 @@
   {% block kernelDependentOwnParticleAttribsInit %} 
           
     //init to zero because the SPH calculations accumulate stuff in this variable;
-    ownDensity = 0.0f;
+    ownDensity = 1.0f;
        
   {% endblock kernelDependentOwnParticleAttribsInit %}
 
@@ -49,22 +49,22 @@
       pattern:  lCurrentNeighbour<attribute name plural>[ lwiID ] = g<attribute name singular>Old[ neighbourParticleStartIndex + lwiID ]; 
     {% endcomment %}
                   
-    /*empty for density calculations*/
+    //empty for density calculations
                       
   {% endblock kernelDependentNeighbourParticleAttribsDownload %} 
 
 
   {% block performSPHCalculations %}
   //----------------------------------------------------------------------------------------------------
-                      /* 
-                        Compute only SPH-density for fluid particles; Imagine a object consisting of Blumb within a Hydrogen cloud:
-                        The density of the Hydrogen gas is NOT increased by the proximity of plumb!
-                        (This means on the other side, that SPH-computed density DEcreases proprotionally with the surrounding
-                        percentage of rigid body volume; Considered on an infinitesimal scale, this doesn't seem physically plausible
-                        to me, too; But on the other hand, this "implausible low density" at fluid particles near rigid bodies
-                        yields pressure gradients pointing towards the rigid body for fluid particles slightly further away
-                        from the rigid body,  )
-                      */
+                      // 
+                      //  Compute only SPH-density for fluid particles; Imagine a object consisting of Blumb within a Hydrogen cloud:
+                      //  The density of the Hydrogen gas is NOT increased by the proximity of plumb!
+                      //  (This means on the other side, that SPH-computed density DEcreases proprotionally with the surrounding
+                      //  percentage of rigid body volume; Considered on an infinitesimal scale, this doesn't seem physically plausible
+                      //  to me, too; But on the other hand, this "implausible low density" at fluid particles near rigid bodies
+                      //  yields pressure gradients pointing towards the rigid body for fluid particles slightly further away
+                      //  from the rigid body,  )
+                      //
                       if( BELONGS_TO_FLUID( lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ) )
                       {
                         ownDensity +=
@@ -75,13 +75,13 @@
                           ;
                           
                       //DEBUG
-                      /* wtf, machine frezes and program crashes when uncommenting this... VERY strange; 
-                         EDIT: not, after all... don't know what fixed this, too^^; but i have a suggestion: 
-                         there was a false loop condition corrupting mem acceses; because of debug stuff, 
-                         the inner loop didnt contribute to global memory written values and hence was 
-                         optimized out by the compiler, this way not revealing the programmingf error;
-                         when incrementing the debugg variable, the loop body wasn't optimized out and so the error was generated;
-                       */
+                      // wtf, machine frezes and program crashes when uncommenting this... VERY strange; 
+                      //   EDIT: not, after all... don't know what fixed this, too^^; but i have a suggestion: 
+                      //   there was a false loop condition corrupting mem acceses; because of debug stuff, 
+                      //   the inner loop didnt contribute to global memory written values and hence was 
+                      //   optimized out by the compiler, this way not revealing the programmingf error;
+                      //   when incrementing the debugg variable, the loop body wasn't optimized out and so the error was generated;
+                      //
                        debugVariable++;   //<-- indicator for number of interacted-with neighbour particles   
 
                       }
