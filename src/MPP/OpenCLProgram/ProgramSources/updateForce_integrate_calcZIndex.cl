@@ -279,7 +279,7 @@
                   //  Viscosity force 
                   //
 
-/*
+
                   ownViscosityForceDensityNew.xyz += 
                       //mass 
                       cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle
@@ -289,7 +289,7 @@
                       //kernel
                       * laplacianViscosity( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams ) 
                       ;    
-*/
+
                  
                       
                   // 
