@@ -74,11 +74,18 @@
                           * poly6( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams )
                           ;
                           
+                      //DEBUG
+                      /* wtf, machine frezes and program crashes when uncommenting this... VERY strange; 
+                         EDIT: not, after all... don't know what fixed this, too^^; but i have a suggestion: 
+                         there was a false loop condition corrupting mem acceses; because of debug stuff, 
+                         the inner loop didnt contribute to global memory written values and hence was 
+                         optimized out by the compiler, this way not revealing the programmingf error;
+                         when incrementing the debugg variable, the loop body wasn't optimized out and so the error was generated;
+                       */
+                       debugVariable++;   //<-- indicator for number of interacted-with neighbour particles   
 
                       }
                       
-                      //DEBUG
-//debugVariable++;   //<-- indicator for number of interacted-with neighbour particles       
 
   //----------------------------------------------------------------------------------------------------
   {% endblock performSPHCalculations %}
@@ -102,7 +109,10 @@
     {
       gDensitiesNew[ ownGlobalAttributeIndex ] = ownDensity;   
       
-      gDensitiesNew[ ownGlobalAttributeIndex ] = (float) ( debugVariable );
+      //gDensitiesNew[ ownGlobalAttributeIndex ] = 
+        //cSimParams->SPHsupportRadiusSquared;
+        //cSimParams->poly6KernelConstantTerm;
+       // (float) ( debugVariable );
       
       //int4 signbits = signbit((float4)(1.0f,-1.0f,-1.0f,1.0f));
       

@@ -37,6 +37,17 @@
     //but to return MINUS 1 in each intn component for negative components of vector floats; wtf!
     uniGridFloatIndex -= convert_float4(signbit(uniGridFloatIndex)) * ( (float)(NUM_UNIGRID_CELLS_PER_DIMENSION) );
     
+    uint4 uniGridIntIndex = convert_uint4_rtz( uniGridFloatIndex );
+ 
+     return (
+      cGridPosToZIndexLookupTable[ 0* NUM_UNIGRID_CELLS_PER_DIMENSION + uniGridIntIndex.x ]
+      |
+      cGridPosToZIndexLookupTable[ 1* NUM_UNIGRID_CELLS_PER_DIMENSION + uniGridIntIndex.y ]
+      |
+      cGridPosToZIndexLookupTable[ 2* NUM_UNIGRID_CELLS_PER_DIMENSION + uniGridIntIndex.z ]
+    );
+    
+/*
     return (
       cGridPosToZIndexLookupTable[ 0* NUM_UNIGRID_CELLS_PER_DIMENSION + (uint)(uniGridFloatIndex.x) ]
       |
@@ -44,6 +55,8 @@
       |
       cGridPosToZIndexLookupTable[ 2* NUM_UNIGRID_CELLS_PER_DIMENSION + (uint)(uniGridFloatIndex.z) ]
     );
+
+*/
    
   }
   

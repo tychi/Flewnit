@@ -276,8 +276,8 @@
                 //for each particle in own simulation group in parallel do...
                 if(lwiID < numParticlesInOwnGroup)
                 {  
-       //DEBUG
-debugVariable++;   //<-- indicator for number of interacted-with neighbour particles       
+//DEBUG
+//debugVariable++;   //<-- indicator for number of interacted-with neighbour particles       
 
          
                   {% block performSPHCalculations %}
