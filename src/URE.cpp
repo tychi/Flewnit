@@ -383,4 +383,23 @@ void URE::setCurrentlyActiveCamera(Camera* cam)
 	getSimulator(VISUAL_SIM_DOMAIN)->toLightingSimulator()->setCurrentlyActiveCamera(cam);
 }
 
+//debug
+bool URE::bufferDumpCondition()
+{
+	return
+		(mFPSCounter->getTotalRenderedFrames()==0)
+		||
+		(
+			mFPSCounter->getTotalRenderedFrames()
+			>
+			130
+		);
 }
+
+
+
+}
+
+
+
+

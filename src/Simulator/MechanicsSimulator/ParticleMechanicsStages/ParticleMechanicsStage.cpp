@@ -290,8 +290,24 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 				EventVector()
 			);
 
-//		mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
-//				"initialZIndexCalc",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(), false );
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+				"initialZIndexCalc",URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(), false );
+	}
+
+
+	//------------------------------------------------------------------------------------------------------
+	//{sort and reorder
+
+	if(
+	    (URE_INSTANCE->bufferDumpCondition() )
+	)
+	{
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+			"AttributeBufferDump_zIndexOnly_BEFORE_RadixSort",
+			URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+			false,
+			true
+		);
 	}
 
 	mRadixSorter->sort(
@@ -300,6 +316,22 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	);
 
 	mParticleSceneRepresentation->reorderAttributes();
+
+	if(
+	    (URE_INSTANCE->bufferDumpCondition() )
+	)
+	{
+		mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+			"AttributeBufferDump_zIndexOnly_AFTER_RadixSort",
+			URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+			false,
+			true
+		);
+	}
+
+
+	//} endsort and reorder
+	//------------------------------------------------------------------------------------------------------
 
 
 
@@ -337,7 +369,9 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 		);
 
 
-		if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() ==0)
+		if(
+		    (URE_INSTANCE->bufferDumpCondition() )
+		)
 		{
 			mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
 				"AttributeBufferDump_DensityComputation",
@@ -346,10 +380,59 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 			);
 		}
 
+		if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
+		{
+			//init integrate step
+			mInitial_UpdateForce_Integrate_CalcZIndex_Program->getKernel("kernel_initial_updateForce_integrate_calcZIndex")
+				->run(
+					EventVector{
+						mUpdateDensityProgram->getKernel("kernel_updateDensity")->getEventOfLastKernelExecution(),
+					},
+					currentSPHKErnelWorkLoadParams
+				);
+		}
+		else
+		{
+			//init integrate step
+			mUpdateForce_Integrate_CalcZIndex_Program->getKernel("kernel_updateForce_integrate_calcZIndex")
+				->run(
+					EventVector{
+						mUpdateDensityProgram->getKernel("kernel_updateDensity")->getEventOfLastKernelExecution(),
+					},
+					currentSPHKErnelWorkLoadParams
+			);
 
-		//TODO
+		}
+
+			//mParticleSceneRepresentation->getParticleAttributeBuffers()->getZIndicesPiPoBuffer()->toggleBuffers(); <--ping ponging only needed during radix sort!
+			mParticleSceneRepresentation->getParticleAttributeBuffers()->getPositionsPiPoBuffer()->toggleBuffers();
+			mParticleSceneRepresentation->getParticleAttributeBuffers()->getCorrectedVelocitiesPiPoBuffer()->toggleBuffers();
+			mParticleSceneRepresentation->getParticleAttributeBuffers()->getPredictedVelocitiesPiPoBuffer()->toggleBuffers();
+			mParticleSceneRepresentation->getParticleAttributeBuffers()->getLastStepsAccelerationsPiPoBuffer()->toggleBuffers();
 
 
+
+//
+//				if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() < 3)
+//				{
+//					mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+//						"AttributeBufferDump_ForceIntrZIndComputation_BeforeToggle",
+//						URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//						false
+//					);
+//				}
+
+
+				if(
+				    (URE_INSTANCE->bufferDumpCondition() )
+				)
+				{
+					mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+						"AttributeBufferDump_ForceIntrZIndComputation_AfterToggle",
+						URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+						false
+					);
+				}
 	//}
 
 

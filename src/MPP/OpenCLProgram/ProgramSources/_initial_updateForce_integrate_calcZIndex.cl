@@ -93,8 +93,8 @@
     
     //declare not until here in hope of register re-usage by compiler to take register pressure from the work group 
     //to increase occupancy; This way, the scheduler can toggle between more warps to hide memorya latency;
-    float4 ownCorrectedVelOld = gCorrectedVelocitiesOld[ ownGlobalAttributeIndex ];
-    float4 ownAccelerationOld = gAccelerationsOld[ ownGlobalAttributeIndex ];  
+    //float4 ownCorrectedVelOld = gCorrectedVelocitiesOld[ ownGlobalAttributeIndex ];
+    //float4 ownAccelerationOld = gAccelerationsOld[ ownGlobalAttributeIndex ];  
 
     //---------------------------------------------------------------------------------------------    
     float4 ownCorrectedVelNew = 

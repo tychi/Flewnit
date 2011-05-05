@@ -201,7 +201,7 @@ void ParticleSimulationProgram::createKernels()
 		argumentVector.push_back(
 			new CLBufferKernelArgument(
 				"gZindicesNew",
-				//bind inactive component
+				//bind ACTIVE component, as ping ponging only needed during radix sort!
 				attrBuffers->getZIndicesPiPoBuffer() ) );
 
 

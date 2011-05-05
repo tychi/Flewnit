@@ -105,6 +105,8 @@ public:
 
     //inline cl::Context* getOpenCLContext()const{return mOpenCLContext;}
 
+    //debug
+    bool bufferDumpCondition();
 
 private:
 

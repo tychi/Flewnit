@@ -190,6 +190,7 @@
                   /* 
                     Viscosity force 
                   */
+/*
                   ownViscosityForceDensityNew.xyz += 
                       //mass 
                       cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle
@@ -198,7 +199,8 @@
                       / lCurrentNeighbourDensities[ interactingLocalIndex ] //TODO native_divide( ) or * native_recip() or so ;)
                       //kernel
                       * laplacianViscosity( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams ) 
-                      ;                     
+                      ;    
+*/                 
                       
                   /* 
                      TODO maybe later Surface tension force
@@ -233,6 +235,7 @@
         ;
         
       
+/*
       //calculate and add user force
       //TODO unroll when stable and interface is less subject to change;
       for(uint controlPointRunner =0; controlPointRunner < cSimParams->numUserForceControlPoints; controlPointRunner++ )
@@ -261,6 +264,7 @@
               );
          }
       }
+*/
       
   {% endblock processSPHResults %}
   

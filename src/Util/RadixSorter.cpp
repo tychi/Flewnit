@@ -183,9 +183,9 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 	//ATTENTION DEBUG STUFF AS LONG AS I HAVE NO PHYSICS KERNEL EXECUTING!
 	//always set to init zinex thing, as this is the only kernel really executed before...
 	//TODO delete in time!!1
-	eventToWaitFor =
-				CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
-					->getKernel("kernel_initial_CalcZIndex")->getEventOfLastKernelExecution();
+	//eventToWaitFor =
+	//			CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")
+	//				->getKernel("kernel_initial_CalcZIndex")->getEventOfLastKernelExecution();
 
 
 
@@ -215,13 +215,6 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 	phase3Kernel->getCLKernelArguments()->getBufferArg("gReorderedOldIndices")->set(oldIndicesBuffer, true);
 
 
-//	//{
-//		//test first run TODO delete
-//	phase1Kernel->getCLKernelArguments()->getValueArg<unsigned int>("numPass")->setValue(0);
-//	phase1Kernel->run( eventVec );
-//
-//	//}
-
 
 	for(unsigned int currentPass = 0; currentPass < mNumRadixSortPasses; currentPass++)
 	{
@@ -247,9 +240,12 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
 
-		if( (currentPass == 2) && (currentFrame ==0 ))
+		if(
+				//(currentPass == 2) &&
+			    (URE_INSTANCE->bufferDumpCondition() )
+		)
 		{
-			dumpBuffers("initialRadixSortPhase1Dump",
+			dumpBuffers("radixSortPhase1Dump",
 				currentFrame,
 				false,//DONT abort
 				currentPass,0,
@@ -266,9 +262,12 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
 
-		if( (currentPass == 2) && (currentFrame ==0 ))
+		if(
+				//(currentPass == 2) &&
+			    (URE_INSTANCE->bufferDumpCondition() )
+		)
 		{
-			dumpBuffers("initialRadixSortPhase2Dump",
+			dumpBuffers("radixSortPhase2Dump",
 				currentFrame,
 				false, //don't abort
 				//true,
@@ -289,23 +288,21 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();
 
 
-//		CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->readBack(true);
-//		uint numBuffOverFLows =
-//				reinterpret_cast<uint*>(
-//										CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->getCPUBufferHandle()
-//										)[2];
-//		LOG<<"num bufferOverFlows:"<< numBuffOverFLows<<";\n";
+		CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->readBack(true);
+		uint numBuffOverFLows =
+				reinterpret_cast<uint*>(
+										CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->getCPUBufferHandle()
+										)[2];
+		LOG<<"num bufferOverFlows:"<< numBuffOverFLows<<";\n";
 
 
-//		bool abort = false;
-//		//if(numBuffOverFLows >0)
-//		if(currentPass == 2)
-//		{
-//			abort=true;
-//		}
-		if( (currentPass == 2) && (currentFrame ==0 ))
+
+		if(
+				//(currentPass == 2) &&
+			    (URE_INSTANCE->bufferDumpCondition() )
+		)
 		{
-			dumpBuffers("initialRadixSortPhase3Dump",
+			dumpBuffers("radixSortPhase3Dump",
 				currentFrame,
 				false,
 				currentPass,

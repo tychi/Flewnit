@@ -60,7 +60,9 @@ public:
 	void dumpBuffers(
 			String dumpName,
 			unsigned int frameNumber,
-			bool abortAfterDump);
+			bool abortAfterDump,
+			bool zIndicesOnly = false
+	);
 	// the dump files are qite big, so enforce max size;
 	#define FLEWNIT_MAX_BUFFER_DUMPS 10
 

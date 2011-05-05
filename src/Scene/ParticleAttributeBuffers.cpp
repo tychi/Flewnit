@@ -273,7 +273,8 @@ void ParticleAttributeBuffers::readBackBuffers()
 	mLastStepsAccelerationsPiPoBuffer->readBack(true);
 }
 
-void ParticleAttributeBuffers::dumpBuffers(String dumpName, unsigned int frameNumber,bool abortAfterDump)
+void ParticleAttributeBuffers::dumpBuffers(
+		String dumpName, unsigned int frameNumber,bool abortAfterDump, bool zIndicesOnly)
 {
 	//read back active components;
 	readBackBuffers();
@@ -355,56 +356,75 @@ void ParticleAttributeBuffers::dumpBuffers(String dumpName, unsigned int frameNu
 
 
 
-
-
-
-
-
-
-
-
-	for(unsigned int i = 0 ; i< mNumTotalParticles; i++)
+	if(zIndicesOnly)
 	{
-
-		fileStream
-			<<"current buffer index: "<<i<<": "
-			<<"particle being initially (at the begin of the simulation) at this index is now at index "
-				<<particleIndexTableBuffer[i]<<";\n"
-
-			<<"Before the last reordering, this particle was at buffer index "
-				<<activeOldIndices[i]<<";\n"
-
-			<<"Z-Index bin.("
-				 	<<HelperFunctions::getBitString(activeZIndices[i])<<"), "
-			<<"Z-Index dec.("
-			 	<<activeZIndices[i]<<");\n"
-
-			<<"pos("
-					<<activePositions[i].x<<","
-					<<activePositions[i].y<<","
-					<<activePositions[i].z<<","
-					<<activePositions[i].w<<"), "
-
-			<<"dens("<<activeDensities[i]<<"),"
-
-			<<"pred.vel("
-				<<activePredictedVelocities[i].x<<","
-				<<activePredictedVelocities[i].y<<","
-				<<activePredictedVelocities[i].z<<","
-				<<activePredictedVelocities[i].w<<"), "
-			<<"corr.vel("
-				<<activeCorrectedVelocities[i].x<<","
-				<<activeCorrectedVelocities[i].y<<","
-				<<activeCorrectedVelocities[i].z<<","
-				<<activeCorrectedVelocities[i].w<<"), "
-
-			<<"accel.("
-				<<activeAccelerations[i].x<<","
-				<<activeAccelerations[i].y<<","
-				<<activeAccelerations[i].z<<","
-				<<activeAccelerations[i].w<<"),"
-			<<"\n\n";
+		for(unsigned int i = 0 ; i< mNumTotalParticles; i++)
+		{
+			fileStream<<"buff index: "<<i<<"; "
+				<<"Z-Index: (bin.)("
+					<<HelperFunctions::getBitString(activeZIndices[i])<<"),"
+				<<"(dec.):("
+					<<activeZIndices[i]<<");"
+				<<"part.ID in obj.: "<< GET_PARTICLE_ID(activeObjectInfos[i])<<", "
+				<<"obj.ID of part.: "<< GET_OBJECT_ID(activeObjectInfos[i])
+				<<";\n"
+				;
+		}
 	}
+	else
+	{
+		for(unsigned int i = 0 ; i< mNumTotalParticles; i++)
+		{
+
+			fileStream
+				<<"current buffer index: "<<i<<":\n"
+				<<"part.ID in obj.: "<< GET_PARTICLE_ID(activeObjectInfos[i])<<", "
+				<<"obj.ID of part.: "<< GET_OBJECT_ID(activeObjectInfos[i])<<";\n"
+				<<"particle being initially (at the begin of the simulation) at this index is now at index "
+					<<particleIndexTableBuffer[i]<<";\n"
+
+				<<"Before the last reordering, this particle was at buffer index "
+					<<activeOldIndices[i]<<";\n"
+
+				<<"Z-Index bin.("
+						<<HelperFunctions::getBitString(activeZIndices[i])<<"), "
+				<<"Z-Index dec.("
+					<<activeZIndices[i]<<");\n"
+
+				<<"pos("
+						<<activePositions[i].x<<","
+						<<activePositions[i].y<<","
+						<<activePositions[i].z<<","
+						<<activePositions[i].w<<"), "
+
+				<<"dens("<<activeDensities[i]<<"),"
+
+				<<"pred.vel("
+					<<activePredictedVelocities[i].x<<","
+					<<activePredictedVelocities[i].y<<","
+					<<activePredictedVelocities[i].z<<","
+					<<activePredictedVelocities[i].w<<"), "
+				<<"corr.vel("
+					<<activeCorrectedVelocities[i].x<<","
+					<<activeCorrectedVelocities[i].y<<","
+					<<activeCorrectedVelocities[i].z<<","
+					<<activeCorrectedVelocities[i].w<<"), "
+
+				<<"accel.("
+					<<activeAccelerations[i].x<<","
+					<<activeAccelerations[i].y<<","
+					<<activeAccelerations[i].z<<","
+					<<activeAccelerations[i].w<<"),"
+				<<"\n\n";
+		}
+
+	}
+
+
+
+
+
+
 
 
 	fileStream.close();
