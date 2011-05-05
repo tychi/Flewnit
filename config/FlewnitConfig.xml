@@ -137,7 +137,7 @@
         	<useFrameRateIndependentSimulationTimestep type="BOOL" value="TRUE" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <!-- value is always used as timestep if useFrameRateIndependentSimulationTimestep==true;
 	             this values is to ensure stability, at the cost of maybe a slow-motion simulation -->
-          <maxTimestepPerSimulationStep type="FLOAT" value="0.08" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <maxTimestepPerSimulationStep type="FLOAT" value="0.10" GUIVisibility="read/write" tweakConfigString="TODO"/>
 
           <!--
           <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -178,7 +178,7 @@
           -->
           <simulationDomainBorderMax  type="VEC4" x="64.0" y="64.0" z="64.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
-          <gravityAcceleration  type="VEC4" x="0.0" y="-0.0075" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <gravityAcceleration  type="VEC4" x="0.0" y="-0.01" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceSpringConstant type="FLOAT" value="1.75" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceDamperConstant type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>
  
