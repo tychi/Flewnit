@@ -137,7 +137,7 @@
         	<useFrameRateIndependentSimulationTimestep type="BOOL" value="TRUE" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <!-- value is always used as timestep if useFrameRateIndependentSimulationTimestep==true;
 	             this values is to ensure stability, at the cost of maybe a slow-motion simulation -->
-          <maxTimestepPerSimulationStep type="FLOAT" value="0.01" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <maxTimestepPerSimulationStep type="FLOAT" value="0.005" GUIVisibility="read/write" tweakConfigString="TODO"/>
 
           <!--
           <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -179,7 +179,7 @@
             
           <gravityAcceleration  type="VEC4" x="0.0" y="-0.05" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceSpringConstant type="FLOAT" value="1.75" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <penaltyForceDamperConstant type="FLOAT" value="2.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <penaltyForceDamperConstant type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>
  
           <numMaxUserForceControlPoints type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
@@ -280,7 +280,7 @@
               <massPerParticle  type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <restDensity      type="FLOAT" value="2.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <gasConstant      type="FLOAT" value="5.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <viscosity        type="FLOAT" value="0.05" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
+              <viscosity        type="FLOAT" value="2.5" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
             </ParticleFluidMechMat>
              
           </ParticleFluid>
