@@ -253,7 +253,8 @@
                   //  Pressure force
                   //
                                            //MINUS!!     
-                  ownPressureForceDensityNew.xyz -=
+                  //ownPressureForceDensityNew.xyz -=
+                  ownPressureForceDensityNew.xyz +=
                       ( 
                         //mass 
                         cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle

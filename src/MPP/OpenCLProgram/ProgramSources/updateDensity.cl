@@ -69,12 +69,14 @@
                       if( BELONGS_TO_FLUID( lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ) )
                       {
 
+
                         ownDensity +=
                           //mass 
                           cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle
                           //* kernel
                           * poly6( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams )
                           ;
+
                           
                       //DEBUG
                       // wtf, machine frezes and program crashes when uncommenting this... VERY strange; 
