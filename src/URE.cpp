@@ -387,8 +387,8 @@ void URE::setCurrentlyActiveCamera(Camera* cam)
 bool URE::bufferDumpCondition()
 {
 	return
-		false;
-
+		//false;
+			(mFPSCounter->getTotalRenderedFrames() <= 3);
 //		(mFPSCounter->getTotalRenderedFrames() <= 2)
 //		||
 //		(

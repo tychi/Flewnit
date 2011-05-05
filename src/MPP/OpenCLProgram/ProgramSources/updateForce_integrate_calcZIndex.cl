@@ -107,9 +107,10 @@
 
 */
 
+    float particleRadius =  -2.0f;
 
 
-     if(particlePosition.x < cSimParams->simulationDomainBorders.minPos.x){
+     if( (particlePosition.x - particleRadius ) < cSimParams->simulationDomainBorders.minPos.x){
           collisionForce.x += 
             ( cSimParams->simulationDomainBorders.minPos.x - particlePosition.x  ) 
             * cSimParams->penaltyForceSpringConstant      
@@ -119,7 +120,7 @@
       
 
 
-      if(particlePosition.x > cSimParams->simulationDomainBorders.maxPos.x){
+      if( (particlePosition.x + particleRadius ) > cSimParams->simulationDomainBorders.maxPos.x){
           collisionForce.x += 
             ( cSimParams->simulationDomainBorders.maxPos.x - particlePosition.x  ) 
             * cSimParams->penaltyForceSpringConstant      
@@ -127,28 +128,28 @@
             cSimParams->penaltyForceDamperConstant * particleVelocity.x;
       }
 
-      if(particlePosition.y < cSimParams->simulationDomainBorders.minPos.y){
+      if( (particlePosition.y - particleRadius ) < cSimParams->simulationDomainBorders.minPos.y){
           collisionForce.y += 
            ( cSimParams->simulationDomainBorders.minPos.y - particlePosition.y  ) 
             * cSimParams->penaltyForceSpringConstant      
             -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
             cSimParams->penaltyForceDamperConstant * particleVelocity.y;
       }
-      if(particlePosition.y > cSimParams->simulationDomainBorders.maxPos.y){
+      if(  (particlePosition.y + particleRadius ) > cSimParams->simulationDomainBorders.maxPos.y){
           collisionForce.y += 
              ( cSimParams->simulationDomainBorders.maxPos.y - particlePosition.y  ) 
             * cSimParams->penaltyForceSpringConstant      
             -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
             cSimParams->penaltyForceDamperConstant * particleVelocity.y;
       }
-      if(particlePosition.z < cSimParams->simulationDomainBorders.minPos.z){
+      if(  (particlePosition.z - particleRadius ) < cSimParams->simulationDomainBorders.minPos.z){
           collisionForce.z += 
             ( cSimParams->simulationDomainBorders.minPos.z - particlePosition.z ) 
             * cSimParams->penaltyForceSpringConstant      
             -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
             cSimParams->penaltyForceDamperConstant * particleVelocity.z;
       }
-      if(particlePosition.z > cSimParams->simulationDomainBorders.maxPos.z){
+      if( (particlePosition.z + particleRadius ) > cSimParams->simulationDomainBorders.maxPos.z){
           collisionForce.z += 
             ( cSimParams->simulationDomainBorders.maxPos.z - particlePosition.z ) 
             * cSimParams->penaltyForceSpringConstant      
