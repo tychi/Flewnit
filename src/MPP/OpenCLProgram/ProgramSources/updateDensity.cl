@@ -37,9 +37,10 @@
   {% block kernelDependentOwnParticleAttribsInit %} 
           
     //init to zero because the SPH calculations accumulate stuff in this variable;
-    ownDensity = 1.0f;
-    //ownDensity = 0.0f;
-       
+    //ownDensity = 1.0f;
+    //ownDensity = 0.003f;
+    ownDensity = 0.0f;
+    
   {% endblock kernelDependentOwnParticleAttribsInit %}
 
 

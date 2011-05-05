@@ -304,7 +304,7 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 				reinterpret_cast<uint*>(
 										CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->getCPUBufferHandle()
 										)[2];
-		LOG<<"num bufferOverFlows:"<< numBuffOverFLows<<";\n";
+		LOG<<DEBUG_LOG_LEVEL<<"num bufferOverFlows:"<< numBuffOverFLows<<";\n";
 
 
 

@@ -349,8 +349,8 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 			mSplitAndCompactedUniformGridCells
 		);
 
-	//	LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
-	//			<< numCurrentSPHSimulationWorkGroups << ";\n";
+	LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
+				<< numCurrentSPHSimulationWorkGroups << ";\n";
 
 	//}
 

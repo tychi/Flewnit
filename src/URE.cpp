@@ -388,7 +388,7 @@ bool URE::bufferDumpCondition()
 {
 	return
 		//false;
-			(mFPSCounter->getTotalRenderedFrames() <= 3);
+			(mFPSCounter->getTotalRenderedFrames() <= 0);
 //		(mFPSCounter->getTotalRenderedFrames() <= 2)
 //		||
 //		(

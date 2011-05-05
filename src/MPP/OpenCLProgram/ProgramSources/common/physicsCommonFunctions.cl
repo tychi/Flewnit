@@ -70,6 +70,8 @@
     //distance don't interact with each other
     if(sqaredDistCenterToKernelBorder >= 0.0f )
     {
+        //return 1.0f;
+    
         return 
           // 315 / (64 pi * h^9) * (h^2-r^2)^3
           cSimParams->poly6KernelConstantTerm

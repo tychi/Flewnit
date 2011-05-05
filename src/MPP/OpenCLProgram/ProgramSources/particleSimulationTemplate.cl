@@ -122,7 +122,12 @@
     //DEBUG
     uint debugVariable=0;
     
-    __local uint lCurrentNeighbourZIndex;
+    //__local uint lCurrentNeighbourZIndex;
+    
+    //DEBUG
+     __local float4 lCurrentPositions[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
+     __local float4 lMeanPosition;
+    
   
     {% block getCL_IDs %}
      uint lwiID = get_local_id(0); // short for "local work item ID"
@@ -167,7 +172,12 @@
       
     if(lwiID < numParticlesInOwnGroup )
     {
+     
       ownPosition = gPositionsOld[ ownGlobalAttributeIndex ];
+      
+      //DEBUG
+      lCurrentPositions[lwiID] = ownPosition;
+      
       ownParticleObjectID = GET_OBJECT_ID( gParticleObjectInfos[ ownGlobalAttributeIndex ] );
         
         
@@ -178,12 +188,24 @@
         
     } //end if(lwiID < numParticlesInOwnGroup )
     //note: no barrier() necessary here;
+    
+    barrier(CLK_LOCAL_MEM_FENCE); 
+    if(lwiID == 0 )
+    {
+      lMeanPosition=(float4)(0.0f,0.0f,0.0f,1.0f);
+      for(int i = 0 ; i<  numParticlesInOwnGroup; i++)
+      {
+        lMeanPosition += lCurrentPositions[i];
+      }
+      lMeanPosition /= (float)(numParticlesInOwnGroup);
+    }
+    barrier(CLK_LOCAL_MEM_FENCE); 
      
     //note: I don't know if it is possible to efficiently compute the 3D-neighbour from a z-index;
     //      This is why I compute a 3D position from the own particles 3D position, and compute from this
     //      3D neighbour position the neighbour's z-Index; TODO research a more direct/ more efficient way;
-    float4 posInNeighbour;
-    posInNeighbour.w = 1.0f; //dunno if necessary...
+    //float4 posInNeighbour;
+    //posInNeighbour.w = 1.0f; //dunno if necessary...
     
           //init neighbour position so that it is in the "left lower behind" neighbour voxel;
           //float4 posInNeighbour = ownPosition -  cSimParams->uniGridCellSizes;
@@ -195,19 +217,21 @@
 
     
     //set neighbour position so that it starts in the "behind" neighbour voxel;
-    posInNeighbour.z = ownPosition.z -  cSimParams->uniGridCellSizes.z;
+    //posInNeighbour.z = ownPosition.z -  cSimParams->uniGridCellSizes.z;
+    //posInNeighbour.z = lMeanPosition.z -  cSimParams->uniGridCellSizes.z;
     //#pragma unroll
     for(int z=-1;z<=1;z++)
     //for(int z=-1;z<0;z++)
     {
       //(re-)set neighbour position so that it starts in the lower neighbour voxel;
-      posInNeighbour.y = ownPosition.y -  cSimParams->uniGridCellSizes.y;
+      //posInNeighbour.y = ownPosition.y -  cSimParams->uniGridCellSizes.y;
+      //posInNeighbour.y = ownPosition.y -  cSimParams->uniGridCellSizes.y;
       //#pragma unroll
       for(int y=-1;y<=1;y++)
      // for(int y=-1;y<0;y++)
       {
         //(re-)set neighbour position so that it starts in the left neighbour voxel;
-        posInNeighbour.x = ownPosition.x -  cSimParams->uniGridCellSizes.x;
+        //posInNeighbour.x = ownPosition.x -  cSimParams->uniGridCellSizes.x;
         //#pragma unroll   
        for(int x=-1;x<=1;x++)
        // for(int x=-1;x<0;x++)
@@ -220,17 +244,36 @@
           //particles land in the same "buckets" which aren't spacially adjacent, hence such calculations are in vain;
           //uint neighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
 
+/*
 if(lwiID == (NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP/2))
 {
 
  // lCurrentNeighbourZIndex = getZIndex( ownPosition, cSimParams, cGridPosToZIndexLookupTable );
   lCurrentNeighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
 }
-barrier(CLK_LOCAL_MEM_FENCE); 
+barrier(CLK_LOCAL_MEM_FENCE);
+*/
+
+ 
+      uint neighbourZIndex = getZIndex( 
+        lMeanPosition + 
+        (float4)
+        (
+          (float)(x)*cSimParams->uniGridCellSizes.x,
+          (float)(y)*cSimParams->uniGridCellSizes.y,
+          (float)(z)*cSimParams->uniGridCellSizes.z,
+          1.0f
+         ),
+         cSimParams, cGridPosToZIndexLookupTable );
+
+
+
+
+
 
           
           //TODO if() this global mem acces; damns the screwed control flow when barrier()'s or mem accesses are involved
-          uint numRemainingNeighbourParticlesToInteractWith = gUniGridCells_NumParticles[ lCurrentNeighbourZIndex ];
+          uint numRemainingNeighbourParticlesToInteractWith = gUniGridCells_NumParticles[ neighbourZIndex ];
           
 
        
@@ -243,7 +286,7 @@ barrier(CLK_LOCAL_MEM_FENCE);
           //====================== "break point" here in case of empty neighbour cell, same for all work groups, no divergence =====
                 
           
-            uint neighbourParticleStartIndex = gUniGridCells_ParticleStartIndex[ lCurrentNeighbourZIndex ];
+            uint neighbourParticleStartIndex = gUniGridCells_ParticleStartIndex[ neighbourZIndex ];
             uint numNeighbourSimWorkGroups = GET_NUM_SIM_WORK_GROUPS_OF_CELL( numRemainingNeighbourParticlesToInteractWith ); 
             
             //sequential work on neighbours simulation work groups
@@ -334,11 +377,11 @@ barrier(CLK_LOCAL_MEM_FENCE);
             }// end sequential work on one neighbour's simulation work groups
           
           
-          posInNeighbour.x +=  cSimParams->uniGridCellSizes.x;
+          //posInNeighbour.x +=  cSimParams->uniGridCellSizes.x;
         }  //end for x
-        posInNeighbour.y += cSimParams->uniGridCellSizes.y;
+        //posInNeighbour.y += cSimParams->uniGridCellSizes.y;
       }  //end for y
-      posInNeighbour.z +=  cSimParams->uniGridCellSizes.z;
+      //posInNeighbour.z +=  cSimParams->uniGridCellSizes.z;
     } //end for z
 
     
