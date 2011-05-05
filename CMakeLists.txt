@@ -12,7 +12,10 @@ cmake_minimum_required(VERSION 2.8)
 
 project(libflewnit)
 
+
+
 #Set user defined stuff----------------------------------------
+
 
 if(UNIX)
 
@@ -26,8 +29,8 @@ if(UNIX)
     #option(SDL_INSTALLED_LOCALLY "if USE_SDL_LOCAL is unselected, then you might have SDL installed in /usr/local instead of /usr" ON)
 
     option(RELEASE "build in Release mode for more performance but no debugging features" OFF)
-    
     set(GLM_DIRECTORY "../thirdParty/ogl-math" CACHE PATH "Path to glm Math library")
+    
     set(ASSIMP_DIRECTORY "/usr/local/include/assimp" CACHE PATH "Path to assimp asset loading library")
     
 

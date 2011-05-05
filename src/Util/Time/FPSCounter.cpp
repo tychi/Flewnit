@@ -10,6 +10,7 @@
 #include "Timer.h"
 
 #include <boost/foreach.hpp>
+#include "Util/Log/Log.h"
 
 namespace Flewnit
 {
@@ -73,8 +74,14 @@ void FPSCounter::frameEnded()
 
 double FPSCounter::getFPS(bool averaged)
 {
-	assert("We need at least one frame passed in order to obtain a valid FPS value;"
-			&& !mLastFrameDurations.empty() && mLastFrameDurations.back()>0.0);
+//	assert("We need at least one frame passed in order to obtain a valid FPS value;"
+//			&& !mLastFrameDurations.empty() && mLastFrameDurations.back()>0.0);
+
+	if( mLastFrameDurations.empty() || mLastFrameDurations.back()<=0.0)
+	{
+		LOG<<WARNING_LOG_LEVEL<<" FPSCounter::getFPS();We need at least one frame passed in order to obtain a valid FPS value;\n";
+		return 0.0;
+	}
 
 	if (averaged)
 	{

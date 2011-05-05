@@ -329,6 +329,8 @@ bool URE::stepSimulation()
 		simulator->stepSimulation();
 	}
 
+	LOG<<INFO_LOG_LEVEL<< mFPSCounter->getFPS(true)<<" average FPS\n";
+
 //	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
 //	{
 //		simPair.second -> stepSimulation();
