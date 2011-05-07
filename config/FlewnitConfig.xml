@@ -188,7 +188,7 @@
           -->
           <simulationDomainBorderMax  type="VEC4" x="64.0" y="64.0" z="64.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
-          <gravityAcceleration  type="VEC4" x="0.0" y="-0.01" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <gravityAcceleration  type="VEC4" x="0.0" y="-0.005" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceSpringConstant type="FLOAT" value="2.75" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceDamperConstant type="FLOAT" value="0.75" GUIVisibility="read/write" tweakConfigString="TODO"/>
  
@@ -264,7 +264,7 @@
             <spawnAABBMin  type="VEC4" x="0.25" y="0.25" z="0.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             <spawnAABBMin  type="VEC4" x="0.5" y="0.5" z="0.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             --> 
-            <spawnAABBMin  type="VEC4" x="10.5" y="10.5" z="10.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            <spawnAABBMin  type="VEC4" x="10.5" y="5.5" z="10.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
         
             <!--          
             <spawnAABBMax  type="VEC4" x="16.25" y="16.25" z="16.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -272,7 +272,7 @@
             <spawnAABBMax  type="VEC4" x="64.0" y="64.0" z="64.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/> 
             <spawnAABBMax  type="VEC4" x="32.5" y="32.5" z="32.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             -->  
-            <spawnAABBMax  type="VEC4" x="60.0" y="60.0" z="60.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>     
+            <spawnAABBMax  type="VEC4" x="55.0" y="45.0" z="55.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>     
             
             
             <initialVelocity type="VEC4" x="0.0" y="0.0" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -293,7 +293,7 @@
               <name type="STRING" value="coldWaterParticleFluidMechMat" />
               <massPerParticle  type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <restDensity      type="FLOAT" value="1.5" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <gasConstant      type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <gasConstant      type="FLOAT" value="0.35" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <viscosity        type="FLOAT" value="2.5" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
             </ParticleFluidMechMat>
              
