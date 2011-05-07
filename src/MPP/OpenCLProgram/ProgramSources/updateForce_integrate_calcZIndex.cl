@@ -28,84 +28,9 @@
    {        
      float4 collisionForce = (float4)(0.0f,0.0f,0.0f,0.0f);
          
-     //i just don't know how to reduce the boilerplate factore here without wasting memory and control flow;
-     //it's anayway just a hack until i have static triangle collision meshes;
+     //i just don't know how to reduce the boilerplate factor here without wasting memory and control flow;
+     //it's anyway just a hack until i have static triangle collision meshes;
 
-
-/*
-     if(particlePosition.x < 0.0f){
-          collisionForce.x += 
-            ( cSimParams->simulationDomainBorders.minPos.x - particlePosition.x  ) 
-            * cSimParams->penaltyForceSpringConstant      
-            -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * particleVelocity.x;
-      }
-      
-
-
-      if(particlePosition.x >96.0f){
-          collisionForce.x += 
-            ( cSimParams->simulationDomainBorders.maxPos.x - particlePosition.x  ) 
-            * cSimParams->penaltyForceSpringConstant      
-            -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * particleVelocity.x;
-      }
-
-    if(particlePosition.y < 0.0f){
-          collisionForce.y += 
-           ( cSimParams->simulationDomainBorders.minPos.y - particlePosition.y  ) 
-            * cSimParams->penaltyForceSpringConstant      
-            -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * particleVelocity.y;
-      }
-      if(particlePosition.y >96.0f){
-          collisionForce.y += 
-             ( cSimParams->simulationDomainBorders.maxPos.y - particlePosition.y  ) 
-            * cSimParams->penaltyForceSpringConstant      
-            -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * particleVelocity.y;
-      }
-    if(particlePosition.z < 0.0f){
-          collisionForce.z += 
-            ( cSimParams->simulationDomainBorders.minPos.z - particlePosition.z ) 
-            * cSimParams->penaltyForceSpringConstant      
-            -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * particleVelocity.z;
-      }
-      if(particlePosition.z >96.0f){
-          collisionForce.z += 
-            ( cSimParams->simulationDomainBorders.maxPos.z - particlePosition.z ) 
-            * cSimParams->penaltyForceSpringConstant      
-            -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * particleVelocity.z;
-      }
-
-
-
-      if(particlePosition.y < 0.0f){
-      //if(particlePosition.y < cSimParams->simulationDomainBorders.minPos.y){
-          collisionForce.y += 
-            ( cSimParams->simulationDomainBorders.maxPos.y - particlePosition.y  ) 
-            //( 0.0f - particlePosition.y  ) 
-            * cSimParams->penaltyForceSpringConstant      
-            -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * particleVelocity.y;
-      }
-
-
-*/
-
-/*
-
-      if(particlePosition.y < cSimParams->simulationDomainBorders.minPos.y){
-          collisionForce.y += 
-           ( cSimParams->simulationDomainBorders.minPos.y - particlePosition.y  ) 
-                  * cSimParams->penaltyForceSpringConstant      
-            -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
-            cSimParams->penaltyForceDamperConstant * particleVelocity.y;
-      }
-
-*/
 
     float particleRadius =  1.0f;
 
@@ -194,20 +119,14 @@
 
 
 
-  {% block kernelDependentParticleAttribsMalloc %} 
-    {% comment %} pattern:
-      for each needed attribute: 
-        <attribute type> own<attribute name singular>;
-        optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ]; 
-    {% endcomment %}
+  {% block particleAttribsMalloc %} 
+  
+    {{ block.super }}
                   
     float ownDensity;
     float ownPressure;
-    __local float lCurrentNeighbourDensities[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
-    
     float4 ownPredictedVelCurrent;
-    __local float4 lCurrentNeighbourPredictedVelsCurrent[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
- 
+    
     //physical quantities resulting from sph "force" computation;
     //physical units: [ (kg m/(s^2)) / V]= force/volume;
     //to get the acceleration from this value: 
@@ -217,11 +136,19 @@
     //--> a = forceDensity / density   
     float4 ownPressureForceDensityNew; 
     float4 ownViscosityForceDensityNew;
+ 
+    {% if not useCacheUsingOpenCLImplementation %}    
+      __local float lCurrentNeighbourDensities[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
+      __local float4 lCurrentNeighbourPredictedVelsCurrent[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
+    {% endif %}    
         
-  {% endblock kernelDependentParticleAttribsMalloc %}
+  {% endblock particleAttribsMalloc %}
 
 
-  {% block kernelDependentOwnParticleAttribsInit %} 
+
+  {% block particleAttribsInit %} 
+  
+    {{ block.super }}
           
     ownDensity = gDensitiesOld[ ownGlobalAttributeIndex ];
     ownPressure = GET_PRESSURE( ownDensity, cObjectGenericFeatures, ownParticleObjectID );
@@ -231,19 +158,19 @@
     //accumulator variable; init to zero
     ownPressureForceDensityNew= (float4)(0.0f,0.0f,0.0f,0.0f);
     ownViscosityForceDensityNew= (float4)(0.0f,0.0f,0.0f,0.0f);
-       
-  {% endblock kernelDependentOwnParticleAttribsInit %}
+    
+  {% endblock particleAttribsInit %}
 
 
 
 
   {% block kernelDependentNeighbourParticleAttribsDownload %} 
-    {% comment %}
-      pattern:  lCurrentNeighbour<attribute name plural>[ lwiID ] = g<attribute name singular>Old[ neighbourParticleStartIndex + lwiID ]; 
-    {% endcomment %}
+    
+    {{ block.super }}
      
     lCurrentNeighbourDensities[ lwiID ] = gDensitiesOld[ neighbourParticleStartIndex + lwiID ]; 
     lCurrentNeighbourPredictedVelsCurrent[ lwiID ] =  gPredictedVelocitiesCurrent[ neighbourParticleStartIndex + lwiID ]; 
+
                       
   {% endblock kernelDependentNeighbourParticleAttribsDownload %} 
 
@@ -258,20 +185,20 @@
                   ownPressureForceDensityNew.xyz +=
                       ( 
                         //mass 
-                        cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle
+                        cObjectGenericFeatures [ GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID  ].massPerParticle
                         //mean of both pressures for symmetry reasons:
                         * 0.5f  
                         *( ownPressure + 
                            GET_PRESSURE( 
-                            lCurrentNeighbourDensities[ interactingLocalIndex ],
-                            cObjectGenericFeatures, 
-                            lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]
+                             GET_CURRENT_NEIGHBOUR_PARTICLE_DENSITY,
+                             cObjectGenericFeatures, 
+                             GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID
                            ) 
                          )
-                        / lCurrentNeighbourDensities[ interactingLocalIndex ] //TODO native_divide( ) or * native_recip() or so ;)
+                        / GET_CURRENT_NEIGHBOUR_PARTICLE_DENSITY //TODO native_divide( ) or * native_recip() or so ;)
                       )
                       //kernel
-                      * gradSpiky( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams ).xyz
+                      * gradSpiky( ownPosition - GET_CURRENT_NEIGHBOUR_POS, cSimParams ).xyz
                       ;
                       
 
@@ -282,12 +209,12 @@
 
                   ownViscosityForceDensityNew.xyz += 
                       //mass 
-                      cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle
+                      cObjectGenericFeatures [ GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID ].massPerParticle
                       //relative velocity of currently treated neighbour particle
-                      * ( lCurrentNeighbourPredictedVelsCurrent[ interactingLocalIndex ].xyz - ownPredictedVelCurrent.xyz )                  
-                      / lCurrentNeighbourDensities[ interactingLocalIndex ] //TODO native_divide( ) or * native_recip() or so ;)
+                      * ( GET_CURRENT_NEIGHBOUR_PARTICLE_PREDICTED_VEL_CURRENT.xyz - ownPredictedVelCurrent.xyz )                  
+                      / GET_CURRENT_NEIGHBOUR_PARTICLE_DENSITY //TODO native_divide( ) or * native_recip() or so ;)
                       //kernel
-                      * laplacianViscosity( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams ) 
+                      * laplacianViscosity( ownPosition - GET_CURRENT_NEIGHBOUR_POS, cSimParams ) 
                       ;    
 
                  

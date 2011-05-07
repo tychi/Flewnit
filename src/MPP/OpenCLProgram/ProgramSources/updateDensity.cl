@@ -22,38 +22,27 @@
   {% endblock particleAttributesBufferKernelArgs %}
 
 
-  {% block kernelDependentParticleAttribsMalloc %} 
-    {% comment %} pattern:
-      for each needed attribute: 
-        <attribute type> own<attribute name singular>;
-        optional: __local <attribute type>  lCurrentNeighbour<attribute name plural>[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ]; 
-    {% endcomment %}
+  {% block particleAttribsMalloc %} 
+    
+    {{ block.super }}
                   
     float ownDensity;
         
-  {% endblock kernelDependentParticleAttribsMalloc %}
+  {% endblock particleAttribsMalloc %}
 
 
-  {% block kernelDependentOwnParticleAttribsInit %} 
+  {% block particleAttribsInit %} 
+  
+    {{ block.super }}
           
     //init to zero because the SPH calculations accumulate stuff in this variable;
     //ownDensity = 1.0f;
     //ownDensity = 0.003f;
     ownDensity = 0.0f;
     
-  {% endblock kernelDependentOwnParticleAttribsInit %}
+  {% endblock particleAttribsInit %}
 
 
-
-
-  {% block kernelDependentNeighbourParticleAttribsDownload %} 
-    {% comment %}
-      pattern:  lCurrentNeighbour<attribute name plural>[ lwiID ] = g<attribute name singular>Old[ neighbourParticleStartIndex + lwiID ]; 
-    {% endcomment %}
-                  
-    //empty for density calculations
-                      
-  {% endblock kernelDependentNeighbourParticleAttribsDownload %} 
 
 
   {% block performSPHCalculations %}
@@ -67,15 +56,14 @@
                       //  yields pressure gradients pointing towards the rigid body for fluid particles slightly further away
                       //  from the rigid body,  )
                       //
-                      if( BELONGS_TO_FLUID( lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ) )
+                      if( BELONGS_TO_FLUID( GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID  ) )
                       {
-
 
                         ownDensity +=
                           //mass 
-                          cObjectGenericFeatures [ lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ]  ].massPerParticle
+                          cObjectGenericFeatures [ GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID  ].massPerParticle
                           //* kernel
-                          * poly6( ownPosition - lCurrentNeighbourPositions[ interactingLocalIndex ], cSimParams )
+                          * poly6( ownPosition -  GET_CURRENT_NEIGHBOUR_POS , cSimParams )
                           ;
 
                           
