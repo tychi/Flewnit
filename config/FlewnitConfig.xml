@@ -291,7 +291,7 @@
               <name type="STRING" value="coldWaterParticleFluidMechMat" />
               <massPerParticle  type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <restDensity      type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <gasConstant      type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <gasConstant      type="FLOAT" value="5.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <viscosity        type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
             </ParticleFluidMechMat>
              
