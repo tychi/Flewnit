@@ -100,7 +100,7 @@
       
     if( IS_FLUID_PARTICLE( ownParticleObjectID  ) )
     {
-      gDensitiesNew[ ownGlobalAttributeIndex ] = ownDensity;   
+      gDensitiesNew[ ownGlobalAttributeIndex ] = ownDensity;//max(0.5f, ownDensity);   
       
       //gDensitiesNew[ ownGlobalAttributeIndex ] = 
         //cSimParams->SPHsupportRadiusSquared;

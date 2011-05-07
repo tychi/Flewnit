@@ -183,17 +183,18 @@
                                            //MINUS!!     
                   //ownPressureForceDensityNew.xyz -=
                   ownPressureForceDensityNew.xyz +=
-                      ( 
+                      (
                         //mass 
                         cObjectGenericFeatures [ GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID  ].massPerParticle
                         //mean of both pressures for symmetry reasons:
                         * 0.5f  
-                        *( ownPressure + 
-                           GET_PRESSURE( 
-                             GET_CURRENT_NEIGHBOUR_PARTICLE_DENSITY,
-                             cObjectGenericFeatures, 
-                             GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID
-                           ) 
+                        * (
+                            ownPressure + 
+                            GET_PRESSURE( 
+                              GET_CURRENT_NEIGHBOUR_PARTICLE_DENSITY,
+                              cObjectGenericFeatures, 
+                               GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID
+                            ) 
                          )
                         / GET_CURRENT_NEIGHBOUR_PARTICLE_DENSITY //TODO native_divide( ) or * native_recip() or so ;)
                       )
@@ -244,11 +245,14 @@
 
       
       float4 ownAccelerationNew =  
-        //force/Volume/(mass/Volume) yields acceleration
-        ( (ownPressureForceDensityNew + ownViscosityForceDensityNew ) / ownDensity ) //TODO native_divide or precompute inverse;
-        //add gravity term, is already an acceleration
-        + cSimParams->gravityAcceleration
-        + staticGeomCollisionAcceleration
+        min(
+          (float4)(0.1f,0.1f,0.1f,0.0f),
+          //force/Volume/(mass/Volume) yields acceleration
+          ( (ownPressureForceDensityNew + ownViscosityForceDensityNew ) / ownDensity ) //TODO native_divide or precompute inverse;
+          //add gravity term, is already an acceleration
+          + cSimParams->gravityAcceleration
+          + staticGeomCollisionAcceleration
+        )
         ;
         
       
