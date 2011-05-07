@@ -18,3 +18,4 @@ device 3: Nvidia Geforce 9800 GT (G 80)
 --------------------------------------------------------
 
 device 0, setup 0,  65536 particles, 32^3 uniform grid:   3.0 -   3.1 avg. fps;
+device 0, setup 1,  65536 particles, 32^3 uniform grid:   3.3 -   3.3 avg. fps;

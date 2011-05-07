@@ -120,13 +120,11 @@
   )
   {
     //DEBUG
-    uint debugVariable=0;
-    
-    //__local uint lCurrentNeighbourZIndex;
+    //uint debugVariable=0;
     
     //DEBUG
-     __local float4 lCurrentPositions[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
-     __local float4 lMeanPosition;
+     //__local float4 lCurrentPositions[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
+     //__local float4 lMeanPosition;
     
   
     {% block getCL_IDs %}
@@ -135,15 +133,12 @@
      uint groupID =  get_group_id(0);
     {% endblock getCL_IDs %}
      
-  
-    //uint numParticlesInOwnGroup = gUniGridCells_NumParticles[ groupID ]; <-- BULLSHIT! shame on me ;(
-    //uint ownGlobalAttributeIndex = gUniGridCells_ParticleStartIndex[ groupID ] + lwiID;
     
     uint numParticlesInOwnGroup =  gSimWorkGroups_NumParticles[ groupID ];
     uint ownGlobalAttributeIndex = gSimWorkGroups_ParticleStartIndex[ groupID ] + lwiID;
     
+   
     
-
 
      
     //{ alloc local mem for neighbours, grab needed attributes for own particles, store them to private mem 
@@ -168,6 +163,8 @@
       {% endblock kernelDependentParticleAttribsMalloc %}
     
     //}
+    
+    
       
       
     if(lwiID < numParticlesInOwnGroup )
@@ -176,7 +173,7 @@
       ownPosition = gPositionsOld[ ownGlobalAttributeIndex ];
       
       //DEBUG
-      lCurrentPositions[lwiID] = ownPosition;
+      //lCurrentPositions[lwiID] = ownPosition;
       
       ownParticleObjectID = GET_OBJECT_ID( gParticleObjectInfos[ ownGlobalAttributeIndex ] );
         
@@ -189,6 +186,15 @@
     } //end if(lwiID < numParticlesInOwnGroup )
     //note: no barrier() necessary here;
     
+    int4 ownGridPos = getGridPos(
+      //calc grid pos from first particle in group; this way, even wthe work items with ID >=numParticlesInOwnGroup
+      //have a valid state; thisi is important because the for()-lopp should not diverge
+      gPositionsOld[ ownGlobalAttributeIndex -lwiID ], 
+      cSimParams
+    );
+
+    
+/*  A bad hack; TODO delete when good alternative works
     barrier(CLK_LOCAL_MEM_FENCE); 
     if(lwiID == 0 )
     {
@@ -200,6 +206,9 @@
       lMeanPosition /= (float)(numParticlesInOwnGroup);
     }
     barrier(CLK_LOCAL_MEM_FENCE); 
+*/
+     
+     
      
     //note: I don't know if it is possible to efficiently compute the 3D-neighbour from a z-index;
     //      This is why I compute a 3D position from the own particles 3D position, and compute from this
@@ -242,9 +251,17 @@
           //we accept this performance penalty, as we get en unlimited simulation domain this way, though performance
           //drastically decreases when particle are not all in "one rest group" of the uniform grid, because then,
           //particles land in the same "buckets" which aren't spacially adjacent, hence such calculations are in vain;
+          uint neighbourZIndex = getZIndexi( 
+            //grid pos of neighbour grid cell:
+            ownGridPos + (int4)(x,y,z,0), 
+            cSimParams, 
+            cGridPosToZIndexLookupTable 
+          );
+          
+
+/*  A bad hack; TODO delete when good alternative works
           //uint neighbourZIndex = getZIndexf( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
 
-/*
 if(lwiID == (NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP/2))
 {
 
@@ -252,7 +269,6 @@ if(lwiID == (NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP/2))
   lCurrentNeighbourZIndex = getZIndexf( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
 }
 barrier(CLK_LOCAL_MEM_FENCE);
-*/
 
  
       uint neighbourZIndex = getZIndexf( 
@@ -266,6 +282,7 @@ barrier(CLK_LOCAL_MEM_FENCE);
          ),
          cSimParams, cGridPosToZIndexLookupTable );
 
+*/
 
 
 
