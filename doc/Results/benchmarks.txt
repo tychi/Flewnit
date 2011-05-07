@@ -1,0 +1,20 @@
+
+-------------------------------------------------------
+
+legend:
+
+setup 0: initial implementation, with bad nieghbour-z-index-hack
+setup 1: correct z-index caclulation
+setup 2: direct read of neighbouhrs from gobal memory, no barrier()' at all in SPH kernels
+setup 3: density calculation integrated into forcekernel
+
+
+device 0: Nvidia Geforce 435M GT (Fermi)
+device 1: Nvidia Geforce GTX 570 (Fermi)
+device 2: Nvidia Geforce GTX 280 (GT 200)
+device 3: Nvidia Geforce 9800 GT (G 80)
+
+
+--------------------------------------------------------
+
+device 0, setup 0,  65536 particles, 32^3 uniform grid:   3.0 -   3.1 avg. fps;

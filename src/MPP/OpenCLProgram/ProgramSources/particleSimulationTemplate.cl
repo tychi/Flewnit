@@ -242,20 +242,20 @@
           //we accept this performance penalty, as we get en unlimited simulation domain this way, though performance
           //drastically decreases when particle are not all in "one rest group" of the uniform grid, because then,
           //particles land in the same "buckets" which aren't spacially adjacent, hence such calculations are in vain;
-          //uint neighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
+          //uint neighbourZIndex = getZIndexf( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
 
 /*
 if(lwiID == (NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP/2))
 {
 
- // lCurrentNeighbourZIndex = getZIndex( ownPosition, cSimParams, cGridPosToZIndexLookupTable );
-  lCurrentNeighbourZIndex = getZIndex( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
+ // lCurrentNeighbourZIndex = getZIndexf( ownPosition, cSimParams, cGridPosToZIndexLookupTable );
+  lCurrentNeighbourZIndex = getZIndexf( posInNeighbour, cSimParams, cGridPosToZIndexLookupTable );
 }
 barrier(CLK_LOCAL_MEM_FENCE);
 */
 
  
-      uint neighbourZIndex = getZIndex( 
+      uint neighbourZIndex = getZIndexf( 
         lMeanPosition + 
         (float4)
         (

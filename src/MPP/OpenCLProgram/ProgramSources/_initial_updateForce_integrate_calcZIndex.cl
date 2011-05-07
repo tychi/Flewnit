@@ -24,7 +24,7 @@
       __global uint* gZIndices  
     )
     {
-      gZIndices[get_global_id(0)] = getZIndex(gPositions[get_global_id(0)], cSimParams, cGridPosToZIndexLookupTable);
+      gZIndices[get_global_id(0)] = getZIndexf(gPositions[get_global_id(0)], cSimParams, cGridPosToZIndexLookupTable);
     }
     
     
