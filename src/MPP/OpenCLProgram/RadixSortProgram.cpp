@@ -188,8 +188,8 @@ void RadixSortProgram::createKernels()
 			new CLKernelWorkLoadParams(
 				//work group size ...
 				(mRadixSorter->mNumWorkGroups_TabulationAndReorderPhase / 2)
-				//... times number of work groups = total element count
-				* mRadixSorter->mNumComputeUnits_Base2Ceiled ,
+					//... times number of work groups = total element count
+					* mRadixSorter->mNumComputeUnits_Base2Ceiled ,
 				//need half of the to-be-scanned-array-size work items to scan it
 				mRadixSorter->mNumWorkGroups_TabulationAndReorderPhase / 2
 			),

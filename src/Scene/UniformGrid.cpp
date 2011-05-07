@@ -339,7 +339,7 @@ void UniformGrid::updateCells(String bufferSetName, BufferInterface* sortedZIndi
 		)
 	);
 
-	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
+	if(URE_INSTANCE->bufferDumpCondition())
 	{
 		getBufferSet(bufferSetName)->dumpBuffers(
 				String("UniGridBuffSet_")+bufferSetName+String("_AFTER_Update"),
@@ -372,7 +372,7 @@ unsigned int UniformGrid::splitAndCompactCells(String bufferSetName,UniformGridB
 		}
 	);
 
-	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
+	if(URE_INSTANCE->bufferDumpCondition())
 	{
 		dumpIntermediateScanBuffers(
 				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
@@ -407,7 +407,7 @@ unsigned int UniformGrid::splitAndCompactCells(String bufferSetName,UniformGridB
 		}
 	);
 
-	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
+	if(URE_INSTANCE->bufferDumpCondition())
 	{
 		compactionResultBufferSet->dumpBuffers(
 				String("UniGridBuffSet_")+bufferSetName+String("afterCompaction"),

@@ -151,7 +151,8 @@
     
     uint numParticlesInOwnGroup =  gSimWorkGroups_NumParticles[ groupID ];
     uint ownGlobalAttributeIndex = gSimWorkGroups_ParticleStartIndex[ groupID ] + lwiID;
-    
+
+
    
     
 
@@ -201,15 +202,14 @@
     
     //note: I don't know if it is possible to efficiently compute the 3D-neighbour from a z-index;
     //      This is why I compute a 3D grid position from the own particles 3D position, and compute from this
-    //      3D neighbour grid position the neighbour's z-Index; TODO research a more direct/ more efficient way;
+    //      3D neighbour grid position the neighbour's z-Index; TODO research a more direct/ more efficient way;     
     int4 ownGridPos = getGridPos(
-      //calc grid pos from first particle in group; this way, even wthe work items with ID >=numParticlesInOwnGroup
-      //have a valid state; thisi is important because the for()-lopp should not diverge
-      gPositionsOld[ ownGlobalAttributeIndex -lwiID ], 
-      cSimParams
+        //calc grid pos from first particle in group; this way, even wthe work items with ID >=numParticlesInOwnGroup
+        //have a valid state; thisi is important because the for()-lopp should not diverge
+        gPositionsOld[ ownGlobalAttributeIndex -lwiID ], 
+        cSimParams
     );
 
-         
      
      
 
@@ -243,7 +243,7 @@
 
 
           //TODO uncomment this when stable;
-          //if(numNeighbourParticlesToInteractWith) { continue; }
+          //if(numNeighbourParticlesToInteractWith == 0) { continue; }
           //----------------------------------------------------------------------------------------------------
           
           uint neighbourParticleStartIndex = gUniGridCells_ParticleStartIndex[ neighbourZIndex ];
@@ -301,9 +301,9 @@
               
               for(  uint interactingLocalIndex=0; 
                     interactingLocalIndex < numNeighbourParticlesToInteractWith;
+
                     interactingLocalIndex++ )
-              {
-          
+              {               
               
 {% endif %}  {% comment %} not useCacheUsingOpenCLImplementation {% endcomment %} 
 
@@ -345,6 +345,8 @@
             
             
 {% else %}  {% comment %} not useCacheUsingOpenCLImplementation {% endcomment %}             
+     
+
      
             }// end sequential work on one neighbour cell's particles
             

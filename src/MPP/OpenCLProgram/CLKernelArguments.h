@@ -36,7 +36,10 @@ class CLKernelWorkLoadParams
 		);
 		virtual ~CLKernelWorkLoadParams(){}
 
-	private:
+		const CLKernelWorkLoadParams& operator=( const CLKernelWorkLoadParams& rhs)
+		{mNumTotalWorkItems= rhs.mNumTotalWorkItems; mNumWorkItemsPerWorkGroup= rhs.mNumWorkItemsPerWorkGroup; return *this;}
+
+	protected:
 		friend class CLKernel;
 		friend class CLKernelArgumentBase;
 

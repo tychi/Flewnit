@@ -331,7 +331,7 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	}
 
 
-	//} endsort and reorder
+	//} end sort and reorder
 	//------------------------------------------------------------------------------------------------------
 
 
@@ -343,20 +343,27 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 		mParticleSceneRepresentation->getParticleAttributeBuffers()->getZIndicesPiPoBuffer()
 	);
 
-	unsigned int numCurrentSPHSimulationWorkGroups =
-		mParticleUniformGrid->splitAndCompactCells(
-			"particles",
-			mSplitAndCompactedUniformGridCells
-		);
 
-	LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
-				<< numCurrentSPHSimulationWorkGroups << ";\n";
+	//we need stream compaction only for the non-cached version :)
+	unsigned int numCurrentSPHSimulationWorkGroups=0;
+	//if(! CLProgramManager::getInstance().useCacheUsingOpenCLImplementation())
+	{
+		numCurrentSPHSimulationWorkGroups =
+			mParticleUniformGrid->splitAndCompactCells(
+				"particles",
+				mSplitAndCompactedUniformGridCells
+			);
+
+		LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
+					<< numCurrentSPHSimulationWorkGroups << ";\n";
+	}
 
 	//}
 
 	//{ SPH stuff
 
-		CLKernelWorkLoadParams currentSPHKErnelWorkLoadParams(numCurrentSPHSimulationWorkGroups * mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup(),
+		CLKernelWorkLoadParams currentSPHKErnelWorkLoadParams(
+				numCurrentSPHSimulationWorkGroups * mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup(),
 				mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup()
 		);
 
@@ -368,6 +375,7 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 			},
 			currentSPHKErnelWorkLoadParams
 		);
+
 
 
 		if(

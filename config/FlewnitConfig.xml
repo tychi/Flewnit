@@ -19,7 +19,7 @@
           heavy usage of the Fermi-architecture's L1-cache feature and this way saves buffering to local memory
           and, most important work group synchronization;
     -->
-    <useCacheUsingOpenCLImplementation type="BOOL" value="false" GUIVisibility="read/write" tweakConfigString="TODO"/>
+    <useCacheUsingOpenCLImplementation type="BOOL" value="true" GUIVisibility="read/write" tweakConfigString="TODO"/>
 
 
     <!--
