@@ -323,6 +323,9 @@ bool URE::stepSimulation()
 	bool success =true;
 	assert(mCorrectlyInitializedGuard);
 
+
+	LOG<<INFO_LOG_LEVEL<<"Frame number: "<<mFPSCounter->getTotalRenderedFrames() <<"; ";
+
 	mFPSCounter->newFrameStarted();
 
 	//TODO
@@ -333,26 +336,16 @@ bool URE::stepSimulation()
 		simulator->stepSimulation();
 	}
 
-	LOG<<INFO_LOG_LEVEL<< mFPSCounter->getFPS(true)<<" average FPS\n";
 
-//	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
-//	{
-//		simPair.second -> stepSimulation();
-//	}
 
-//	success = mSimulators[MECHANICAL_SIM_DOMAIN] -> stepSimulation();
-//
-//	success = mSimulators[VISUAL_SIM_DOMAIN] -> stepSimulation();
-//
-//	success =mSimulators[ACUSTIC_SIM_DOMAIN] -> stepSimulation();
 
-	//mWindowManager->swapBuffers();
 
 	success = mInputManager->processInput();
 
 
 	mFPSCounter->frameEnded();
 
+	LOG<< INFO_LOG_LEVEL << "average FPS: " << mFPSCounter->getFPS(true) <<";\n";
 	//LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(false) << "last FPS;\n";
 	//LOG<< INFO_LOG_LEVEL << mFPSCounter->getFPS(true) << " average FPS;\n";
 
@@ -393,8 +386,13 @@ void URE::setCurrentlyActiveCamera(Camera* cam)
 bool URE::bufferDumpCondition()
 {
 	return
-		//false;
-			(mFPSCounter->getTotalRenderedFrames() <= 0);
+		false;
+//			(mFPSCounter->getTotalRenderedFrames() <= 0)
+//			||
+//			(mFPSCounter->getTotalRenderedFrames() == 7)
+//			||
+//			(mFPSCounter->getTotalRenderedFrames() == 8)
+//			;
 //		(mFPSCounter->getTotalRenderedFrames() <= 2)
 //		||
 //		(

@@ -22,7 +22,7 @@
     
     //damn the "for-loop-condition"compiler bug!!11
     //in the long term, this value should be 2 or 4;
-    #define  NUM_MAX_ALLOWED_UNIGRID_CELL_SPLIT_FACTOR ( {{ numMaxAllowedUniGridCellSplitFactor|default:"32" }} )
+    #define  NUM_MAX_ALLOWED_UNIGRID_CELL_SPLIT_FACTOR ( {{ numMaxAllowedUniGridCellSplitFactor|default:"128" }} )
     
     //    0      residing particles --> 0 simulation work groups
     //  [ 1..32] residing particles --> 1 simulation work group

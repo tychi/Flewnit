@@ -276,18 +276,6 @@ void ParticleAttributeBuffers::readBackBuffers()
 void ParticleAttributeBuffers::dumpBuffers(
 		String dumpName, unsigned int frameNumber,bool abortAfterDump, bool zIndicesOnly)
 {
-	//read back active components;
-	readBackBuffers();
-//	//read back inactive components
-//	//{
-//		toggleBuffers();
-//		readBackBuffers();
-//	//}
-//	//restore to "real" active buffers;
-//	toggleBuffers();
-
-
-
 	std::fstream fileStream;
 	Path path =
 		Path( FLEWNIT_DEFAULT_OPEN_CL_KERNEL_SOURCES_PATH )
@@ -303,6 +291,9 @@ void ParticleAttributeBuffers::dumpBuffers(
 		path.string().c_str(),
 		std::ios::out
 	);
+
+
+	readBackBuffers();
 
 
 

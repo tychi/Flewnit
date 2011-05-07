@@ -248,6 +248,7 @@ unsigned int SplitAndCompactUniformGridProgram::readBackNumGeneratedNonEmptySpli
 		getKernel("kernel_splitAndCompactUniformGrid")->getCLKernelArguments()
 			->getBufferArg("gSumsOfPartialGlobalScans")->get();
 
+	PARA_COMP_MANAGER->barrierCompute();
 	//read back and block
 	bufferWithTotalScanSum->readBack(true);
 

@@ -363,7 +363,9 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	//{ SPH stuff
 
 		CLKernelWorkLoadParams currentSPHKErnelWorkLoadParams(
-				numCurrentSPHSimulationWorkGroups * mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup(),
+				numCurrentSPHSimulationWorkGroups
+				//std::min((uint)(10000),numCurrentSPHSimulationWorkGroups)
+					* mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup(),
 				mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup()
 		);
 
