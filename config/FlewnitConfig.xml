@@ -150,12 +150,12 @@
 
           <!--
           <numMaxParticles type="INT" value="262144" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <numMaxParticles type="INT" value="16384" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
-          <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          -->
           <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="16384" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          -->
+          <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
           <numMaxFluids type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -173,7 +173,7 @@
           <voxelSideLengthRepresentedByRigidBodyParticle type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
-          <SPHSupportRadius type="FLOAT" value="2.99"		GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <SPHSupportRadius type="FLOAT" value="2.9"		GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
           <!--as long i have no triangle-collision-mesh functionality, i have to keep the particles in a lame box ;( -->
@@ -189,8 +189,8 @@
           <simulationDomainBorderMax  type="VEC4" x="64.0" y="64.0" z="64.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
           <gravityAcceleration  type="VEC4" x="0.0" y="-0.005" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <penaltyForceSpringConstant type="FLOAT" value="2.75" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <penaltyForceDamperConstant type="FLOAT" value="0.75" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <penaltyForceSpringConstant type="FLOAT" value="0.75" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <penaltyForceDamperConstant type="FLOAT" value="1.75" GUIVisibility="read/write" tweakConfigString="TODO"/>
  
           <numMaxUserForceControlPoints type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
@@ -253,18 +253,18 @@
             <name type="STRING" value="coldWater" />
             <!--          
             <numContainingParticles type="INT" value="262144" GUIVisibility="read" tweakConfigString="TODO"/>
-            <numContainingParticles type="INT" value="16384" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
-            <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
-            -->
             <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
+            <numContainingParticles type="INT" value="16384" GUIVisibility="read" tweakConfigString="TODO"/>
+            -->
+            <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
           
             <!--          
             <spawnAABBMin  type="VEC4" x="0.25" y="0.25" z="0.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             <spawnAABBMin  type="VEC4" x="0.5" y="0.5" z="0.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             --> 
-            <spawnAABBMin  type="VEC4" x="25.5" y="0.5" z="25.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            <spawnAABBMin  type="VEC4" x="15.5" y="0.5" z="15.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
         
             <!--          
             <spawnAABBMax  type="VEC4" x="16.25" y="16.25" z="16.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -294,7 +294,7 @@
               <massPerParticle  type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <restDensity      type="FLOAT" value="1.2" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <gasConstant      type="FLOAT" value="0.25" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <viscosity        type="FLOAT" value="2.5" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
+              <viscosity        type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
             </ParticleFluidMechMat>
              
           </ParticleFluid>
