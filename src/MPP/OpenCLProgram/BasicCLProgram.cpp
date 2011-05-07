@@ -13,6 +13,7 @@
 
 
 #include <grantlee/engine.h>
+#include "MPP/OpenCLProgram/CLProgramManager.h"
 //#include <QtCore/QString>
 //#include <QtCore/QVariantHash>
 
@@ -49,6 +50,12 @@ void BasicCLProgram::setupTemplateContext(TemplateContextMap& contextMap)
 		"numMaxWorkItems_Base2Floored",
 		HelperFunctions::floorToNextPowerOfTwo(PARA_COMP_MANAGER->getParallelComputeDeviceInfo().maxWorkGroupSize)
 	);
+
+	contextMap.insert(
+		"useCacheUsingOpenCLImplementation",
+		CLProgramManager::getInstance().useCacheUsingOpenCLImplementation()
+	);
+
 }
 
 }

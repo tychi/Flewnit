@@ -22,13 +22,16 @@ class CLProgramManager
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
 public:
-	CLProgramManager();
+	CLProgramManager(bool useCacheUsingOpenCLImplementation);
 	virtual ~CLProgramManager();
 
 	CLProgram* getProgram(String name)throw(SimulatorException);
 
 	inline IntermediateResultBuffersManager* getIntermediateResultBuffersManager()const
 			{return mIntermediateResultBuffersManager;}
+
+	inline bool useCacheUsingOpenCLImplementation()const
+			{return mUseCacheUsingOpenCLImplementation;}
 
 private:
 	//friend void CLProgram::registerToCLPRogramManager();
@@ -50,6 +53,8 @@ private:
 
 	typedef std::map<String, CLProgram*> CLProgramMap;
 	CLProgramMap mCLPrograms;
+
+	bool mUseCacheUsingOpenCLImplementation;
 
 
 };

@@ -14,9 +14,11 @@
 namespace Flewnit
 {
 
-CLProgramManager::CLProgramManager()
+CLProgramManager::CLProgramManager( bool useCacheUsingOpenCLImplementation)
+
 :
-	mIntermediateResultBuffersManager(new IntermediateResultBuffersManager())
+	mIntermediateResultBuffersManager(new IntermediateResultBuffersManager()),
+	mUseCacheUsingOpenCLImplementation(useCacheUsingOpenCLImplementation)
 {
 	// TODO Auto-generated constructor stub
 

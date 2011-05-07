@@ -148,7 +148,11 @@ bool URE::init(Path& pathToGlobalConfigFile)
 
 
 	mSimulationResourceManager =  new SimulationResourceManager();
-	mCLProgramManager = new CLProgramManager();
+
+	mCLProgramManager = new CLProgramManager(
+		ConfigCaster::cast<bool>( mConfig->root().get("generalSettings",0).
+				get("useCacheUsingOpenCLImplementation",0) )
+	);
 
 	if(mConfig->root().childExists("generalSettings",0))
 	{

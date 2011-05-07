@@ -13,6 +13,13 @@
     <doProfilePerformance type="BOOL" value="false" />
 
     <doDebugDraw type="BOOL" value="true" />
+    
+    
+    <!-- this flag determines if the OpenCL programs shall be built in the way that it makes implicitely
+          heavy usage of the Fermi-architecture's L1-cache feature and this way saves buffering to local memory
+          and, most important work group synchronization;
+    -->
+    <useCacheUsingOpenCLImplementation type="BOOL" value="TRUE" GUIVisibility="read/write" tweakConfigString="TODO"/>
 
 
     <!--
@@ -131,6 +138,8 @@
         <Type type="STRING" value="ParticleMechanicsStage"/>
 
         <generalSettings>
+        
+
 
  	        <!-- if true, the particles move the faster the more powerful the hardware is;
 	          usually not desirable in a real application, but good for testing;               -->
