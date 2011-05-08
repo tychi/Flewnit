@@ -10,9 +10,9 @@
   //{ following two functions are inspired by the Nvidia oclParticles demo
   int4 getGridPos(float4 p,  __constant SimulationParameters* cSimParams){
       int4 gridPos;
-      gridPos.x = (int)floor( ( p.x - cSimParams->uniGridWorldPosLowerCorner.x ) / cSimParams->uniGridCellSizes.x );
-      gridPos.y = (int)floor( ( p.y - cSimParams->uniGridWorldPosLowerCorner.y ) / cSimParams->uniGridCellSizes.y );
-      gridPos.z = (int)floor( ( p.z - cSimParams->uniGridWorldPosLowerCorner.z ) / cSimParams->uniGridCellSizes.z );
+      gridPos.x = (int) floor( ( p.x - cSimParams->uniGridWorldPosLowerCorner.x ) / cSimParams->uniGridCellSizes.x );
+      gridPos.y = (int) floor( ( p.y - cSimParams->uniGridWorldPosLowerCorner.y ) / cSimParams->uniGridCellSizes.y );
+      gridPos.z = (int) floor( ( p.z - cSimParams->uniGridWorldPosLowerCorner.z ) / cSimParams->uniGridCellSizes.z );
       gridPos.w = 0;
       return gridPos;
   }

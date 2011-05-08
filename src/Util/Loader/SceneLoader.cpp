@@ -208,6 +208,7 @@ void SceneLoader::loadGeometries()
 
 		VertexBasedGeometry* flewnitGeo = new VertexBasedGeometry(
 			String(assimpMesh->mName.data)+String("Geometry"),
+			//VERTEX_BASED_TRIANGLES
 			VERTEX_BASED_TRIANGLE_PATCHES //HARDCODE TODO REFACTOR
 		);
 		BufferInfo bufferi(

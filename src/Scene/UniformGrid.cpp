@@ -591,7 +591,8 @@ void UniformGrid::setupZIndexLookUpTable() //called by constructor
 	for(unsigned int i = 0; i < 3* mNumCellsPerDimension; i++ )
 	{
 		LOG<< DEBUG_LOG_LEVEL <<"mZIndexLookupTable["<<i<<"]:"
-				<<uintPtr[i]<<";\n";
+			<<"bin.:"<<HelperFunctions::getBitString(uintPtr[i])<<", "
+			<<"dec.:"<<uintPtr[i]<<";\n";
 	}
 
 

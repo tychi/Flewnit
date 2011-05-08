@@ -45,7 +45,7 @@ VertexBasedGeometry::VertexBasedGeometry(String name, GeometryRepresentation geo
 
 void VertexBasedGeometry::setUpPatchRepresentationState()
 {
-	bindSafe();
+
 
 	if(WindowManager::getInstance().getAvailableOpenGLVersion().x < 4)
 	{
@@ -67,7 +67,7 @@ void VertexBasedGeometry::setUpPatchRepresentationState()
 		return;
 	}
 
-	bind();
+	bindSafe();
 
 	int numVerticesPerPatch =0;
 	switch(getGeometryRepresentation())

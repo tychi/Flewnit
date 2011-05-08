@@ -152,10 +152,10 @@
           <numMaxParticles type="INT" value="262144" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="16384" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
-          <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          -->
           <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          -->
+          <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
           <numMaxFluids type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -186,10 +186,10 @@
           <simulationDomainBorderMax  type="VEC4" x="195.0" y="195.0" z="195.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <simulationDomainBorderMax  type="VEC4" x="64.0" y="64.0" z="64.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           -->
-          <simulationDomainBorderMax  type="VEC4" x="32.0" y="32.0" z="32.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <simulationDomainBorderMax  type="VEC4" x="96.0" y="96.0" z="46" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
-          <gravityAcceleration  type="VEC4" x="0.0" y="-0.005" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <penaltyForceSpringConstant type="FLOAT" value="0.3" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <gravityAcceleration  type="VEC4" x="0.0" y="-0.01" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <penaltyForceSpringConstant type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceDamperConstant type="FLOAT" value="0.025" GUIVisibility="read/write" tweakConfigString="TODO"/>
  
           <numMaxUserForceControlPoints type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -227,12 +227,12 @@
           
            <!--
            <extendsOfOneCell  type="VEC4" x="5.0" y="5.0" z="5.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-           <extendsOfOneCell  type="VEC4" x="9.0" y="9.0" z="9.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
            <extendsOfOneCell  type="VEC4" x="4.75" y="4.75" z="4.75" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-           <extendsOfOneCell  type="VEC4" x="3.0" y="3.0" z="3.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
            <extendsOfOneCell  type="VEC4" x="1.0" y="1.0" z="1.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-           -->
            <extendsOfOneCell  type="VEC4" x="2.0" y="2.0" z="2.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <extendsOfOneCell  type="VEC4" x="9.0" y="9.0" z="9.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           -->
+           <extendsOfOneCell  type="VEC4" x="3.0" y="3.0" z="3.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
            
 				    <!--
 				      GPU-relevant "chunk-ization" size, denoting the max. element count processed by one OpenCL work group; 
@@ -255,10 +255,10 @@
             <numContainingParticles type="INT" value="262144" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="16384" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
-            <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
-            -->
             <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+            -->
+            <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
           
             <!--          
             <spawnAABBMin  type="VEC4" x="0.25" y="0.25" z="0.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -272,7 +272,7 @@
             <spawnAABBMax  type="VEC4" x="64.0" y="64.0" z="64.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/> 
             <spawnAABBMax  type="VEC4" x="55.0" y="55.0" z="55.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>     
             -->  
-            <spawnAABBMax  type="VEC4" x="32.5" y="32.5" z="32.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            <spawnAABBMax  type="VEC4" x="32.5" y="32" z="27.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
             
             <initialVelocity type="VEC4" x="0.0" y="0.0" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -292,9 +292,9 @@
             <ParticleFluidMechMat>
               <name type="STRING" value="coldWaterParticleFluidMechMat" />
               <massPerParticle  type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <restDensity      type="FLOAT" value="1.2" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <gasConstant      type="FLOAT" value="0.25" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <viscosity        type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
+              <restDensity      type="FLOAT" value="0.8" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <gasConstant      type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <viscosity        type="FLOAT" value="0.75" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
             </ParticleFluidMechMat>
              
           </ParticleFluid>

@@ -122,7 +122,8 @@
         
         scanExclusive(lScannedSumsOfPartialGlobalScans, & lTotalSimWorkGroupCount, NUM_COMPUTE_UNITS_BASE2_CEILED, lwiID );
           
-        if(lwiID == 0)
+  	//only ONE work item of the whole kernel shall write out the total sum ;(
+        if(gwiID == 0)
         {
           //write the total count to global memory
           gSumsOfPartialGlobalScans[NUM_COMPUTE_UNITS_BASE2_CEILED] = lTotalSimWorkGroupCount;
