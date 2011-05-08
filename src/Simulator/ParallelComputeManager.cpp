@@ -349,7 +349,7 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 	//force to wait for all GL commands to complete
 	barrierGraphics();
 	//force to wait for all other CL commands to complete;
-	barrierCompute();
+	//barrierCompute();
 	///\}
 
 
@@ -358,8 +358,8 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 			& mRegisteredCLGLSharedBuffers,
 			//TODO maybe manage a set of events in order for more efficient synch;
 			//at the moment, we
-			0,
-			& mLastEvent
+			0
+			//,& mLastEvent
 			)
 	);
 
@@ -381,7 +381,7 @@ void ParallelComputeManager::acquireSharedBuffersForGraphics()
 	barrierCompute();
 	//nb: no synch with GL seems necessary, as during compute stuff (at first) no GL stuff should be active anyway;
 	//in suspicion of driver bugs, let's glFinish() anyway at first; TODO remove when stable;
-	barrierGraphics();
+	//barrierGraphics();
 	///\}
 
 	GUARD(
@@ -389,8 +389,8 @@ void ParallelComputeManager::acquireSharedBuffersForGraphics()
 			& mRegisteredCLGLSharedBuffers,
 			//TODO maybe manage a set of events in order for more efficient synch;
 			//at the moment, we
-			0,
-			& mLastEvent
+			0
+			//,& mLastEvent
 			)
 	);
 

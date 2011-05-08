@@ -55,11 +55,12 @@
     //note: even the invalid particles have their own index table; branching for those few particles doesn't make sense;
     //plus, with tracking the invalids; we can put them into the simulaton domain where we want...
     //Can't help neutrinos coming into my mind... ;)
+   /*
     gParticleIndexTable[ 
         cObjectGenericFeatures[ GET_OBJECT_ID( particleObjectInfo ) ].offsetInIndexTableBuffer
         + GET_PARTICLE_ID( particleObjectInfo ) 
       ] = gwiID;
-    
+    */
 
     gParticleObjectInfosReordered[ gwiID ] = particleObjectInfo;
     

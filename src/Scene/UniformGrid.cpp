@@ -380,6 +380,7 @@ unsigned int UniformGrid::splitAndCompactCells(String bufferSetName,UniformGridB
 		);
 	}
 
+PARA_COMP_MANAGER->barrierCompute();
 
 	//-----------------------------------------------------------------------------------------------------------
 	//finish scan and split&compact phase
@@ -416,6 +417,9 @@ unsigned int UniformGrid::splitAndCompactCells(String bufferSetName,UniformGridB
 		);
 	}
 
+PARA_COMP_MANAGER->barrierCompute();
+
+PARA_COMP_MANAGER->getCommandQueue().enqueueWaitForEvents(EventVector{splitNCompactKernel->getEventOfLastKernelExecution()});
 	//------------------------------------------------------------------------------------
 	//read back total count:
 	return mSplitAndCompactUniformGridProgram->readBackNumGeneratedNonEmptySplitCells();

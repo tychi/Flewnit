@@ -130,7 +130,183 @@
   <simulators>
     <!--  -->
 
-<!-- TODO REENTER HERE STUFF-->
+    <Simulator>
+      <Type type="STRING" value="MechanicsSimulator"/>
+
+
+      <SimulationPipelineStage>
+        <Type type="STRING" value="ParticleMechanicsStage"/>
+
+        <generalSettings>
+        
+
+
+ 	        <!-- if true, the particles move the faster the more powerful the hardware is;
+	          usually not desirable in a real application, but good for testing;               -->
+        	<useFrameRateIndependentSimulationTimestep type="BOOL" value="TRUE" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!-- value is always used as timestep if useFrameRateIndependentSimulationTimestep==true;
+	             this values is to ensure stability, at the cost of maybe a slow-motion simulation -->
+          <maxTimestepPerSimulationStep type="FLOAT" value="0.125" GUIVisibility="read/write" tweakConfigString="TODO"/>
+
+          <!--
+          <numMaxParticles type="INT" value="262144" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="16384" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          -->
+          <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+          
+          <numMaxFluids type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!-- zero is a legitimate value to indicate that no rigid bodies are wanted -->
+          <numMaxRigidBodies type="INT" value="0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!-- be careful with this value: the maximum may be hardware/implementation
+						dependent
+            and hence may be clamped; GT200: max 256; Fermi: Max 1024;
+						reason:
+            scarce local memory, hence value reloading for greater particle
+						counts;
+          -->
+          <numMaxParticlesPerRigidBody type="INT" value="1024" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!-- should be 1/3* unigrid cell size; this means 27 particles/cell; this is good-->
+          <voxelSideLengthRepresentedByRigidBodyParticle type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+          
+          <SPHSupportRadius type="FLOAT" value="2.9"		GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+          
+          <!--as long i have no triangle-collision-mesh functionality, i have to keep the particles in a lame box ;( -->
+          <!-- to be as big as the uniform grid, it simulationDomainBorderMax-simulationDomainBorderMin should be
+               = extendsOfOneCell * ( numCellsPerDimension +1 )
+           -->
+          <simulationDomainBorderMin  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <!--
+          <simulationDomainBorderMax  type="VEC4" x="96.0" y="96.0" z="96.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <simulationDomainBorderMax  type="VEC4" x="195.0" y="195.0" z="195.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <simulationDomainBorderMax  type="VEC4" x="64.0" y="64.0" z="64.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          -->
+          <simulationDomainBorderMax  type="VEC4" x="32.0" y="32.0" z="32.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            
+          <gravityAcceleration  type="VEC4" x="0.0" y="-0.005" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <penaltyForceSpringConstant type="FLOAT" value="0.3" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <penaltyForceDamperConstant type="FLOAT" value="0.025" GUIVisibility="read/write" tweakConfigString="TODO"/>
+ 
+          <numMaxUserForceControlPoints type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+          <useConstantTimestep type="BOOL" value ="true" GUIVisibility="read"	tweakConfigString="TODO"/>
+          <!-- used alway as timestep if useConstantTimestep;  1/60 seconds -->
+          <!--
+          <constantTimeStep    type="FLOAT" value ="0.0166666" GUIVisibility="read"	tweakConfigString="TODO"/>
+          -->
+          <constantTimeStep    type="FLOAT" value ="0.466666" GUIVisibility="read"	tweakConfigString="TODO"/>
+          <!-- scale factor for elapsed time in seconds to be used if !useConstantTimestep -->
+          <timestepScale    type="FLOAT" value ="1.0" GUIVisibility="read"	tweakConfigString="TODO"/>
+          
+          
+          <!-- following values currently unused -->
+	          <targetSimulationStepsPerSecond type="INT" value="60" GUIVisibility="read/write" tweakConfigString="TODO"/>
+	          <maxSimulationStepsPerSecond type="INT" value="100" GUIVisibility="read/write" tweakConfigString="TODO"/>
+	          <!-- following val is kinda dumb, besides reducing particle count at init time we cannot enforce higher performance
+	               directly; but maybe the value will be of use at some time... -->
+	          <minSimulationStepsPerSecond type="INT" value="10" GUIVisibility="read/write"	tweakConfigString="TODO"/>
+	          <particelizeBordersOnly type="BOOL" value ="false" GUIVisibility="read"	tweakConfigString="TODO"/>
+            
+        </generalSettings>
+        
+        <UniformGrid>
+           <numCellsPerDimension type="INT" value="32" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+          
+           <!--
+            <minCornerPosition  type="VEC4"  x="192.0" y="192.0" z="192.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <minCornerPosition  type="VEC4" x="-16.0" y="-16.0" z="-16.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <minCornerPosition  type="VEC4" x="-32.0" y="-32.0" z="-32.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           -->
+           <minCornerPosition  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+           <!--
+           <extendsOfOneCell  type="VEC4" x="5.0" y="5.0" z="5.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <extendsOfOneCell  type="VEC4" x="9.0" y="9.0" z="9.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <extendsOfOneCell  type="VEC4" x="4.75" y="4.75" z="4.75" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <extendsOfOneCell  type="VEC4" x="3.0" y="3.0" z="3.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <extendsOfOneCell  type="VEC4" x="1.0" y="1.0" z="1.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           -->
+           <extendsOfOneCell  type="VEC4" x="2.0" y="2.0" z="2.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           
+				    <!--
+				      GPU-relevant "chunk-ization" size, denoting the max. element count processed by one OpenCL work group; 
+				      default: 32, because this is the warp size; 
+				      lesser  value means: functional units idle; 
+				      greater value means: another warp must work, most of those functional units idle 
+				                           Also, an SPH üparticle usually interact with only about 30 other particles;
+				                           Using the GPU and the Algorithm of Goswami, Interaction count become 27*32=864;
+				                           So don't dare increasing this number unless for testing what will happen ;(
+				    --> 
+           <numMaxElementsPerSimulationWorkGroup type="INT" value="32" GUIVisibility="read/write" tweakConfigString="TODO"/>     
+        </UniformGrid>
+
+        <!-- it may be no good style to scatter the scene definitions, but time pressure forces me to do so ;( -->
+        <ParticleScene>
+                
+          <ParticleFluid>
+            <name type="STRING" value="coldWater" />
+            <!--          
+            <numContainingParticles type="INT" value="262144" GUIVisibility="read" tweakConfigString="TODO"/>
+            <numContainingParticles type="INT" value="16384" GUIVisibility="read" tweakConfigString="TODO"/>
+            <numContainingParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
+            <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
+            <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
+            -->
+            <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+          
+            <!--          
+            <spawnAABBMin  type="VEC4" x="0.25" y="0.25" z="0.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            <spawnAABBMin  type="VEC4" x="15.5" y="0.5" z="15.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            --> 
+            <spawnAABBMin  type="VEC4" x="0.5" y="0.5" z="0.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+        
+            <!--          
+            <spawnAABBMax  type="VEC4" x="16.25" y="16.25" z="16.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            <spawnAABBMax  type="VEC4" x="16.75" y="16.75" z="16.75" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            <spawnAABBMax  type="VEC4" x="64.0" y="64.0" z="64.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/> 
+            <spawnAABBMax  type="VEC4" x="55.0" y="55.0" z="55.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>     
+            -->  
+            <spawnAABBMax  type="VEC4" x="32.5" y="32.5" z="32.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            
+            
+            <initialVelocity type="VEC4" x="0.0" y="0.0" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+ 
+             <ParticleLiquidVisualMaterial>
+              <name type="STRING" value="coldWaterParticleLiquidVisualMaterial" />
+              <liquidColor type="VEC4" x="0.2" y="0.2" z="1.0" w="0.75" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <particleDrawRadius type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+              <foamColor type="VEC4" x="0.8" y="0.8" z="0.8" w="0.9" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <foamGenerationAcceleration type="FLOAT" value="0.1" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+              <refractivity type="FLOAT" value="1.5" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+              <shininess type="FLOAT" value="100.0" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+              <reflectivity type="FLOAT" value="0.6" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+              <numCurvatureFlowRelaxationSteps type="INT" value="10" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+            </ParticleLiquidVisualMaterial>
+            
+            <ParticleFluidMechMat>
+              <name type="STRING" value="coldWaterParticleFluidMechMat" />
+              <massPerParticle  type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <restDensity      type="FLOAT" value="1.2" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <gasConstant      type="FLOAT" value="0.25" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <viscosity        type="FLOAT" value="0.5" GUIVisibility="read/write" tweakConfigString="TODO"/>                            
+            </ParticleFluidMechMat>
+             
+          </ParticleFluid>
+          
+          
+        </ParticleScene>
+
+
+      </SimulationPipelineStage>
+
+
+    </Simulator>
 
     <Simulator>
       <Type type="STRING" value="LightingSimulator"/>

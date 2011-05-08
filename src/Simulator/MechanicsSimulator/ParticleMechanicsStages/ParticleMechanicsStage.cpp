@@ -137,7 +137,9 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 
 	mRadixSorter = new RadixSorter(
 		ConfigCaster::cast<int>( generalSettingsNode.get("numMaxParticles",0) ),
-		HelperFunctions::log2ui(ConfigCaster::cast<int>( generalSettingsNode.get("numMaxParticles",0) ))
+		//HelperFunctions::log2ui(ConfigCaster::cast<int>( generalSettingsNode.get("numMaxParticles",0) ))
+		//log2 ov total cell count yield the needed radix sort count
+		HelperFunctions::log2ui( mParticleUniformGrid->getNumCellsPerDimension()*mParticleUniformGrid->getNumCellsPerDimension()*mParticleUniformGrid->getNumCellsPerDimension())
 	);
 
 
@@ -344,14 +346,15 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	);
 
 
-
 	unsigned int numCurrentSPHSimulationWorkGroups=0;
 
+	PARA_COMP_MANAGER->barrierCompute();
 	numCurrentSPHSimulationWorkGroups =
 			mParticleUniformGrid->splitAndCompactCells(
 				"particles",
 				mSplitAndCompactedUniformGridCells
 			);
+	PARA_COMP_MANAGER->barrierCompute();
 
 	LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
 			<< numCurrentSPHSimulationWorkGroups << ";\n";
