@@ -21,12 +21,6 @@ if(UNIX)
 
     set(MEDIA_LAYER "GLFW" CACHE STRING  "Media layer; Chose GLFW, XCB or SDL")
     
-    option(USE_SDL_LOCAL "if SDL is chosen as media layer, choose either installed version or a locally compiled one;option is necessary to handly folder structures of local builds" OFF)
-    set(SDL_DIRECTORY "/usr/local" CACHE PATH "SDL Directory; might be locally compiled, or installed in /usr or /usr/local")
-    set(GLFW_DIRECTORY "/usr/local" CACHE PATH "SDL Directory; might be locally compiled, or installed in /usr or /usr/local")
-   
-    # a bad hack, should be replaced with a FIND_SDL()-module-like stuff, but i'm to stupid for this atm
-    #option(SDL_INSTALLED_LOCALLY "if USE_SDL_LOCAL is unselected, then you might have SDL installed in /usr/local instead of /usr" ON)
 
     option(RELEASE "build in Release mode for more performance but no debugging features" OFF)
     set(GLM_DIRECTORY "../thirdParty/ogl-math" CACHE PATH "Path to glm Math library")
@@ -36,11 +30,7 @@ if(UNIX)
 
 elseif(WIN32)
 
-     #no other option but SDL for Windows atm
-     set(medialayer "GLFW")
-     set(SDL_DIRECTORY "../../Dependencies/glfw-2.7" CACHE PATH "GLFW window manager directory")
-     
-     ##sdl maybe to come...
+    #TODO
 
 endif(UNIX)
 

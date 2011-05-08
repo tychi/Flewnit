@@ -300,12 +300,12 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();
 
 
-		CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->readBack(true);
-		uint numBuffOverFLows =
-				reinterpret_cast<uint*>(
-										CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->getCPUBufferHandle()
-										)[2];
-		LOG<<DEBUG_LOG_LEVEL<<"num bufferOverFlows:"<< numBuffOverFLows<<";\n";
+//		CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->readBack(true);
+//		uint numBuffOverFLows =
+//				reinterpret_cast<uint*>(
+//										CLProgramManager::getInstance().getIntermediateResultBuffersManager()->getBuffer(3)->getCPUBufferHandle()
+//										)[2];
+//		LOG<<DEBUG_LOG_LEVEL<<"num bufferOverFlows:"<< numBuffOverFLows<<";\n";
 
 
 

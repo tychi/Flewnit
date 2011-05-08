@@ -12,11 +12,7 @@
 
 #include "DemoInputInterpreter.h"
 
-//class Foo : public Flewnit::BasicObject
-//{
-//public:
-//	Foo(int i, int j) {};
-//};
+
 
 int main(int argc, char *argv[])
 {

@@ -859,69 +859,12 @@
             gReorderedOldIndices[newIndexInSortedArray] = oldIndex;
             
             
-            //debug: track buffer overflows:
-            if( newIndexInSortedArray >= get_global_size(0))
-            {
-              atom_inc(gSumsOfPartialScansOfSumsOfGlobalRadixCounts +2);             
-            }
-            
-            //gReorderedKeys[oldIndex] =  get_global_size(0);
-             //gReorderedKeys[oldIndex] =  1337;
-            //gReorderedOldIndices[oldIndex] = newIndexInSortedArray;
-            
-            
-            
-            
-/*
-            if( newIndexInSortedArray < get_global_size(0))
-            {
-              gReorderedKeys[newIndexInSortedArray] = key;
-              gReorderedOldIndices[newIndexInSortedArray] = oldIndex; 
-              
-              //atom_inc(gSumsOfPartialScansOfSumsOfGlobalRadixCounts +2);             
-            }
-            else
-            {
-              
-              gReorderedOldIndices[get_global_size(0) + atom_inc(gSumsOfPartialScansOfSumsOfGlobalRadixCounts +2) ]
-                = newIndexInSortedArray;
-            }
-*/
-
-           /*
-            else
-            {
-               //if(gwiID == (get_num_groups(0)-1) )
-               {
-                //gReorderedOldIndices[get_global_size(0)] = bufferOverflowCounter;
-                //gReorderedOldIndices[get_global_size(0)+1] = newIndexInSortedArray;
-                
-                gReorderedKeys[get_global_size(0) ] = 18;
-                  gReorderedOldIndices[get_global_size(0) ] = 81;
-  ;
-                 for(int i=0 ; i< 20; i++ )
-                 {
-                  gReorderedKeys[get_global_size(0) -i] = 18;
-                  gReorderedOldIndices[get_global_size(0) -i] = 81;
-                 }
-
-              
-
-                 for(uint i=0 ; i< 4000; i++ )
-                 {
-   //                 gReorderedKeys[get_global_size(0) + i ] = as_uint((float)(i));
-                    gReorderedOldIndices[get_global_size(0) +i ] =as_uint((float)(i*10));
-                    if( ((i+1)%4) == 0)
-                    {
-     //                 gReorderedKeys[get_global_size(0) + i ] = as_uint((float)(1));
-                      gReorderedOldIndices[get_global_size(0) +i ] =as_uint((float)(1));
-                    }
-                 }
-               } 
-            }
-
-           */
-            
+            //debug HACK: track buffer overflows:
+            //if( newIndexInSortedArray >= get_global_size(0))
+            //{
+            //  atom_inc(gSumsOfPartialScansOfSumsOfGlobalRadixCounts +   NUM_WORK_GROUPS__GLOBAL_SCAN_PHASE );             
+            //}
+                  
 
         }
       }

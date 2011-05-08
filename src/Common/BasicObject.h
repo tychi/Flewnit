@@ -80,23 +80,10 @@ namespace Flewnit
 
 		virtual void initBasicObject()=0;
 
-
-		inline const String& getClassName()const
-		{
-			assert( "call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n"
-					&& (mMemoryFootPrint >0) &&  (mClassName!="")  );
-			return mClassName;
-		}
-
-		//inline const String& getPurposeDescription()const{return mPurposeDescription;}
-
 		inline ID getUniqueID()const{return mUniqueID;}
-		inline int getMemoryFootprint()
-		{
-			assert( "call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n"
-					&& (mMemoryFootPrint >0) &&  (mClassName!="")  );
-			return mMemoryFootPrint;
-		}
+		String getClassName()const;
+
+		int getMemoryFootprint();
 
 	private:
 

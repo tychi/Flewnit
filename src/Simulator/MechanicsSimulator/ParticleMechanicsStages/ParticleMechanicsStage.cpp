@@ -344,19 +344,18 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	);
 
 
-	//we need stream compaction only for the non-cached version :)
+
 	unsigned int numCurrentSPHSimulationWorkGroups=0;
-	//if(! CLProgramManager::getInstance().useCacheUsingOpenCLImplementation())
-	{
-		numCurrentSPHSimulationWorkGroups =
+
+	numCurrentSPHSimulationWorkGroups =
 			mParticleUniformGrid->splitAndCompactCells(
 				"particles",
 				mSplitAndCompactedUniformGridCells
 			);
 
-		LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
-					<< numCurrentSPHSimulationWorkGroups << ";\n";
-	}
+	LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
+			<< numCurrentSPHSimulationWorkGroups << ";\n";
+
 
 	//}
 

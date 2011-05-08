@@ -324,7 +324,7 @@ bool URE::stepSimulation()
 	assert(mCorrectlyInitializedGuard);
 
 
-	LOG<<INFO_LOG_LEVEL<<"Frame number: "<<mFPSCounter->getTotalRenderedFrames() <<"; ";
+	LOG<<INFO_LOG_LEVEL<<"\n\nFrame number: "<<mFPSCounter->getTotalRenderedFrames() <<";\n";
 
 	mFPSCounter->newFrameStarted();
 
@@ -333,11 +333,8 @@ bool URE::stepSimulation()
 
 	BOOST_FOREACH(SimulatorInterface* simulator, mSimulators)
 	{
-		simulator->stepSimulation();
+		success = simulator->stepSimulation();
 	}
-
-
-
 
 
 	success = mInputManager->processInput();
@@ -386,8 +383,8 @@ void URE::setCurrentlyActiveCamera(Camera* cam)
 bool URE::bufferDumpCondition()
 {
 	return
-		false;
-//			(mFPSCounter->getTotalRenderedFrames() <= 0)
+		//false;
+			(mFPSCounter->getTotalRenderedFrames() <= 0);
 //			||
 //			(mFPSCounter->getTotalRenderedFrames() == 7)
 //			||

@@ -41,6 +41,41 @@ namespace Flewnit
 		unregisterFromProfiler();
 	}
 
+	String BasicObject::getClassName()const
+	{
+		//assert( "call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n"
+		//		&& (mMemoryFootPrint >0) &&  (mClassName!="")  );
+
+		if((mMemoryFootPrint >0) &&  (mClassName!=""))
+		{
+			return mClassName;
+		}
+		else
+		{
+			LOG<<WARNING_LOG_LEVEL<<"BasicObject::getMemoryFootprint(): Object meta info not initialized yet; call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n";
+			return "__INVALID_CLASS_NAME__";
+		}
+	}
+
+
+	int BasicObject::getMemoryFootprint()
+	{
+		//assert( "call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n"
+		//		&& (mMemoryFootPrint >0) &&  (mClassName!="")  );
+
+		if((mMemoryFootPrint > 0) &&  (mClassName != ""))
+		{
+			return mMemoryFootPrint;
+		}
+		else
+		{
+			LOG<<WARNING_LOG_LEVEL<<"BasicObject::getMemoryFootprint(): Object meta info not initialized yet; call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n";
+			return 0;
+		}
+	}
+
+
+
 
 	void BasicObject::registerToProfiler()
 	{

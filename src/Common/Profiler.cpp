@@ -61,14 +61,19 @@ void Profiler::printObjectStatus(BasicObject* bo)
 
 void Profiler::printMemoryStatus()
 {
-	assert("Not all registered objects have their memory footprint initialized and tracked; "
-			&& "Call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n"
-			&& mRegisteredButUntrackedObjects.size()==0);
+	if(mRegisteredButUntrackedObjects.size()==0)
+	{
+
+	}
+	LOG<<WARNING_LOG_LEVEL<<"Profiler::printMemoryStatus(): Not all registered objects have their memory footprint initialized and tracked; "
+			"Call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n";
+
 
 	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
 			<<  mTotalRegisteredObjects << " objects registered;\n"
 			<<  mTotalObjectMemoryFootprint << " bytes are consumed by those objects;\n"
 			;
+
 	printBufferOnlyMemoryStatus();
 }
 
@@ -162,7 +167,7 @@ ID Profiler::registerBasicObject(BasicObject* bo)
 
 void Profiler::unregisterBasicObject(BasicObject* bo)
 {
-	checkError();
+	//checkError();
 
 	//assure that the object was registered; otherwise, the application logic would have failed;
 	assert( mRegisteredBasicObjects.erase(bo->getUniqueID()) > 0);

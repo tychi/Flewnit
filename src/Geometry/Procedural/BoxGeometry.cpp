@@ -8,6 +8,7 @@
 #include "BoxGeometry.h"
 #include "Buffer/Buffer.h"
 #include "Util/Log/Log.h"
+#include "MPP/Shader/ShaderManager.h"
 
 namespace Flewnit {
 
@@ -18,7 +19,10 @@ BoxGeometry::BoxGeometry(
 		bool patchRepresentation,
 		const Vector4D& texcoordScale)
 : VertexBasedGeometry(name,
-		patchRepresentation ? VERTEX_BASED_TRIANGLE_PATCHES : VERTEX_BASED_TRIANGLES),
+		(
+			patchRepresentation
+			&& ShaderManager::getInstance().shadingFeaturesAreEnabled(SHADING_FEATURE_TESSELATION)
+		)? VERTEX_BASED_TRIANGLE_PATCHES : VERTEX_BASED_TRIANGLES),
 		mHalfExtends(halfExtends)
   {
 	BufferInfo bufferi(

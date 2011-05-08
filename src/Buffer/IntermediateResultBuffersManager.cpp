@@ -35,6 +35,12 @@ IntermediateResultBuffersManager::~IntermediateResultBuffersManager()
 //passing the minimum sizes of the required intermediate buffers,
 //IN DESCENDING ORDER!!1 (sry std::sort is so annoying this the comparator objects, have no time for sorting now...
 //.. but will at least verify the order ;( ).
+//^| edit: this is not necessary; thinking mistake...
+
+
+
+
+
 //The manager stores the maxima of the requestet sizes to mBufferByteSizes;
 void IntermediateResultBuffersManager::requestBufferAllocation(
 		const std::vector<size_t>& minimumBufferByteSizes) throw(BufferException)
@@ -43,15 +49,13 @@ void IntermediateResultBuffersManager::requestBufferAllocation(
 	assert(minimumBufferByteSizes.size() > 0);
 
 
-	for(unsigned int i = 1; i< minimumBufferByteSizes.size(); i++)
-	{
-		if(minimumBufferByteSizes[i-1] <  minimumBufferByteSizes[i] )
-		{
-			throw(BufferException("requested buffer sizes not in descending order!"));
-		}
-
-
-	}
+//	for(unsigned int i = 1; i< minimumBufferByteSizes.size(); i++)
+//	{
+//		if(minimumBufferByteSizes[i-1] <  minimumBufferByteSizes[i] )
+//		{
+//			throw(BufferException("requested buffer sizes not in descending order!"));
+//		}
+//	}
 
 	for(unsigned int i = 0; i< minimumBufferByteSizes.size(); i++)
 	{

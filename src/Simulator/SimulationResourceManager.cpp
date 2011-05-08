@@ -80,20 +80,22 @@ SimulationResourceManager::~SimulationResourceManager()
 //this removes some burden to use the complex constructors of the buffer class;
 Buffer* SimulationResourceManager::createGeneralPurposeOpenCLBuffer(String name, unsigned int sizeInByte, bool allocHostMem) throw(BufferException)
 {
-	if(PARA_COMP_MANAGER->getParallelComputeDeviceInfo().globalCacheLineSizeByte == 0)
+	uint minumumAlignment = 128; //yeah, a hardcode, forgive me ;( only relevant for uncached devices;
+
+	if(PARA_COMP_MANAGER->getParallelComputeDeviceInfo().globalCacheLineSizeByte != 0)
 	{
-		throw(BufferException("Something went terribly wrong with your OpenCL initialization!"));
+		minumumAlignment = PARA_COMP_MANAGER->getParallelComputeDeviceInfo().globalCacheLineSizeByte;
 	}
 
 
 	unsigned int numUintElements =
 		//alloc at least the size of a cache line;
 		std::max(
-			PARA_COMP_MANAGER->getParallelComputeDeviceInfo().globalCacheLineSizeByte,
+			minumumAlignment,
 			//align to cache line size;
 			HelperFunctions::ceilToNextMultiple(
 				sizeInByte,
-				PARA_COMP_MANAGER->getParallelComputeDeviceInfo().globalCacheLineSizeByte
+				minumumAlignment
 			)
 		)
 		//as we denote elements and not byte yount, we have to divied by the byte size of uint
