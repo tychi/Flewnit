@@ -270,7 +270,7 @@ void CLProgram::build()
 
 		writeToDisk(programSourceCode, generatedProgPath);
 
-		cl::Program::Sources sources = { {programSourceCode.c_str(), (programSourceCode.size())} };
+		cl::Program::Sources sources { {programSourceCode.c_str(), (programSourceCode.size())} };
 
 		//create OpenCL Program form generated source code:
 		GUARD(
@@ -293,8 +293,8 @@ void CLProgram::build()
 					// don't specify a specific device, the one associated to program's cl::Context is taken by default
 					//^| (cl_device_id*)&devices.front(), <-- pointer to reference to nonexsiting element; this is madness,
 					//although it compiles with the current setup! to be sure, rather pass a non-empty list
-					{ PARA_COMP_MANAGER->getUsedDevice() }
-					,""//,"-cl-fast-relaxed-math"
+					VECTOR_CLASS<cl::Device>{ PARA_COMP_MANAGER->getUsedDevice() }
+					//,"-cl-fast-relaxed-math"
 					// define later "-cl-fast-relaxed-math"
 
 			);
@@ -381,7 +381,12 @@ void CLProgram::writeBinaryToDisk(Path completePtxFilePath )
 
     std::vector<char *> binaries;
     for (size_t i = 0; i < binarySizes.size() ; i++)
-          binaries.push_back( new char[ binarySizes[ i ] + 1 ] );
+    {
+          binaries.push_back( new char[ binarySizes[ i ]
+                                         + 8 /*8 instead of 1 because  tryy to get rid of the valgrind errors in a dillttantic way :@1*/
+                              ]
+          );
+    }
 
     *(PARA_COMP_MANAGER->getLastCLErrorPtr()) =
     	mCLProgram.getInfo(CL_PROGRAM_BINARIES, &binaries);
@@ -424,6 +429,11 @@ void CLProgram::writeBinaryToDisk(Path completePtxFilePath )
 
 void CLProgram::buildProgramFromBinaryFromDisk(Path completePtxFilePath)
 {
+
+/*
+
+	not works :(
+
 	FILE* fp = fopen( completePtxFilePath.string().c_str(), "r");
 	        fseek (fp , 0 , SEEK_END);
 	        const size_t lSize = ftell(fp);
@@ -447,6 +457,10 @@ void CLProgram::buildProgramFromBinaryFromDisk(Path completePtxFilePath)
   		0,
   		0//PARA_COMP_MANAGER->getLastCLErrorPtr()
     );
+
+*/
+
+    //----------------
 
 //    mCLProgram.build(
 //    	{ PARA_COMP_MANAGER->getUsedDevice() }

@@ -194,10 +194,15 @@ void ParallelComputeDeviceInfo::print()
 
 //===================================================================================
 
-//ParallelComputeManager::ParallelComputeManager( bool useCPU )
-//{
-//
-//}
+ParallelComputeManager::ParallelComputeManager( bool useCPU)
+:
+	//let's be careful first, as there may be serious synch overhead with events etc.
+	//when doing asynchronous calls to the GPU
+	   mLastCLError(CL_SUCCESS),
+	   mLastGLError(GL_NO_ERROR),
+		mBlockAfterEnqueue(CL_TRUE),
+	    mCLhasAcquiredSharedObjects(false)
+{init(useCPU);}
 
 ParallelComputeManager::~ParallelComputeManager()
 {

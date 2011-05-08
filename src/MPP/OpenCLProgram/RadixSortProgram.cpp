@@ -37,7 +37,8 @@ RadixSortProgram::RadixSortProgram(RadixSorter* radixSorter)
 				// - arg:	 	gLocallyScannedRadixCounters in both phases
 				// - size:		self explaining, see below;
 				//				(e.g. 64 * 64k elements for 64 radices per pass * 256k elements to sort / 4 elements per radix counter );
-				(size_t) ( sizeof(unsigned int)
+				(size_t)(
+					sizeof(unsigned int)
 					* mRadixSorter->mNumRadicesPerPass
 					* ( mRadixSorter->mNumElements / mRadixSorter->mNumElementsPerRadixCounter)
 				),
@@ -47,14 +48,16 @@ RadixSortProgram::RadixSortProgram(RadixSorter* radixSorter)
 				//				gSumsOfLocalRadixCountsToBeScanned in phase 2
 				//				gScannedSumsOfLocalRadixCounts     in phase 3
 				// - size:		self explaining, see below;  (e.g. 64*512)
-				(size_t) ( sizeof(unsigned int)
+				(size_t) (
+					sizeof(unsigned int)
 					* mRadixSorter->mNumRadicesPerPass * mRadixSorter->mNumWorkGroups_TabulationAndReorderPhase
 				),
 
 				// - Kernel: 	phase 2 and 3
 				// - arg:	 	gPartiallyScannedSumsOfGlobalRadixCounts  in both phases
 				// - size:		self explaining, see below;  (e.g. 64)
-				(size_t) ( sizeof(unsigned int)
+				(size_t) (
+					sizeof(unsigned int)
 					* mRadixSorter->mNumRadicesPerPass
 				),
 

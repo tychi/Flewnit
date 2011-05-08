@@ -45,7 +45,7 @@ void IntermediateResultBuffersManager::requestBufferAllocation(
 
 	for(unsigned int i = 1; i< minimumBufferByteSizes.size(); i++)
 	{
-		if(minimumBufferByteSizes[i-1] < minimumBufferByteSizes[i] )
+		if(minimumBufferByteSizes[i-1] <  minimumBufferByteSizes[i] )
 		{
 			throw(BufferException("requested buffer sizes not in descending order!"));
 		}

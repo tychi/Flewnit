@@ -22,9 +22,7 @@ FPSCounter::FPSCounter(int framesToAverage)
 	mNumFramesToAverage(framesToAverage),
 	mFrameEndedWasCalledGuard(true)
 {
-
-	// TODO Auto-generated constructor stub
-
+	setFramesToAverage(framesToAverage);
 }
 
 FPSCounter::~FPSCounter()
@@ -36,9 +34,17 @@ FPSCounter::~FPSCounter()
 
 void FPSCounter::setFramesToAverage(unsigned int value)
 {
+	assert(value >0);
+
 	//no sophisticatede adjustmenst stuff here, hard reset ;)
 	mLastFrameDurations.empty();
 	mNumFramesToAverage = value;
+
+
+	for(uint i=0; i< mNumFramesToAverage; i++)
+	{
+		mLastFrameDurations.push_back(0.0);
+	}
 }
 
 void FPSCounter::newFrameStarted()
@@ -107,6 +113,7 @@ double FPSCounter::getFPS(bool averaged)
 
 double FPSCounter::getLastFrameDuration()const
 {
+	assert(mLastFrameDurations.size()>0);
 	return mLastFrameDurations.back();
 }
 

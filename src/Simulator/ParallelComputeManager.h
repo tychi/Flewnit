@@ -158,12 +158,7 @@ class ParallelComputeManager
     const char* oglErrorString(GLenum error);
 
 public:
-	ParallelComputeManager( bool useCPU = false)
-	:
-		//let's be careful first, as there may be serious synch overhead with events etc.
-		//when doing asynchronous calls to the GPU
-		mBlockAfterEnqueue(CL_TRUE)
-	{init(useCPU);}
+	ParallelComputeManager( bool useCPU = false);
 
 	virtual ~ParallelComputeManager();
 
