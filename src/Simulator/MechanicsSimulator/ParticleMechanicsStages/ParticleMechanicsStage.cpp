@@ -283,6 +283,9 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	//acquire and relase done already by mechanics simulator;
 	//PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 
+	getSimParams()->setSimulationDomainBorders(Vector4D(0.0f,0.0f,0.0f,0.0f),Vector4D(100.0f,100.0f,100.0f,0.0f));
+	mSimulationParametersBuffer->copyFromHostToGPU(true);
+
 
 	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
 	{

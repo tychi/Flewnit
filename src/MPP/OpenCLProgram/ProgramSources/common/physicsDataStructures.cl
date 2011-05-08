@@ -193,11 +193,11 @@
     float4 inverseUniGridCellSizes;
     //}
 
+    float4 gravityAcceleration; //gravity is an acceleration, yields different forces depending on mass, hence must be passed as gravity;
 
     AABB simulationDomainBorders; //as long i have no triangle-collision-mesh functionality, i have to keep the particles
                                   //in a lame box ;(
 
-    float4 gravityAcceleration; //gravity is an acceleration, yields different forces depending on mass, hence must be passed as gravity;
     
 
     
