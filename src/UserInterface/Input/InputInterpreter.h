@@ -11,6 +11,8 @@
 
 #include "Common/BasicObject.h"
 
+#include "Simulator/SimulatorForwards.h"
+
 
 
 namespace Flewnit

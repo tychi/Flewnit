@@ -9,6 +9,13 @@
 
 #include "UserInterface/Input/InputInterpreter.h"
 
+
+#include "Common/Math.h"
+#define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+#include "MPP/OpenCLProgram/ProgramSources/common/physicsDataStructures.cl"
+#undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+
+
 namespace Flewnit
 {
 
@@ -54,6 +61,10 @@ private:
 
 	MovementState mMovementState[__NUM_MOVEMENT_DIRECTIONS__];
 	bool mHideMouse;
+
+	bool mLeftMousePressed;
+
+	CLShare::UserForceControlPoint* mUserForceControlPoint;
 };
 
 }

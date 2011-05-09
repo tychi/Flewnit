@@ -135,6 +135,7 @@ private:
 		Buffer* mSimulationParametersBuffer;
 
 		uint mNumMaxUserForceControlPoints;
+		uint mNumCurrentUserForceControlPoints;
 		Buffer* mUserForceControlPointBuffer;
 	//}
 

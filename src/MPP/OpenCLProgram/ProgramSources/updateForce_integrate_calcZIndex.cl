@@ -263,7 +263,7 @@
         ;
         
       
-/*
+
       //calculate and add user force
       //TODO unroll when stable and interface is less subject to change;
       for(uint controlPointRunner =0; controlPointRunner < cSimParams->numUserForceControlPoints; controlPointRunner++ )
@@ -292,7 +292,7 @@
               );
          }
       }
-*/
+
       
   {% endblock processSPHResults %}
   

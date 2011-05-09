@@ -39,6 +39,9 @@
 #include "MPP/OpenCLProgram/CLKernelArguments.h"
 #include "MPP/OpenCLProgram/CLProgramManager.h"
 
+#define FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
+#include "../../../MPP/OpenCLProgram/ProgramSources/common/physicsDataStructures.cl"
+#undef FLEWNIT_INCLUDED_BY_APPLICATION_SOURCE_CODE
 
 namespace Flewnit
 {
@@ -61,6 +64,7 @@ ParticleMechanicsStage::ParticleMechanicsStage(ConfigStructNode* simConfigNode)
 
 	  mSimulationParametersBuffer(0),
 	  mNumMaxUserForceControlPoints(0),
+	  mNumCurrentUserForceControlPoints(0),
 	  mUserForceControlPointBuffer(0),
 
 	  mInitial_UpdateForce_Integrate_CalcZIndex_Program(0),
@@ -224,6 +228,7 @@ bool ParticleMechanicsStage::initStage()throw(SimulatorException)
 
 
 
+
 	return true;
 }
 
@@ -284,9 +289,9 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	//PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 
 	//getSimParams()->setSimulationDomainBorders(Vector4D(0.0f,0.0f,0.0f,0.0f),Vector4D(100.0f,100.0f,100.0f,0.0f));
-	//mSimulationParametersBuffer->copyFromHostToGPU(true);
 
-
+	mSimulationParametersBuffer->copyFromHostToGPU(true);
+	mUserForceControlPointBuffer->copyFromHostToGPU(true);
 
 	//PARA_COMP_MANAGER->barrierCompute();
 
@@ -560,10 +565,19 @@ CLShare::UserForceControlPoint* ParticleMechanicsStage::addUserForceControlPoint
 		float intensity //positive: push away; negative: pull towards origin;
 )throw(BufferException)
 {
-	//TODO
-	assert(0&&"TODO implement");
+	CLShare::UserForceControlPoint* ctrlPoint =
+			&(
+				reinterpret_cast<CLShare::UserForceControlPoint*>(
+						mUserForceControlPointBuffer->getCPUBufferHandle( ))[mNumCurrentUserForceControlPoints++]
+		    );
 
-	return 0;
+	ctrlPoint->setInfluenceRadius(influenceRadius);
+	ctrlPoint->setForceOriginWorldPos( forceOriginWorldPos );
+	ctrlPoint->setIntensity(intensity);
+
+	getSimParams()->setNumUserForceControlPoints(mNumCurrentUserForceControlPoints);
+
+	return ctrlPoint;
 }
 
 void setGravityAcceleration(const Vector4D& gravAcc)

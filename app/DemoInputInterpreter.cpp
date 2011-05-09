@@ -40,18 +40,29 @@
 
 #endif
 
+
+
+#include "../src/Simulator/MechanicsSimulator/ParticleMechanicsStages/ParticleMechanicsStage.h"
+
+
+
+
 namespace Flewnit
 {
 
 DemoInputInterpreter::DemoInputInterpreter(float cameraLookMouseSensivity, float movementSpeed)
 : mCameraLookMouseSensivity(cameraLookMouseSensivity),mMovementSpeed(movementSpeed),
-  mHideMouse(false)
+  mHideMouse(false),mLeftMousePressed(false)
 {
 	// TODO make cameraLookMouseSensivity  config file- configurable;
 
 	mMovementState[MOVEMENT_DIRECTION_FRONT_BACK] = MOVEMENT_STATE_STILL;
 	mMovementState[MOVEMENT_DIRECTION_RIGHT_LEFT] = MOVEMENT_STATE_STILL;
 	mMovementState[MOVEMENT_DIRECTION_UP_DOWN] = MOVEMENT_STATE_STILL;
+
+	mUserForceControlPoint =
+			dynamic_cast<ParticleMechanicsStage*>( URE_INSTANCE->getSimulator(MECHANICAL_SIM_DOMAIN)->getStage("ParticleMechanicsStage") )
+				->addUserForceControlPoint( Vector4D(1,1,1,1),9,0.3f);
 }
 
 DemoInputInterpreter::~DemoInputInterpreter()
@@ -76,6 +87,16 @@ void DemoInputInterpreter::perFrameCallback()
 			*mMovementSpeed * URE_INSTANCE->getFPSCounter()->getLastFrameDuration()
 	);
 	//---------------------------------------------------------
+
+	mUserForceControlPoint->setForceOriginWorldPos(
+			Vector4D( URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getPosition(), 1.0f )
+			+ 10.0f * Vector4D( URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getDirection(), 0.0f)
+	);
+
+	mUserForceControlPoint->setIntensity(mLeftMousePressed ? 0.5f: 0.0f);
+
+
+
 }
 
 void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
@@ -292,16 +313,10 @@ void DemoInputInterpreter::interpretInput(Mouse* mouse)
 
 	if(mouse->getRecentEvent() == Mouse::MOUSE_EVENT_BUTTON_CHANGED)
 	{
-		if(mouse->getRecentButton() == GLFW_MOUSE_BUTTON_LEFT )
+		if( mouse->getRecentButton() == GLFW_MOUSE_BUTTON_LEFT )
 		{
-//			if(mouse->getRecentButtonStatus() == GLFW_PRESS)
-//			{
-//				LOG<<DEBUG_LOG_LEVEL<<"left mouse button pressed;\n";
-//			}
-//			else
-//			{
-//				LOG<<DEBUG_LOG_LEVEL<<"left mouse button released;\n";
-//			}
+
+			mLeftMousePressed = mouse->getRecentButtonStatus() == GLFW_PRESS;
 		}
 
 //		if(mouse->getRecentButton() == GLFW_MOUSE_BUTTON_RIGHT )
