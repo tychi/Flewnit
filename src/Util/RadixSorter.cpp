@@ -255,7 +255,9 @@ PARA_COMP_MANAGER->barrierCompute();//debug
 		//phase1Kernel->run( EventVector{} );
 
 
-PARA_COMP_MANAGER->barrierCompute();//debug
+		PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+		PARA_COMP_MANAGER->getCommandQueue().flush();
+		//PARA_COMP_MANAGER->getCommandQueue().finish();
 
 
 		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
@@ -280,7 +282,9 @@ PARA_COMP_MANAGER->barrierCompute();//debug
 		phase2Kernel->run( EventVector{eventToWaitFor} );
 		//phase2Kernel->run( EventVector{} );
 
-PARA_COMP_MANAGER->barrierCompute();//debug
+		PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+		PARA_COMP_MANAGER->getCommandQueue().flush();
+		//PARA_COMP_MANAGER->getCommandQueue().finish();
 
 		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
 
@@ -306,7 +310,9 @@ PARA_COMP_MANAGER->barrierCompute();//debug
 		phase3Kernel->run( EventVector{eventToWaitFor} );
 		//phase3Kernel->run( EventVector{} );
 
-PARA_COMP_MANAGER->barrierCompute();//debug
+		PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+		PARA_COMP_MANAGER->getCommandQueue().flush();
+		//PARA_COMP_MANAGER->getCommandQueue().finish();
 
 		//make phase 1 wait for phase 3 to finish:
 		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();

@@ -1,0 +1,43 @@
+Bla bla
+
+\subsubsection{Begrifflichkeiten}
+	erklaren, was ich unter Unified Rendering verstehe, was Rendering dadruch fuer eine generalistische Bedeutung bekommt;
+
+\subsection{Paradigmen}
+	
+	moeglichst symmetrischer Ansatz zwischen den Simulationsdomaenen, zantralistische Verwaltung von spezifischen Objekten,
+	GPU-Code gernaierung per Template-Engine, moeglichst versuchen, langfristig so viele Aspekte wie moeglich miteinander kombinieren zu koennern 	    
+	(Visualisierungstechniken, verschiedene Physik Partikelsimulation, Rigid bodiy-Simulation) 
+
+\subsection{KlassenDiagramm}
+
+\subsection{Dependencies}
+
+	
+	\subsubsection{OpenGL3/4}
+    \subsubsection{OpenCL 1.0}
+    \subsubsection{GLFW}
+    	expliziter GL3 core profile creation, einfaches fullscreen, multisampling, mousgrab, alles viel besser als GLUT :)
+    \subsubsection{Grantlee}
+       die string template engine die CL und GL code erzeugt
+    \subsubsection{ogl math}
+    	leichte, aber doch recht maachtige mathe-bibliothek
+    	
+    	
+\subsection{Die Buffer-Abstraktion}   	
+ 	die bombe, die cpu, ogl und ocl vereint, inclusive ping pingponging etc.. fundamentale Klassensammlung fuer den Unified-Aspekt
+ 
+\subsection{Das WorkObject}
+	basiklasse fuer alles was unified simuliert wird: pure viuelle objekt, uniform grid, fluid, rigid body etc..
+	erwaehnung des SubObjects;  
+ 
+\subsection{Materials}  
+	was stellt welches material in welcher Domain dar?
+	
+\subsection{Geometry}
+	Abtract, Buffer bused, Vertex based etc.. ein paar konzepte (implementier/genutzt nut VertexBased)  
+	
+	  	
+  	
+
+\clearpage

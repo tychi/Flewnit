@@ -1,0 +1,100 @@
+\documentclass[m,twoside,intern,palatino]{cgBA}
+
+
+\usepackage{hyperref}						% Verlinkung von Textstellen
+\usepackage{fancyhdr}						% eigener Satzspiegel
+\usepackage{hypcap} 						% korrekte Verlinkung von Bildern o..
+\usepackage{color}						% Einbindung von Farbe
+\usepackage{alltt}						% Umschaltung auf typewriter, z.B. fr Quellcode
+\usepackage{enumerate}						% Anpassung nummerierter Listen durch optionalen Parameter
+
+
+%\usepackage{mathtools}
+%\usepackage{empheq}
+\usepackage{fancybox}
+\usepackage{fancyvrb}
+
+
+\usepackage{amsfonts}						%
+\usepackage{amssymb}						%	Mathe-Zeugs
+\usepackage{amsmath}						%
+
+\usepackage{moreverb}						% Erweiterung der verbatim-Umgebung (zum Einbinden von Code)
+\usepackage{array}
+\usepackage{url}
+\usepackage{tabularx}
+
+%-----------------------------------------------------------------------------------------------------------
+
+\begin{document}
+
+\author{Markus Schl{\"u}ter}
+\title{Konzeption und Implementierung eines Unified Rendering Frameworks mit modernen GPU-Computing-APIs}
+\zweitgutachter{Dipl.-Inform.  Dominik Gr{\"u}ntjens}
+\abgabe
+
+
+
+
+% Umschalten der Sprache (fr englische Rubrikbezeichnungen etc.)
+%\selectlanguage{english}
+
+
+\maketitle
+\clearpage 
+
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage         	% oder \cleardoublepage bei zweiseitigem Druck
+% \listoffigures   % fuer ein eventuelles Abbildungsverzeichnis
+% \clearpage
+\pagenumbering{arabic}
+
+
+% Hier kommt jetzt der eigentliche Text der Arbeit
+
+\section{Einleitung}
+
+	\input{Einleitung.tex}
+
+
+\section{Systemarchitektur}
+
+	\input{Systemarchitektur.tex}
+	
+\section{Simulation}
+
+	
+	\subsection{Die visuelle Dom{\"a}ne}
+
+		\input{VisualDomain.tex}
+	
+	\subsection{Die mechanische Dom{\"a}ne}
+
+		\input{MechanicalDomain.tex}
+
+
+\section{Ergebnisse}
+
+	\input{Ergebnisse.tex}
+
+\section{Ausblick}
+
+	\input{Ausblick.tex}
+
+\section{Fazit}
+
+	\input{Fazit.tex}
+
+%%%%%%% Literaturverzeichnis %%%%%%%%
+\bibliographystyle{alpha}
+\bibliography{BASchlueter.bib}
+
+\end{document}
+
+
+
+
+
+

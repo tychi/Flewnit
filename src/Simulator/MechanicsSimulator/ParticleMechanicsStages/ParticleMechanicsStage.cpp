@@ -288,7 +288,7 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 
 
-	PARA_COMP_MANAGER->barrierCompute();
+	//PARA_COMP_MANAGER->barrierCompute();
 
 
 
@@ -338,6 +338,10 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 		mParticleSceneRepresentation->getParticleAttributeBuffers()->getOldIndicesPiPoBuffer()
 	);
 
+
+	PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+	PARA_COMP_MANAGER->getCommandQueue().flush();
+	//PARA_COMP_MANAGER->getCommandQueue().finish();
 
 
 	PARA_COMP_MANAGER->barrierCompute();
@@ -405,6 +409,10 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 	//}
 
+	PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+	PARA_COMP_MANAGER->getCommandQueue().flush();
+	//PARA_COMP_MANAGER->getCommandQueue().finish();
+
 	//{ SPH stuff
 
 		CLKernelWorkLoadParams currentSPHKErnelWorkLoadParams(
@@ -428,7 +436,9 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 
 
-		PARA_COMP_MANAGER->barrierCompute();
+		PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+		PARA_COMP_MANAGER->getCommandQueue().flush();
+		//PARA_COMP_MANAGER->getCommandQueue().finish();
 
 
 
@@ -499,6 +509,10 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	//} //end SPH
 
 
+		PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+		PARA_COMP_MANAGER->getCommandQueue().flush();
+		//PARA_COMP_MANAGER->getCommandQueue().finish();
+
 
 
 	//reset element counts to zero
@@ -506,7 +520,13 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 
 
-	PARA_COMP_MANAGER->barrierCompute();
+	PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+	PARA_COMP_MANAGER->getCommandQueue().flush();
+	//PARA_COMP_MANAGER->getCommandQueue().finish();
+
+
+
+
 
 
 

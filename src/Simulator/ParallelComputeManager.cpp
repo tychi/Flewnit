@@ -409,7 +409,11 @@ void ParallelComputeManager::barrierGraphics()
 }
 void ParallelComputeManager::barrierCompute()
 {
-	GUARD(mCommandQueue.enqueueBarrier());
+	//GUARD(mCommandQueue.enqueueBarrier());
+
+	//mCommandQueue.flush();
+	//mCommandQueue.finish();
+
 //	usleep(50000);
 }
 
