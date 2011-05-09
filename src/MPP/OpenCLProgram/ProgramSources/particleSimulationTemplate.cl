@@ -206,7 +206,8 @@
     int4 ownGridPos = getGridPos(
         //calc grid pos from first particle in group; this way, even wthe work items with ID >=numParticlesInOwnGroup
         //have a valid state; thisi is important because the for()-lopp should not diverge
-        gPositionsOld[ ownGlobalAttributeIndex -lwiID ], 
+        //gPositionsOld[ ownGlobalAttributeIndex -lwiID ],
+	gPositionsOld[ ownGlobalAttributeIndex -lwiID  + (numParticlesInOwnGroup>>1) ],
         cSimParams
     );
 

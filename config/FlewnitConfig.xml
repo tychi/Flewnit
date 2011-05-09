@@ -149,11 +149,11 @@
           <maxTimestepPerSimulationStep type="FLOAT" value="0.25" GUIVisibility="read/write" tweakConfigString="TODO"/>
 
           <!--
-          <numMaxParticles type="INT" value="262144" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="16384" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="262144" GUIVisibility="read/write" tweakConfigString="TODO"/>
           -->
           <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
@@ -252,19 +252,19 @@
           <ParticleFluid>
             <name type="STRING" value="coldWater" />
             <!--          
-            <numContainingParticles type="INT" value="262144" GUIVisibility="read" tweakConfigString="TODO"/>
-            <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="16384" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
+            <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
+            <numContainingParticles type="INT" value="262144" GUIVisibility="read" tweakConfigString="TODO"/>
             -->
             <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
           
             <!--          
             <spawnAABBMin  type="VEC4" x="0.25" y="0.25" z="0.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-            <spawnAABBMin  type="VEC4" x="48.5" y="0.5" z="48" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-            --> 
             <spawnAABBMin  type="VEC4" x="0.5" y="0.5" z="0.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            --> 
+            <spawnAABBMin  type="VEC4" x="48.5" y="0.5" z="48" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
         
             <!--          
             <spawnAABBMax  type="VEC4" x="16.25" y="16.25" z="16.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -272,7 +272,7 @@
             <spawnAABBMax  type="VEC4" x="32.5" y="32.5" z="32.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             <spawnAABBMax  type="VEC4" x="45" y="45" z="45" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>     
             -->  
-            <spawnAABBMax  type="VEC4" x="45" y="45" z="45" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/> 
+            <spawnAABBMax  type="VEC4" x="90" y="45" z="90" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/> 
             
             
             <initialVelocity type="VEC4" x="0.0" y="0.0" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -295,8 +295,8 @@
               <!-- good setup for 65k particles -->
               <!-- -->
               <massPerParticle  type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <restDensity      type="FLOAT" value="0.4" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <gasConstant      type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <restDensity      type="FLOAT" value="0.2" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <gasConstant      type="FLOAT" value="1.5" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <viscosity        type="FLOAT" value="0.65" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <!-- -->         
               
