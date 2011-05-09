@@ -67,7 +67,7 @@
             -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
             cSimParams->penaltyForceDamperConstant * particleVelocity.y;
       }
-/*
+
       if(  (particlePosition.z - particleRadius ) < cSimParams->simulationDomainBorders.minPos.z){
           collisionForce.z += 
             ( cSimParams->simulationDomainBorders.minPos.z - (particlePosition.z - particleRadius ) ) 
@@ -82,7 +82,7 @@
             -   //MINUS, we wanna add a damping force in the opposite direction of the current vel
             cSimParams->penaltyForceDamperConstant * particleVelocity.z;
       }
-*/
+
 
 
 
@@ -333,6 +333,7 @@
       ownCorrectedVelOld 
       + 0.5f * cSimParams->timestep * ( ownAccelerationOld + ownAccelerationNew );
 
+/*
 float velRange=0.5f;
 ownCorrectedVelNew=
         clamp
@@ -341,6 +342,7 @@ ownCorrectedVelNew=
 	  (float4)(-velRange,-velRange,-velRange,0.0f),
 	  (float4)(velRange,velRange,velRange,0.0f)
         );
+*/
 
     
     float4 ownPositionNew =  

@@ -331,9 +331,13 @@ void BufferInterface::unregisterBufferAllocation(ContextTypeFlags contextTypeFla
 //will decide, which api will be used for the write;
 void BufferInterface::copyFromHostToGPU()throw(BufferException)
 {
+	PARA_COMP_MANAGER->barrierCompute();//debug
+
 	assert( "CPU buffer must exist for copy from host to GPU " && mCPU_Handle);
 
 	transferData(true);
+
+	PARA_COMP_MANAGER->barrierCompute();//debug
 }
 
 
@@ -342,6 +346,8 @@ void BufferInterface::copyFromHostToGPU()throw(BufferException)
 //"store-state-to-temp - execute - restore-state-from-temp" -pattern
 void BufferInterface::copyFromHostToGPU(bool enforceBlockOrUnblock)throw(BufferException)
 {
+	PARA_COMP_MANAGER->barrierCompute();//debug
+
 	//kinda hacky routine; fine grained synchronization-vs.-perfomance tunes
 	//weren't considered during BufferInterface design, as I thougth that througout simulation,
 	//there will be no reads/wirtes or copies..
@@ -353,10 +359,15 @@ void BufferInterface::copyFromHostToGPU(bool enforceBlockOrUnblock)throw(BufferE
 	copyFromHostToGPU();
 	//restore global blocking stuff
 	PARA_COMP_MANAGER->setBlockAfterEnqueue(blockGlobalTmp);
+
+
+	PARA_COMP_MANAGER->barrierCompute();//debug
 }
 //same comment as for  copyFromHostToGPU(bool enforceBlockOrUnblock) apply ;(
 void BufferInterface::readBack(bool enforceBlockOrUnblock)throw(BufferException)
 {
+	PARA_COMP_MANAGER->barrierCompute();//debug
+
 	cl_bool blockGlobalTmp = PARA_COMP_MANAGER->getBlockAfterEnqueue();
 	//override global state;
 	PARA_COMP_MANAGER->setBlockAfterEnqueue(enforceBlockOrUnblock ? CL_TRUE : CL_FALSE );
@@ -364,14 +375,21 @@ void BufferInterface::readBack(bool enforceBlockOrUnblock)throw(BufferException)
 	readBack();
 	//restore global blocking stuff
 	PARA_COMP_MANAGER->setBlockAfterEnqueue(blockGlobalTmp);
+
+
+	PARA_COMP_MANAGER->barrierCompute();//debug
 }
 
 
 void BufferInterface::readBack()throw(BufferException)
 {
+	PARA_COMP_MANAGER->barrierCompute();//debug
+
 	assert( "CPU buffer must exist for readback" && mCPU_Handle);
 
 	transferData(false);
+
+	PARA_COMP_MANAGER->barrierCompute();//debug
 
 //	if(
 //		( hasBufferInContext(OPEN_GL_CONTEXT_TYPE) && PARA_COMP_MANAGER->graphicsAreInControl() )

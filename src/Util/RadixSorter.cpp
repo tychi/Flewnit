@@ -228,6 +228,10 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 
 
+PARA_COMP_MANAGER->barrierCompute();//debug
+
+
+
 	for(unsigned int currentPass = 0; currentPass < mNumRadixSortPasses; currentPass++)
 	{
 
@@ -250,6 +254,10 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 		phase1Kernel->run( EventVector{eventToWaitFor} );
 		//phase1Kernel->run( EventVector{} );
 
+
+PARA_COMP_MANAGER->barrierCompute();//debug
+
+
 		eventToWaitFor = phase1Kernel->getEventOfLastKernelExecution();
 
 		if(
@@ -271,6 +279,8 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		phase2Kernel->run( EventVector{eventToWaitFor} );
 		//phase2Kernel->run( EventVector{} );
+
+PARA_COMP_MANAGER->barrierCompute();//debug
 
 		eventToWaitFor = phase2Kernel->getEventOfLastKernelExecution();
 
@@ -295,6 +305,8 @@ void RadixSorter::sort(PingPongBuffer* keysBuffer, PingPongBuffer* oldIndicesBuf
 
 		phase3Kernel->run( EventVector{eventToWaitFor} );
 		//phase3Kernel->run( EventVector{} );
+
+PARA_COMP_MANAGER->barrierCompute();//debug
 
 		//make phase 1 wait for phase 3 to finish:
 		eventToWaitFor = phase3Kernel->getEventOfLastKernelExecution();

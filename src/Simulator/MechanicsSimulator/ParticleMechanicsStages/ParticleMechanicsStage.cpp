@@ -283,8 +283,13 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	//acquire and relase done already by mechanics simulator;
 	//PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 
-	getSimParams()->setSimulationDomainBorders(Vector4D(0.0f,0.0f,0.0f,0.0f),Vector4D(100.0f,100.0f,100.0f,0.0f));
-	mSimulationParametersBuffer->copyFromHostToGPU(true);
+	//getSimParams()->setSimulationDomainBorders(Vector4D(0.0f,0.0f,0.0f,0.0f),Vector4D(100.0f,100.0f,100.0f,0.0f));
+	//mSimulationParametersBuffer->copyFromHostToGPU(true);
+
+
+
+	PARA_COMP_MANAGER->barrierCompute();
+
 
 
 	if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
@@ -304,6 +309,12 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	//------------------------------------------------------------------------------------------------------
 	//{sort and reorder
 
+
+
+	PARA_COMP_MANAGER->barrierCompute();
+
+
+
 	if(
 	    (URE_INSTANCE->bufferDumpCondition() )
 	)
@@ -316,12 +327,30 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 		);
 	}
 
+
+
+	PARA_COMP_MANAGER->barrierCompute();
+
+
+
 	mRadixSorter->sort(
 		mParticleSceneRepresentation->getParticleAttributeBuffers()->getZIndicesPiPoBuffer(),
 		mParticleSceneRepresentation->getParticleAttributeBuffers()->getOldIndicesPiPoBuffer()
 	);
 
+
+
+	PARA_COMP_MANAGER->barrierCompute();
+
+
+
 	mParticleSceneRepresentation->reorderAttributes();
+
+
+
+	PARA_COMP_MANAGER->barrierCompute();
+
+
 
 	if(
 	    (URE_INSTANCE->bufferDumpCondition() )
@@ -340,6 +369,10 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	//------------------------------------------------------------------------------------------------------
 
 
+	PARA_COMP_MANAGER->barrierCompute();
+
+
+
 
 	//{ uniform grid stuff
 
@@ -349,15 +382,22 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	);
 
 
-	unsigned int numCurrentSPHSimulationWorkGroups=0;
+
 
 	PARA_COMP_MANAGER->barrierCompute();
+
+
+	unsigned int numCurrentSPHSimulationWorkGroups=0;
 	numCurrentSPHSimulationWorkGroups =
 			mParticleUniformGrid->splitAndCompactCells(
 				"particles",
 				mSplitAndCompactedUniformGridCells
 			);
+
+
 	PARA_COMP_MANAGER->barrierCompute();
+
+
 
 	LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
 			<< numCurrentSPHSimulationWorkGroups << ";\n";
@@ -376,12 +416,19 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 		mUpdateDensityProgram->getKernel("kernel_updateDensity")->run(
 			EventVector{
+				CLProgramManager::getInstance().getProgram("reorderParticleAttributes.cl")
+						->getKernel("kernel_reorderParticleAttributes")
+						->getEventOfLastKernelExecution(),
 				CLProgramManager::getInstance().getProgram("splitAndCompactUniformGrid.cl")
 					->getKernel("kernel_splitAndCompactUniformGrid")
 					->getEventOfLastKernelExecution()
 			},
 			currentSPHKErnelWorkLoadParams
 		);
+
+
+
+		PARA_COMP_MANAGER->barrierCompute();
 
 
 
@@ -396,6 +443,12 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 			);
 		}
 
+
+
+		PARA_COMP_MANAGER->barrierCompute();
+
+
+
 		if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
 		{
 			//init integrate step
@@ -409,7 +462,7 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 		}
 		else
 		{
-			//init integrate step
+			//default integrate step
 			mUpdateForce_Integrate_CalcZIndex_Program->getKernel("kernel_updateForce_integrate_calcZIndex")
 				->run(
 					EventVector{
@@ -419,6 +472,12 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 			);
 
 		}
+
+
+
+		PARA_COMP_MANAGER->barrierCompute();
+
+
 
 		//mParticleSceneRepresentation->getParticleAttributeBuffers()->getZIndicesPiPoBuffer()->toggleBuffers(); <--ping ponging only needed during radix sort!
 		mParticleSceneRepresentation->getParticleAttributeBuffers()->getPositionsPiPoBuffer()->toggleBuffers();
@@ -444,6 +503,12 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 	//reset element counts to zero
 	mParticleUniformGrid->getBufferSet("particles")->clearElementCounts();
+
+
+
+	PARA_COMP_MANAGER->barrierCompute();
+
+
 
 	return true;
 }

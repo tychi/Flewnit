@@ -104,24 +104,24 @@ cl::Event UniformGridBufferSet::clearElementCounts()
 
 	try
 	{
-		cl::Event default_kernelEvent = CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")->
+		cl::Event initial_kernelEvent = CLProgramManager::getInstance().getProgram("_initial_updateForce_integrate_calcZIndex.cl")->
 				getKernel("kernel_initial_updateForce_integrate_calcZIndex")->getEventOfLastKernelExecution();
 
 		//the kernels may not have been enqueueud yet; filter them out (zero indicates this);
-		if(default_kernelEvent()  != 0)	{
+		if(initial_kernelEvent()  != 0)	{
 			//we are in a pass > 1
-			eventVec.push_back(default_kernelEvent);
+			eventVec.push_back(initial_kernelEvent);
 		}
 		else{
-			cl::Event initial_kernelEvent =
+			cl::Event default_kernelEvent =
 				CLProgramManager::getInstance().
 					getProgram("updateForce_integrate_calcZIndex.cl")->
 					getKernel("kernel_updateForce_integrate_calcZIndex")->
 					getEventOfLastKernelExecution();
 
-			if( initial_kernelEvent() != 0 ){
+			if( default_kernelEvent() != 0 ){
 				//we are in pass 1; dependency: initial physics copmutation kernel
-				eventVec.push_back(initial_kernelEvent);
+				eventVec.push_back(default_kernelEvent);
 			}
 			//else{
 				//we are in pass 0; zero dependencies here
@@ -133,6 +133,11 @@ cl::Event UniformGridBufferSet::clearElementCounts()
 		LOG<<INFO_LOG_LEVEL<<"UniformGridBufferSet::clearElementCounts(): no program existing yet to depend from ;)\n";
 	}
 	//-------------------------------------------------
+
+
+
+	PARA_COMP_MANAGER->barrierCompute();//debug
+
 
 
 	PARA_COMP_MANAGER->getCommandQueue().enqueueWriteBuffer(
@@ -153,6 +158,12 @@ cl::Event UniformGridBufferSet::clearElementCounts()
 	//restore global blocking stuff
 
 	PARA_COMP_MANAGER->setBlockAfterEnqueue(blockGlobalTmp);
+
+
+	PARA_COMP_MANAGER->barrierCompute();//debug
+
+
+
 	return mClearElementCountEvent;
 }
 

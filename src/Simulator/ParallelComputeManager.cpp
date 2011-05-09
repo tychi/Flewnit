@@ -40,6 +40,10 @@ ParallelComputeDeviceInfo::ParallelComputeDeviceInfo(cl::Device* device)
 	GUARD(device->getInfo<cl_device_type>( CL_DEVICE_TYPE, &deviceType));
 
 	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_MAX_COMPUTE_UNITS, &maxComputeUnits));
+//HAXX!111
+	maxComputeUnits=16;
+
+
 	GUARD(device->getInfo<size_t>( CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize));
 	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_MAX_CLOCK_FREQUENCY, &maxClockFrequencyMHz));
 	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_ADDRESS_BITS, &numAdressBits));

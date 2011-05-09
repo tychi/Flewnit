@@ -124,6 +124,8 @@ cl::Event CLKernel::run(
 
 	mCLKernelArguments->passArgsToKernel(this);
 
+	PARA_COMP_MANAGER->barrierCompute();//debug
+
 	*(PARA_COMP_MANAGER->getLastCLErrorPtr())
 			=
 		PARA_COMP_MANAGER->getCommandQueue().enqueueNDRangeKernel(
@@ -138,6 +140,9 @@ cl::Event CLKernel::run(
 
 	//assign this event to global last event, if anyone is interested in it (don't know yet ;( );
 	*(PARA_COMP_MANAGER->getLastEventPtr()) = mEventOfLastKernelExecution;
+
+
+	PARA_COMP_MANAGER->barrierCompute();//debug
 
 	return mEventOfLastKernelExecution;
 }
