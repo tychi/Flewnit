@@ -299,7 +299,7 @@ void CLProgram::build()
 					//^| (cl_device_id*)&devices.front(), <-- pointer to reference to nonexsiting element; this is madness,
 					//although it compiles with the current setup! to be sure, rather pass a non-empty list
 					VECTOR_CLASS<cl::Device>{ PARA_COMP_MANAGER->getUsedDevice() }
-					//,"-cl-fast-relaxed-math"
+					,"-cl-fast-relaxed-math"
 					// define later "-cl-fast-relaxed-math"
 
 			);

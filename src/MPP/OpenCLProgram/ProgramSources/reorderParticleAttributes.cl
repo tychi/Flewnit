@@ -63,7 +63,27 @@
     
 
     gParticleObjectInfosReordered[ gwiID ] = particleObjectInfo;
-    
+
+/*
+    //debug
+    float4 posOld = gPositionsOld[ oldIndex ];
+    if(any(isnan(posOld))) {posOld =  (float4)(1.0f,30.0f,1.0f,0.0f); }
+    gPositionsReordered[ gwiID ] =posOld;
+
+    float4 corrVelOld = gCorrectedVelocitiesOld[ oldIndex ];
+    if(any(isnan(corrVelOld))) {corrVelOld =  (float4)(0.0f,0.0f,0.0f,0.0f); }
+    gCorrectedVelocitiesReordered[ gwiID ] =corrVelOld;
+
+    float4 predVelOld = gPredictedVelocitiesOld[ oldIndex ];
+    if(any(isnan(predVelOld))) {predVelOld =  (float4)(0.0f,0.0f,0.0f,0.0f); }
+    gPredictedVelocitiesReordered[ gwiID ] =predVelOld;
+
+    float4 accOld = gAccelerationsOld[ oldIndex ];
+    if(any(isnan(accOld))) {accOld =  (float4)(0.0f,0.0f,0.0f,0.0f); }
+    gAccelerationsReordered[ gwiID ] =accOld;
+*/
+
+
     gPositionsReordered[ gwiID ] =  gPositionsOld[ oldIndex ];
     
     gCorrectedVelocitiesReordered[ gwiID ] =  gCorrectedVelocitiesOld[ oldIndex ];
@@ -75,6 +95,7 @@
 		//is sufficient;
     gPredictedVelocitiesReordered[ gwiID ] =  gPredictedVelocitiesOld[ oldIndex ];
     gAccelerationsReordered[ gwiID ] =  gAccelerationsOld[ oldIndex ];
+
     
     
     

@@ -328,29 +328,30 @@
     float4 ownCorrectedVelOld = gCorrectedVelocitiesOld[ ownGlobalAttributeIndex ];
     float4 ownAccelerationOld = gAccelerationsOld[ ownGlobalAttributeIndex ];  
 
-    //---------------------------------------------------------------------------------------------    
+    //--------------------------------------------------------------------------------------------- 
+    if(any(isnan(ownAccelerationNew)) || any(isinf(ownAccelerationNew)) ) {ownAccelerationNew =  (float4)(0.0f,0.0f,0.0f,0.0f); }
+   
     float4 ownCorrectedVelNew = 
       ownCorrectedVelOld 
       + 0.5f * cSimParams->timestep * ( ownAccelerationOld + ownAccelerationNew );
 
-/*
-float velRange=0.5f;
-ownCorrectedVelNew=
-        clamp
-	(
-          ownCorrectedVelNew,
-	  (float4)(-velRange,-velRange,-velRange,0.0f),
-	  (float4)(velRange,velRange,velRange,0.0f)
-        );
-*/
+    
+    if(any(isnan(ownCorrectedVelNew)) || any(isinf(ownCorrectedVelNew)) ) {ownCorrectedVelNew =  (float4)(0.0f,0.0f,0.0f,0.0f); }
+
 
     
     float4 ownPositionNew =  
       ownPosition  
       + cSimParams->timestep * ownCorrectedVelNew
       + ( 0.5f * cSimParams->squaredTimestep ) * ownAccelerationNew;
+
+    //debug
+    if(any(isnan(ownPositionNew)) || any(isinf(ownPositionNew))) {ownPositionNew =  (float4)(1.0f,40.0f,1.0f,0.0f); }
       
     float4 ownPredictedVelFuture = ( ownPositionNew - ownPosition ) * cSimParams->inverseTimestep;
+
+    //debug
+    if( any(isnan(ownPredictedVelFuture)) || any(isinf(ownPredictedVelFuture)) ) {ownPredictedVelFuture =  (float4)(0.0f,0.0f,0.0f,0.0f); }
     //---------------------------------------------------------------------------------------------
       
   {% endblock integrate %}

@@ -41,7 +41,7 @@ ParallelComputeDeviceInfo::ParallelComputeDeviceInfo(cl::Device* device)
 
 	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_MAX_COMPUTE_UNITS, &maxComputeUnits));
 //HAXX!111
-	maxComputeUnits=16;
+	maxComputeUnits=2;
 
 
 	GUARD(device->getInfo<size_t>( CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize));
