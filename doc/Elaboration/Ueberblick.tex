@@ -1,0 +1,32 @@
+
+\subsection{Vision}
+Verwendung der Unified Engine zur Entwicklung einer echtzeit-fähigen Paddel-Simulation mit ausgefeilter Fluid-Mechanik und -Visualisierung, rigid bodies, statischem Kollisions-Mesh;
+
+\subsection{Begriffe}
+erklären, was ich unter Unified Rendering verstehe, was Rendering dadruch fuer eine generalistische Bedeutung bekommt;\\
+tabelle mit Gegenüberstellung
+
+
+\subsection{Paradigmen}
+	
+	moeglichst symmetrischer Ansatz zwischen den Simulationsdomaenen,
+	 zantralistische Verwaltung von spezifischen Objekten,
+	GPU-Code gernaierung per Template-Engine zur vermeidung von boilerplate,
+	moeglichst versuchen, langfristig so viele Aspekte wie moeglich miteinander kombinieren zu koennern 	    
+	(Visualisierungstechniken, verschiedene Physik Partikelsimulation, Rigid bodiy-Simulation)
+	
+	potential bewahren, dass letztendlich, in der Entwicklungszeit nach dieser Bachelorarbeit eine möglichst seriöse Lightweight-Unified-Engine entstehen  könnte;
+	
+\subsection{Schwerpunkte}
+
+\subsubsection{Template-Engine}
+boilerplate, kombinierbarkeit, nach Möglichkeit lesbarkeit\\
+exemplarischer code schnipsel
+
+\subsubsection{Performance duch Implementierung auf der GPU mit modernen GPU-Computing-APIs}
+auf die massive parallelität eingehen, die sowohl von visualler wie mechanischer domäne genutzt werden kann;
+Performance-Schwerpunkt, Optimierung, auch hardware-abhängige, erwähnen, Gegenüberstellung zu alten OpenGL-nutzenden GPUPU- Verfahren, die nicht scattern konnten in texturen rendern mussten und auch sonst etliche Nachteile hinnehmen mussten
+
+\subsubsection{Potential der Entwicklung hin zu einer Unified Engine nicht verschenken}
+i.e. fenstermanager, input etc sollten wohl übelegt sein, für vielseitig, flexible anwendung zur Laufzeit sollten keine Speicher-Lecks auftreten, damit Funktionalität kontrolliert heruntergefahren und neu initialisiert werden kann; Für gemeinsamen zugriff sollten viele Daten für andere Klassen verfügbar sein (Buffer, Rendering Results...); Realisierung uber Manager-Singleton-Klassen und Zugriff über Map-Container;
+
