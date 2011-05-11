@@ -1,14 +1,50 @@
-Im Rahmen dieser Bachelorarbeit wurde der Frage nachgegangen, inwiefern eine sogenannte \"Unified Rendering-Engine\", welche verschiedene Simulationsdom{\"a}nen 
-vereint, einen Mehrwert darstellen kann gegenüber dem klassischen Ansatz, z.B. eine Graphik- und eine Physik-Engine zu verwenden, die zun{\"a}chst mal keinen
-Bezug zueinander haben; \\
+
+
+Im Rahmen dieser Bachelorarbeit wurde der Frage nachgegangen, inwiefern eine sogenannte "`Unified Rendering-Engine", welche verschiedene Simulationsdomänen vereint, einen Mehrwert darstellen kann gegenüber dem klassischen Ansatz, z.B. gesondert sowohl eine Graphik- als auch eine Physik-Engine zu verwenden, die zunächst einmal keinen
+Bezug zueinander haben;\\
+
 Hierbei wurde besonderer Wert auf die Verwendung moderner GPU-Computing-APIs gelegt, namentlich auf OpenGL3/4 und OpenCL.\\
-Ziel war vor allem das Potential und die Erweiterbarkeit des Frameworks, nicht die schnelle Realisierung eines grossen Feature-Sets.
+Da bei diesem ganzheitlichen Thema eine vollständige Implementierung einer solchen vereinheitlichten Engine unmöglich war,
+konnte nur ein Bruchteil der Konzepte implementiert werden;\\
+Dieser Umstand war von Vornherein bekannt, und die Versuchung ist stark, wie in einer Demo die schnelle Realisierung eines Feature-Sets einer konsistenten, aber zeitaufwändigeren und zunächst karger wirkenden Implementierung vorzuziehen.
+Dieser Versuchung wurde versucht, nur dort nachzugeben, wo die negativen Auswirkung auf die Konsistenz des Gesamtsystems lokal bleiben, und so nicht "`Hacks"' sich irreversibel durch das gesamte System ziehen.
+
+Das System trägt den Namen "`Flewnit"', eine bewusst nicht auf den ersten Blick erkennbar sein sollende\footnote{Es soll der generalistische Ansatz des Frameworks nicht in den Hintergrund gedrängt werden.} Kombination der Worte "`Fluid"', in Anspielung auf den urspünglichen Zweck einer Bibliothek zur Fluidsimulation und "`Unit"', in Anspielung auf "`Unity"'-"`Einheit"'. Zufälligerweise ist das $Nit$ auch noch die englische Einheit für die Leuchtdichte, $Cd \over m^2$.
+
 
 \subsection{Motivation}
 
-	Urspr{\"u}nglich als Arbeit zur Implementierung von Fluidsimulation geplant, wurde bald ein generalistischer, eher softwaretechnisch orientierter Ansatz verfolgt,
-	der die Fluidsimulation jedoch als Endziel hatte;
-	Der Wunsch nach einer \'Unified Rendering Engine\' erw{\"a}chst aus eigener Erfahrung der Kopplung von Physik- und Graphik-Engines, was einen gewissen Overhead mit sich 	bringt.... weitere Gr{\"u}nde: Liebe zu High-Performacne-Hardware, Wissensdurst in Bezug auf Rendering, Physik-Simulation, Hardware-Interna und Engine-Design,
-	\'frei strampeln\' von sehr veralteten Technologien etc pp..  
+Ursprünglich als Arbeit zur Implementierung einer Fluidsimulation geplant, wurde bald ein generalistischer, eher softwaretechnisch orientierter Ansatz verfolgt, der jedoch die Implementierung einer Fluidsimulation mittelfristiges Ziel hatte;\\
+Der Wunsch nach einer "`Unified Rendering Engine" erwächst aus eigener Erfahrung der Kopplung von Physik- und Graphik-Engines, namentlich der Bullet Physics Library\footnote{http://bulletphysics.org} und der OGRE Graphik-Engine\footnote{http://www.ogre3d.org}. Diese Hochzeit zweier Engines, die jeweils für verschiedene "`Simulationsdomänen"' zuständig sind, bringt gewissen Overhead mit sich, da Konzepten wie  Geometrie und ihrer Transformationen unterschiedliche Repräsentationen bzw. Klassen zugrunde liegen;
+Hierdurch wird die gemeinsame Nutzung beider Domänen von Daten wie z.B. Geometrie nahezu unmöglich; Ferner müssen für eine die beiden Engines benutzende Anwendung diese Klassen mit ähnlicher Semantik durch neue Adapterklassen gewrappt werden,
+um dem Programmier der eigentlichen Anwendungslogik den ständigen Umgang mit verschiedenen Repräsentationen und deren Synchronisation zu ersparen.\\
+
+\todo{evtl. beispielschema erstellen für zwei klassischee transformationsklassen und adapter vs. unified transformation}
+
+Die Aussage "`Photorealistische Computergraphik ist die Simulation von Licht"' \todo{Zitat einfügen? Stefan Müller, PCG? ;)} hat mich wohl auch inspiriert, den Simulationsbegriff allgemeiner aufzufassen und das Begriffspaar "Rendering und Physiksimulation"' zu hinterfragen\footnote{Auch wenn dieses Framework nicht vornehmlich auf physikalisch basierte, also photorealistische Beleuchtung ausgelegt ist, soll diese aufgrund des generalistischen Konzepts jedoch integrierbar sein.}.
+
+Es sei bemerkt, dass weder eine Hypothese bestätigt noch widerlegt werden sollte, geschweige denn überhaupt eine (mir bekannte) Hypothese im Vorfeld existierte; Es sprechen etliche Argumente für eine Vereinheitlichung der Konzepte (geringerer Overhead durch Wegfall der Adapterklassen, evtl. Speicherverbrauch durch z.T. gemeinsame Nutzbarkeit von Daten), aber auch einige dagegen (Komplexität eines Systems, Anzahl an theoretischen Kombinationsmöglichkeiten steigt, viele sind unsinnig und müssen implizit oder explizit ausgeschlossen werden).\\
+
+Für mich persönlich bringt die Bearbeitung dieser Fragestellung zahlreiche Vorteile; Ich muss ein wenig ausholen:\\
+Schon als Kind war ich begeistert von technischen Geräten, auf denen interaktive Computergraphik möglich war; Sie sprechen sowohl das ästhetische Empfinden an, als auch bieten sie eine immer mächtigere Ergänzungs- und  Erweiterungsmöglichkeit zu unserer Realität an; Letztendlich stellten diese Geräte für mich wohl auch immer ein Symbol dafür dar, in wie weit die Menschheit inzwischen fähig ist, den Mikrokosmos zu verstehen und zu nutzen, damit demonstriert, dass sie zumindest die rezeptiven und motorischen Beschränkungen seiner Physiologie überwunden hat.\\
+Die Freude an Schönheit und Technologie findet für mich in der Computergraphik und der sie ermöglichenden Hardware eine Verbindungsmöglichkeit; Die informatische Seite mit seinen Algorithmen als auch die technische Seite mit seinen Schaltungen faszinieren mich gleichermaßen; Auch das "`große Ganze" der Realisierung solcher Computergraphischen Systeme, das Engine-Design mit seinen softwaretechnischen Aspekten, interessiert mich.\\
+Ferner wollte ich schon immer "die Welt verstehen", sowohl auf physikalisch-naturwissenschaftlich-technischer, als auch - aufgrund der system-immanenten Beschränkungen unseres Universums - auf metaphysischer Ebene\footnote{ob der Begriff "`Verständnis"' im letzten Falle ganz treffend ist, bleibt Ermessens-Sache};\\
+
+Und hier schließt sich der Kreis: Sowohl in der Philosophie als auch in der Informatik spielt das Konzept der Abstraktion eine wichtige Rolle; Nichts anderes tut eine "`Unified Engine": sie abstrahiert bestehende Konzepte teilgebiets-spezifischer Engines, wie z.B. Graphik und Physik; Ich erhoffe mir, dass mit dieser Abstraktion man in seinem konzeptionellen Denken der der realen Welt ein Stück weit näher kommt; Die verfügbaren Rechenressourcen steigen, die Komplexität von Simulationen ebenfalls; Ob eine semantische Generalisierung von seit Jahrzehnten verwendeten Begriffen wie "`Rendering"' und "`Physiksimulation"', welche dieser Entwicklung angemessen sein soll, eher hilfreich oder verwirrend ist, kann eine weitere Interessante Frage sein, die ich jedoch nicht weiter empirisch untersucht habe.\\
+
+Letzendlich verbindet dieses Thema also viele meiner Interessen, welche die gesamte Pipeline eines Virtual-Reality-Systems,  vom Konzept einer Engine bis hin zu den Transistoren einer Graphikkarte, auf sämtlichen Abstraktionsstufen betreffen: Es gab mir die Möglichkeit,
+\begin{itemize}
+	\item den Mehrwert einer Abstraktion gängiger Konzepte von Computergraphik und Physiksimulation zu erforschen
+	\item meine Erfahrung im Engine-Design zu vertiefen
+	\item meine Erfahrungen im (graphischen) Echtzeit-Rendering zu vertiefen
+	\item mich mit Physiksimulation (genauer: Simulation von Mechanik) zu beschäftigen, konkret mit Fluidsimulation
+	
+	\item mich in OpenGL 3 und 4 einzuarbeiten, drastisch entschlackten Versionen der Graphik-API, deren gesäuberte Struktur die Graphikprogrammierung wesentlich generalistischer macht und somit die Abstraktion erleichtert
+	\item mich in OpenCL einzuarbeiten, den ersten offenen Standard für \linebreak GPGPU\footnote{General Purpose GPU Computing, die Nutzung der auf massiver Paralleltät beruhenden Rechenleistung von Graphikkarten in nicht explizit Graphik-relevanten Kontexten}
+	\item  mich intensiver mit Graphikkarten-Hardware, der zu Zeit komplexesten und leistungsfähigsten Consumer-Hardware zu beschäftigen, aus purem Interesse und um die OpenCL-Implementierung effizienter zu gestalten
+
+\end{itemize}
+
+ 
 
 \clearpage

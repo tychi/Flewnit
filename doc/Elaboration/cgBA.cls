@@ -57,7 +57,8 @@
 
 \LoadClass[a4paper,11pt,titlepage]{article}
 \RequirePackage[english,ngerman]{babel}			% Unterstuetzung englische und neue deutsche Rechtschreibung
-\RequirePackage[latin1]{inputenc} 			% Unterst�tzung von Umlauten und ...
+
+\RequirePackage[utf8]{inputenc} 			% Unterstützung von Umlauten und ... 
 \RequirePackage[T1]{fontenc}      			% Umlaute korrekt codieren
 \RequirePackage{graphicx}				% fuer Einbindung von Grafiken
 \RequirePackage{tabularx}				% flexible Gestaltung von Tabellen
@@ -69,7 +70,7 @@
         						%       \singlespacing %einfach
         						%       \onehalfspacing %1,5-fach
         						%       \doublespacing %doppelt
-							%       \linespread{1.25}
+						  	    %       \linespread{1.25}
         						%       \baselineskip15pt
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%				% Default: Computer Modern (TeX-Standard)
