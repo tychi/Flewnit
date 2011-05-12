@@ -1,14 +1,24 @@
 
+\subsection{Entwicklungsumgebung}
+
+	Linux, CMake, git, Eclipse ; 
+	gründe für auswahl:
+		linux:  paketmanager für dependencies, unzufriedenheit mit microsofts stiefmütterlicher Behandlung von 64bit-		
+			programmen, nicht zuletzt wunsch nach Vertiefung der kenntnisse der linux-welt
 	
+	cross platform build system, moderne versionsverwaltung, 	
  
 
-\subsection{KlassenDiagramm}
+\subsection{Klassendiagramm}
 
 \subsection{Dependencies}
 
 	
 	\subsubsection{OpenGL3/4}
     \subsubsection{OpenCL 1.0}
+    	noch keine offenen openCL 1.1 treiber, außerdem keine features davon benötigt;
+    	c++-wrapper genutzt, auch von khronos-seiten beziehbar;
+    	Gegenüberstellung zu CUDA, vor- und nachteile auflisten, insbesondere das problem ,dass esk ein 1D-texturen in OpenCL gibt, und man sich entscheiden muss zwischen generischem buffer und Textur, man also nicht hin und her-interpretieren kann wie in CUDA;
     \subsubsection{GLFW}
     	explizite GL3 core profile creation, einfaches fullscreen, multisampling, mouse grab, alles viel besser als GLUT :)
     \subsubsection{Grantlee}
@@ -16,6 +26,7 @@
     \subsubsection{assimp}
     \subsubsection{ogl math}
     	leichte, aber doch recht maechtige mathe-bibliothek
+    \subsubsection{TinyXML}
     	
     	
 \subsection{Die Buffer-Abstraktion}   	
@@ -23,9 +34,11 @@
  
 \subsection{Das WorldObject}
 	Basis-Klasse fuer alles was unified simuliert wird: pure viuelle objekt, uniform grid, fluid, rigid body etc..
-	erwaehnung des SubObjects;  
+	
+	\subsubsection{Das SubObject}
+  
  
-\subsection{Materials}  
+\subsection{Material}  
 	was stellt welches material in welcher Domain dar?
 	
 \subsection{Geometry}

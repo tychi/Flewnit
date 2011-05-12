@@ -1,0 +1,129 @@
+
+\usepackage{tocloft}
+
+\renewcommand{\cftsecindent}{0 em}
+\renewcommand{\cftsecnumwidth}{1.0 em}
+
+\renewcommand{\cftsubsecindent}{1.0 em}
+\renewcommand{\cftsubsecnumwidth}{2.0 em}
+
+\renewcommand{\cftsubsubsecindent}{3.0 em}
+\renewcommand{\cftsubsubsecnumwidth}{3.0 em}
+
+\newlength{\seclevelfourindent}
+\newlength{\seclevelfournumwidth}
+\setlength{\seclevelfourindent}{4.0 em}
+\setlength{\seclevelfournumwidth}{4.0 em}
+
+\newlength{\seclevelfiveindent}
+\newlength{\seclevelfivenumwidth}
+\setlength{\seclevelfiveindent}{5.0 em}
+\setlength{\seclevelfivenumwidth}{5.0 em}
+
+\newlength{\seclevelsixindent}
+\newlength{\seclevelsixnumwidth}
+\setlength{\seclevelsixindent}{6.0 em}
+\setlength{\seclevelsixnumwidth}{6.0 em}
+
+
+\newlength{\seclevelsevenindent}
+\newlength{\seclevelsevennumwidth}
+\setlength{\seclevelsevenindent}{7.0 em}
+\setlength{\seclevelsevennumwidth}{7.0 em}
+
+%-------------------------------------------------------------------------------------
+
+\newcounter{sectionlevelfour}[subsubsection]
+
+\def\sectionlevelfourmark#1{}
+
+\def\thesectionlevelfour {
+	 \thesubsubsection
+     .\arabic{sectionlevelfour}
+}
+
+\def\sectionlevelfour{
+	\@startsection
+     {sectionlevelfour}{4}
+     {0pt}   
+     {-3.25ex plus -1ex minus -.2ex}{1.5ex plus .2ex}
+     {\normalsize\sf}
+}
+
+\def\l@sectionlevelfour{
+	\@dottedtocline{4}
+     {\seclevelfourindent}
+     {\seclevelfournumwidth}
+}
+
+
+\newcounter{sectionlevelfive}[sectionlevelfour]
+\def\sectionlevelfivemark#1{}
+\def\thesectionlevelfive {\thesectionlevelfour
+     .\arabic{sectionlevelfive}}
+\def\sectionlevelfive{\@startsection
+     {sectionlevelfive}{5} {\z@} {-3.25ex plus -1
+     ex minus -.2ex}{1.5ex plus .2ex}{\normalsize\sf}}
+% mj02r: original:
+%\def\l@sectionlevelfive{\@dottedtocline{5}
+%     {5.8em}{5.2em}}
+% mj02r: for VCE reports:
+\def\l@sectionlevelfive{
+	\@dottedtocline{5}
+    {\seclevelfiveindent}
+    {\seclevelfivenumwidth}
+}
+
+
+
+
+
+\newcounter{sectionlevelsix}[sectionlevelfive]
+\def\sectionlevelsixmark#1{}
+\def\thesectionlevelsix {
+	\thesectionlevelfive
+    .\arabic{sectionlevelsix}
+}
+\def\sectionlevelsix{
+	\@startsection {sectionlevelsix}{6} {\z@} 
+	{-3.25ex plus -1 ex minus -.2ex}
+	{1.5ex plus .2ex}
+	{\normalsize\sf}
+ }
+% mj02r: original:
+%\def\l@sectionlevelsix{\@dottedtocline{6}
+%     {5.8em}{5.2em}}
+% mj02r: for VCE reports:
+\def\l@sectionlevelsix{
+	\@dottedtocline{6}
+    {\seclevelsixindent}
+    {\seclevelsixnumwidth}
+}
+
+
+
+
+
+\newcounter{sectionlevelseven}[sectionlevelsix]
+\def\sectionlevelsevenmark#1{}
+\def\thesectionlevelseven {
+	\thesectionlevelsix
+    .\arabic{sectionlevelseven}
+}
+\def\sectionlevelseven{
+	\@startsection{sectionlevelseven} {7} {\z@} 
+	{-3.25ex plus -1 ex minus -.2ex}{1.5ex plus .2ex}
+	{\normalsize\sf}
+}
+% mj02r: original:
+%\def\l@sectionlevelseven{\@dottedtocline{7}
+%     {5.8em}{5.2em}}
+% mj02r: for VCE reports:
+\def\l@sectionlevelseven{\@dottedtocline{7}
+     {\seclevelsevenindent}
+     {\seclevelsevennumwidth}
+}
+     
+     
+	
+

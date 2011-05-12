@@ -23,7 +23,7 @@ Das System trägt den Namen "`Flewnit"', eine bewusst nicht auf den ersten Blick
 
 \subsection{Motivation}
 
-Ursprünglich als Arbeit zur Implementierung einer Fluidsimulation geplant, wurde bald ein generalistischer, eher softwaretechnisch orientierter Ansatz verfolgt, der jedoch die Implementierung einer Fluidsimulation mittelfristiges Ziel hatte;\\
+Ursprünglich als Arbeit zur Implementierung einer Fluidsimulation geplant, wurde bald ein generalistischer, eher softwaretechnisch orientierter Ansatz verfolgt, der jedoch die Implementierung einer Fluidsimulation als mittelfristiges Ziel hatte;\\
 
 \subsubsection{"`Unified Rendering Engine"'}
 Der Wunsch nach einer "`Unified Rendering Engine" erwächst aus eigener Erfahrung der Kopplung von Physik- und Graphik-Engines, namentlich der Bullet Physics Library\footnote{http://bulletphysics.org} und der OGRE Graphik-Engine\footnote{http://www.ogre3d.org}. Diese Hochzeit zweier Engines, die jeweils für verschiedene "`Simulationsdomänen"' zuständig sind, bringt gewissen Overhead mit sich, da Konzepten wie  Geometrie und ihrer Transformationen unterschiedliche Repräsentationen bzw. Klassen zugrunde liegen;
@@ -53,10 +53,21 @@ Letzendlich verbindet dieses Thema also viele meiner Interessen, welche die gesa
 	\item mich in OpenGL 3 und 4 einzuarbeiten, drastisch entschlackten Versionen der Graphik-API, deren gesäuberte Struktur die Graphikprogrammierung wesentlich generalistischer macht und somit die Abstraktion erleichtert
 	\item mich in OpenCL einzuarbeiten, den ersten offenen Standard für \linebreak GPGPU\footnote{General Purpose Graphics Processing Unit- Computing, die Nutzung der auf massiver Paralleltät beruhenden Rechenleistung von Graphikkarten in nicht explizit Graphik-relevanten Kontexten}
 	\item  mich intensiver mit Graphikkarten-Hardware, der zu Zeit komplexesten und leistungsfähigsten Consumer-Hardware zu beschäftigen, aus purem Interesse und um die OpenCL-Implementierung effizienter zu gestalten
-
 \end{itemize}
+Die vielseitigen didaktischen Aspekte hatten bei dieser Themenwahl also ein größeres Gewicht als der Forschungsaspekt, was dem Ziel einer Bachelorarbeit angemessen ist. 
+
 
 \subsubsection{Fluidsimulation}
+
+Warum ich mich bei der exemplarischen Implementierung einer mechanischen Simulationsdomäne für eine Fluidsimulation entschieden habe, hat viele Gründe:
+
+\begin{itemize}
+ 	\item Wohingegen Rigid Body-Simulation in aktuellen Virtual-Reality-Anwendungen wie Computerspielen schon eine recht große Verbreitung erreicht hat, sucht man eine komplexere physikalisch basierte Fluidsimulation, die über eine 2,5 D-Heightfield-Implementation hinausgehen, noch vergebens; \todo{Muss ich das irgendwie belegen? Ich wüsste nicht, wie/wo ;(} Das Ziel, eine deratige Fluidsimulation in einen Anwendungskontext zu integrieren, der langfristig über den einer Demo hinausgehen soll, hat also etwas leicht pionierhaftes.
+ 	\item Da Fluide für gewöhnlich ein homogenes Medium sind, eignet sich für die Suche nach Nachbarpartikeln die Beschleunigungsstruktur des Uniform Grid besonders gut, wohingegen sich für Rigid- oder Softbody- Simulation eher komplexere Beschleunigungsstrukturen wie Oct-Trees, Bounding Volume-Hierarchies oder kD-Trees anbieten; Letztere Strukturen lassen sich schwerer auf die GPU mappen, welche als Stream-Prozessor nicht optimal für komplexe Kontrollflüsse und Datenstrukturen geeignet ist.
+ 	\todo{noch eine Referenz? Common Knowledge zu belegen, scheint mir so überflüssig, und es fehlt mir auch "DIE" Referenz für solche common-knowledge-Sachen.. Cuda Programming Guide? .... ;(}
+Die Fluidsimulation stellt also sowohl vor dem Hintergrund der GPU-Implementierung als auch auf mathematisch-phyikalischem Gebiet einen relativ "`seichten"' Einstieg in die Welt der Echtzeit-Physiksimulation dar, nicht zuletzt, weil es schon zahlreiche Arbeiten zur Fluidsimulation gibt, welche erfolgreich den Spagat zwischen Echtzeitfähigkeit und physikalischer Plausibilität gemeistert haben.
+
+\end{itemize}
 Warum Fluid?
  interesse an physik, "seichter einstieg" durch verinfachte Algorithmen, so lange es "nur" um plausibilität geht und nicht um physikalische korrektheit, einfacheres Mapping der homogh
 Warum Partikelbasiert?

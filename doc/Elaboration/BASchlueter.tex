@@ -26,6 +26,18 @@
 
 \usepackage{todonotes}
 
+
+%-----------------------------------------------------------------------------------------------------------
+
+
+\setcounter{secnumdepth}{7} 	%seven levels of nesting
+\setcounter{tocdepth}{7}%
+\usepackage{subsections} 	%some definitions for subsubsubsections etc..
+
+
+
+
+
 %-----------------------------------------------------------------------------------------------------------
 
 \begin{document}
@@ -50,6 +62,7 @@
 
 \pagenumbering{roman}
 
+
 \listoftodos		%TODO list, the most important thing in any document ;)
 \tableofcontents
 \clearpage         	% oder \cleardoublepage bei zweiseitigem Druck
@@ -71,9 +84,9 @@
 	\input{Systemarchitektur.tex}
 	
 \section{Simulation}
-	\subsection{Die visuelle Dom{\"a}ne}
+	\subsection{Die visuelle Simulationsdomäne}
 		\input{VisualDomain.tex}	
-	\subsection{Die mechanische Dom{\"a}ne}
+	\subsection{Die mechanische Simulationsdomäne}
 		\input{MechanicalDomain.tex}
 
 
