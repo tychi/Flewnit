@@ -1,32 +1,167 @@
 
 \subsection{Vision}
-Verwendung der Unified Engine zur Entwicklung einer echtzeit-fähigen Paddel-Simulation mit ausgefeilter Fluid-Mechanik und -Visualisierung, rigid bodies, statischem Kollisions-Mesh;
+
+Die langfristige Vision, die \emph{Flewnit} begleitet, ist die Entwicklung eines interaktiven Paddel-Spiels unter Verwendung dieser Unified Engine mit ausgefeilter Fluid-Mechanik und -Visualisierung, partikelbasierten Rigid Bodies und Dreiecks-Mesh als Repräsentation für statische Kollisions-Geometrie; Spiele, in der große Mengen Fluid, die komplexer simuliert sind als durch Height-Fields
+\footnote{s. Kapitel \ref{sec:relatedWork} für mehr Informationen zu Height-Field-basierter Fluidsimulation}
+einen integrativen Bestandteil der Spielmechanik ausmachen, sind mir nicht bekannt;\\
+Von Dreiecks-Geoemetrie erhoffe ich mir eine genauere Repräsentation zur Kollisionsbehandlung, bei gleichzeitiger Ersparnis vieler Partikel, die sonst z.T große Oberflächen repäsentieren müssten; Ferner könnte die Dreiecksstruktur später zur Simulation nicht-partikelbasierter Rigid Bodies verwendet werden;
+
+
+\subsection{Paradigmen}
+\label{sec:paradigm}
+
+Vor dem Entwurf eines komplexen Softwaresystems mit einigen Zügen, die in etablierten Systemen keine so große Bedeutung haben, hat es Sinn, sich einige Paradigmen zu überlegen, welchen das System nach Möglichkeit folgen soll, um eine gewisse Konsitenz zu gewährleisten:
+	
+\begin{itemize}
+	\item Es wurde beim Entwurf der Unified Engine für jede Simulationsdomäne eine möglichst ähnliche Struktur von Klassen 	
+	und ihren Beziehungen zueinander angestrebt. Diese Ähnlichkeit spiegelt sich nach Möglichkeit in einer gemeinsamen 	
+	(manchmal abstrakten) Oberklasse eines jeden Konzeptes wider, wie z.B.:
+	\begin{itemize}
+		\item dem Simulations-Objekt als solchem
+		\item der Geometrie
+		\item dem Material
+		\item der Szenen-Repräsentation
+	\end{itemize}
+
+	\item Es sollte eine Art Pipeline-Architektur entstehen, wo bestimmte Pipeline-Stages bestimmte Simulations-(Zwischen)-
+	Ergebnisse implemetieren, und ggfs. anderen Stages diese zur Verfügung stellen. Jede Simulationsdomäne hat seine eigene 
+	Pipeline; Dennoch können Interdependenzen bestehen;\\
+	Diesen Interdependenzen wird durch eine Konzept-spezifische Verwaltung durch verschiedene Singleton-Manager-Klassen 	
+	genüge getan; Ein und dasselbe Objekt kann von verschiedenen Managern in unterschiedlichem Zusammenhang verwaltet 
+	werden; Mehr dazu in Kapitel \ref{sec:systemArchitecture};
+
+	\item Es sollen langfristig so viele Features (Visualisierungstechniken und -effekte, Simulationstechniken) wie möglich 
+	miteinander kombinierbar sein, sofern die Kombination nicht unsinnig ist;
+
+	\item Es soll so viel wie möglich auf der GPU berechnet werden, um die massive Paralleltät auszunutzen, 
+	und um nicht durch Buffer-Transfers, die die Aufteilung von Algorithmen in CPU- und GPU- Code meist mit sich bringen, 	
+	auf den Bandbreiten- und Latenz- Flaschenhals der PCI-Express-Schnittstelle zu stoßen;
+	\todo{hier specs und refs zu PCIe 2.0 anbringen? eher nicht, oder?}
+	
+	\item Es soll immer das Potential gewahrt werden, dass aus dem Framework --- außerhalb des Rahmens dieser 
+	Bachelorarbeit --- tatsächlich noch eine Art \emph{Unified Engine} entstehen kann; Somit sind "`schnelle Hacks"',
+	also unsaubere Programmier-Weisen, die mit geringstem Programmier-Aufwand ein bestimmtes Feature implementieren,
+	überall dort unbedingt zu vermeiden, wo sie die konsistente Gesamstruktur des Systems zu bedrohen scheinen.
+
+\end{itemize}
+
+
+
+	
+
 
 \subsection{Begriffe}
+
+Im Zuge der angestrebten Vereinheitlichung der  verschiedenen Simulation müssen wir auch einige Begriffe verallgemeinern, 
+welche in ihrer jahrzentelangen Tradition in der Terminologie der Computergraphik eine spezifische Bedeutung erhalten haben;
+Zur besserern Einordnung stellt Abbildung \ref{fig:classicalVsUnified} ein grobes Schema dar, welches die klassische Verwendung verschiedener Engines und die einer Unified Engine gegenüber stellt:
+
+
+
+	\begin{figure}
+		%\centering
+	
+	   %\def\svgwidth{1.6\textwidth}
+	   %\input{classicalVsUnified.pdf_tex}
+		%\includegraphics[width=1.3\textwidth]{classicalVsUnified.png}
+	   %\includegraphics[width=1.3\textwidth]{classicalVsUnified.pdf}
+	   \includegraphics[width=1.3\textwidth]{screenshot_wholeScene.png}
+
+		\caption{Gegenüberstellung von Verwendung und Begrifflichkeiten von klassischen Engines und einer Unified Engine}
+		\label{fig:classicalVsUnified}
+	\end{figure}
+	
+
+
+
+
+\begin{description}
+
+	\item[Rendering]
+	Im Wiktionary \cite{internet:wiktionRender} wird das Verb \emph{to render} u.a. umschrieben als:
+	\begin{quote}
+		(transitive, computer graphics) To transform digital information in the form received from a repository into a 
+		display on a computer screen, or for other presentation to the user. 
+	\end{quote}	
+	Es geht also um die Transformation einer formalen Beschreibung in eine für einen menschlichen Benutzer wahrnehmbare 
+	Form. Diese muss entgegen der gewöhnlichen Verwendung des Begriffes nicht zwingend visuell, sondern kann z.B. auch 
+	akustischer oder haptischer Natur sein, übertragen durch Lautsprecher oder Force-Feedback-Devices.\\
+	
+	Verallgemeinern wir den Begriff \emph{Rendering} weiter, gemäß der Übersetzung der Verb-Form als 
+	\emph{erbringen}, \emph{machen} \cite{internet:dictCCrender},	
+	und in Anlehnung an seine Ethymologie,
+	\begin{quote}
+		From Old French \emph{rendre} (“to render, to make”) [...] \cite{internet:wiktionRender}
+	\end{quote}
+	
+	bietet sich eine freie Übersetzung als \emph{Erzeugung eines Zustandes beliebiger Natur} an;\\
+	Unter diese generische (Um)-Deutung des Begriffes fällt nun auch \emph{die Ausführung beliebig gearteter Simulation}.
+	
+	Zu besseren Abgrenzung kann man von \emph{generischen Rendering} und dem klassischen 
+	\emph{visuellen Rendering} sprechen; Dies soll im weiteren Verlauf dieser Arbeit der Fall sein.\\
+	Eine \emph{Unified Engine}(s.u.) betreibt also \emph{generisches Rendering}.
+	
+	
+	\item[Unified Engine] Alternativ-Bezeichnung: \emph{Unified Rendering Engine};\\
+	Eine \emph{Unified Engine} betreibt \emph{generisches Rendering}, indem sie bestimmte Aspekte einer 
+	\emph{Welt}\footnote{Diese Welt muss dabei nicht zwingend unserer Realität ähneln oder entsprechen.} simuliert. 
+	Darunter kann das klassische (visuelle) Rendering fallen, aber auch die Simulation von Geräuschen und von Mechanik, und 
+	beliebige weitere Domänen; Die Domänen sollen dabei durch Abstraktion gemeinsamer Eigenschaften so ähnlich wie möglich
+	organisiert sein;
+	
+	\item[Simulation] Das Begriffspaar \emph{Rendering} und \emph{Physiksimulation} ist im Kontext dieser versuchten 
+	Vereinheitlichung nicht mehr angemessen; 
+	
+
+	
+	%don't know yet if it makes sense here to define the below words
+	%\item[Material] 
+	%\item[Buffer] 
+
+	
+\end{description}
+
 erklären, was ich unter Unified Rendering verstehe, was Rendering dadruch fuer eine generalistische Bedeutung bekommt;\\
 tabelle mit Gegenüberstellung
 
 
-\subsection{Paradigmen}
-	
-	moeglichst symmetrischer Ansatz zwischen den Simulationsdomaenen,
-	 zantralistische Verwaltung von spezifischen Objekten,
-	GPU-Code gernaierung per Template-Engine zur vermeidung von boilerplate,
-	moeglichst versuchen, langfristig so viele Aspekte wie moeglich miteinander kombinieren zu koennern 	    
-	(Visualisierungstechniken, verschiedene Physik Partikelsimulation, Rigid bodiy-Simulation)
-	
-	potential bewahren, dass letztendlich, in der Entwicklungszeit nach dieser Bachelorarbeit eine möglichst seriöse Lightweight-Unified-Engine entstehen  könnte;
-	
+
+
 \subsection{Schwerpunkte}
 
-\subsubsection{Template-Engine}
-boilerplate, kombinierbarkeit, nach Möglichkeit lesbarkeit\\
-exemplarischer code schnipsel
+	- entwicklungsumgebungm die die entwicklöung eines konsistenten frameworks erleichtert, moderne tools, nach möglichkeit cross platform (windows vs. linux)
+	- verwendung von bibliotheken, die die entwicklung einer seriösen engine ermöglichen
+	- verwendung von mindestens OpenGL 3/3 core context, um legacy code schon zur compilezeit auszuschließen
+	- realisierung gängiger graphischer effekte, vor allem tesselation, verweise auf entsprechende section
+		- tesselation
+	- nutzung moderner openGL features, Uniform Buffers, Tesselation, hardware instancing, verweis auf entpsrechende section;
+	- möglichst hohe konfiguriertbarkeit ohne ständigen recompile: config file
+	- buffer abstraktion
+	- memory tracking, (erklären, warum nicht tracking mit Valgrind)
 
-\subsubsection{Performance duch Implementierung auf der GPU mit modernen GPU-Computing-APIs}
-auf die massive parallelität eingehen, die sowohl von visualler wie mechanischer domäne genutzt werden kann;
-Performance-Schwerpunkt, Optimierung, auch hardware-abhängige, erwähnen, Gegenüberstellung zu alten OpenGL-nutzenden GPUPU- Verfahren, die nicht scattern konnten in texturen rendern mussten und auch sonst etliche Nachteile hinnehmen mussten
+	- effiziente Verwendung von OpenCL, hardware- spezifische bedingte compilings dank grantlee
+	
+	
 
-\subsubsection{Potential der Entwicklung hin zu einer Unified Engine nicht verschenken}
-i.e. fenstermanager, input etc sollten wohl übelegt sein, für vielseitig, flexible anwendung zur Laufzeit sollten keine Speicher-Lecks auftreten, damit Funktionalität kontrolliert heruntergefahren und neu initialisiert werden kann; Für gemeinsamen zugriff sollten viele Daten für andere Klassen verfügbar sein (Buffer, Rendering Results...); Realisierung uber Manager-Singleton-Klassen und Zugriff über Map-Container;
+	\subsubsection{Template-Engine}
+	boilerplate, kombinierbarkeit, nach Möglichkeit lesbarkeit\\
+	exemplarischer code schnipsel
+		-  Im Zuge des Schwerpunktes auf GPU-Implementierung:
+		grantlee gegen boilerplate,zur generierung schlankerer programme als durch Präprozessordierktiven, 
+		 $\rightarrow$ einfachere Code- Inspection, verbesserung der lesbarkeit durch generierte, feature-spezifische 	
+		 programme,
+  		bessere struktur verwaltung des source codees
 
+	\subsubsection{Performance duch Implementierung auf der GPU mit modernen GPU-Computing-APIs}
+	auf die massive parallelität eingehen, die sowohl von visualler wie mechanischer domäne genutzt werden kann;
+	Performance-Schwerpunkt, Optimierung, auch hardware-abhängige, erwähnen, Gegenüberstellung zu alten OpenGL-nutzenden 	
+	GPUPU- Verfahren, die nicht scattern konnten in texturen rendern mussten und auch sonst etliche Nachteile hinnehmen 	
+	mussten
+
+	\subsubsection{Potential der Entwicklung hin zu einer Unified Engine nicht verschenken}
+	i.e. fenstermanager, input etc sollten wohl übelegt sein, für vielseitig, flexible anwendung zur Laufzeit sollten keine 	Speicher-Lecks auftreten, damit Funktionalität kontrolliert heruntergefahren und neu initialisiert werden kann; Für 	
+	gemeinsamen zugriff sollten viele Daten für andere Klassen verfügbar sein (Buffer, Rendering Results...); Realisierung 	
+	uber Manager-Singleton-Klassen und Zugriff über Map-Container;
+
+
+	
