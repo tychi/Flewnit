@@ -22,6 +22,8 @@ Vor dem Entwurf eines komplexen Softwaresystems mit einigen Zügen, die in etabl
 		\item dem Material
 		\item der Szenen-Repräsentation
 	\end{itemize}
+	Auf diese Weise soll eine maximale \emph{Symmetrie} zwischen den Domänen hergestellt werden, so dass domänen-bedingte 
+	Spezial-Behandlung von Objekten und Workflows minimiert wird;
 
 	\item Es sollte eine Art Pipeline-Architektur entstehen, wo bestimmte Pipeline-Stages bestimmte Simulations-(Zwischen)-
 	Ergebnisse implemetieren, und ggfs. anderen Stages diese zur Verfügung stellen. Jede Simulationsdomäne hat seine eigene 
@@ -58,15 +60,11 @@ Zur besserern Einordnung stellt Abbildung \ref{fig:classicalVsUnified} ein grobe
 
 
 
-	\begin{figure}
+	\begin{figure}[ht]
 		%\centering
-	
-	   %\def\svgwidth{1.6\textwidth}
-	   %\input{classicalVsUnified.pdf_tex}
-		%\includegraphics[width=1.3\textwidth]{classicalVsUnified.png}
-	   %\includegraphics[width=1.3\textwidth]{classicalVsUnified.pdf}
-	   \includegraphics[width=1.3\textwidth]{screenshot_wholeScene.png}
-
+		\def\svgwidth{\textwidth}
+	    \input{classicalVsUnified.pdf_tex}
+	   	%\includegraphics[width=\textwidth]{classicalVsUnified.pdf}
 		\caption{Gegenüberstellung von Verwendung und Begrifflichkeiten von klassischen Engines und einer Unified Engine}
 		\label{fig:classicalVsUnified}
 	\end{figure}
@@ -80,8 +78,8 @@ Zur besserern Einordnung stellt Abbildung \ref{fig:classicalVsUnified} ein grobe
 	\item[Rendering]
 	Im Wiktionary \cite{internet:wiktionRender} wird das Verb \emph{to render} u.a. umschrieben als:
 	\begin{quote}
-		(transitive, computer graphics) To transform digital information in the form received from a repository into a 
-		display on a computer screen, or for other presentation to the user. 
+		"`(transitive, computer graphics) To transform digital information in the form received from a repository into a 
+		display on a computer screen, or for other presentation to the user. "'
 	\end{quote}	
 	Es geht also um die Transformation einer formalen Beschreibung in eine für einen menschlichen Benutzer wahrnehmbare 
 	Form. Diese muss entgegen der gewöhnlichen Verwendung des Begriffes nicht zwingend visuell, sondern kann z.B. auch 
@@ -91,7 +89,7 @@ Zur besserern Einordnung stellt Abbildung \ref{fig:classicalVsUnified} ein grobe
 	\emph{erbringen}, \emph{machen} \cite{internet:dictCCrender},	
 	und in Anlehnung an seine Ethymologie,
 	\begin{quote}
-		From Old French \emph{rendre} (“to render, to make”) [...] \cite{internet:wiktionRender}
+		"`From Old French \emph{rendre} (“to render, to make”)"' [...] \cite{internet:wiktionRender}
 	\end{quote}
 	
 	bietet sich eine freie Übersetzung als \emph{Erzeugung eines Zustandes beliebiger Natur} an;\\
@@ -99,7 +97,7 @@ Zur besserern Einordnung stellt Abbildung \ref{fig:classicalVsUnified} ein grobe
 	
 	Zu besseren Abgrenzung kann man von \emph{generischen Rendering} und dem klassischen 
 	\emph{visuellen Rendering} sprechen; Dies soll im weiteren Verlauf dieser Arbeit der Fall sein.\\
-	Eine \emph{Unified Engine}(s.u.) betreibt also \emph{generisches Rendering}.
+	Eine \emph{Unified Engine} (s.u.) betreibt also \emph{generisches Rendering}.
 	
 	
 	\item[Unified Engine] Alternativ-Bezeichnung: \emph{Unified Rendering Engine};\\
@@ -110,10 +108,16 @@ Zur besserern Einordnung stellt Abbildung \ref{fig:classicalVsUnified} ein grobe
 	organisiert sein;
 	
 	\item[Simulation] Das Begriffspaar \emph{Rendering} und \emph{Physiksimulation} ist im Kontext dieser versuchten 
-	Vereinheitlichung nicht mehr angemessen; 
-	
-
-	
+	Vereinheitlichung nicht mehr angemessen; Stattdessen sollten wir den Simulations-Gedanken aufgreifen und anstelle von
+	\emph{Rendering} lieber von \emph{Licht-Simulation} sprechen; Auf diese Weise werden Missverständliche abwechselnde 
+	Verwendung vom Begriff \emph{Rendering} vermieden;\\
+	Der Begriff der \emph{Physiksimulation} ist auch nicht ganz sauber, da streng genommen Licht auch ein physikalisches
+	Phänomen ist, und somit vom Begriff eingeschlossen wird, statt sich abzugrenzen; Es bietet sich die alternative und 
+	genauere  Bezeichnung \emph{Mechanik-Simulation} an; Die Quantenmechanik vor Augen (der Name spricht für sich) und 
+	damit den Umstand, dass auch Photonen an mechanischen Vorgängen teilnehmen, ist zwar selbst dies keine saubere 	
+	Abgrenzung, aber auf dem angestrebten Niveau einer plausiblen (im Kontrast zur "`korrekten"') Echtzeit-Simulation, 
+	welche mit der Newton'schen Physik auskommen wird, ist diese Abgrenzung klar genug.
+		
 	%don't know yet if it makes sense here to define the below words
 	%\item[Material] 
 	%\item[Buffer] 
@@ -121,27 +125,53 @@ Zur besserern Einordnung stellt Abbildung \ref{fig:classicalVsUnified} ein grobe
 	
 \end{description}
 
-erklären, was ich unter Unified Rendering verstehe, was Rendering dadruch fuer eine generalistische Bedeutung bekommt;\\
-tabelle mit Gegenüberstellung
+Somit ist die erste Symmetrie zwischen den Simulationsdomänen durch eine Anpassung der Terminologie bewerkstelligt.
+
 
 
 
 
 \subsection{Schwerpunkte}
 
-	- entwicklungsumgebungm die die entwicklöung eines konsistenten frameworks erleichtert, moderne tools, nach möglichkeit cross platform (windows vs. linux)
-	- verwendung von bibliotheken, die die entwicklung einer seriösen engine ermöglichen
-	- verwendung von mindestens OpenGL 3/3 core context, um legacy code schon zur compilezeit auszuschließen
-	- realisierung gängiger graphischer effekte, vor allem tesselation, verweise auf entsprechende section
-		- tesselation
-	- nutzung moderner openGL features, Uniform Buffers, Tesselation, hardware instancing, verweis auf entpsrechende section;
-	- möglichst hohe konfiguriertbarkeit ohne ständigen recompile: config file
-	- buffer abstraktion
-	- memory tracking, (erklären, warum nicht tracking mit Valgrind)
+Die Entwicklung eines solchen \emph{Unified Frameworks}\footnote{Von Engine möchte ich Kontext der Implementierung im Rahmen dieser Bachelorarbeit noch nicht sprechen, da dieser Begriff eine viel zu große Vollständigkeit der Implementation suggeriert.} umfasst sehr viele Aspekte, und einige werden wohl in dieser Ausarbeitung keine Erwähnung finden. Um die didaktischen Ziele von Seite \pageref{list:didacticGoals} nicht aus den Augen zu verlieren, wurden folgende Schwerpunkte gesetzt:
 
-	- effiziente Verwendung von OpenCL, hardware- spezifische bedingte compilings dank grantlee
+	\subsubsection{Entwicklungs-Umgebung}
+	Nach Anfängen unter Windows 7 und Visual Studio 2010, gab es bald Probleme beim Compilen von Dependencies auf 
+	64 Bit; Womöglich wäre es eine Frage der Geduld gewesen, jedoch habe ich dann zu 
+	Ubuntu Linux\footnote{http://www.ubuntu.com/} und Eclipse\footnote{http://www.eclipse.org/} in 
+	Kombination mit dem Cross-Platform Build-System CMake\footnote{http://www.cmake.org/} gewechselt. Mir war es sehr 	
+	wichtig, ein natives 64-Bit-System zu entwickeln, da viele Register der heutigen 64Bit-Prozessoren sonst ungenutzt 
+	bleiben.
+	\todo{refernenz finden, bin mir da eher unsicher}
+	Das Paket-Management der Linux-basierten Betriebsysteme und die konsequente Implementierung fast aller Programme in 64 
+	Bit erleichtern das Einrichten der Dependencies ungemein; Schon alleine dafür hat sich der Umstieg 
+	gelohnt.\footnote{Einen sehr sehr großen Dank möchte ich an dieser Stelle Lubosz Sarnecki aussprechen, der mich mit 
+	meiner zuvor sehr eingeschränkten Linux-Erfahrung unermüdlich mit Profi-Support bei der fortgeschrittenen Customization 
+	des Betriebsystems versorgt hat; Ohne ihn wäre mir dieser schnelle, weitgehend reibungslose Umstieg nicht gelungen.}
+	\todo{explizite Danksagung?}
+
+	\subsubsection{Dependencies}
+	Das Endziel einer potenten, modernen Engine sollte auf keinen Fall durch die Wahl suboptimaler Bibliotheken 
+	eingeschränkt werden; Andererseits sollten, um Compile- und Link-Zeiten gering zu halten und Konflikte zwischen 
+	Bibliotheken zu vermeiden, die Dependencies nicht zu komplex sein; Die Wahl vor allem des Fenster-Managers und der
+	Mathematik-Bibliothek musste deshalb mit Bedacht getroffen werden; Mehr dazu in Kapitel \label{sec:dependencies}.
+	
+	\subsubsection{Nutzung moderner OpenGL-Features}
+	
+	 Uniform Buffers, Tesselation, hardware instancing, verweis auf entpsrechende 
+	section;
 	
 	
+	
+	\subsubsection{Implemetation und Kombination gängiger visueller Effekte}
+	
+		-vor allem tesselation, verweise auf entsprechende section
+	
+
+
+	\subsubsection{Buffer-Abstraktion}
+
+
 
 	\subsubsection{Template-Engine}
 	boilerplate, kombinierbarkeit, nach Möglichkeit lesbarkeit\\
@@ -157,11 +187,21 @@ tabelle mit Gegenüberstellung
 	Performance-Schwerpunkt, Optimierung, auch hardware-abhängige, erwähnen, Gegenüberstellung zu alten OpenGL-nutzenden 	
 	GPUPU- Verfahren, die nicht scattern konnten in texturen rendern mussten und auch sonst etliche Nachteile hinnehmen 	
 	mussten
+	
+	
+	
+	\subsubsection{Effiziente Verwendung von OpenCL}
+	 hardware-spezifische bedingte compilings dank grantlee
 
-	\subsubsection{Potential der Entwicklung hin zu einer Unified Engine nicht verschenken}
-	i.e. fenstermanager, input etc sollten wohl übelegt sein, für vielseitig, flexible anwendung zur Laufzeit sollten keine 	Speicher-Lecks auftreten, damit Funktionalität kontrolliert heruntergefahren und neu initialisiert werden kann; Für 	
-	gemeinsamen zugriff sollten viele Daten für andere Klassen verfügbar sein (Buffer, Rendering Results...); Realisierung 	
-	uber Manager-Singleton-Klassen und Zugriff über Map-Container;
+	\subsubsection{Weiteres}
 
+	 für vielseitig, flexible anwendung zur Laufzeit sollten keine 	Speicher-Lecks auftreten damit Funktionalität 
+	 kontrolliert heruntergefahren und neu initialisiert werden kann; 
+	 	- memory tracking, (erklären, warum nicht tracking mit Valgrind)
+	 
+	 Für gemeinsamen zugriff sollten viele Daten für andere Klassen verfügbar sein (Buffer, Rendering Results...); 	
+	 Realisierung über Manager-Singleton-Klassen und Zugriff über Map-Container;
+
+	- möglichst hohe Konfiguriertbarkeit ohne ständigen recompile: config file
 
 	

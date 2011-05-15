@@ -14,15 +14,19 @@
 \subsection{Klassendiagramm}
 
 \subsection{Dependencies}
+	\label{sec:dependencies}
 
-	
+		
 	\subsubsection{OpenGL3/4}
+	- verwendung von mindestens OpenGL 3/3 core context, um legacy code schon zur compilezeit auszuschließen
     \subsubsection{OpenCL 1.0}
     	noch keine offenen openCL 1.1 treiber, außerdem keine features davon benötigt;
     	c++-wrapper genutzt, auch von khronos-seiten beziehbar;
     	Gegenüberstellung zu CUDA, vor- und nachteile auflisten, insbesondere das problem ,dass esk ein 1D-texturen in OpenCL gibt, und man sich entscheiden muss zwischen generischem buffer und Textur, man also nicht hin und her-interpretieren kann wie in CUDA;
     \subsubsection{GLFW}
-    	explizite GL3 core profile creation, einfaches fullscreen, multisampling, mouse grab, alles viel besser als GLUT :)
+    	Fenstermanager + input
+    	explizite GL3 core profile creation, einfaches fullscreen, multisampling, keine mainloop, explizites input pulling, 
+    	mouse grab, alles viel besser als GLUT :)
     \subsubsection{Grantlee}
        die string template engine die CL und GL code erzeugt
     \subsubsection{assimp}
@@ -30,6 +34,13 @@
     	leichte, aber doch recht maechtige mathe-bibliothek
     \subsubsection{TinyXML}
     	
+    	
+\subsection{Die \emph{Unified Rendering Engine}}
+URE blubb
+
+\subsection{Die Manager-Klassen}
+blubb2
+\todo{evtl. andere reihenfolge}
     	
 \subsection{Die Buffer-Abstraktion}   	
  	die bombe, die cpu, ogl und ocl vereint, inclusive ping ponging etc.. fundamentale Klassensammlung fuer den Unified-Aspekt
