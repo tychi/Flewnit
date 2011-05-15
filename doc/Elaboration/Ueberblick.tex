@@ -38,7 +38,7 @@ Vor dem Entwurf eines komplexen Softwaresystems mit einigen Zügen, die in etabl
 	\item Es soll so viel wie möglich auf der GPU berechnet werden, um die massive Paralleltät auszunutzen, 
 	und um nicht durch Buffer-Transfers, die die Aufteilung von Algorithmen in CPU- und GPU- Code meist mit sich bringen, 	
 	auf den Bandbreiten- und Latenz- Flaschenhals der PCI-Express-Schnittstelle zu stoßen;
-	\todo{hier specs und refs zu PCIe 2.0 anbringen? eher nicht, oder?}
+	\todo[color=green]{hier specs und refs zu PCIe 2.0 anbringen? eher nicht, oder?}
 	
 	\item Es soll immer das Potential gewahrt werden, dass aus dem Framework --- außerhalb des Rahmens dieser 
 	Bachelorarbeit --- tatsächlich noch eine Art \emph{Unified Engine} entstehen kann; Somit sind "`schnelle Hacks"',
@@ -135,54 +135,82 @@ Somit ist die erste Symmetrie zwischen den Simulationsdomänen durch eine Anpass
 
 Die Entwicklung eines solchen \emph{Unified Frameworks}\footnote{Von Engine möchte ich Kontext der Implementierung im Rahmen dieser Bachelorarbeit noch nicht sprechen, da dieser Begriff eine viel zu große Vollständigkeit der Implementation suggeriert.} umfasst sehr viele Aspekte, und einige werden wohl in dieser Ausarbeitung keine Erwähnung finden. Um die didaktischen Ziele von Seite \pageref{list:didacticGoals} nicht aus den Augen zu verlieren, wurden folgende Schwerpunkte gesetzt:
 
-	\subsubsection{Entwicklungs-Umgebung}
+\begin{description}
+
+	\item[Entwicklungs-Umgebung]
 	Nach Anfängen unter Windows 7 und Visual Studio 2010, gab es bald Probleme beim Compilen von Dependencies auf 
 	64 Bit; Womöglich wäre es eine Frage der Geduld gewesen, jedoch habe ich dann zu 
 	Ubuntu Linux\footnote{http://www.ubuntu.com/} und Eclipse\footnote{http://www.eclipse.org/} in 
 	Kombination mit dem Cross-Platform Build-System CMake\footnote{http://www.cmake.org/} gewechselt. Mir war es sehr 	
-	wichtig, ein natives 64-Bit-System zu entwickeln, da viele Register der heutigen 64Bit-Prozessoren sonst ungenutzt 
-	bleiben.
-	\todo{refernenz finden, bin mir da eher unsicher}
+	wichtig, ein System zu entwickeln, welches vollständig für die 64 Bit-Prozessor-Architektur compilet ist, da viele 
+	Register der heutigen 64Bit-Prozessoren sonst ungenutzt bleiben.
+	\todo[color=green]{refernenz finden, bin mir da eher unsicher}
 	Das Paket-Management der Linux-basierten Betriebsysteme und die konsequente Implementierung fast aller Programme in 64 
 	Bit erleichtern das Einrichten der Dependencies ungemein; Schon alleine dafür hat sich der Umstieg 
-	gelohnt.\footnote{Einen sehr sehr großen Dank möchte ich an dieser Stelle Lubosz Sarnecki aussprechen, der mich mit 
+	gelohnt.
+	\footnote{Einen sehr sehr großen Dank möchte ich an dieser Stelle Lubosz Sarnecki aussprechen, der mich mit 
 	meiner zuvor sehr eingeschränkten Linux-Erfahrung unermüdlich mit Profi-Support bei der fortgeschrittenen Customization 
 	des Betriebsystems versorgt hat; Ohne ihn wäre mir dieser schnelle, weitgehend reibungslose Umstieg nicht gelungen.}
-	\todo{explizite Danksagung?}
+	\todo[color=green]{explizite Danksagung?}
 
-	\subsubsection{Dependencies}
+	\item[Dependencies]
 	Das Endziel einer potenten, modernen Engine sollte auf keinen Fall durch die Wahl suboptimaler Bibliotheken 
 	eingeschränkt werden; Andererseits sollten, um Compile- und Link-Zeiten gering zu halten und Konflikte zwischen 
 	Bibliotheken zu vermeiden, die Dependencies nicht zu komplex sein; Die Wahl vor allem des Fenster-Managers und der
 	Mathematik-Bibliothek musste deshalb mit Bedacht getroffen werden; Mehr dazu in Kapitel \label{sec:dependencies}.
 	
-	\subsubsection{Nutzung moderner OpenGL-Features}
-	
-	 Uniform Buffers, Tesselation, hardware instancing, verweis auf entpsrechende 
-	section;
 	
 	
+	\item[Nutzung moderner OpenGL-Features]
+	Mit OpenGL Version 3 erfuhr die offene Graphik-API eine gründliche Reinigung: Viele nicht mehr zeitgemäße Features 
+	wurden für deprecated erklärt und durch einige neue, meist generischere Features ersetzt;
+	Das Resultat ist eine schlankere API mit mehr Verantwortung für den Programmierer über die Rendering-Pipeline;
+	Man muss mehr "`selbst machen", hat aber auch mehr Macht.\\
+	Diese Neuerung spielt dem Konzept einer Unified engine geradezu in die Hände, da nun fast die gesamte vordefinierte 
+	Semantik wie 
+	\lstinline[language=GLSL]|gl_LightSource[0].position, gl_NormalMatrix| oder 
+	\lstinline[language=GLSL]|gl_MultiTexCoord0|
+ 	nun entfernt wurden, und man nun fast alle benötigten Werte entweder als generische Vertex-Attributes übergibt oder 
+ 	selber explizit als Uniform variablen definiert und setzt; Diese neue "`Freiheit der Semantik"' war eine große 
+ 	Inspiration, den Gedanken einer Unified Engine zu fassen;
 	
-	\subsubsection{Implemetation und Kombination gängiger visueller Effekte}
+	Es sollte mindestens ein OpenGL Kontext im Core Profile der Version 3.3 benutzt werden; Das Core Profile stellt sicher,
+	dass Routinen und Flags, die in der Spezifikation als deprecated gekennzeichnet sind, einen Fehler produzieren;
+	Auf diese weise wird die Programmierung mit nur der "`modernen"' Untermenge der OpenGL-API forciert;
+	Optional sollte ein OpenGL 4 Kontext erstellt werden können, sofern unterstützende Hardware existiert;
+	Wo es sinnvoll und angebracht war, sollten moderne Features von OpenGL verwendet werden;
+	Mehr dazu in Kapitel \ref{sec:usedOpenGLfeatures}.
+
 	
-		-vor allem tesselation, verweise auf entsprechende section
+	\item[Template-Engine]
+	Da GLSL\footnote{OpenGL Shading Language} und OpenCL C, die Sprachen, mit denen die GPU programmiert werden kann,
+	nicht objekt-orientiert sind, (zumindest in OpenGL 3 und OpenCL 1.0) keine Mechanismen zum Überladen von Funktionen
+	haben, und noch nichtmal eine \linebreak \lstinline[language=C]|#include|-Direktive existiert,
+	tendieren diese GPU-Programme, die sich einen erheblichen Anteil an ihrem Code teilen, zur Code-Vervielfachung in den 	
+	einzelnen Quelldateien;
+	Dies schränkt die Wartbarkeit und bequeme Änderbarkeit und zuweilen auch die Lesbarkeit enorm ein;\\
+	Abhilfe schafft hierbei die Nutzung einer String-Template-Engine namens \emph{Grantlee}\footnote{www.grantlee.org/};
+	Mit ihrer Hilfe lassen sich zur Laufzeit in Abhängigkeit von aktuellen Parametern angepasste GPU-Programme generieren,
+	die nur den aktuell nötigen Code enthalten;
+	Somit sind die generierten Programme lesbarer als wenn man sie über klassische bedingte Komplilierung 
+	(mit \lstinline[language=C]|#ifdef FEATURE_XY| ... \lstinline[language=C]|#endif|-Direktiven ) geschrieben hätte;
+	Weitere Einzeiheiten sind in \ref{sec:architecture:templateEngine} zu finden;
+
+	
+	\item[Implemetation und Kombination gängiger visueller Effekte]
+	Um dem softwaretechnischen Unterbau schließlich etwas Leben einzuhauchen, wurden einige visuelle Effekte unter
+	Nutzung von OpenGL3/4 implementiert; Dank der Template-Engine lassen sich alle Effekte -- sofern sinnvoll --
+	Zur Laufzeit in beliebiger Kombination hinzu- oder abschalten.
+	Die Effekte werden in Kapitel \ref{genericVisualEffects} dataillierter vorgestellt.
 	
 
-
-	\subsubsection{Buffer-Abstraktion}
-
+	\item[Buffer-Abstraktion]
 
 
-	\subsubsection{Template-Engine}
-	boilerplate, kombinierbarkeit, nach Möglichkeit lesbarkeit\\
-	exemplarischer code schnipsel
-		-  Im Zuge des Schwerpunktes auf GPU-Implementierung:
-		grantlee gegen boilerplate,zur generierung schlankerer programme als durch Präprozessordierktiven, 
-		 $\rightarrow$ einfachere Code- Inspection, verbesserung der lesbarkeit durch generierte, feature-spezifische 	
-		 programme,
-  		bessere struktur verwaltung des source codees
 
-	\subsubsection{Performance duch Implementierung auf der GPU mit modernen GPU-Computing-APIs}
+	
+
+	\item[Performance duch Implementierung auf der GPU mit modernen GPU-Computing-APIs]
 	auf die massive parallelität eingehen, die sowohl von visualler wie mechanischer domäne genutzt werden kann;
 	Performance-Schwerpunkt, Optimierung, auch hardware-abhängige, erwähnen, Gegenüberstellung zu alten OpenGL-nutzenden 	
 	GPUPU- Verfahren, die nicht scattern konnten in texturen rendern mussten und auch sonst etliche Nachteile hinnehmen 	
@@ -190,10 +218,10 @@ Die Entwicklung eines solchen \emph{Unified Frameworks}\footnote{Von Engine möc
 	
 	
 	
-	\subsubsection{Effiziente Verwendung von OpenCL}
+	\item[Effiziente Verwendung von OpenCL]
 	 hardware-spezifische bedingte compilings dank grantlee
 
-	\subsubsection{Weiteres}
+	\item[Weiteres]
 
 	 für vielseitig, flexible anwendung zur Laufzeit sollten keine 	Speicher-Lecks auftreten damit Funktionalität 
 	 kontrolliert heruntergefahren und neu initialisiert werden kann; 
@@ -204,4 +232,7 @@ Die Entwicklung eines solchen \emph{Unified Frameworks}\footnote{Von Engine möc
 
 	- möglichst hohe Konfiguriertbarkeit ohne ständigen recompile: config file
 
+\end{description}
 	
+	
+\clearpage

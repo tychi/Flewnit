@@ -1,12 +1,13 @@
 
 \label{sec:visualDomain}
 	
-Ein paar worte ueber die shading features, wie sie maskiert werden etc..
+Ein paar worte ueber die shading features, wie sie maskiert werden, SceneNodeVisitor etc..
 
 \subsubsection{Der LightingSimulator}
-	Nochmal drauf hinweisen, dass Rendering etwas generisches in diesem Framework ist, und wir leiber von Lichtsimulation sprechen sollten, auch wenn es monetan nicht photrealistisch ist ;)
+	Nochmal drauf hinweisen, dass Rendering etwas generisches in diesem Framework ist, und wir lieber von Lichtsimulation sprechen sollten, auch wenn es monetan nicht photrealistisch ist ;)
 
 \subsubsection{Die Lighting Simulation Pipeline Stages}
+	baseclass etc...
 	shadowmap gen stage, direct lighting stage, was noch in planung is etc..	
 
 \subsubsection{ShaderManager}
@@ -14,20 +15,46 @@ Ein paar worte ueber die shading features, wie sie maskiert werden etc..
 	der Erzeugten kontext, den vom user aktivierten rendering features etc pp
 
 \subsubsection{genutzte moderne OpenGL- Features}	
+	\label{sec:usedOpenGLfeatures}
+
+	\sectionlevelfour{Hintergrund:Batching}
+	PCIe-Bandbreite und -Latenz nicht überlasten durch immediate mode oder andere befehls-serien;
+	\todo[color=green]{referenz zu PCIe-Flaschenhals-stuff}
 
 	\sectionlevelfour{Uniform Buffers}
 	auch von BufferInterface abstrahiert, vorteile auflisten, aber auch stolperfallen: alignment etc)	
+	nutzen für transformationsmatrizen beim instancing und für beliebige lichtquekken
 
-	\sectionlevelfour{Hardware Tesselation}
-	basics des hardware features erwaehnen fuer den geneigten leser, raptor-modell erwaehnen und seinen 		
-	Aufbereitungsprozess, LOD, displacement mapping erlaeutern	
 	
 	\sectionlevelfour{Instancing}
-	InstanManager, InstangedGeometry vorstellen, konzept, wie es verwaltet wird, erklaeren
+	InstanManager, InstangedGeometry vorstellen, konzept, wie es verwaltet wird, erklaeren;
+	batching
 	
-	\todo{continue brainstorming}
+	\sectionlevelfour{Hardware Tesselation}
+	basics des GL4- hardware features erwaehnen fuer den geneigten leser, raptor-modell erwaehnen und seinen 		
+	Aufbereitungsprozess, LOD, displacement mapping erlaeutern	
+	
+	
+\subsubsection{Implementierte Effekte}
+	\label{sec:genericVisualEffects}
+%%-------------------------------------------------------------------------------------------------------
+\todo[color=green]{diesen klumbatsch in form bringen, mit bildern anreichern etc pp}
 
-	
+Zunächst zum Begriff "Mapping", der so oft auftaucht: Englisch "map"-"Landkarte", "to map"-"abbilden" Bedeutet in der Computergrafik meist die Abbildung eines Bildes auf eine Oberfläche nach einem bestimmten Algorithmus;
+
+- Beleuchtung durch beliebig viele Punkt- und Spot-Lichtquellen (also Lichtquellen mit eineme gerichteten Kegel, Scheinwerfer)
+
+- Shadow Mapping: Erzeugen eines bildes aus Tiefenwerten, anschließend vergleich der Tiefenwerte aus Kamerasicht mit denen aus Lichtquellensicht (der "shadow map", Schattenkarte), pixel im finalen Bild gilt als verdeckt wenn Tiefenwert aus Kamerasicht größer als der entsprechende Pixel in der shadow map, unverdeckt wenn nicht;
+
+- Normal Mapping: Verzerrung der Oberflächen-Normalen (Vektor Sekrecht zur Oberfläche) um relief-artige Geometriedetails zu simulieren, ohne dass tatsächlich diese feine Geometrie in der virtuellen Szene existiert; Dies spart Rechenleistung und Speicher im Vergelcih zu einer Szene, wo all dieses Detail tatächlich in der Geometrie vorhanden wäre; Anschauliches Anwendungsbeispiel: Illusion der feinen Geometrie von Rauhfasertapete auf einem schlichten Quadrat; Nachteil: Die geometrische Illusion brich bei flachen Betrachtungswinkeln ein, die Flachheit der eigentlichen, simplen Geometrie fällt dann auf; Die Information der verzerrten Normalen stammt ebenfall aus einem Bild, der "normal map"; Diesmal werden die Pixelwerte jedoch nicht als Farben oder Tiefenwerte, sondern als Abweichung von der unverzerrten Normalen interpretiert (rot->x-Achse;grün->y-Achse; blau->z-Achse); Da im Computer alles nur Zahlen sind und Semantik erst durch unsere Verwendung und Wahrnehmung erlangen, und da die Graphikkarten so weit flexibel/programmierbar geworden sind, dass man als Programmierer Kontrolle über derartige "Um-Interpretierung" hat, ist dies möglich;
+
+- Environment mapping: Der Trick, perfekt spiegelnde Materialen vorzugaukeln: Es wird in einer "Cube map" nachgeschaut, einer Sammlung von sechs bildern, wo jedes Bild eine Würfelseite repräsentiert; Die Reichtung der Normalen eines Pixels wird umgerechnet in eine Koordinaten, mit der in der Cube Map nachgeschaut wird; Dieser Frabwert fießt dann in die Farbe des Pixels des finalen Bildes ein; Vorteil: Dinge wie lackierte Autokarosserien lassen sich ganz gut vorgaukeln, mit recht geringem Rechenaufwand; Nachteil: Da für gewöhnlich nur in einem statischen Bild nachgeschaut wird, können dynamische Änderungen der Szene bei der "pseudo-spiegelung" nicht erfasst werden; Ein Objekt, welches sich nache eines autos bewegt, bewegt sich ein seiner "Spiegelung" nicht; Aus solchen Gründen sind in Cube maps oft nur sehr entfernte Dinge dargestellt: Horizong, Himmel, Wolken etc.; Diese Dinge ändern sich in der Realistät ja nicht so schnell, daher fällt der Nachteil beim environment mapping unter dieser Einschränkung nicht mehr so drastisch auf; Der Hintergrund, die orangene Dämmerung, ist gnau diese Cube map, die ich also sowohl für die Pseudo-Spiegelung als auch als "Füllmaterial" dort, wo ich keine Geometrie in der Szene habe, verwende;
+
+- Tesselation: Wie Bei Normal Mapping soll der wahrgenommene Detailgrad der Geometrie erhöht werden; Jedoch erzeugt die Tesselation "`echte"' Geometrie, in Abhängigkeit von der Entwerfnung eines Objekte zur Betracher-Kamera; Somit wird dort Geometrie erzeugt, wo sie nötig für den Detailgrad des aktuellen Bildes ist, und dort eingespart, wo sie momentan unnötig ist; Diese Technik hat nicht die Nachteile des Normal mappings; Jedoch Ist durch die Reine Erzeugung von Geometrie noch nicht viel gewonnen; Sinn bekommt diese neue  Geometrie wert dann, wenn sich auch wirklich mehr Datail mit ihr darstellen lässt; Erreicht wird dies durch eine sogenannte Displacement Map (frei Übersetzt "Verschiebungs-Karte", ein Bild, in dem Tiefenwerte der Hoch-detaillierten Geometrie gepeichert sind). Die neu erzeugte Geometrie wird also entlang der Normalen um den Betrag verschoben, wie in der Displacement Map eingetragen ist; Somit entsteht ein "tatsächliches Relief", im gegensatz zum Vorgegaukelten Relief beim Normal Mapping; MEhr Details erspare ich dir, z.b. Warum man Normal Mapping trotzdem immer noch für die Beleuchtung braucht, trotz der Tesselation und dem Displacement mapping;
+
+Anmerkung: Weil ich Tesselation so toll finde, habe ich mir das Velociraptor-3D-Modell aus dem Internet besorgt; Dieses hatte 5 Milloonen Dreiecke; Ich habe es mit einem Programm (was ich nicht selbst geschrieben habe, davon versteh ich leider noch viel zu wenig) herunterrechnen lassen, so  dass ein vereinfachtes Modell mit etwa 11000 Dreicken entstand, also ein etwa zweitausend mal simpleres Modell. Mit einem anderen Programm habe ich dann die Geometrie des komplexen Modells auf die des simplen Modells projeziert, die detailgrad-bedingte Distanz zwischen den Geometrien in ein Bild geschrieben; Dieses Bild ist die Displacement map für die Tesselation izur Darstellung in meinem eigenen Programm; Somit kann ich nun den Dinosaurier beinahe so detailliert darstellen, wir er im Originalmodell vorliegt, jedoch mit viel höheren Bildwiederholungsraten; 
+
+%%-------------------------------------------------------------------------------------------------------
 	  
 
 \clearpage

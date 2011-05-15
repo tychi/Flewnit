@@ -18,6 +18,7 @@
 
 		
 	\subsubsection{OpenGL3/4}
+	
 	- verwendung von mindestens OpenGL 3/3 core context, um legacy code schon zur compilezeit auszuschließen
     \subsubsection{OpenCL 1.0}
     	noch keine offenen openCL 1.1 treiber, außerdem keine features davon benötigt;
@@ -38,9 +39,20 @@
 \subsection{Die \emph{Unified Rendering Engine}}
 URE blubb
 
+\subsection{Die Simulator-Klassen}
+
+\subsection{Die SimulationPipelineStages}
+	shdow map gen, direct lighting, rendering features particlemechanics stage;
+	in planung: deferred rendering G-Bufferfill, deferred rendering shade, div. post processing stages
+
 \subsection{Die Manager-Klassen}
 blubb2
-\todo{evtl. andere reihenfolge}
+\todo[color=green]{evtl. andere reihenfolge}
+
+\subsection{Die Template-Engine}
+	\label{sec:architecture:templateEngine}
+	exemplarischer code schnipsel, refernz su shadermanager und CLProgramManager, erklärung wie man templat contex setzt, 	
+	vererbung etc;
     	
 \subsection{Die Buffer-Abstraktion}   	
  	die bombe, die cpu, ogl und ocl vereint, inclusive ping ponging etc.. fundamentale Klassensammlung fuer den Unified-Aspekt
@@ -69,7 +81,7 @@ weitere klassen/konzepte to go...
 \subsection{Status der Implementierung am Ende der BA}
 	
 	Features auflisten;
-	\todo{screenshots? oder lieber erst später,zusammen mit detaillierter erläuterung?}
+	\todo[color=green]{screenshots? oder lieber erst später,zusammen mit detaillierter erläuterung?}
 
 	großteils programmierte, aber ungenutzte/ungetestete features erwähnen (Deferred Rendering, Layered Rendering, 	
 	RenderTarget-Klasse, Partikel-Rigid bodies, verschiedene Fluid-Typen); 

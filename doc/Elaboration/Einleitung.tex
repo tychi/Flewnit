@@ -30,9 +30,9 @@ Der Wunsch nach einer "`Unified Rendering Engine" erwächst aus eigener Erfahrun
 Hierdurch wird die gemeinsame Nutzung beider Domänen von Daten wie z.B. Geometrie nahezu unmöglich; Ferner müssen für eine die beiden Engines benutzende Anwendung diese Klassen mit ähnlicher Semantik durch neue Adapterklassen gewrappt werden,
 um dem Programmier der eigentlichen Anwendungslogik den ständigen Umgang mit verschiedenen Repräsentationen und deren Synchronisation zu ersparen.\\
 
-\todo{evtl. beispielschema erstellen für zwei klassischee transformationsklassen und adapter vs. unified transformation}
+\todo[color=green]{evtl. beispielschema erstellen für zwei klassischee transformationsklassen und adapter vs. unified transformation}
 
-Die Aussage "`Photorealistische Computergraphik ist die Simulation von Licht"' \todo{Zitat einfügen? Stefan Müller, PCG? ;)} hat mich wohl auch inspiriert, den Simulationsbegriff allgemeiner aufzufassen und das Begriffspaar "Rendering und Physiksimulation"' zu hinterfragen\footnote{Auch wenn dieses Framework nicht vornehmlich auf physikalisch basierte, also photorealistische Beleuchtung ausgelegt ist, soll diese aufgrund des generischen Konzepts jedoch integrierbar sein.}.
+Die Aussage "`Photorealistische Computergraphik ist die Simulation von Licht"' \todo[color=green]{Zitat einfügen? Stefan Müller, PCG? ;)} hat mich wohl auch inspiriert, den Simulationsbegriff allgemeiner aufzufassen und das Begriffspaar "Rendering und Physiksimulation"' zu hinterfragen\footnote{Auch wenn dieses Framework nicht vornehmlich auf physikalisch basierte, also photorealistische Beleuchtung ausgelegt ist, soll diese aufgrund des generischen Konzepts jedoch integrierbar sein.}.
 
 Es sei bemerkt, dass weder eine Hypothese bestätigt noch widerlegt werden sollte, geschweige denn überhaupt eine (mir bekannte) Hypothese im Vorfeld existierte; Es sprechen etliche Argumente für eine Vereinheitlichung der Konzepte  (geringerer Overhead durch Wegfall der Adapterklassen, evtl. Speicherverbrauch durch z.T. gemeinsame Nutzbarkeit von Daten), aber auch einige dagegen (Komplexität eines Systems, Anzahl an theoretischen Kombinationsmöglichkeiten steigt, viele sind unsinnig und müssen implizit oder explizit ausgeschlossen werden).\\
 
@@ -63,22 +63,22 @@ Die vielseitigen didaktischen Aspekte hatten bei dieser Themenwahl also ein grö
 Warum ich mich bei der exemplarischen Implementierung einer mechanischen Simulationsdomäne für eine partikelbasierte Fluidsimulation entschieden habe, hat viele Gründe:
 
 Wohingegen Rigid Body-Simulation in aktuellen Virtual-Reality-Anwendungen wie Computerspielen schon eine recht große Verbreitung erreicht hat, sucht man eine komplexere physikalisch basierte Fluidsimulation, die über eine 2,5 D- Heightfield-Implementation hinausgehen, noch vergebens; 
- 	\todo{Muss ich das irgendwie belegen? Ich wüsste nicht, wie/wo ;( } 
+ 	\todo[color=green]{Muss ich das irgendwie belegen? Ich wüsste nicht, wie/wo ;( } 
 Das Ziel, eine deratige Fluidsimulation in einen Anwendungskontext zu integrieren, der langfristig über den einer Demo hinausgehen soll, hat also einen leicht pionierhaften Beigeschmack.
 
 Mir ging es um eine Simulation, welche die Option eriner möglichst breiten Integration in die virtuelle Welt bietet; Wohingegen sich Grid-basierte Verfahren aufgrund Möglichkeit zur Visualisierung per Ray-Casting sehr gut zur Simulation von Gasen eignen, 
-\todo{referenz auf Peschel, evtl weitere eigenschaften wie curl und sicherstellung der inkompressibilität}
+\todo[color=green]{referenz auf Peschel, evtl weitere eigenschaften wie curl und sicherstellung der inkompressibilität}
 sind Partikel-basierte Verfahren eher für Liquide geeignet, da bei Grid-basierten Verfahren die Volumen-Erhaltung eines Liquids durch zu Instabilität und physikalischer Inplausibilität neigenden Level-Set-Berechnungen sichergestellt werden muss. 
-\todo{referenz auf gpu-gems-gridbased-zeug, evtl jos stam} 
+\todo[color=green]{referenz auf gpu-gems-gridbased-zeug, evtl jos stam} 
 Liquide beeinflussen aufgrund ihrer Dichte Objekte ihrer Umgebung im Alltag mechanisch stärker als Gase; Aufgrund dieser erhöhten gegenseitigen Beeinflussung von Fluid und Umgebung bevorzugte ich das Verfahren, welches Liquide besser simuliert.
 
 Die Partikel-Domäne bietet außerdem eine theoretisch unendlich große Simulationsdomäne, wohingegen in der Grid-Domäne der Simulationsbereich auf das Gebiet beschränkt ist, welches explizit durch Voxel repräsentiert ist.
 Ferner lassen sich relativ einfach auch Rigid Bodies durch einen partikelbasierten Simlator simulieren, indem eine Repräsentation der Geometrie des Rigid Bodies als Partikel gewählt wird; 
-\todo{referenz auf thomas steil und GPU gems}
+\todo[color=green]{referenz auf thomas steil und GPU gems}
 
-Bei grid-basierten Verfahren lässt sich die Simulations-Domäne z.B. als Sammlung von 3D-Texturen oder nach einem bestimmten Schema organisierten 2D-Texturen repräsentieren; Hiermit wird die Simulation auf der GPU mithilfe von Graphik-APIs wie OpenGL ohne weiteres möglich, und wurde auch schon erfolgreich implementiert \todo{ref auf peschel}. Mein Anliegen war jedoch, explizit die Features moderner Graphikhardware und sie nutzender GPGPU-APIs wie Nvidia CUDA, Microsoft's DirectCompute oder OpenCL zu verwenden; Die Partikel-Domäne stellt damit eine größere Abgrenzung zu gewohnten Workflows auf der GPU dar. Vor allem die \emph{Scattered Writes}, die Graphik-Apis nicht oder nur sehr indirekt ermöglichen,  
+Bei grid-basierten Verfahren lässt sich die Simulations-Domäne z.B. als Sammlung von 3D-Texturen oder nach einem bestimmten Schema organisierten 2D-Texturen repräsentieren; Hiermit wird die Simulation auf der GPU mithilfe von Graphik-APIs wie OpenGL ohne weiteres möglich, und wurde auch schon erfolgreich implementiert \todo[color=green]{ref auf peschel}. Mein Anliegen war jedoch, explizit die Features moderner Graphikhardware und sie nutzender GPGPU-APIs wie Nvidia CUDA, Microsoft's DirectCompute oder OpenCL zu verwenden; Die Partikel-Domäne stellt damit eine größere Abgrenzung zu gewohnten Workflows auf der GPU dar. Vor allem die \emph{Scattered Writes}, die Graphik-Apis nicht oder nur sehr indirekt ermöglichen,  
 und die von so vielen Algorithmen benötigt werden, sollten zum Einsatz kommen dürfen.
-\todo{'indirekt' erläutern? transform feedback buffer, scattering über  gl\_Position und ein-pixel point rendering, siehe DA von Sinje Thiedemann?} 
+\todo[color=green]{'indirekt' erläutern? transform feedback buffer, scattering über  gl\_Position und ein-pixel point rendering, siehe DA von Sinje Thiedemann?} 
 
 Die Fluidsimulation stellt einen relativ "`seichten"' Einstieg in die Welt der GPU-basierten Echtzeit-Physiksimulation dar:
 
@@ -89,19 +89,19 @@ Die Fluidsimulation stellt einen relativ "`seichten"' Einstieg in die Welt der G
  	Nachbarpartikeln die \linebreak Beschleunigungsstruktur des Uniform Grid besonders gut, wohingegen sich für Simulation 
  	von Festkörpern eher komplexere Beschleunigungsstrukturen wie Oct-Trees, Bounding Volume-Hierarchies oder kD-Trees 
  	anbieten, da diese sich besser an die inhomogenen Strukturen, Ausmaßen und Verteilungen der Objekte anpassen.
- 		\todo{Wo zum Henker soll ich dazu nun wieder ne Referenz herauskramen? Ich habe leider keine idee, außer zig 	
+ 		\todo[color=green]{Wo zum Henker soll ich dazu nun wieder ne Referenz herauskramen? Ich habe leider keine idee, außer zig 	
  		allgemeine Papers und Übcher zu überfliegen Zeitproblem!... das ist der 
  		nachteil, wenn man so viel recherchiert hat, zunächst mal fürs Verständnis und oder oder den ganz groben überblick, 
  		und nicht für eine umfassende wissenschaftliche Dokumentation: All den Input, der nur als Hintergrundwissen dienen 
  		sollte, jetzt noch wieder zu finden... :( Wie kann ich mit diesem allgemeinen Problem umgehen?}; 	
  	Letztere Strukturen lassen sich schwerer auf die GPU mappen, welche als Stream-Prozessor nicht optimal für komplexe 
 	Kontrollflüsse und Datenstrukturen geeignet ist.
-		\todo{Referenz eines guten Artikels zu GPGPU finden;}
+		\todo[color=green]{Referenz eines guten Artikels zu GPGPU finden;}
 	\item Die Partikel lassen sich direkt als OpenGL-Vertices per Point Rendering darstellen, was während der 
 	Entwicklungsphase eine einfache Visualisierungmöglichkeit bietet;
 	\item Die gemeinsame Nutzung von Geometrie sowohl zur mechanischen Simulation als auch zur Visulalisierung mit OpenGL
 	ist hiermit ermöglicht. OpenCL ermöglicht diese gemeinsame Nutzung explizit über gemeinsame Buffer-Nutzung.
-		\todo{ref auf späteren abschnitt oder OpenCL spec}
+		\todo[color=green]{ref auf späteren abschnitt oder OpenCL spec}
 	\item Nicht zuletzt ist die Mathematik bei Partikel-Simulation einfacher: Die \emph{"`eulersche Sicht"'} auf die 
 	Simulationsdomäne beim Grid-Ansatz erfordert einen Advektionsterm, der dank der \emph{"`lagrange'schen Sicht"'} bei
 	Partikeln wegfällt; Außerdem erfordern Partikelsysteme keine Berechnungen zur Sicherstellung der
@@ -110,7 +110,7 @@ Die Fluidsimulation stellt einen relativ "`seichten"' Einstieg in die Welt der G
 		Das heißt nicht, dass die Inkompressibilität automatisch gewährleistet ist; Im Gegenteil 
 		hat man öfter mit "`Flummi-artigem"' Verhalten des Partikel-Fluids zu tun, weil diese eben \emph{nicht} ohne 
 		weiteres forcierbar ist;
-	} \todo{hier bin ich mir nicht mal sicher, ob  das stimmt; meine Erinnerung ist nur sehr vage, diese 
+	} \todo[color=green]{hier bin ich mir nicht mal sicher, ob  das stimmt; meine Erinnerung ist nur sehr vage, diese 
 		Fragestellung wurde in meiner Literatur höchstens ganz marginal behandelt; Was tun? Aussage weg lassen, mich tod-
 		suchen, oder diese gewagte These nach bestem Wissen und Gewissen stehen lassen?} 
 	oder Bewahrung des Volumens.
