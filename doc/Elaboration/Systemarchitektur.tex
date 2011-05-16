@@ -1,17 +1,12 @@
 
 \label{sec:systemArchitecture}
 
-\subsection{Entwicklungsumgebung}
-
-	Linux, CMake, git, Eclipse ; 
-	gründe für auswahl:
-		linux:  paketmanager für dependencies, unzufriedenheit mit microsofts stiefmütterlicher Behandlung von 64bit-		
-			programmen, nicht zuletzt wunsch nach Vertiefung der kenntnisse der linux-welt
 	
-	cross platform build system, moderne versionsverwaltung, 	
  
 
 \subsection{Klassendiagramm}
+
+
 
 \subsection{Dependencies}
 	\label{sec:dependencies}
@@ -20,10 +15,14 @@
 	\subsubsection{OpenGL3/4}
 	
 	- verwendung von mindestens OpenGL 3/3 core context, um legacy code schon zur compilezeit auszuschließen
+	
+	
     \subsubsection{OpenCL 1.0}
     	noch keine offenen openCL 1.1 treiber, außerdem keine features davon benötigt;
     	c++-wrapper genutzt, auch von khronos-seiten beziehbar;
     	Gegenüberstellung zu CUDA, vor- und nachteile auflisten, insbesondere das problem ,dass esk ein 1D-texturen in OpenCL gibt, und man sich entscheiden muss zwischen generischem buffer und Textur, man also nicht hin und her-interpretieren kann wie in CUDA;
+    
+    
     \subsubsection{GLFW}
     	Fenstermanager + input
     	explizite GL3 core profile creation, einfaches fullscreen, multisampling, keine mainloop, explizites input pulling, 
@@ -34,19 +33,29 @@
     \subsubsection{ogl math}
     	leichte, aber doch recht maechtige mathe-bibliothek
     \subsubsection{TinyXML}
+    - möglichst hohe Konfiguriertbarkeit ohne ständigen recompile: parsing von XML config file
     	
+ 
+\subsection{BasicObject und Memory Tracking}
+	 für vielseitig, flexible anwendung zur Laufzeit sollten keine 	Speicher-Lecks auftreten damit Funktionalität 
+	 kontrolliert heruntergefahren und neu initialisiert werden kann; 
+	 	- memory tracking, (erklären, warum nicht tracking mit Valgrind)
+ 
     	
 \subsection{Die \emph{Unified Rendering Engine}}
 URE blubb
 
 \subsection{Die Simulator-Klassen}
 
+
 \subsection{Die SimulationPipelineStages}
 	shdow map gen, direct lighting, rendering features particlemechanics stage;
 	in planung: deferred rendering G-Bufferfill, deferred rendering shade, div. post processing stages
 
+
 \subsection{Die Manager-Klassen}
-blubb2
+Für gemeinsamen zugriff sollten viele Daten für andere Klassen verfügbar sein (Buffer, Rendering Results...); 	
+Realisierung über Manager-Singleton-Klassen und Zugriff über Map-Container;
 \todo[color=green]{evtl. andere reihenfolge}
 
 \subsection{Die Template-Engine}
