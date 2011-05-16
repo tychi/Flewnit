@@ -54,8 +54,72 @@ blubb2
 	exemplarischer code schnipsel, refernz su shadermanager und CLProgramManager, erklärung wie man templat contex setzt, 	
 	vererbung etc;
     	
-\subsection{Die Buffer-Abstraktion}   	
- 	die bombe, die cpu, ogl und ocl vereint, inclusive ping ponging etc.. fundamentale Klassensammlung fuer den Unified-Aspekt
+\subsection{Die Buffer-Abstraktion}  
+	\label{sec:architecture:BufferAbstraction} 	
+ 	die bombe, die cpu, ogl und ocl vereint, inclusive ping ponging etc.. 
+ 	fundamentale Klassensammlung fuer den Unified-Aspekt
+ 	
+ 	\begin{figure}[!h]
+  		\begin{tabular}
+  		{
+  		 l  l | c | c | c |
+  		}
+																	\cline{3-5}
+  									&								&	\multicolumn{3}{ c | }{Context} \\ 
+  																	\cline{3-5}
+									&								& 	Host 	& 	OpenGL 	& 	OpenCL	\\
+    	\noalign{\hrule}								
+    	\multicolumn{1}{|c|}{
+    		generic Buffer
+    	}							& 								
+    		&	{\color{green}\checkmark} 	&	{\color{red}x}		& 	{\color{green}\checkmark}	\\ 
+    	
+    	\noalign{\hrule}								
+    	\multicolumn{1}{|c|}{
+    		\multirow{4}{*}{OpenGL Buffers}
+    	}							& Vertex Attribute Buffer		
+    		&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{orange}o}	\\  
+    								\cline{3-5}
+    	\multicolumn{1}{|c|}{}		& Vertex Index Buffer			
+    		&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{orange}o}	\\  
+    								\cline{3-5}
+    	\multicolumn{1}{|c|}{}		& Uniform Buffer
+    		&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{orange}o}	\\ 
+    								\cline{3-5} 
+    	\multicolumn{1}{|c|}{}		& Render Buffer					
+    		&	{\color{red}x} 	&	{\color{green}\checkmark}		& 	{\color{green}\checkmark}	\\ 
+    
+   		\noalign{\hrule}								
+   		\multicolumn{1}{|c|}{
+    		\multirow{4}{*}{Textures} 
+   		}							& 1D Texture					
+   			&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{red}x}	\\ 
+    								\cline{3-5}
+		\multicolumn{1}{|c|}{}		& 2D Texture				
+			&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{green}\checkmark}	\\ 
+									\cline{3-5}
+		\multicolumn{1}{|c|}{}		& 3D Texture		
+			&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{green}\checkmark}	\\ 
+									\cline{3-5}
+		\multicolumn{1}{|c|}{}		& Special Texture				
+			&	{\color{orange}?} 	&	{\color{green}\checkmark}		& 	{\color{orange}?}	\\ 
+
+
+    	\noalign{\hrule}
+     
+     	
+  		\end{tabular}	
+  	
+  		\caption{		
+  			Verschiedene Buffertypen und ihre Verfügbarkeit in verschiedenen Kontexten \\	
+  			Legende: \\
+			{\color{green}\checkmark}	$\rightarrow$ nativ unterstützt;
+			{\color{orange}o}	$\rightarrow$ kompatibel;
+			{\color{red}x}	$\rightarrow$ nicht unterstützt;	\\
+			{\color{orange}?}	$\rightarrow$ Unterstützung abhängig von weiteren Parametern;	
+		}
+	
+  	\end{figure}
  
 \subsection{Das WorldObject}
 	Basis-Klasse fuer alles was unified simuliert wird: pure viuelle objekt, uniform grid, fluid, rigid body etc..

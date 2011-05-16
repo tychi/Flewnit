@@ -4,8 +4,8 @@
 \usepackage{hyperref}						% Verlinkung von Textstellen
 \usepackage{fancyhdr}						% eigener Satzspiegel
 \usepackage{hypcap} 						% korrekte Verlinkung von Bildern o..
-\usepackage{color}						% Einbindung von Farbe
-\usepackage{alltt}						% Umschaltung auf typewriter, z.B. fr Quellcode
+\usepackage[usenames]{color} 				% Einbindung von Farbe
+\usepackage{alltt}							% Umschaltung auf typewriter, z.B. fr Quellcode
 \usepackage{enumerate}						% Anpassung nummerierter Listen durch optionalen Parameter
 
 
@@ -20,28 +20,32 @@
 \usepackage{amsmath}						%
 
 \usepackage{moreverb}						% Erweiterung der verbatim-Umgebung (zum Einbinden von Code)
-\usepackage{array}
+\usepackage{array}							% Tabellen
 \usepackage{url}
 \usepackage{tabularx}
 
 %\usepackage[disable]{todonotes}
 \usepackage{todonotes}
 
+
 %-----------------------------------------------------------------------------------------------------------
+%own stuff, definitions, haxx, etc. ;)
 
-
-\setcounter{secnumdepth}{7} 	%seven levels of nesting
-\setcounter{tocdepth}{7}%
-\usepackage{subsections} 	%some definitions for subsubsubsections etc..
+\setcounter{secnumdepth}{7} %seven levels of nesting
+\setcounter{tocdepth}{7}	%
+\usepackage{subsections} 	%some definitions for sectionlevelfour up to sectionlevelseven etc ;) need that deep nesting ;(
 
 
 
 \graphicspath{{pictures/}}
 
 
-%-----------------------------------------------------------------------------------------------------------
+%stuff to have GLSL syntax highlighing in code listing
 \usepackage{listings}
 \input{GLSLSyntaxHighlight.tex}
+
+\usepackage{multirow}
+
 
 %-----------------------------------------------------------------------------------------------------------
 
