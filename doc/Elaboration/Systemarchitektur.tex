@@ -1,7 +1,97 @@
 
 \label{sec:systemArchitecture}
 
+Dieses Kapitel soll ein Gefühl für die Komponenten von \emph{Flewnit} und 
+ihre Zusammenhänge vermitteln. Die Komponenten "`in Aktion"' werden im Detail im Verlauf des Kapitels 
+\ref{sec:simulation} beschrieben.
+
+Das System wurde in C++ als (wahlweise statisch oder dynamisch zu linkende) Bibliothek implementiert.
+Der Code der GPU-Programme ist in GLSL bzw. OpenCL C verfasst.
+
+\subsection{Dependencies}
+	\label{sec:dependencies}
 	
+	Zunächst sollen die verwendeten Third-Party-Bibliotheken kurz vorgestellt werden:
+
+	\begin{description}
+		\item[OpenGL3/4]
+		Die schon mehrfach erwähnten modernen Versionen der \linebreak \emph{Open Graphics Library},
+		der offenen API der Khronos Group zur \linebreak hardwarebeschleunigten Graphik-Programmierung 
+		auf Basis der Dreiecks-Rasterisierung.
+		\todo[color=green]{evtl treffenderen Ausdruck finden: Scanline-basiert oder was auch immer}
+		Um die Programmierung ohne Legacy-Routinen nicht erst zur Laufzeit über einen OpenCL-Error
+		durch Verwendung eines Core-Profiles zu erzwingen, gibt es einen OpenGL- Header
+		namens "`gl3.h"'\footnote{beziehbar unter http://www.opengl.org/registry/},
+		der in Kombination mit der entsprechenden Präprozessor-Definition
+		\lstinline[language=C]|#define GL3_PROTOTYPES 1| schon zur Compile-Zeit nur die non-deprecated
+		Routinen zur Verfügung stellt.
+		
+     	\item[OpenCL 1.0]
+	    Die \emph{Open Computing Language}, erste Version der noch jungen API für massiv parallele Programmierung
+	    \footnote{die GPGPU-Computing einschließt}, wie OpenGL von der Khronos Group verwaltet; 
+	    sie stellt den ersten offenen Standard für GPGPU dar, d.h., die Verwendung der API ist nicht mehr an eine
+	    bestimmte Hardware (wie bei Nvidia CUDA) oder ein bestimmtes Betriebssystem (wie Microsofts DirectCompute)
+	    gebunden.
+	    
+	    Zur Zeit der Implementierung waren noch keine Non-Developer-Treiber für OpenCL 1.1 verfügbar, 
+	    außerdem gab es kein Feature dieser Version, welches ich dringend benötigt hätte.
+	    Deshalb habe ich die Version 1.0 verwendet.
+	    
+	    Es gibt einen C++ -Wrapper der C-API, welcher stark auf C++-Templates basiert und in einer einzigen Headerdatei 
+	    implementiert ist. Dieser ist direkt von der Khronos-Homepage\footnote{http://www.khronos.org/registry/cl/} 	
+	    beziehbar. Diesen Wrapper habe ich verwendet, da er die Nutzung der API wesentlich eleganter macht.
+	    
+    	
+   		\item[GLFW 2.7]
+		Wie auf Seite \pageref{focus:dependencies} angedeutet, waren mir folgende Dinge wichtig, damit die Einsetzbarkeit
+		des Frameworks in professionelleren Kontexten nicht schon im Vorfeld verbaut ist:
+		\begin{itemize}
+			\item Option auf Fullscreen
+			\item Option auf Multisampling
+			\item Die Möglichkeit der Erstellung eines OpenGL-Kontextes einer frei wählbaren Version 
+			mit Option zwischen Core- und Compatibility-Profile
+			\item Option auf "`\emph{Mouse Grab}"', so dass man wie in einem Computerspiel mit ausgeblendetem Mauszeiger
+			nur durch Bewegung der Maus ohne Bildschirm-/Fenster-Grenzen die virtuelle Kamera rotieren kann;
+			\item "`Input events"', d.h. Aktualisierungen von Benutzereingaben sollen häufig und mit minimaler 
+			Latenz geschehen, außerdem so unabhängig wie möglich von der Framerate sein;
+			Nach möglichkeit sollten Input-Updates zumindest "aktiv abfragbar" sein 
+			(im Gegensatz zum passiven Warten darauf, dass von der Input-Library eine Callback-Funktion 
+			aufgerufen wird)
+			\item Es soll volle Kontrolle über die "Render-Loop" geben, so dass man nicht 
+			den Kontrollfluss an eine Funktion übergibt, die womöglich nie zurückkehrt und weiteren Kontrollfluss
+			durch das Benutzerprogramm	nur über Callback-Funktionen ermöglicht
+			(wie \lstinline[language=C]|glutEnterMainLoop()| beim in die Jahre gekommenen \emph{GLUT}).
+			Ein derartiges Konstrukt ist einer
+			Engine nicht würdig und verhindert womöglich sauberes Herunterfahren und Neu-Initialisierung,
+			wie es z.B. beim Wechseln einer Szene oder eines fundamentalen globalen Settings nötig sein könnte.	
+		\end{itemize}
+		\emph{GLFW}\footnote{http://www.glfw.org/} in der Version 2.7, die zum Zeitpunkt der Implementation aktuellste 
+		stabile	Version, erfüllt diese Forderungen, und findet damit in \emph{Flewnit} Einsatz sowohl im Fenster- als auch 	
+		im Input-Manager. Die Timing-Funktionalität wird ebenfalls von GLFW übernommen.
+		
+    	
+    	\item[GLM]
+    	leichte, aber doch recht maechtige mathe-bibliothek
+    	
+    	\item[Grantlee]
+       		die string template engine die CL und GL code erzeugt
+       		
+    	\item[assimp]
+    	
+
+		\item[boost filesystem]
+    	
+   		\item[TinyXML]
+    	- möglichst hohe Konfiguriertbarkeit ohne ständigen recompile: parsing von XML config file
+	
+	\end{description}	
+
+	
+	
+
+    
+
+    	
  
 
 \subsection{Klassendiagramm}
@@ -13,34 +103,14 @@
 \end{figure}
 
 
+\begin{figure}[!h]
+	 \includegraphics[width=\textwidth]{Overview_Flewnit_Architecture_After_Implementation2.pdf}
+	\caption{Klassendiagramm des Gesamtsystems, Teil 2}
+	\label{fig:ClassDiagOverview1}
+\end{figure}
 
-\subsection{Dependencies}
-	\label{sec:dependencies}
 
-		
-	\subsubsection{OpenGL3/4}
-	
-	- verwendung von mindestens OpenGL 3/3 core context, um legacy code schon zur compilezeit auszuschließen
-	
-	
-    \subsubsection{OpenCL 1.0}
-    	noch keine offenen openCL 1.1 treiber, außerdem keine features davon benötigt;
-    	c++-wrapper genutzt, auch von khronos-seiten beziehbar;
-    	Gegenüberstellung zu CUDA, vor- und nachteile auflisten, insbesondere das problem ,dass esk ein 1D-texturen in OpenCL gibt, und man sich entscheiden muss zwischen generischem buffer und Textur, man also nicht hin und her-interpretieren kann wie in CUDA;
-    
-    
-    \subsubsection{GLFW}
-    	Fenstermanager + input
-    	explizite GL3 core profile creation, einfaches fullscreen, multisampling, keine mainloop, explizites input pulling, 
-    	mouse grab, alles viel besser als GLUT :)
-    \subsubsection{Grantlee}
-       die string template engine die CL und GL code erzeugt
-    \subsubsection{assimp}
-    \subsubsection{ogl math}
-    	leichte, aber doch recht maechtige mathe-bibliothek
-    \subsubsection{TinyXML}
-    - möglichst hohe Konfiguriertbarkeit ohne ständigen recompile: parsing von XML config file
-    	
+
  
 \subsection{BasicObject und Memory Tracking}
 	 für vielseitig, flexible anwendung zur Laufzeit sollten keine 	Speicher-Lecks auftreten damit Funktionalität 

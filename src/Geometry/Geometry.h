@@ -88,15 +88,10 @@ public:
 
 	/*
 	 * Render the geometry in the classic way, i.e. usually in the visual domain with OpenGL.
-	 *
-	 * @param 	currentStage to determine for the geometry what to to; If the backtrack
-	 * 			to the sim. stage is really necessary for geometry, is not yet determined,
-	 * 			but in doubt the more information, the better, as the several and generic
-	 * 			simulation domains can become quite complex and one could at least use the backtrack
-	 * 			for error checking.
-	 * @param	currentUsingSuboject needed for getting associated MAterial an WorldObject (for transformation matrix)
 	 * @param	numInstances if <=1, default non-instanced rendering with subobject query for matrix etc.;
 	 * 			if >1, then rely on the fact that the method is called by an InstanceManager and don't care about matrices etc;
+	 * @param	desiredGeomRep currently unused, maybe oboloet; TODO re-think about this param, possibly delete
+
 	 */
 	virtual void draw(
 			//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
@@ -105,14 +100,6 @@ public:
 
 protected:
 	GeometryRepresentation mGeometryRepresentation;
-
-	//following became obsolte:
-	//if the Geometry is shared by several sim. domains, is has several Subobjects to backtrack:
-	//geometry can be coupled that hard to a subobject, as if one wants to use a VBO for several
-	//draws per frame, one will use instancing :D.
-	//SubObject* mOwningSubObjects[__NUM_SIM_DOMAINS__];
-	//friend class SubObject;
-	//void setOwningSubObject(SimulationDomain sd, SubObject* so){mOwningSubObjects[sd]= so;}
 
 };
 

@@ -245,7 +245,7 @@
           cObjectGenericFeatures[ ownParticleObjectID ].massPerParticle );
 
 
-      float accellRange = 0.01f;
+      float accellRange = 0.08f;
       float4 ownAccelerationNew =  
         clamp
 	(

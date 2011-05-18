@@ -11,14 +11,14 @@ Dieser Umstand war von Vornherein bekannt, und die Versuchung ist stark, wie in 
 Dieser Versuchung wurde versucht, nur dort nachzugeben, wo die negativen Auswirkung auf die Konsistenz des Gesamtsystems lokal bleiben, und so nicht "`Hacks"' sich irreversibel durch das gesamte System ziehen.\\
 
 Letztendlich wurden exemplarisch für die Nutzung in  der visuellen Simulationsdomäne einige gängige visuelle Effekte einer Graphik-Engine implementiert, wie  Shadow Mapping, Normal Mapping, Environment Mapping, Displacement Mapping und dynamisches LOD. Es wurden moderne OpenGL- und Hardware-Features wie Instancing, Uniform Buffers und Hardware-Tesselation verwendet. Schwerpunkt war hier der Einsatz einer Template-Engine, damit
-\begin{enumerate}
+\begin{itemize}
 	\item Boilerplate-Code in den Shadern vermieden wird und
 	\item Effekte beliebig (sinnvoll) nach Möglichkeit zur Laufzeit miteinander kombinierbar sind
-\end{enumerate}
-. Mehr dazu in Kapitel \ref{sec:visualDomain}\\
+\end{itemize}
+Mehr dazu in Kapitel \ref{sec:visualDomain}\\
 In der mechanischen Simulationsdomäne wurde eine partikelbasierte Fluidsimulation mit OpenCL auf Basis von Smoothed Particle Hydrodynamics implementiert. Mehr dazu in Kapitel \ref{sec:mechanicalDomain}.\\
 
-Das System trägt den Namen "`Flewnit"', eine bewusst nicht auf den ersten Blick erkennbar sein sollende\footnote{Es soll der generalistische Ansatz des Frameworks nicht in den Hintergrund gedrängt werden.} Kombination der Worte "`Fluid"', in Anspielung auf den urspünglichen Zweck einer Bibliothek zur Fluidsimulation und "`Unit"', in Anspielung auf "`Unity"'-"`Einheit"'. Zufälligerweise ist das $Nit$ auch noch die englische Einheit für die Leuchtdichte, $Cd \over m^2$.
+Das System trägt den Namen "`Flewnit"', eine bewusst nicht auf den ersten Blick erkennbar sein sollende\footnote{Es soll der generische Ansatz des Frameworks nicht in den Hintergrund gedrängt werden.} Kombination der Worte "`Fluid"', in Anspielung auf den urspünglichen Zweck einer Bibliothek zur Fluidsimulation und "`Unit"', in Anspielung auf "`Unity"'-"`Einheit"'. Zufälligerweise ist das $Nit$ auch noch die englische Einheit für die Leuchtdichte, $Cd \over m^2$.
 
 
 \subsection{Motivation}
