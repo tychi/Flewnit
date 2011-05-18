@@ -215,7 +215,7 @@ void PingPongBuffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)th
 {
 	assert("PingPongBuffer::operator=() forbidden due to too much ambiguity; assign desired pingpong managed buffers directly!"&&0);
 }
-void PingPongBuffer::copyCLFrom(const ComputeBufferHandle& bufferToCopyContentsFrom)throw(BufferException)
+void PingPongBuffer::copyCLFrom(ComputeBufferHandle& bufferToCopyContentsFrom)throw(BufferException)
 {
 	assert("PingPongBuffer::operator=() forbidden due to too much ambiguity; assign desired pingpong managed buffers directly!"&&0);
 }

@@ -90,8 +90,10 @@
 
       __global uint* gLocallyScannedTabulatedValues, //gLocallyScannedSimWorkGroupCount, NUM_TOTAL_ELEMENTS_TO_SCAN  elements 
       __global uint* gPartiallyGloballyScannedTabulatedValues, //NUM_ELEMENTS__GLOBAL_SCAN elements
-      __global uint* gSumsOfPartialGlobalScans   //at least NUM_COMPUTE_UNITS_BASE2_CEILED + 1  elements;
-                                                 //+1 because this kernel writes out the total sim work group count                                                 
+      __global uint* gSumsOfPartialGlobalScans,   //at least NUM_COMPUTE_UNITS_BASE2_CEILED + 1  elements;
+                                                 //+1 because this kernel writes out the total sim work group count 
+      __global uint* gTotalSimWorkGroupCount //only one element;
+                                                                                               
     )
     {
       __local uint lScannedSumsOfPartialGlobalScans [ PADDED_STRIDE ( NUM_COMPUTE_UNITS_BASE2_CEILED )];
@@ -103,8 +105,15 @@
       
       //check if we actually have more than one compute units, otherwise the scan would not be called and hence the first element
       //in lSumsOfPartialScansOfSumsOfGlobalRadixCounts wouldn't be zero and corrupt the offsetting; we have to catch this situation.
-      #if NUM_COMPUTE_UNITS_BASE2_CEILED > 1
-      
+      {% ifequal numComputeUnits_Base2Ceiled "1" %}
+        if(lwiID == 0)
+        {
+          lScannedSumsOfPartialGlobalScans[ 0 ] =  0;
+          //write the total count to global memory
+          lTotalSimWorkGroupCount = gSumsOfPartialGlobalScans[ 0 ];
+        }
+      {% endifequal %}
+      {% ifnotequal numComputeUnits_Base2Ceiled "1" %}
         if(lwiID < (NUM_COMPUTE_UNITS_BASE2_CEILED) )
         { 
           //copy the tiny array to be scanned in order to yield the final offset and total count to local memory:
@@ -121,25 +130,19 @@
         //(compared to a simple sequential scan), but i wanna stay general and not optimize for a single graphics card ;)
         
         scanExclusive(lScannedSumsOfPartialGlobalScans, & lTotalSimWorkGroupCount, NUM_COMPUTE_UNITS_BASE2_CEILED, lwiID );
-          
-  	//only ONE work item of the whole kernel shall write out the total sum ;(
-        if(gwiID == 0)
-        {
-          //write the total count to global memory
-          gSumsOfPartialGlobalScans[NUM_COMPUTE_UNITS_BASE2_CEILED] = lTotalSimWorkGroupCount;
-        }
-        
-
-      #else
+      {% endifnotequal %}
+            
       
-        if(lwiID == 0)
-        {
-          lScannedSumsOfPartialGlobalScans[ 0 ] =  0;
-          //write the total count to global memory
-          gSumsOfPartialGlobalScans[1] = gSumsOfPartialGlobalScans[ 0 ];
-        }
-        
-      #endif
+      //only ONE work item of the whole kernel shall write out the total sum ;(
+      if(gwiID == 0) //first work group, first item
+      //if( (groupID == get_num_groups(0) - 1) && (lwiID == 0)) //last work group
+      {
+        //write the total count to global memory
+        //gSumsOfPartialGlobalScans[NUM_COMPUTE_UNITS_BASE2_CEILED] = lTotalSimWorkGroupCount;
+        *gTotalSimWorkGroupCount = lTotalSimWorkGroupCount;
+        //*gTotalSimWorkGroupCount = 4096;
+      } 
+      barrier(CLK_GLOBAL_MEM_FENCE); //debug
 
       //because we have twice as much elements as work items (due to the scan stuff),
       //we have also to compact two elements per work item:
@@ -237,7 +240,18 @@
         }//endif(currentNumResidentElements >0)
         
         globalNonCompatcedCellIndex += (NUM_ELEMENTS_PER_WORK_GROUP__LOCAL_SCAN/2);
-      }   
+      }  
+      
+      /*
+      //only ONE work item of the whole kernel shall write out the total sum ;(
+      //if(gwiID == 0)
+      if( (groupID == get_num_groups(0) - 1) && (lwiID == 0)) //last work group
+      {
+        //write the total count to global memory
+        //gSumsOfPartialGlobalScans[NUM_COMPUTE_UNITS_BASE2_CEILED] = lTotalSimWorkGroupCount;
+        *gTotalSimWorkGroupCount = lTotalSimWorkGroupCount;
+      } 
+      */
     
     }
     

@@ -24,6 +24,10 @@
 #include "Buffer/Buffer.h"
 
 #include <grantlee/engine.h>
+#include "Util/Log/Log.h"
+
+#include "URE.h"
+#include "Util/Time/FPSCounter.h"
 
 
 namespace Flewnit
@@ -84,7 +88,11 @@ SplitAndCompactUniformGridProgram::SplitAndCompactUniformGridProgram(UniformGrid
 					)
 					+ 1
 				)
-			)
+			),
+
+			//only one element
+			(size_t)
+			(sizeof(unsigned int) * 1 )
 		}
 	);
 
@@ -233,7 +241,12 @@ void SplitAndCompactUniformGridProgram::createKernels()
 				new CLBufferKernelArgument("gSumsOfPartialGlobalScans",
 					CLProgramManager::getInstance().getIntermediateResultBuffersManager()
 						->getBuffer(2) //take the 3rd biggest buffer
+				),
+				new CLBufferKernelArgument("gTotalSimWorkGroupCount",
+					CLProgramManager::getInstance().getIntermediateResultBuffersManager()
+						->getBuffer(3) //take the 3rd biggest buffer
 				)
+
 
 			}
 		)
@@ -246,11 +259,76 @@ unsigned int SplitAndCompactUniformGridProgram::readBackNumGeneratedNonEmptySpli
 {
 	BufferInterface* bufferWithTotalScanSum =
 		getKernel("kernel_splitAndCompactUniformGrid")->getCLKernelArguments()
-			->getBufferArg("gSumsOfPartialGlobalScans")->get();
+			->getBufferArg("gTotalSimWorkGroupCount")->get();
 
-	PARA_COMP_MANAGER->barrierCompute();
+	//PARA_COMP_MANAGER->barrierCompute();
+
+
+	//debug:
+
+	EventVector evv;
+	evv.push_back(getKernel("kernel_splitAndCompactUniformGrid")->getEventOfLastKernelExecution());
+
+	try
+	{
+	PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+	//PARA_COMP_MANAGER->getCommandQueue().enqueueWaitForEvents(evv);
+	PARA_COMP_MANAGER->getCommandQueue().flush();
+	//PARA_COMP_MANAGER->getCommandQueue().finish();
+	//usleep(100000);
+	}
+	catch(cl::Error err)
+	{
+		LOG<<ERROR_LOG_LEVEL<<"cl::Error after cl::finish BEFORE buffer READ!\n"<<err.what()<<"\n";
+		usleep(500000);
+		switch (err.err()) {
+			case CL_INVALID_COMMAND_QUEUE:
+				LOG<<ERROR_LOG_LEVEL<<"CL_INVALID_COMMAND_QUEUE\n";
+				break;
+			default:
+				LOG<<ERROR_LOG_LEVEL<<"unknown cl error!\n";
+				break;
+		}
+
+	}
+
+	try
+	{
+		PARA_COMP_MANAGER->getCommandQueue().enqueueReadBuffer(
+				static_cast<const cl::Buffer&>(bufferWithTotalScanSum->getComputeBufferHandle()),
+				CL_TRUE,
+				0,
+				//bufferWithTotalScanSum->getBufferInfo().bufferSizeInByte,
+				sizeof(uint),
+				bufferWithTotalScanSum->getCPUBufferHandle(),
+				& evv,
+				PARA_COMP_MANAGER->getLastEventPtr()
+		);
+
+	}
+	catch(cl::Error err)
+	{
+		LOG<<ERROR_LOG_LEVEL<<"cl::Error after cl::finish AFTER buffer READ!\n"<<err.what()<<"\n";
+		usleep(500000);
+		switch (err.err()) {
+			case CL_INVALID_COMMAND_QUEUE:
+				LOG<<ERROR_LOG_LEVEL<<"CL_INVALID_COMMAND_QUEUE\n";
+				break;
+			default:
+				LOG<<ERROR_LOG_LEVEL<<"unknown cl error!\n";
+				break;
+		}
+
+		return 512;
+
+	}
+
 	//read back and block
-	bufferWithTotalScanSum->readBack(true);
+	//bufferWithTotalScanSum->readBack(true);
+
+
+
+
 
 	//enforce that buffer is read back! <-- not correct; only on CPU level, this ensures correct order, not
 	//for CPU/GPU memory reads/writes/copies
@@ -258,12 +336,15 @@ unsigned int SplitAndCompactUniformGridProgram::readBackNumGeneratedNonEmptySpli
 
 	//read the relevant value from the host buffer
 	return
-		reinterpret_cast<unsigned int * >( bufferWithTotalScanSum->getCPUBufferHandle() )
-			[
-			 	//remember the size explanations to gSumsOfPartialGlobalScans, see above;
-			 	//the last element of this buffer is the searched total sum
-			 	 mNumScanKernelWorkGroups
-			];
+//		reinterpret_cast<unsigned int * >( bufferWithTotalScanSum->getCPUBufferHandle() )
+//			[
+//			 	//remember the size explanations to gSumsOfPartialGlobalScans, see above;
+//			 	//the last element of this buffer is the searched total sum
+//			 	 mNumScanKernelWorkGroups
+//			];
+
+		reinterpret_cast< unsigned int * >( bufferWithTotalScanSum->getCPUBufferHandle() ) [0];
+		//	4096;
 }
 
 }

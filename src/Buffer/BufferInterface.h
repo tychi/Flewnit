@@ -47,7 +47,7 @@ public:
 	//check for campatibility: not the contents, but the types, dimensions, allocations etc are compared;
 	virtual bool operator==(const BufferInterface& rhs) const = 0;
 	//copy contents of the one buffer to the other, but only if they are of the same leaf type, buffer type, same size, element type, dimensions etc;
-	const BufferInterface& operator=(const BufferInterface& rhs) throw(BufferException);
+	const BufferInterface& operator=( BufferInterface& rhs) throw(BufferException);
 
 	void bind(ContextType type)throw(BufferException);
 
@@ -130,7 +130,9 @@ public:
 	//non-const variant for CPU-buffer writing
 	CPUBufferHandle getCPUBufferHandle()const throw(BufferException);
 	GraphicsBufferHandle getGraphicsBufferHandle()const throw(BufferException);
-	const ComputeBufferHandle & getComputeBufferHandle()const throw(BufferException);
+	//const ComputeBufferHandle & getComputeBufferHandle()const throw(BufferException);
+	ComputeBufferHandle& getComputeBufferHandle()  throw(BufferException);
+
 	///\}
 protected:
 

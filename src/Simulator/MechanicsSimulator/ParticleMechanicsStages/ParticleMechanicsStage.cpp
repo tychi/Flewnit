@@ -417,6 +417,7 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	//PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
 	//PARA_COMP_MANAGER->getCommandQueue().flush();
 	//PARA_COMP_MANAGER->getCommandQueue().finish();
+	//usleep(50000);
 
 	//{ SPH stuff
 

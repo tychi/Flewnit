@@ -30,6 +30,7 @@
 #include "Util/Time/FPSCounter.h"
 #include "Util/Log/Log.h"
 #include "Buffer/IntermediateResultBuffersManager.h"
+#include "../../include/opencl11/CL/cl.hpp"
 
 
 namespace Flewnit
@@ -60,6 +61,7 @@ UniformGridBufferSet::UniformGridBufferSet(String name, unsigned int numCellsPer
 		)
 	)
 {
+	memset( mElementCounts->getCPUBufferHandle(), 0, mElementCounts->getBufferInfo().bufferSizeInByte );
 	clearElementCounts();
 
 //	//init CPU component of elem count buffer to zero;
@@ -96,7 +98,7 @@ cl::Event UniformGridBufferSet::clearElementCounts()
 	//n.B.: this all is a hack due to lack of API functions.
 	//why is there no clClear? This sucks, to have to transfer
 	//dozens of megabytes of zeros to a bandwidth limitied device :@
-	memset( mElementCounts->getCPUBufferHandle(), 0, mElementCounts->getBufferInfo().bufferSizeInByte );
+	//memset( mElementCounts->getCPUBufferHandle(), 0, mElementCounts->getBufferInfo().bufferSizeInByte );
 	cl_bool blockGlobalTmp = PARA_COMP_MANAGER->getBlockAfterEnqueue();
 
 	//---------------------------------------------------
@@ -136,22 +138,94 @@ cl::Event UniformGridBufferSet::clearElementCounts()
 
 
 
-	PARA_COMP_MANAGER->barrierCompute();//debug
+	//PARA_COMP_MANAGER->barrierCompute();//debug
+
+	//debug
+	try
+	{
+	PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+	//PARA_COMP_MANAGER->getCommandQueue().enqueueWaitForEvents(eventVec);
+	PARA_COMP_MANAGER->getCommandQueue().flush();
+	//PARA_COMP_MANAGER->getCommandQueue().finish();
+	//usleep(100000);
+	}
+	catch(cl::Error err)
+	{
+
+		LOG<<ERROR_LOG_LEVEL<<"cl::Error after cl::finish BEFORE buffer WRITE!\n"<<err.what()<<"\n";
+		usleep(500000);
+		switch (err.err()) {
+			case CL_INVALID_COMMAND_QUEUE:
+				LOG<<ERROR_LOG_LEVEL<<"CL_INVALID_COMMAND_QUEUE\n";
+				break;
+			default:
+				LOG<<ERROR_LOG_LEVEL<<"unknown cl error!\n";
+				break;
+		}
+
+	}
 
 
 
-	PARA_COMP_MANAGER->getCommandQueue().enqueueWriteBuffer(
-			static_cast<const cl::Buffer&>( mElementCounts->getComputeBufferHandle() ),
-			CL_TRUE, //to omit as much bus as possible, despite all precautions and design for asynchronous stuff,
-				  //lets stay synchrounous as long as the simulation doesn't work stable;
-			//CL_FALSE, // TODO don't block
-			0,
-			mElementCounts->getBufferInfo().bufferSizeInByte,
-			mElementCounts->getCPUBufferHandle(),
-			//wait for inital or default versions of SPH force+integr+zindex "kernel_updateForce_integrate_calcZIndex"
-			& eventVec,
-			& mClearElementCountEvent
-	);
+//	PARA_COMP_MANAGER->getCommandQueue().enqueueWriteBuffer(
+//			static_cast<cl::Buffer&>(mElementCounts->getComputeBufferHandle()),
+//			CL_TRUE, //to omit as much bus as possible, despite all precautions and design for asynchronous stuff,
+//				  //lets stay synchrounous as long as the simulation doesn't work stable;
+//			//CL_FALSE, // TODO don't block
+//			0,
+//			mElementCounts->getBufferInfo().bufferSizeInByte,
+//			mElementCounts->getCPUBufferHandle(),
+//			//wait for inital or default versions of SPH force+integr+zindex "kernel_updateForce_integrate_calcZIndex"
+//			& eventVec,
+//			& mClearElementCountEvent
+//	);
+
+	//debug
+	bool success = false;
+	//while(!success)
+	{
+		try
+		{
+			PARA_COMP_MANAGER->getCommandQueue().enqueueWriteBuffer(
+					static_cast<cl::Buffer&>(mElementCounts->getComputeBufferHandle()),
+					CL_TRUE, //to omit as much bus as possible, despite all precautions and design for asynchronous stuff,
+						  //lets stay synchrounous as long as the simulation doesn't work stable;
+					//CL_FALSE, // TODO don't block
+					0,
+					mElementCounts->getBufferInfo().bufferSizeInByte,
+					mElementCounts->getCPUBufferHandle(),
+					//wait for inital or default versions of SPH force+integr+zindex "kernel_updateForce_integrate_calcZIndex"
+					& eventVec,
+					& mClearElementCountEvent
+			);
+			success=true;
+
+			//usleep(50000);
+			//PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+			//PARA_COMP_MANAGER->getCommandQueue().flush();
+			//PARA_COMP_MANAGER->getCommandQueue().finish();
+		}
+		catch(cl::Error err)
+		{
+
+			LOG<<ERROR_LOG_LEVEL<<"cl::Error after cl::finish AFTER buffer WRITE!\n"<<err.what()<<"\n";
+			usleep(500000);
+			switch (err.err()) {
+				case CL_INVALID_COMMAND_QUEUE:
+					LOG<<ERROR_LOG_LEVEL<<"CL_INVALID_COMMAND_QUEUE\n";
+					break;
+				default:
+					LOG<<ERROR_LOG_LEVEL<<"unknown cl error!\n";
+					break;
+			}
+
+		}
+	}
+
+
+
+
+
 
 	*(PARA_COMP_MANAGER->getLastEventPtr()) = mClearElementCountEvent;
 
@@ -161,6 +235,7 @@ cl::Event UniformGridBufferSet::clearElementCounts()
 
 
 	PARA_COMP_MANAGER->barrierCompute();//debug
+
 
 
 
@@ -192,6 +267,7 @@ void UniformGridBufferSet::dumpBuffers(
 		path.string().c_str(),
 		std::ios::out
 	);
+
 
 	mStartIndices->readBack(true);
 	mElementCounts->readBack(true);
@@ -430,7 +506,7 @@ PARA_COMP_MANAGER->barrierCompute();
 
 PARA_COMP_MANAGER->barrierCompute();
 
-PARA_COMP_MANAGER->getCommandQueue().enqueueWaitForEvents(EventVector{splitNCompactKernel->getEventOfLastKernelExecution()});
+//PARA_COMP_MANAGER->getCommandQueue().enqueueWaitForEvents(EventVector{splitNCompactKernel->getEventOfLastKernelExecution()});
 	//------------------------------------------------------------------------------------
 	//read back total count:
 	return mSplitAndCompactUniformGridProgram->readBackNumGeneratedNonEmptySplitCells();

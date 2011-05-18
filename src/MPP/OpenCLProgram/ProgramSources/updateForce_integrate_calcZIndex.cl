@@ -346,7 +346,7 @@
       + ( 0.5f * cSimParams->squaredTimestep ) * ownAccelerationNew;
 
     //debug
-    if(any(isnan(ownPositionNew)) || any(isinf(ownPositionNew))) {ownPositionNew =  (float4)(1.0f,40.0f,1.0f,0.0f); }
+    //if(any(isnan(ownPositionNew)) || any(isinf(ownPositionNew))) {ownPositionNew =  (float4)(1.0f,40.0f,1.0f,0.0f); }
       
     float4 ownPredictedVelFuture = ( ownPositionNew - ownPosition ) * cSimParams->inverseTimestep;
 

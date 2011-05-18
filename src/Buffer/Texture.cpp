@@ -151,7 +151,7 @@ void Texture::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(Buf
 }
 
 //can be non-pure, as clEnqueueCopyImage is quite generic;
-void Texture::copyCLFrom(const ComputeBufferHandle & bufferToCopyContentsFrom)throw(BufferException)
+void Texture::copyCLFrom( ComputeBufferHandle & bufferToCopyContentsFrom)throw(BufferException)
 {
 	cl::size_t<3> origin; origin[0]=0;origin[1]=0;origin[2]=0;
 

@@ -41,7 +41,8 @@ ParallelComputeDeviceInfo::ParallelComputeDeviceInfo(cl::Device* device)
 
 	GUARD(device->getInfo<cl_GLuint>( CL_DEVICE_MAX_COMPUTE_UNITS, &maxComputeUnits));
 //HAXX!111
-	maxComputeUnits=2;
+	//maxComputeUnits=2;// <-- default hack; works on all machines, given decent simulation params and particle count <=128k
+	maxComputeUnits=1; //works on GT435M, but not on the rest
 
 
 	GUARD(device->getInfo<size_t>( CL_DEVICE_MAX_WORK_GROUP_SIZE, &maxWorkGroupSize));
@@ -322,7 +323,8 @@ bool ParallelComputeManager::init(bool useCPU)
 
     //create the command queue we will use to execute OpenCL commands
     try{
-        mCommandQueue = cl::CommandQueue(mCLContext, mUsedDevice, 0, &mLastCLError);
+       // mCommandQueue = cl::CommandQueue(mCLContext, mUsedDevice, 0, &mLastCLError);
+        mCommandQueue = cl::CommandQueue(mCLContext, mUsedDevice, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &mLastCLError);
     }
     catch (cl::Error er) {
         printf("ERROR: %s(%d)\n", er.what(), er.err());
@@ -409,10 +411,12 @@ void ParallelComputeManager::barrierGraphics()
 }
 void ParallelComputeManager::barrierCompute()
 {
-	//GUARD(mCommandQueue.enqueueBarrier());
+
+	//usleep(50000);
+	GUARD(mCommandQueue.enqueueBarrier());
 
 	//mCommandQueue.flush();
-	//mCommandQueue.finish();
+//	mCommandQueue.finish();
 
 //	usleep(50000);
 }

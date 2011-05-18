@@ -79,7 +79,7 @@ BufferInterface::~BufferInterface()
 }
 
 
-const BufferInterface& BufferInterface::operator=(const BufferInterface& rhs) throw(BufferException)
+const BufferInterface& BufferInterface::operator=( BufferInterface& rhs) throw(BufferException)
 {
 	//the buffers must match exactly in all their meta-info in order to be securely copied
 	//OpenGL and OpenCL are less restrictve than me, but in this case, I trade flexibility
@@ -639,7 +639,8 @@ GraphicsBufferHandle BufferInterface::getGraphicsBufferHandle()const  throw(Buff
 	return mGraphicsBufferHandle;
 }
 
-const ComputeBufferHandle& BufferInterface::getComputeBufferHandle()const  throw(BufferException)
+//const ComputeBufferHandle& BufferInterface::getComputeBufferHandle()const  throw(BufferException)
+ComputeBufferHandle& BufferInterface::getComputeBufferHandle()  throw(BufferException)
 {
 	if((mBufferInfo->usageContexts & OPEN_CL_CONTEXT_TYPE_FLAG) == 0)
 			throw(BufferException("BufferInterface::getComputeBufferHandle: buffer has no CL attachment"));
