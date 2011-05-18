@@ -93,7 +93,7 @@ void DemoInputInterpreter::perFrameCallback()
 			+ 10.0f * Vector4D( URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getDirection(), 0.0f)
 	);
 
-	mUserForceControlPoint->setIntensity(mLeftMousePressed ? 3.5f: 0.0f);
+	mUserForceControlPoint->setIntensity(mLeftMousePressed ? 7.5f: 0.0f);
 
 
 
