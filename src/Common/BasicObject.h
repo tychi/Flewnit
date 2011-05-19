@@ -33,56 +33,38 @@ namespace Flewnit
 //without profiling preprocessor option, this is only an empty base class
 		BasicObject(){}
 		virtual ~BasicObject(){}
-
-
-#	define FLEWNIT_INSTANTIATE(instantiationExpression) \
-		instantiationExpression
-
-# 	define FLEWNIT_BASIC_OBJECT_DECLARATIONS
-
-
+		#define FLEWNIT_BASIC_OBJECT_DECLARATIONS
 //---------------------------------------------------------------------------------------------------------
 #else
 //if there is some profiling option, the world gets a bit more complicated:
 
-		//friend Profiler so that he can set the ID of the BasicObjects;
+		//friend Profiler so that it can set the ID of the BasicObjects;
 		friend class Profiler;
-
-		friend class BasicObjectInstancer;
-
-
 		BasicObject();
 		virtual ~BasicObject();
-
-
-
-/* not needed anymore
-///\note  I'm doing some crazy haxx here in order to both
-///	-assure usage of this macro instead of direct constructor calling by flag setting and
-///	-enable support for using this macro like a instatiator function returning a pointer to the instance;
-#	define FLEWNIT_INSTANTIATE(instantiationExpression) \
-		instantiationExpression ;
-		//Flewnit::BasicObjectInstancer::initAndFinalizeRegistrationOfCurrentBasicObject()
-*/
-
-
-///\{
-# 	define FLEWNIT_BASIC_OBJECT_DECLARATIONS \
-		public:\
-			virtual void initBasicObject() \
-			{ \
-				mMemoryFootPrint = (int) sizeof(*this); \
-				mClassName = String(typeid(*this).name()); \
-			} \
-		private:
-///\}
-
-
+		//paste the FLEWNIT_BASIC_OBJECT_DECLARATIONS macro into every derived class to init the type information;
+		//WARNING: thy type information is only available after all constructors of a class Hierarchy have returned
+		//and afteher calling Profiler::updateMemoryTrackingInfo() hererafter; This ugly hack is necessary, because
+		//the there is no valid leaf-class-type information retrievable from the this-pointer of an object before
+		//all base class constructors have returned; In order not so bother the programmer with calling initBasicObject()
+		//in EVERY constructor, one has to call Profiler::updateMemoryTrackingInfo() if one is interested in meta-information;
+		//I admit that this "meta object system" is quite weird; It was created just out of interest for class sizes etc;
+		//For real profiling, tools like Valgrind are much more appropriate; This "meta object system" was rather a
+		//didactic playground in order to finally grasp the c++-internals;
 		virtual void initBasicObject()=0;
+///\{
+		#define FLEWNIT_BASIC_OBJECT_DECLARATIONS \
+			public:\
+				virtual void initBasicObject() \
+				{ \
+					mMemoryFootPrint = (int) sizeof(*this); \
+					mClassName = String(typeid(*this).name()); \
+				} \
+			private:
+///\}
 
 		inline ID getUniqueID()const{return mUniqueID;}
 		String getClassName()const;
-
 		int getMemoryFootprint();
 
 	private:
@@ -101,25 +83,5 @@ namespace Flewnit
 //---------------------------------------------------------------------------------------------------------
 	};
 
-
-////---------------------------------------------------------------------------------------------------------
-//#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-//	class BasicObjectInstancer
-//	{
-//	public:
-//
-////		static inline void setMemoryFootPrint()
-////		{
-////			getLastRegisteredBasicObjectFromProfiler()->mMemoryFootPrint=
-////					getLastRegisteredBasicObjectFromProfiler()->getMemoryFootprint();
-////		}
-//
-//
-//		static void initAndFinalizeRegistrationOfCurrentBasicObject();
-//
-//		static BasicObject* getLastRegisteredBasicObjectFromProfiler();
-//
-//	};
-//#endif
 
 }

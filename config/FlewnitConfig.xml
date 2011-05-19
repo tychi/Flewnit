@@ -108,7 +108,7 @@
 
 
     <OpenGL_Settings>
-      <contextVersion type="VEC2I" x="3" y="3" />
+      <contextVersion type="VEC2I" x="4" y="1" />
       <enforceCoreProfile type="BOOL" value="true" />
     </OpenGL_Settings>
 
@@ -155,9 +155,9 @@
           <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="16384" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          -->
           <numMaxParticles type="INT" value="262144" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          -->
+          <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
           <numMaxFluids type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -175,7 +175,7 @@
           <voxelSideLengthRepresentedByRigidBodyParticle type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
-          <SPHSupportRadius type="FLOAT" value="1.44"		GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <SPHSupportRadius type="FLOAT" value="2.9"		GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
           <!--as long i have no triangle-collision-mesh functionality, i have to keep the particles in a lame box ;( -->
@@ -258,9 +258,9 @@
             <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
             <numContainingParticles type="INT" value="16384" GUIVisibility="read" tweakConfigString="TODO"/>
-            <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
-            -->
             <numContainingParticles type="INT" value="262144" GUIVisibility="read" tweakConfigString="TODO"/>
+            -->
+            <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
           
             <!--          
             <spawnAABBMin  type="VEC4" x="0.25" y="0.25" z="0.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
