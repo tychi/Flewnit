@@ -838,14 +838,15 @@ void Shader::setupLightSourceUniforms()
 	}
 
 
-	//shadow map matrices -----------------------------------------------
+	//shadow map matrices and texture binding -----------------------------------------------
 	SpotLight* spot;
 	PointLight* pointLight;
 	switch(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature)
 	{
 	case LIGHT_SOURCES_SHADOW_FEATURE_NONE:
 		//do nothing ;)
-		break;
+		return;
+		//break;
 	case LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT:
 		spot = dynamic_cast<SpotLight*>(
 				LightSourceManager::getInstance().getFirstShadowCaster() );
@@ -895,9 +896,22 @@ void Shader::setupLightSourceUniforms()
 		break;
 	}
 
+
+
 }
 
 
+
+void Shader::setupShadowMapUniform(VisualMaterial* visMat)
+{
+	if(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
+			!= LIGHT_SOURCES_SHADOW_FEATURE_NONE)
+	{
+		GUARD(glActiveTexture(GL_TEXTURE0 + SHADOW_MAP_SEMANTICS));
+		visMat->getTexture(SHADOW_MAP_SEMANTICS)->bind(OPEN_GL_CONTEXT_TYPE);
+		bindInt("shadowMap",SHADOW_MAP_SEMANTICS);
+	}
+}
 
 
 void Shader::setupMaterialUniforms(VisualMaterial* visMat)

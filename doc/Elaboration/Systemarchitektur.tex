@@ -71,27 +71,44 @@ Der Code der GPU-Programme ist in GLSL bzw. OpenCL C verfasst.
 		
     	
     	\item[OpenGL Mathematics (GLM)]
-    	Seit sämtlicher Mathematik-bezogener OpenGL-state inklusive zugehöriger built-in-Variablen und -Funktionen
+    	Seit sämtlicher Mathematik-bezogener OpenGL-State inklusive zugehöriger built-in-Variablen und -Funktionen
     	wie \lstinline[language=GLSL]|gl_ModelViewProjectionMatrix| oder
     	\lstinline[language=GLSL]|ftransform()|
     	in GLSL abgeschafft wurden, führt um eine Bibliothek für Vektor- und Matrix-Algebra kein Weg mehr herum.
     	Ich habe mich für \emph{GLM}\footnote{http://glm.g-truc.net/} entschieden, da sie klein und dennoch mächtig ist,
-    	mit einigen Convenience-Functions; QT hat ebenfalls eine Mathe-Bibliothek, verwendet jedoch
+    	und einige Convenience-Functions hat; QT hat ebenfalls eine Mathe-Bibliothek, verwendet jedoch
     	\lstinline[language=C]|double|, also 64bit-Fließkomma-Werte als Basis-Datentyp, was das direkte Übergeben
     	als Array von \lstinline[language=C]|float|-Uniforms an die OpenGL-Shader verhindert. Zwar unterstützen OpenGL
     	und moderne Graphikkarten \lstinline[language=C]|double| nativ, jedoch mit drastisch geringerer Geschwindigkeit,
-    	da weniger Recheneinheiten für diesen Datentypen zur Vervügung stehen.
+    	da weniger Recheneinheiten für diesen Datentypen zur Vervügung stehen.\\
     	Es sei bemerkt, dass ich persönlich die direkte Verwendung einer C++ - Mathe-Bibiothek mit überladenen Operatoren
     	und eigener Akkumulation von Matrizen wesentlich angenehmer und eleganter finde als das zähe Hantieren
-    	mit dem C-API zum modifizieren des OpenGL-State mit seinen Matrix-Modes.
+    	mit der C-API zum modifizieren des OpenGL-State mit seinen Matrix-Modes.
     	
     	\item[Grantlee]
-       		Die bereits erwähnte Template- Engine; die Syntax entspricht der der Template-Sprache des 
-       		\emph{Django} web Frameworks\footnote{https://www.djangoproject.com/}.
+	 		\lstset{language=GLSL} 
+       		Die bereits erwähnte Template-Engine; die Syntax entspricht der der Template-Sprache des 
+       		\emph{Django} web Frameworks\footnote{https://www.djangoproject.com/}.\\
+
+       		Es lassen sich durch die Applikation Werte an die Template-Engine übergeben, anhand derer
+       		dann die Code-Generierung Kontrolliert wird, bzw welche durch durch Einschluss in doppelte
+       		geschwungene Klammern direkt eingefügt werden können. \\
+       		Beipiel:
+			\begin{lstlisting}      		
+vec4 fragmentColor =  	
+	{% if SHADING_FEATURE_DIFFUSE_TEXTURING %}  
+		texture(decalTexture,input.texCoords.xy);
+	{% else %} color;
+	{% endif %}  
+			\end{lstlisting} 
+			\begin{lstlisting}
+#define NUM_BITS_PER_KEY_TO_SORT ( {{numBitsPerKey}} )
+			\end{lstlisting} 
+     		
        		Die Engine stellt einen Vererbungs-Mechanismus bereit:\\
        		Auf diese Weise kann z.B. die Datei "`particleSimulationTemplate.cl"' verschiedene "`Code-Blocks"'
        		definieren wie z.B.
-       		\lstset{language=GLSL} 
+       		
        		\begin{lstlisting}
 {% block performSPHCalculations %}
 	{% comment %}
@@ -101,6 +118,7 @@ Der Code der GPU-Programme ist in GLSL bzw. OpenCL C verfasst.
 	{% endcomment %}               
 {% endblock performSPHCalculations %}
        		\end{lstlisting}
+       		
        		, die von anderen Datein geerbt und entsprechend angepasst implementiert werden.\\
        		"`updateDensity.cl"' erbt von dieser Datei durch die Directive
        		\lstinline[language=GLSL]|{% extends "particleSimulationTemplate.cl" %}| 
@@ -205,7 +223,9 @@ zu delegieren. In den folgenden Unterabschnitten werden die einzelnen Komponente
 	(das führt bei tiefen Klassenhierarchien zu unnötigen ausführungen dieser Funktion, da nur die Info der Blatt-Klasse
 	benötigt wird, außerdem entstünde so eine weitere Vergesslichkeits-Fehlerquelle, die durch das Meta Object System ja 
 	gerade \emph{vermieden} werden soll), stellt der Memory Tracker eine Routine \lstinline|updateMemoryTrackingInfo()|
-	bereit, die aufgerufen werden sollte, wenn man auf valide meta-Information zugreifen will.
+	bereit, die aufgerufen werden sollte, wenn man auf valide Meta-Information zugreifen will.
+	Aufpassen muss man bei tiefen Klassenhierarchien, da hier der Compiler keinen Fehler erzeugt, wenn eine Blatt-Klasse
+	das Makro nicht eingetragen hat, da eine Implementierung der Funktion ja bereits durch eine Oberklasse existiert.
 	
 	Über bedingte Kompilierung lässt sich diese Meta-Funktionalität deaktivieren.
 	Ein "`richtiges"' Meta Object System wie das von Qt wollte ich nicht verwenden, da es für meine Zwecke zu komplex und
@@ -222,6 +242,7 @@ zu delegieren. In den folgenden Unterabschnitten werden die einzelnen Komponente
 	also der Basisklasse sämtlicher Buffer-Typen;
 	
 \subsection{AmendedTransform}
+	\label{sec:AmendedTransform}
  	Im Zuge der Überlegungen zum Szenegraphen, der Kamera und des visuellen Renderings vieler Objekte per
  	Hardware-Instancing entschied ich mich, die klassische 4x4-Transformationsmatrix zu wrappen und mit
  	convenience functions anzureichern, siehe Listing \ref{listing:AmendedTransformDef}.\\
@@ -233,16 +254,55 @@ zu delegieren. In den folgenden Unterabschnitten werden die einzelnen Komponente
  	zum Flaschenhals werden. Dann ist vielleicht ein Refactoring vonnöten; Vorerst scheint mir die Implementation jedoch
  	angemessen.\\
  	
- 	Auf diese Weise lässt sich z.B. bequem ein \lstinline|Camera|-Objekt, welches selber von \lstinline|WorldObject| erbt,
+ 	So lässt sich z.B. bequem ein \lstinline|Camera|-Objekt, welches selber von \lstinline|WorldObject| erbt,
  	welches wiederum von \lstinline|SceneNode| abgeleitet ist, an eine andere SceneNode anhängen, und aus der automatisch
  	berechneten globalen Transformation erhält man durch \lstinline|AmendedTransform::getLookAtMatrix()|
- 	direkt die lookAt-Matrix;
+ 	direkt die lookAt-Matrix, so  dass die Camera-Klasse selber sich nur noch um seine Projektionsmatrix kümmern muss.
  	Auch typische Animationen werden von der Klasse übernommen. Ob dies guter Stil ist, oder doch lieber in die
  	SceneNode-Klasse ausgelagert werden sollte, ist eine Frage, die ich noch nicht abschließend beantworten kann.
- 	Eine Erötertung lasse ich aus, da das Refactoring in diesem Falle nicht zu aufwändig wäre;
+ 	Es wurde hier dem Paradigma der Datenlokalität gefolgt, evtl. auf Kosten der Separation of Concerns.
+ 	Eine weitere Erörtertung lasse ich aus, da das Refactoring in diesem Falle nicht zu aufwändig wäre;
 
 	Es sei bemerkt, dass durch die Menge an Matrizen, die an den Vertex Shader beim Instanced Rendering übergeben
-	werden müssen... \todo[color=green]{normal matrix erklaeren, nonuniform scaling verboten etc.}
+	werden müssen, wenn man für alle Fälle gewappnet sein will
+	\footnote{z.B. für Layered Rendering in verschiedene Texturen, z.B in ein Textur-Array zur Generierung mehrerer 
+	Spotlight-Shadowmaps mit einem Draw-Call; Hierbei braucht es explizit nur die Model-Matrix, da es pro Layer 
+	verschiedene View-Matrices (pro Spotlight eine) gibt, von daher nicht im Vorfeld eine ModelView Matrix akkumuliert 
+	werden kann}, nicht unerheblich ist, da für jede Instanz ein anderes Matrix-Set übergeben werden muss;
+	Die Menge an Daten, die per Uniform-Variable übergeben werden kann, ist begrenzt, daher hängt die maximale Anzahl
+	an Instanzen, die pro Draw-Call gezeichnet werdne können, direkt davon ab, wie viele Daten pro Instanz übergeben 
+	werden müssen;\\
+	Dieser Umstand hat mich dazu verleitet, die Normal Matrix, die transponierte Inverse der ModelView-Matrix,
+	"`einzusparen"': da Normalen und Tangenten durch Interpolation für den Fragment Shader ohnehin normalisiert werden 
+	müssen, spielt beim Ergebnis  der Transformation eines Vektors 
+	\footnote{mit homogener Koordinate 0,im Gegensatz zu Punkten, homog. Koord. 1} 
+	nur die Richtung eine Rolle, nicht der Betrag. Die Richtung ändert sich nicht,
+	wenn eine uniforme Skalierung in der Matrix steckt, wenn also der Skalierungsfaktor pro Raumdimension überall gleich 
+	ist. Der Translations-Anteil einer Matrix spielt bei Vektoren keine Rolle. Aus diesen Umständen lässt sich folgern, 
+	dass man zur Transformation von Vektoren ebenfalls die Model- bzw ModelView- Matrix verwenden kann, 
+	und \emph{keine} dedizierte Normal Matrix braucht,
+	solange nur Translation, Rotation und uniforme Skalierung in der Matrix akkumuliert sind.\\
+	Eben dies versuche ich, durch die \lstinline|AmendedTransform|-Klasse zu forcieren, indem nur ein eingeschränkter
+	\lstinline|public|-Konstruktor existiert, direkte Initialisierung per Matrix-Konstruktor nur für bestimmte
+	\lstinline|friend|-Klassen erlaubt sind, und auch dann diese Matrix validiert wird.
+	Die Einschränkung erscheint mir legitim, da eine Uniform Rendering Engine den Anspruch hat, zumindest
+	im Ansatz "`physikalisch basiert"' zu sein; Deshalb sollten sich  Skalierungen ohnehin nur selten
+	zur Laufzeit ändern, und dann nur einheitlich. So kann man im Vorfeld die Geometrie so anpassen, 
+	dass keine nicht-uniforme Skalierung in der Transformationsmatrix auftaucht.
+	
+	
+	Eine \lstinline|AmendedTransform| ist insofern mit der \lstinline|SceneNode|-Klasse verzahnt, dass falls eine
+	\lstinline|AmendedTransform|-Instanz als Tranformation einer Scene-Node dient, erstere ein Handle auf die Scene Node 
+	bekommt. Auf diese Weise kann die Scene Node immer automatisch informiert werden, wenn sich bei der 
+	\lstinline|AmendedTransform| etwas geändert hat (es müssen dann ggfs. die Kinder der Scene-Node aktualisiert werden,
+	z.B. für eventuelles Updade von Bounding Boxes). Auf diese Weise muss weder die \lstinline|AmendedTransform|
+	nochmal durch die \lstinline|SceneNode| gewrappt werden, noch können Seiteneffekte durch direkte Manipulation der 
+	Transformation auftreten, sollte der Programmierer vergessen, anschließend die Scenenode über ihre 
+	Transformations-Änderung zu informieren.
+	Die Scene-Node-Kopplung ist rein intern, und braucht den Benutzer der Klasse nicht weiter zu interessieren,
+	außer in der Hinsicht, dass Scene-Node-Manipulation direkt geschieht und die \lstinline|SceneNode|-Klasse
+	kein eigenes Interface zur manipulation von Tranformationen bereit stellt.
+	
  	
  	\begin{lstlisting}[caption={AmenededTransform Klassendefinition, gekürzt},label=listing:AmendedTransformDef]
 class AmendedTransform
@@ -251,13 +311,14 @@ public:
 	AmendedTransform(
 			const Vector3D& position = Vector3D(0.0f,0.0f,0.0f),
 			//(0,0,-1) is assumed as initial orientation, extress any deviation in euler angles(radians)
-			const Vector3D& direction = Vector3D(0.0f,.0f,-1.0f),
+			const Vector3D& direction = Vector3D(0.0f,0.0f,-1.0f),
 			const Vector3D& upVector = Vector3D(0.0f,1.0f,0.0f),
 			float scale = 1.0f);
 	AmendedTransform(const AmendedTransform& rhs);
 	virtual ~AmendedTransform();
 
 	AmendedTransform operator*(const AmendedTransform& rhs)const;
+	//the assignment operators copy only the transformation values, not the SceneNode-Related info
 	const AmendedTransform& operator*=(const AmendedTransform& rhs);
 	const AmendedTransform& operator=(const AmendedTransform& rhs);
 
@@ -302,40 +363,123 @@ protected:
 	
 	Matrix4x4 mAccumTranslationRotationScaleMatrix;
 
-	//construct the transformation matrix from current pos,dir,up,scale; is called by any related setter;
+	//construct the transformation matrix from current pos,dir,up,scale; is called by any constructor and related setter;
 	//validates members, if possible
 	void setup();
 
+
+	friend class Loader;//the loader may set transformation matrices, as they are read directly from Scene descriptions ;)
 	//protected matrix-constructor to omit that the user passes a non-conforming matrix	
 	AmendedTransform(const Matrix4x4& transform);
-	friend class Loader;//the loader may set transformation matrices ;)
+	
 };
  	\end{lstlisting}
+ 	
+ 	
+
     	
     	
     	
-\subsection{Die \emph{Unified Rendering Engine}}
-URE blubb
+\subsection{Die \emph{Unified Rendering Engine} (URE)}
+Dies ist die Singleton-Klasse, die sämtliche Komponenten besitzt/verwaltet, und über welche direkt oder indirekt alle Daten
+beschafft oder Funktionalität aufgerufen werden kann, die nach außen hin verfügbar sein soll.
 
-\subsection{Die Simulator-Klassen}
+\subsection{Das UserInterface-Paket}
+Das User Interface hat einen abstraktes Window-Manager-Interface, welches von einer Implementation, die \emph{GLFW} verwendet, realisiert wird;
+Aus der geparsten Config wird die gewünschte OpenGL-Kontext-Version, Auflösung, Multisamples-Count, Fullscreen-Option
+etc. ausgelesen und ein entsprechendes Fenster mit OpenGL-Kontext erzeugt.\\
 
-	Camera, Light, RenderTarget: alles WorldObjects
+Die Input-Verwaltung ist im Gegensatz zum Fenstermanager nicht vollständig von der verwendeten Input-Bibliothek (ebenfallse GLFW) abstrahiert, da beim Parsen des Inputs die von GLFW definierten Makros direkt verwendet werden, 
+ wie z.B \lstinline|GLFW_KEY_ENTER|.
+Da die Austauschbarkeit von verwendeten Bibliotheken zwar erwünscht ist, aber ich mich nicht verzetteln wollte,
+bleibt die Abstraktion des Inputs noch ein langfristiges "`TODO"' mit geringerer Priorität.
+
+Eine GUI wurde leider noch nicht implementiert, vor allem aus dem Grund, dass vorhandene GUI-Toolkits wie z.B.
+\emph{AntTweakBar}\footnote{http://www.antisphere.com/Wiki/tools:anttweakbar} Legacy-OpenGL-Routinen verwenden,
+was die Verwendung eines modernen Core-Profiles ausschließen würde.
+Da langfristig ein konsistentes Erscheinungsblid angestrebt wird, welches seine GUI vollständig in das OpenGL- Rendering-
+Fenster integriert hat, kam auch die  Verwendung von Toolkits wie Qt nicht in Frage.\\
+Letztendlich wollte ich schon immer mal eine kleine GUI entwickeln, wozu ich jedoch erwartungsgemäß im Rahmen dieser
+Arbeit keine Zeit hatte. Die GUI verbleibt also als ein "`TODO"' von mittlerer Priorität.
 
 
-\subsection{Die SimulationPipelineStages}
-	shdow map gen, direct lighting, rendering features particlemechanics stage;
-	in planung: deferred rendering G-Bufferfill, deferred rendering shade, div. post processing stages
 
 
-\subsection{Die Manager-Klassen}
-Für gemeinsamen zugriff sollten viele Daten für andere Klassen verfügbar sein (Buffer, Rendering Results...); 	
-Realisierung über Manager-Singleton-Klassen und Zugriff über Map-Container;
-\todo[color=green]{evtl. andere reihenfolge}
+\subsection{Das Simulator-Paket}
 
-\subsection{Die Template-Engine}
-	\label{sec:architecture:templateEngine}
-	exemplarischer code schnipsel, refernz su shadermanager und CLProgramManager, erklärung wie man templat contex setzt, 	
-	vererbung etc;
+\begin{figure}[!h]
+	 \includegraphics[width=1.15\textwidth]{Detail_Simulator.pdf}
+	\caption{Grobes Beispiel von einer Simulation und den zugehörigen Daten-Abhängigkeiten}
+	\label{fig:detailSimulator}
+\end{figure}
+
+
+Wie bereits erwähnt, soll jede Simulationsdömane einen eigenen Simulator haben, 
+der eine eigene Pipeline an Simulations-Stages verwaltet.
+Es kann theoretisch beliebig viele Simulationsdomänen geben. Momentan sind jedoch nur drei
+über einen \lstinline|enum| definiert: Die visuelle, mechanische und akustische Domäne, wobei
+die akustische Domäne noch nicht in der prototypischen Implementierung vorkommt.
+Abb. \ref{fig:detailSimulator} zeigt grob beispielhaft den Ablauf einer Simulation und die verschiedenen
+Varianten, wie man sich die "`Rendering Results"' anderer Stages beschaffen kann:\\
+Entweder aus der Main Loop der Engine heraus oder von der benutzenden Applikation wird
+\lstinline|URE::stepSimulation()| aufgerufen; Diese Funktion iteriert in fester Reihenfolge über die
+vorhandenen Simulatoren und ruft deren \lstinline|stepSimulation()|-Routine auf; Hierin werden Simulator-
+spezifische Operationen ausgeführt (Framebuffers des Fensters resetten und Haupt-Viewport setzen beim 
+\lstinline|LightingSimulator|, CL/GL-shared Buffers für OpenCL akquirieren beim \lstinline|MechanicsSimulator|...),
+dann über die einzelnen zugehörigen \linebreak
+\lstinline|SimulationPipelineStage|'s iteriert, widerum deren 
+\lstinline|stepSimulation()|-Methode aufgerufen.
+Hier passiert dann das eigentlich \emph{generische Rendering}.
+So verschieden die Algorithmen sind, die in den einzelnen Stages abgearbeitet werden, so verschieden sind auch
+die Möglichkeiten, wie einzelne Stages miteinander Daten austauschen: Der generischste Ansatz ist, sich von einer
+Stage einen Buffer mit einer bestimmten Semantik zu beschaffen, sofern die entsprechende Stage ein solchen
+bereit stellt. Bei Lichtsimulation, die viel mit Texturen und OpenGL-Framebuffer-Objects (FBOs) umgeht,
+bietet sich an, sich das \lstinline|RenderTarget| (die Abtraktion des FBO in \emph{Flewnit}) zu beschaffen,
+um mit dem gesamten RenderTarget weiter zu arbeiten, oder sich einzelne Texturen zu beschaffen.
+Es gibt aber auch die relativ indirekte Methode des Datenaustausches, wie es z.B. zwischen der 
+\lstinline|ParticleMechanicsStage| und der \lstinline|ParticleLiquidDrawStage| der Fall ist: Die Buffer mit dem physikalischen Attributen sind in der SceneNode-abgeleiteten
+Klasse \lstinline|ParticleFluid| enthalten, so dass die aktualisierten Daten über schlichtes Szenegraphen-Traversieren
+beschafft werden können.\\
+Details zum Ablauf der Simulation(en) werden in Kapitel \ref{sec:simulation} behandelt.
+
+
+
+
+\subsection{Der SimulationResourceManger}
+Diese Singleton-Klasse besitzt und verwaltet die Assets,\linebreak 
+als \lstinline|std::map<String,X*>| für Referenzierung über einen Namen, 
+wobei \lstinline|X| folgende Klassen betrifft: 
+\begin{itemize}
+	\item \lstinline|Material|
+	\item \lstinline|Geometry|
+	\item \lstinline|BufferInterface|
+	\item \lstinline|Texture| \footnote{Da \lstinline|Texture| von \lstinline|BufferInterface| erbt, handelt es sich um 	
+		eine Handle-Sammlung der Untermenge der Texturen aller \lstinline|BufferInterface|s, um einen bequemeren Zugriff zu 
+		ermöglichen 
+		}
+	\item \lstinline|InstanceManager|
+\end{itemize}
+Außerdem bestitzt die Klasse den \lstinline|SceneGraph| und stellt einen Handle auf den aktuellen 
+\lstinline|SkyDome| zur Verfügung, so dass alle Objekte ein konsistentes Environment Mapping 
+betreiben können, sofern dies erwünscht ist.
+
+		
+\subsection{Das Scene-Paket}		
+		
+
+\subsection{Das WorldObject}
+	Basis-Klasse fuer alles was unified simuliert wird: pure viuelle objekt, uniform grid, fluid, rigid body etc..
+	
+	\subsubsection{Das SubObject}
+  
+ 
+\subsection{Material}  
+	was stellt welches material in welcher Domain dar?
+	
+\subsection{Geometry}
+	Abtract, Buffer based, Vertex based etc.. ein paar konzepte (implementiert/genutzt nur VertexBased)  
+	
+
     	
 \subsection{Die Buffer-Abstraktion}  
 	\label{sec:architecture:BufferAbstraction} 	
@@ -404,25 +548,18 @@ Realisierung über Manager-Singleton-Klassen und Zugriff über Map-Container;
 	
   	\end{figure}
  
-\subsection{Das WorldObject}
-	Basis-Klasse fuer alles was unified simuliert wird: pure viuelle objekt, uniform grid, fluid, rigid body etc..
-	
-	\subsubsection{Das SubObject}
-  
- 
-\subsection{Material}  
-	was stellt welches material in welcher Domain dar?
-	
-\subsection{Geometry}
-	Abtract, Buffer based, Vertex based etc.. ein paar konzepte (implementiert/genutzt nur VertexBased)  
-	
-\subsection{Massively Parallel Program}
+
+\subsection{Das MPP-Paket}
+Massively Parallel Program
 	Basisklasse von Shader und OpenCL Program
+	MPP und ParCompManager: hardware query, abstrakte methoden...
 	\subsubsection{Shader}
+		shader + manager+unterklassen
 		
 	\subsubsection{OpenCLProgram}
+		shader + manager+unterklassen + arguments etc.. event waiting, synch, acquire...
 
-weitere klassen/konzepte to go...	
+weitere klassen/konzepte to go...	?
 
 
 \subsection{Status der Implementierung am Ende der BA}

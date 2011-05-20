@@ -39,6 +39,7 @@ public:
 
 
 	AmendedTransform operator*(const AmendedTransform& rhs)const;
+	//the assignment operators copy only the transformation values, not the SceneNode-Related info
 	const AmendedTransform& operator*=(const AmendedTransform& rhs);
 	const AmendedTransform& operator=(const AmendedTransform& rhs);
 
@@ -49,8 +50,6 @@ public:
 	//inverse of translationMat*RotationMat;
 	Matrix4x4 getLookAtMatrix()const;
 	//normal matrix: rotation matrix, scaled by 1/scale
-	//Matrix3x3 getNormalMatrix()const; <-- //removed as it needs a view matrix,
-											//which is unrelated to a transform of a scene node
 	//accum: translationMatrix* Mat4(normalMatrix)* scaleMatrix;
 	const Matrix4x4& getTotalTransform()const;
 

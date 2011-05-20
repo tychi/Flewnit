@@ -49,15 +49,16 @@ void LightingSimStageBase::visitSceneNode(SceneNode* node)
 			assert("subobject in visual domain has a visual material" &&
 					dynamic_cast<VisualMaterial*>(so->getMaterial()) );
 
-			if(
-				visMat->getFlags().areCompatibleTo(mMaterialFlagMask)
-				&&
-				(
-					( visMat->getType() != VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY )
-					||
-					URE_INSTANCE->doDebugDraw()
-				)
-			)
+			if(	checkCompatibility(visMat) )
+//			if(
+//					visMat->getFlags().areCompatibleTo(mMaterialFlagMask)
+//					&&
+//					(
+//						( visMat->getType() != VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY )
+//						||
+//						URE_INSTANCE->doDebugDraw()
+//					)
+//			)
 			{
 				visMat->activate(this,so);
 

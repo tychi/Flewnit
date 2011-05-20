@@ -26,6 +26,8 @@ public:
 	virtual bool initStage()throw(SimulatorException);
 	virtual bool validateStage()throw(SimulatorException) ;
 
+	virtual bool checkCompatibility(VisualMaterial* visMat);
+
 	void setPolygonOffset(const Vector2D& val);
 	inline const Vector2D& getPolygonOffset()const{return mPolygonOffset;}
 

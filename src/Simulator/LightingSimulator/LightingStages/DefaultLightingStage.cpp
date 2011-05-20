@@ -86,4 +86,17 @@ bool DefaultLightingStage::validateStage()throw(SimulatorException)
 	return true;
 }
 
+bool DefaultLightingStage::checkCompatibility(VisualMaterial* visMat)
+{
+	return
+		visMat->getFlags().areCompatibleTo(getMaterialFlagMask())
+		&&
+		(
+			//draw debug stuff only if desired
+			( visMat->getType() != VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY )
+			||
+			URE_INSTANCE->doDebugDraw()
+		);
+}
+
 }

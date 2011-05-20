@@ -8,7 +8,18 @@ Ein paar worte ueber die shading features, wie sie maskiert werden, SceneNodeVis
 
 \subsubsection{Die Lighting Simulation Pipeline Stages}
 	baseclass etc...
-	shadowmap gen stage, direct lighting stage, was noch in planung is etc..	
+	shadowmap gen stage, direct lighting stage, was noch in planung is etc..
+
+	in planung: deferred rendering G-Bufferfill, deferred rendering shade, div. post processing stages
+	
+\subsubsection{Camera}
+
+
+\subsubsection{LightSource und LightSourceManager}
+	
+	
+\subsubsection{RenderTarget}	
+	
 
 \subsubsection{ShaderManager}
 	generiert mit grantlee, assigned an materials und verwaltet Shader , abhaenging von der aktuellen lighting stage, den registierten Materials,
@@ -29,6 +40,35 @@ Ein paar worte ueber die shading features, wie sie maskiert werden, SceneNodeVis
 	\sectionlevelfour{Instancing}
 	InstanManager, InstangedGeometry vorstellen, konzept, wie es verwaltet wird, erklaeren;
 	batching
+ 	\lstset{language=GLSL}
+ 	\begin{lstlisting}[caption={Transformationsmatrizen-Uniforms im Vertex Shader},label=listing:VertShaderTransformDef]
+{% if instancedRendering %}
+
+  struct InstanceTransform
+  {
+    mat4 modelMatrix;  //needed for layered rendering to be combined with the several lightsource matrices
+    mat4 modelViewMatrix; //needed in a non-layered context for calculation of view-space values for lighting calculations
+    mat4 modelViewProjectionMatrix; //needed in a non-layered context for gl_Position calculation
+    
+    int uniqueInstanceID; //it is not guearnteed that for each "logic" instance, the gl_InstanceID stays the same for every draw call
+                          //e.g. because of culling of "previous" instances, the own gl_InstanceID will get smaller 
+    
+    //no padding, because the offsets will be queried via glGetActiveUniformsiv(...)
+  };
+
+  layout(shared) uniform InstanceTransformBuffer
+  {
+    InstanceTransform instanceTransforms[  {{numMaxInstancesRenderable}} ];
+  };
+{% else  %}
+  uniform mat4 modelMatrix;
+  uniform mat4 modelViewMatrix;
+  uniform mat4 modelViewProjectionMatrix; 
+{% endif %}
+ 	\end{lstlisting}
+ 	\lstset{language=C++} %we want C++ code listings	
+	
+	
 	
 	\sectionlevelfour{Hardware Tesselation}
 	basics des GL4- hardware features erwaehnen fuer den geneigten leser, raptor-modell erwaehnen und seinen 		

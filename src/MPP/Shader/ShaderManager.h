@@ -49,7 +49,6 @@ public:
 	//the attachment status of the rendertaget is validated to fit the material's needs and the shader's
 	//binding status.
 	//throws exception if there is something incompatible;
-	//void setRenderingScenario(RenderingTechnique rendTech,TextureType renderTargetTextureType, RenderTarget* rt)throw(SimulatorException);
 	void setRenderingScenario(LightingSimStageBase* lightingStage)throw(SimulatorException);
 
 

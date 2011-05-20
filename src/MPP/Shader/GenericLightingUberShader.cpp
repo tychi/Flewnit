@@ -24,7 +24,8 @@
 #include "Buffer/Texture.h"
 #include "MPP/Shader/ShaderManager.h"
 
-namespace Flewnit {
+namespace Flewnit
+{
 
 
 //public constructor for deferred lighting (which does not involve material classes and hence
@@ -75,6 +76,9 @@ void GenericLightingUberShader::use(SubObject *so) throw (SimulatorException)
    VisualMaterial * visMat =  dynamic_cast<VisualMaterial*>(so->getMaterial());
    assert(visMat);
    setupMaterialUniforms(visMat);
+
+   setupShadowMapUniform(visMat);
+
 //---------- uncategorized uniforms to come ------------------------------------------------
 	bindVector3D("eyePositionW",URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getPosition());
 

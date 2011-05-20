@@ -154,6 +154,7 @@ protected:
 	void setupTransformationUniforms(SubObject* so);
 	//either binds the lightsoure uniform buffer or sets the non-buffer-single-lightsource uniforms directly
 	void setupLightSourceUniforms();
+	void setupShadowMapUniform(VisualMaterial* visMat);
 	void setupMaterialUniforms(VisualMaterial* visMat);
 	void setupTessellationParameters(VisualMaterial* visMat);
 

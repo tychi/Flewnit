@@ -30,6 +30,8 @@ public:
 	virtual bool initStage()throw(SimulatorException);
 	virtual bool validateStage()throw(SimulatorException);
 
+	virtual bool checkCompatibility(VisualMaterial* visMat);
+
 };
 
 }

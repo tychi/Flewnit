@@ -40,11 +40,13 @@ public:
 	//to draw and which not
 	//void drawAllCompliantGeometry(const VisualMaterialFlags& materialFlagMask);
 
-	//NON-pure virtual here, because many lighting stages don't need any special implementation;
 	//usually, a scene node is tested if it is a world object an if true, its "visual domain" subobjects are
 	//checked for compatibility with the current material type mask, and if the check passed,
 	//their material is activated and their geometry drawn;
 	virtual void visitSceneNode(SceneNode* node);
+	//determine if a given material is campatible to the current Liging Simulation Stage
+	virtual bool checkCompatibility(VisualMaterial* visMat)=0;
+
 
 	virtual bool stepSimulation() throw(SimulatorException)  =0;
 	virtual bool initStage()throw(SimulatorException) = 0;

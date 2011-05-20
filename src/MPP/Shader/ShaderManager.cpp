@@ -223,13 +223,23 @@ void ShaderManager::setRenderingScenario(LightingSimStageBase* lightingStage)thr
 
 			//mat->setTexture(SHADOW_MAP_SEMANTICS, rt->getStoredDepthTexture());
 			mat->setTexture(SHADOW_MAP_SEMANTICS, shadowMapTex);
-		}
 
-		if ( !  mat->getFlags().areCompatibleTo(lightingStage->getMaterialFlagMask())) {
-			//will be masked anyway, set shader to 0 as there is nothing useful to generate
-			mat->setShader(0);
-		} else {
-			assignShader(mat);
+			if ( mat->getFlags().castsShadows )
+			{
+				assignShader(mat);
+			}
+		}
+		else
+		{
+
+			if ( mat->getFlags().areCompatibleTo(lightingStage->getMaterialFlagMask()))
+			{
+				assignShader(mat);
+			}
+//			else {
+//				//will be masked anyway, set shader to 0 as there is nothing useful to generate
+//				mat->setShader(0);
+//			}
 		}
 	}
 
@@ -410,7 +420,7 @@ Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 			assert(0&&"liquid rendering comes later");
 			break;
 //		case VISUAL_MATERIAL_TYPE_INSTANCED:
-//			//create nothing, as an instancedMaterial needs no shader;
+//			//no such material, obsolete
 //			return 0;
 //			break;
 		default:

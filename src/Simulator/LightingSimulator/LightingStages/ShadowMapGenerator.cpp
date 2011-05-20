@@ -161,6 +161,18 @@ void ShadowMapGenerator::setPolygonOffset(const Vector2D& val)
 
 }
 
+
+
+
+bool ShadowMapGenerator::checkCompatibility(VisualMaterial* visMat)
+{
+	return visMat->getFlags().castsShadows;
+
+}
+
+
+
+
 }
 
 //supposedly unneeded legace code:
