@@ -8,7 +8,7 @@
 	Wie auf Seite \pageref{overview:bufferAbstraction} erwähnt, abstrahiert die \lstinline|BufferInterface|-Klasse
 	sämtliche Buffer-bezogene Funktionalität, namentlich für Host-Buffer, OpenCL-Buffer, 
 	verschiedene OpenGL-Buffertypen und letztendlich verschiedene Texturtypen (eine Teilmenge davon ist OpenCL-interop-
-	kompatibel bzw als reine OpenCL-Textur erschaffbar).
+	kompatibel bzw. als reine OpenCL-Textur erschaffbar).
 	Es ergibt sich ein wahrer Moloch, der für eine relativ einheitliche Handhabung zu abstrahieren ist: 
 	
 	\begin{itemize}
@@ -26,7 +26,7 @@
 	Es hat schon sehr viel Zeit gekostet, sich aus den Spezifikations-Dokumenten 
 	(\cite{openGL_4_1_Spec}, \cite{openCL_1_0_Spec}) die möglichen Permutationen, Zusammenhänge, Entsprechungen
 	und unterstützten Operationen zu erarbeiten 
-	(siehe Tabellen \ref{tab:channelLayoutAndTypes} und \ref{tab:textureTypes}).
+	(siehe Tabellen \ref{tab:bufferSupportInContexts} und \ref{tab:textureTypes}).
 	
 	Die Ergebnisse dieser Tabellen flossen in die Entscheidung ein, welche konkreten Buffer-
 	und Textur-Klassen mit welchen  verfügbaren Features durch Ableitung vom
@@ -66,7 +66,7 @@
 		und Frame Buffer Objects (FBO's) 
 		\footnote{abstrahiert von \lstinline|Flewnit::RenderTarget|}, 
 		da hier zur Assoziation von VBO-Vertex Attribute Buffern mit Input-Variablen im Vertex Shader
-		bzw and FBO gehängte Texturen mit Output-Variablen im Fragment Shader
+		bzw ans FBO gehängte Texturen mit Output-Variablen im Fragment Shader
 		ein Index angegeben werden muss. 
 		Wenn wir als Index die numerische Entsprechung der Buffer-Semantik verwenden, 
 		ist nicht nur die Lesbarkeit des Codes erhöht, es ist auch automatisch sichergestellt, 
@@ -105,7 +105,7 @@ enum GLBufferType
 		und die etwaige Normalisierung eines Buffers mit Channels, 
 		z.B. einer Textur oder einem Vertex Attribute Buffer,
 		siehe Listing \ref{listing:BufferElementInfo} im Anhang \ref{append:bufferListings}.
-		Auf diese Weise spart man sich die verschiedenen "zusammengesklatschten", asymmetrischen GL/CL-Makros;
+		Auf diese Weise spart man dem Benutzer die verschiedenen "`zusammengesklatschten"', asymmetrischen GL/CL-Makros;
 		Die Structure validiert ihre Daten. Diese werden später für die internen CL/GL-API-Aufrufe in die
 		entsprechenden CL/GL-Makros transformiert,
 		siehe Listing \ref{listing:BufferElementInfoToCLGL} im Anhang \ref{append:bufferListings}.
@@ -132,7 +132,7 @@ typedef struct _cl_image_format {
 		
 		\item[class BufferInfo]
 		Dies ist die Klasse, die sowohl als "`Construction Info"' den Konstruktor-Code delegiert, als auch für 
-		den benutzer später Meta-Information bereitstellt.
+		den Benutzer später Meta-Information bereitstellt.
 		Es sei hier nur der Standard-Konstruktor angegeben:
 		
 		\begin{lstlisting}	
@@ -149,15 +149,14 @@ explicit BufferInfo(String name,
 		Ich muss zugeben, dass \lstinline|elementType| und \lstinline|elementInfo| redundant sind, außerdem diese 
 		beiden Parameter eigentlich bei generischen Buffern, wo die Typ-Information zumindest für die GPU Computing APIs
 		keine Rolle spielt, fehl am Platze sind. Mangelndem Überblick in der Anfangsphase der Implementierung
-		über die Verschiedenen Arten, Buffers in CL und GL zu nutzen, sind diese Design Flaws zuzuschreiben.
-		Ein Refactoring mit besser speziell zugeschnittenen Konstruktoren ist geplant.
-		zu nutzen
+		über die verschiedenen Arten, Buffers in CL und GL zu nutzen, sind diese Design Flaws zuzuschreiben.
+		Ein Refactoring mit spezieller zugeschnittenen Konstruktoren ist geplant.
 	
 	\item[class TextureInfo]
 		So wie \lstinline|Texture| von \lstinline|BufferInterface| erbt, erbt auch 
 		\lstinline|TextureInfo| von \lstinline|BufferInfo|. Sie stellt die gleiche Funktionalität für
 		die (abstrakte) \lstinline|Texture|-Klasse dar wie \lstinline|BufferInfo| für \lstinline|BufferInterface|.
-		Ein Unterschied besthet jedoch darin, dass \lstinline|TextureInfo| eigentlich nur dazu dient, 
+		Ein Unterschied besteht jedoch darin, dass \lstinline|TextureInfo| eigentlich nur dazu dient, 
 		die kombinierte Information aus den Parametern der "`eingeschränkten"' Konstruktoren 
 		der konkreten Textur-Klassen (\lstinline|Texture2D| etc.) und der inhärent klassenspezifischen
 		Eigenschaften an die \lstinline|Texture|-Oberklasse zu übergeben. Damit hat \lstinline|TextureInfo|
@@ -287,8 +286,8 @@ explicit TextureInfo(
 	entsprechenden OpenGL-Makros in ihrer Implementation nur geringfügig von ihren "`Farbtextur"'-
 	Oberklassen unterscheiden, nämlich in der Implementation der 
 	\lstinline|virtual void setupDefaultSamplerParameters()=0;|-Methode, die in \lstinline|Texture| definiert ist.
-	Hier z.B. der Compare-Mode und die Compare-Function für korrekten Lookup solcher Texturen als Shadow Map
-	über einen	Shadow-Sampler in GLSL.
+	Hier wird z.B. der Compare-Mode und die Compare-Function für korrekten Lookup solcher Texturen als Shadow Map
+	über einen	Shadow-Sampler in GLSL gesetzt.
 	
 	Man darf sich fragen, warum ich jede noch so sonderbar anmutende Spezial-Textur unterstützen will. Dies
 	hat den Grund, dass ich langfristig etliche Rendering Features unterstützen will, welche die meisten dieser 	
@@ -312,12 +311,22 @@ explicit TextureInfo(
 	%------------------------------------------------------------------------------------------
 	
 	Alle Operationen auf den Buffern/Texturen werden dann über das \lstinline|BufferInterface|
-	getätigt. Fast sämtlicher Kontrollfluss (Synchronisation,Validierung, Auswahl des richtigen Kontextes etc.)
+	getätigt, siehe das exemplarische Listing \ref{listing:bufferOperationInterface}. 
+	Fast sämtlicher Kontrollfluss (Synchronisation,Validierung, Auswahl des richtigen Kontextes etc.)
 	befindet sich in der Implementation	der (wohlgemerkt großteils \emph{nicht} virtuellen) 
 	Methoden von \lstinline|BufferInterface|. 
 	Nur die finale Bürde der verschiedenen API-Calls als Ergebnis des vorangegangenen Kontrollflusses
 	wird von \lstinline|protected| virtuellen Funktionen der abgeleiteten Klassen übernommen, wie im folgenden 	
 	Unterabschnitt beschrieben.
+	
+\begin{lstlisting}[caption={Operationen auf dem BufferInterface, Ausschnitt},label=listing:bufferOperationInterface]		
+	void bind(ContextType type)throw(BufferException);
+	void setData(const void* data, ContextTypeFlags where)throw(BufferException);
+	//if both CL and GL are enabled, then the buffer is shared and the implementation
+	//will decide which api will be used for the read/write;
+	void copyFromHostToGPU()throw(BufferException);
+	void readBack()throw(BufferException);
+\end{lstlisting}
 	
 	\subsubsection{Die API-bezogenen internen Buffer-Operationen}
 	Zur Vermeidung von Boilerplate-Code sind die Signaturen für die GPU Computing API-bezogenen 
@@ -379,8 +388,30 @@ explicit TextureInfo(
 	die von der abstrakten \lstinline|Texture|-Klasse erbt und selbst die Basisklasse für
 	\lstinline|Texture2DDepth| und \lstinline|Texture1DArray| bildet, 
 	vgl. Klassendiagramm (Abb. \ref{fig:ClassDiagOverview2}). Die meisten Signaturen aus "`BufferVirtualSignatures.h"'
-	werden schon von \lstinline|Texture| implementiert, da nicht jede API-Routine Textur-spezifisch ist.
+	werden schon von \lstinline|Texture| implementiert, da nicht jede API-Routine Textur-spezifisch ist.\\
 	Ich muss gestehen, dass ich diese Funktionen noch nicht systematisch getestet habe, daher Fehlerfreiheit nicht 
 	garantiert ist. Es sei nochmals betont, dass der Schwerpunkt bei einer möglichst generischen Konzeption lag,
 	nicht bei einer vollständigen Implementation. Es ist viel "`schlafender"' Code im System, der noch getestet, 
 	integriert, weiter entwickelt, ergänzt werden will.
+	
+	\subsubsection{PingPongBuffer}
+	Auch die für viele Algorithmen aufgrund ihrer inhärenten Struktur oder aufgrund der Beschränkungen bei der 	
+	Synchronisation parallelen Codes nötige "`Ping-Pong"'-Funktionalität \footnote{also die Verwendung von zwei Buffern, 
+	einem zum Lesen, einem zum Schreiben, und die Rollen werden nach jedem Schritt getauscht} ist durch das
+	\lstinline|BufferInterface| abstrahiert: Der \lstinline|PingPongbuffer| verwaltet intern zwei andere
+	\lstinline|BufferInterface|-Objekte und leitet die Methoden-Aufrufe, die durch das \lstinline|BufferInterface| 
+	definiert sind,	an den aktuell aktiven Buffer weiter. Der Rollentausch geschieht dann über 
+	\lstinline|PingPongBuffer::toggleBuffers()|.
+	Bei komplexeren Algorithmen, wei denen viele Toggles passieren, kann man schnell den Überblick verlieren, welcher
+	Buffer jetzt gerade aktiv ist; Besonders kritisch ist dieser Umstand dort, wo ein OpenGL Buffer-Handle
+	gebunden ist, oder ein OpenCL-Buffer-Handle als Argument für einen OpenCL-Kernel gesetzt ist.
+	Diese Bindings lassen sich nicht von einem \lstinline|toggleBuffers()| beeindrucken, 
+	da die \lstinline|BufferInterface|-Klasse selbst nicht weiß, in in welche Hierarchie an verschiedensten Binding-Points
+	seine verwalteten Handles gerade integriert sind oder nicht.
+	Um dem Programmierer die Bürde zu nehmen, neben den Toggles auch noch ständig die CL/GL-Bindings zu ändern,
+	wurden Mechanismen implementiert, die diese Operationen automatisch tätigen, nämlich bisher in 
+	\lstinline|VertexBasedGeometry| um Attribute und Index Buffer Bindings konsitent zu halten 
+	(s. Abschnitt \ref{sec:VertexBasedGeometry}) und in
+	\lstinline|CLKernelArgument| (s. Abschnitt \ref{sec:CLKernelArguments}), um die Kernel-Arguments nicht "`von Hand"'
+	immer neu setzen zu müssen.
+	

@@ -14,7 +14,7 @@ namespace Flewnit {
 
 /**
  *  *  Class maintaining pointers to buffers containing geometric information (VBO and/or several ((non)interop) OpenCL Buffers);
- *  	These buffers will be treated differently, depending on the curren sim stage;
+ *  	These buffers will be treated differently, depending on the current sim stage;
  */
 class BufferBasedGeometry :
 	public Geometry

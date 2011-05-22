@@ -1,1 +1,59 @@
 montag, 23.5.,17.30
+
+Status (23.5.2011, 1:11 Uhr a.m.):
+  	Schon jetzt habe ich 69 Seiten (inkl. allem Drumherum), und bin noch nichtmal mit dem ersten der Drei großen Blöcke meiner Ausarbeitung
+  	fertig (Architektur, sisuelle Simulation, Mechaniksimulation);
+  
+
+Fragen:
+  
+
+  Inhalt:
+  
+  - Listings im Anhang zu umfangreich/unnötig?
+  
+  - Ist der Stil mit den Klassennamen im Listing-Stil innerhalb des Fließtextes eher hilfreich oder eher störend?
+  
+  - Da sich die vorläufige Aufgabenstellung nicht unerheblich vom jetzigen tatsächlichen Thema unterscheidet,
+    und diese anscheinend auch immer mit gebunden werden soll: Wie geht man mit dieser Diskrepanz um?
+  
+  - Wie kommen Sie bequem an den Code/ein lauffähiges Programm? Alles ist im Netz, allerdings nur für Linux
+    und das Setup der dependencies nicht völlig trivial (habe noch kein How-To verfasst)?
+    Soll ich Ihnen die git-Befehle geben, um den Code auszuchecken? Oder ihn auf CD mitliefern?
+    (Binaries in der Linux-Welt wo man sich so vieles selbst compilet, erscheinen mir sonderbar, vor allem weil womöglich
+    Versionskonflikte mit verschiedenen Versionen von Dependencies drohen)
+  
+  - Ist es angemessen, auf das github-Repository in der Ausarbeitung zu verweisen? Oder ist das unprofessionell?
+    Bisher habe ich in solchen Arbeiten (z.T. zu meinem Bedauern) keinerlei Hinweise gesehen, wie man an den Code herankommen könnte.
+    
+    
+  Abgabe:
+  
+  - Wie läfut Abgabe genau? Welches Büro zur Abgabe bei Ihnen und dem Prüfungsamt? Um wie viel Uhr ist es zu spät? 
+    (hängt das von Öffnungszeiten des Prüfungsamtes ab?)
+    
+  - Ich vermute, dass wenn mir die Zeit keinen Strich durch die Rechnung macht, die Arbeit weit über hundert Seiten lang wird;
+  	Ist dies überhaupt angemessen, in dem Sinne, dass der Umfang eher als Unvermögen, zu kürzen, ausgelegt wird, und weniger 
+  	als besonderes Engagement gewürdigt wird? Sofern dies als Unvermögen gilt: Wo könnte ich am ehesten kürzen?
+  	Ich würde am ehesten das "Nachkauen" des SPH-Verfahren weglassen, und auf entsprechende Quellen verweisen;
+  	Das Verfahren ist - bezogen auf seine Anwendung - nicht sonderlich komplex,
+  	auf dem Detail-Grad, wie ich es gern hätte, habe ich noch keine
+  	Literatur gefunden (ich hab allerdings in das Original-Paper noch nicht hineingeschaut). Ich würde es gern tiefer verstehen
+  	und dieses "Mehr" an Verständnis dem geneigten Leser mitteilen, da ich dieses "Mehr" in sämtlicher mir bekannter Literatur vermisse.
+  	Aber ich habe keine Zeit, und weiß nicht, welch mathematischer Moloch sich im Hintergrund dieses Verfahrens verbirgt.
+  	Ich habe mich ja viel mehr auf die effiziente Implementierung als auf die Physik fokussieren müssen,
+  	und freie Text-Reproduktion (um plagiate zu vermeiden) ohne die Macht/Zeit/Wissen, 
+  	etwas Verständnis-förderndes zu ergänzen, gefällt mir nicht, denn reine Reproduktion von Information
+  	ist für mich die simpelste und (für einen Leser!) unnötigste Form akademischer Leistung.
+
+  - Das Scham- und Schande-Kapitel:
+    Besteht irgendeine Möglichkeit, das Abgabedatum doch noch weiter hinauszuzögern? 
+    Krankschreibung kommt nicht in Frage, ich habe auch meinen Stolz, lieber gebe ich unfertig ab, 
+    aber vllt lässt sich mit dem Umfang der Thematik argumentieren oder gar mit der schwammigen Zeitspanne der "Monate", 
+    in der die Fristen in der Prüfungsordnung angegeben sind, die ja keinen klar definierten Zeitraum wie etwa "Sekunden" angibt ;).
+    Bevor ich Sie gegen mich aufbringe, werde ich fristgerecht ohne Jammern abgeben, egal welchen Zustand die Arbeit hat.
+    Mein Ziel war, viel zu lernen, das habe ich erreicht, Noten sind höchstens ein Nebenprodukt, nicht Triebfeder meiner Motivation. 
+    Ich bereue nichts, außer dass ich - entgegen gängiger Praktiken - fast sofort nach Themenfindung angemeldet habe.
+    Wollte nur mal nachgefragt haben ;).
+  	
+  	

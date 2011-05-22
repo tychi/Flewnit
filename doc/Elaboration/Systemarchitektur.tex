@@ -686,6 +686,50 @@ virtual void deactivate(SimulationPipelineStage* currentStage,
 
 \subsection{Geometry}
 	\label{sec:geometry}
+	Die \lstinline|Geometry|-Klasse bildet die abstrakte Basisklasse verschiedenster geometrischer Reräsentationen.\\
+	%\footnote{und ergänzt und bildet somit in Kombination  mit dem \lstinline|Material| eine Manifestation eines 
+	%materiellen Objektes};
+	Beispiele solcher Repäsentationen sind:
+	\begin{itemize}
+		\item Vertex-basiert:  Punkte, Linien(-Züge), Dreicke, Quads und beliebige Polygone lassen sich theoretisch
+		aus ihnen konstruieren \footnote{theoretisch deshalb, weil z.B. OpenGL maximal Dreiecks-Primitive unterstützt, im 
+		Falle von Tessellation noch Quads, aber das ist buchstäblich ein anderes Kapitel}
+		\item Voxel-basiert
+		\item Freiform-Flächen-basiert: NURBS, Bézier-Patches etc.
+		\item Primitiv-Basiert: das Objekt ist aufgebaut aus Primitiven die Quader, Kugel, Kapseln, Zylindern etc.;
+			Diese Repräsentation wird gerne für Collision Shapes bei mechanischen Simulation von Rigid Bodies verwendet.
+	\end{itemize}
+	Die Repräsentationen Überschneiden sich in ihren Kategorisierungen und Eigenschaften, eine sinnvolle Strukturierung ist 
+	also weder trivial noch womöglich eindeutig. Die API-Spezifischen Beschränkungen erleichtern diese Aufgabe nicht 
+	geraden, wenn man das Effiziente Mapping auf eine API im Hinterkopf behalten muss.
+	Ich habe mir nicht weiter den Kopf zerbrochen, auch, weil mir spezifisches Wissen z.B. über Primitiv-basierte
+	Rigid Body- Simulation fehlt, und habe mich pragmatisch in der exemplarischen Implementierung auf die
+	beiden Basis-Repräsentationen beschränkt, die bei aktuellem visuellen Echzeitrendering und interaktiver
+	Fluidsimulation die wichtigste Rolle spielen: Vertex- und Voxel-basiert. Hierbei sind auch API-spezifische Überlegungen
+	mit eingeflossen. Man muss abwägen zwischen der konzeptionell saubersten und umfassendsten Konzeption
+	und der effizienten Realisierbarkeit mit verfügbaren Hardware- und Software-Architekturen;
+	im Zweifelsfalle siegt das Konzept, was die effiziente Realisierbarkeit begünstigt.\\
+	
+	Die Basisklasse hat die Methode
+	\begin{lstlisting}	
+virtual void draw(
+	unsigned int numInstances=1,
+	GeometryRepresentation desiredGeomRep = DEFAULT_GEOMETRY_REPRESENTATION ) = 0;
+	\end{lstlisting}
+	
+	TBC
+	
+	
+	
+	\subsubsection{BufferBasedGeometry}
+
+	\subsubsection{VertexBasedGeometry}
+	\label{sec:VertexBasedGeometry}
+	
+	\subsubsection{InstancedGeometry}
+	
+	
+	
 	Abtract, Buffer based, Vertex based etc.. ein paar konzepte (implementiert/genutzt nur VertexBased)  
 		
 
@@ -699,6 +743,13 @@ Massively Parallel Program
 		
 	\subsubsection{OpenCLProgram}
 		shader + manager+unterklassen + arguments etc.. event waiting, synch, acquire...
+		
+		\sectionlevelfour{CLKernelArguments}
+		\label{sec:CLKernelArguments}
+
+
+
+
 
 \subsection{Status der Implementierung am Ende der BA}
 \label{sec:statusImplementation}
