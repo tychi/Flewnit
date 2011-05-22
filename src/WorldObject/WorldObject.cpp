@@ -19,7 +19,11 @@ namespace Flewnit
 WorldObject::WorldObject(String name,
 		SceneNodeTypeFlags typeflags,
 		const AmendedTransform& localtransform)
-: SceneNode(name, typeflags, localtransform)
+: SceneNode(
+		name,
+		//add visual flag, as a world object is always kind of visible
+		SceneNodeTypeFlags(typeflags | VISUAL_OBJECT),
+		localtransform)
 {
 
 	// TODO Auto-generated constructor stub
@@ -46,7 +50,7 @@ std::vector<SubObject*>& WorldObject::getSubObjects(SimulationDomain whichDomain
 void WorldObject::addSubObject(SubObject* so)throw(SimulatorException)
 {
 	mPhysicalReps[so->getSimDomain()].push_back(so);
-	so->setOwningWorldObject(this);
+	so->mOwningWorldObject=this;
 }
 
 

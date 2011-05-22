@@ -61,13 +61,13 @@ BufferInfo::BufferInfo(const BufferInfo& rhs)
 }
 
 
-BufferInfo::BufferInfo(const BufferInfo& rhs,String alternateName, bool isPingPongBuf)
+BufferInfo::BufferInfo(const BufferInfo& rhs,String alternateName)
 : elementInfo(rhs.elementInfo)
 {
 	(*this) = rhs;
 
 	this->name=alternateName;
-	this->isPingPongBuffer = isPingPongBuf;
+	this->isPingPongBuffer = true;
 
 }
 

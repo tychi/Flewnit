@@ -6,14 +6,14 @@
  *      Author: tychi
  */
 
-#include "Scene/SceneNode.h"
+#include "WorldObject/WorldObject.h"
 
 #pragma once
 
 namespace Flewnit {
 
 class Camera
-: public SceneNode
+: public WorldObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 public:

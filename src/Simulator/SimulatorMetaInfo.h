@@ -64,29 +64,28 @@ enum SimulationKindFlags
 	SOUND_SIMULATION		= 1<<6
 };
 
-//ID flags for scene nodes and theri derived world objects;
+//ID flags for scene nodes and their derived world objects;
 enum SceneNodeTypeFlags
 {
 	PURE_NODE 			=	0,
 
+	VISUAL_OBJECT 		= 1<<0,	//everything geom. rep. imaginable
+	SOUND_OBJECT 		= 1<<1,	//no geometric representation needed
 
-	FLUID_OBJECT 		= 1<<0,	//particles or voxels
-	RIGID_BODY 			= 1<<1,	//particles or triangles or voxelized or primitive based..
+	FLUID_OBJECT 		= 1<<2,	//particles or voxels
+	RIGID_BODY_OBJECT	= 1<<3,	//particles or triangles or voxelized or primitive based..
 								//doesn't matter during thesis but the first representation
-	SOFT_BODY_OBJECT	= 1<<2,	//triangles and maybe many more .. doesn't matter during thesis
-	CLOTH_OBJECT	 	= 1<<3,	//triangle strips and maybe many more .. doesn't matter during thesis
-	HAIR_OBJECT 		= 1<<4, //line strips and maybe many more .. doesn't matter during thesis
+	SOFT_BODY_OBJECT	= 1<<4,	//triangles and maybe many more .. doesn't matter during thesis
+	CLOTH_OBJECT	 	= 1<<5,	//triangle strips and maybe many more .. doesn't matter during thesis
+	HAIR_OBJECT 		= 1<<6, //line strips and maybe many more .. doesn't matter during thesis
 
-	STATIC_OBJECT		= 1<<5,	//triangles with special access pattern and several index buffers
+	STATIC_OBJECT		= 1<<7,	//static collision object
 
-	VISUAL_OBJECT 		= 1<<6,	//everything geom. rep. imaginable
-	SOUND_OBJECT 		= 1<<7,	//no geometric representation needed
-
-	CAMERA_NODE			= 1<<8,	//no geometric representation needed
-	LIGHT_NODE			= 1<<9, //no geometric representation needed
+	CAMERA_OBJECT		= 1<<8,	//no geometric representation required, but possible
+	LIGHT_OBJECT		= 1<<9, //no geometric representation required, but possible
 
 	//for debug drawing, we'll treat structures like uniform grids, kd trees etc. like WolrdObjects
-	SPATIAL_DATA_STRUCTURE_OBJECT = 1<<9	//implicit representation, debug drawn via instancing
+	SPATIAL_DATA_STRUCTURE_OBJECT = 1<<9	//implicit representation, possibly debug drawn
 
 };
 

@@ -23,8 +23,9 @@ class Material
 : public SimulationObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-public:
+protected:
 	Material(String name, SimulationDomain sd);
+public:
 	virtual ~Material();
 
 	//check for equality in order to check if a material with the desired properties
@@ -38,10 +39,10 @@ public:
 	//The VisualMaterial needs the SubObject to backtrack to the associated geometry and the world object to get the transform;
 	virtual void activate(
 			SimulationPipelineStage* currentStage,
-			SubObject* currentUsingSuboject) throw(SimulatorException)=0;
+			SubObject* currentUsingSuboject) throw(SimulatorException){}
 	//undoing stuff, like re-enable depth test etc.
 	virtual void deactivate(SimulationPipelineStage* currentStage,
-			SubObject* currentUsingSuboject) throw(SimulatorException)=0;
+			SubObject* currentUsingSuboject) throw(SimulatorException){}
 };
 
 

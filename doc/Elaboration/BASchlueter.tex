@@ -76,7 +76,8 @@
 \tableofcontents
 \clearpage         	% oder \cleardoublepage bei zweiseitigem Druck
 \listoffigures   % fuer ein eventuelles Abbildungsverzeichnis
-% \clearpage
+\listoftables
+\clearpage
 
 \pagenumbering{arabic}
 
@@ -126,6 +127,15 @@
 	
 
 	\input{Fazit.tex}
+	
+	
+%-------------------------------------------------------	
+\appendix
+\section{Listings zur Buffer-Abstraktion}
+	\label{append:bufferListings}
+	\input{AppendixBufferListing.tex}
+
+
 
 %%%%%%% Literaturverzeichnis %%%%%%%%
 \bibliographystyle{alpha}

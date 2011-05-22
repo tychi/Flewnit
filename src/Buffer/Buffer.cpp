@@ -194,6 +194,7 @@ void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(Buff
 	);
 
 }
+
 void Buffer::copyCLFrom(ComputeBufferHandle& bufferToCopyContentsFrom)throw(BufferException)
 {
 	PARA_COMP_MANAGER->getCommandQueue().enqueueCopyBuffer(
@@ -210,7 +211,7 @@ void Buffer::copyCLFrom(ComputeBufferHandle& bufferToCopyContentsFrom)throw(Buff
 
 void Buffer::freeGL()throw(BufferException)
 {
-	GUARD(glDeleteBuffers(1, &mGraphicsBufferHandle));
+	glDeleteBuffers(1, &mGraphicsBufferHandle);
 }
 
 void Buffer::freeCL()throw(BufferException)

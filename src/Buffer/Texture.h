@@ -37,10 +37,13 @@ namespace Flewnit
 		}
 		no Array:
 		{
-			Texture1D		(bool genMipmaps);	//ocl bindung not supported :@
+			Texture1D		(bool genMipmaps);	//ocl binding not supported :@
 
-			Texture2D		(bool genMipmaps, bool oclbinding);
-			Texture2DCube	(bool genMipmaps, bool oclbinding); // array (in GL 3.3), multisample forbidden
+			//attention! rectangle and mip mapping mutual exclusive!
+			Texture2D		(bool genMipmaps, bool oclbinding, bool rectangle);
+			Texture2DCube	(bool genMipmaps);  // multisample forbidden,
+												// ocl binding possible, but not supported by this framework
+												//array forbidden in GL 3.3, allowed in GL4.1 <-- not supported by this framework
 
 			Texture3D		(bool genMipmaps, bool oclbinding); //array, multisample forbidden (2D tex-arrays logically don't count as 3D tex)
 		}
@@ -53,6 +56,12 @@ namespace Flewnit
 			{
 				Texture2DArrayMultiSample(int numMultiSamples, int numLayers)
 			}
+			no MultiSample:
+			{
+				Texture2DDepthArray(int numLayers)
+			}
+
+
 
 		}
 		no Array
@@ -63,7 +72,8 @@ namespace Flewnit
 			}
 			no MultiSample
 			{
-				Texture2DRect	(bool oclbinding); //mipmap, array, multisample forbidden
+				Texture2DDepth	( bool oclbinding, bool rectangle )
+				Texture2DDepthCube() // ocl binding possible, but not supported by this framework
 			}
 		}
 	}

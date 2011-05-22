@@ -180,8 +180,6 @@ void Texture2D::generateCLGL()throw(BufferException)
 			mTextureInfoCastPtr->textureTarget,
 			0,
 			mGraphicsBufferHandle,
-			//TODO check if adress of a reference is the same as the adress of a variable
-			//& PARA_COMP_MANAGER->getLastCLErrorReference()
 			PARA_COMP_MANAGER->getLastCLErrorPtr()
 	);
 }
@@ -212,7 +210,6 @@ void Texture2D::writeGL(const void* data)throw(BufferException)
 			mTextureInfoCastPtr->dimensionExtends.y,
 			mTextureInfoCastPtr->glImageFormat.channelOrder,
 			mTextureInfoCastPtr->glImageFormat.channelDataType,
-			//don't set data yet, just alloc mem
 			data
 	);
 

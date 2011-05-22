@@ -1,5 +1,9 @@
 \begin{thebibliography}{vdLGS07}
 
+\bibitem[APS00]{microfacet}
+Michael Ashikhmin, Simon Premoze, and Peter Shirley.
+\newblock A microfacet-based brdf generator, 2000.
+
 \bibitem[BMF07]{Bridson2007FluidSimCourseNotes}
 Robert Bridson and Matthias M\"{u}ller-Fischer.
 \newblock Fluid simulation: Siggraph 2007 course notes.
@@ -22,6 +26,16 @@ Mark Harris, Shubhabrata Sengupta, and John~D. Owens.
 \newblock {Parallel Prefix Sum (Scan) with CUDA}.
 \newblock In Hubert Nguyen, editor, {\em GPU Gems 3}, chapter~39.
   Addison-Wesley Professional, 2007.
+
+\bibitem[Khr09]{openCL_1_0_Spec}
+Khronos Group.
+\newblock {\em The OpenCL Specification}, version: 1.0, document revision: 48 -
+  10/6/09 edition, 2009.
+
+\bibitem[Khr10]{openGL_4_1_Spec}
+Khronos Group.
+\newblock {\em The OpenGL Graphics System: A Specification}, version 4.1 (core
+  profile) - july 25, 2010 edition, 2010.
 
 \bibitem[LG08]{Grand2008}
 Scott Le~Grand.

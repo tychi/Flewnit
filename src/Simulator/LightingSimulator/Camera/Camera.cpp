@@ -20,7 +20,7 @@ Camera::Camera(String name, const AmendedTransform& localTransform,
 		float nearClipPlane,
 		float farClipPlane)
 :
-		SceneNode(name, CAMERA_NODE, localTransform),
+		WorldObject(name, CAMERA_OBJECT, localTransform),
 		mVerticalFOVAngle(verticalFOVAngle),
 		mNearClipPlane(nearClipPlane), mFarClipPlane(farClipPlane)
 {

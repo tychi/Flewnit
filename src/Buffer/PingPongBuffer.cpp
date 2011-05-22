@@ -18,7 +18,7 @@ PingPongBuffer::PingPongBuffer(String name,BufferInterface* ping, BufferInterfac
 :
 //take BufferInfo from one of the Managed Buffers
 //BufferInterface(ping->getBufferInfo()),
- BufferInterface( BufferInfo( ping->getBufferInfo(), name, true ) ),
+ BufferInterface( BufferInfo( ping->getBufferInfo(), name ) ),
  mActiveBufferIndex(0),
  mInactiveBufferIndex(1)
 {

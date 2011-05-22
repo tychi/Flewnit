@@ -1,0 +1,466 @@
+
+\begin{lstlisting}[caption={BufferSemantics},label=listing:BufferSemantics]	
+enum BufferSemantics
+{
+	// following semantics generally used in
+	//Generic Vertex Attribute Buffers and/or OpenCL (interop) Buffers
+	///\{
+	POSITION_SEMANTICS,
+	NORMAL_SEMANTICS,
+	TANGENT_SEMANTICS,
+	TEXCOORD_SEMANTICS,
+
+	VELOCITY_SEMANTICS,
+	MASS_SEMANTICS,
+	DENSITY_SEMANTICS,
+	PRESSURE_SEMANTICS,
+	FORCE_SEMANTICS,
+
+	Z_INDEX_SEMANTICS,
+	DIFFUSE_COLOR_SEMANTICS,
+	CUSTOM_SEMANTICS,
+
+	//we need that value to have static-length arrays holding VBO maintainance information
+	__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__,
+
+	//Semantic of the index buffer from a VBO used via glDrawElements()
+	INDEX_SEMANTICS,
+
+	//for a uniform buffer for matrices of instanced rendering
+	TRANSFORMATION_MATRICES_SEMANTICS,
+	LIGHT_SOURCE_BUFFER_SEMANTICS,
+	///\}
+
+	//following texture-only semantics; Texture can also have most of the above Semantics
+
+	DISPLACEMENT_SEMANTICS, //normal-depth or normal map
+	ENVMAP_SEMANTICS,
+	MATERIAL_ID_SEMANTICS,
+	PRIMITIVE_ID_SEMANTICS,
+	SHADOW_MAP_SEMANTICS,
+	AMBIENT_OCCLUSION_SEMANTICS, //attenuation value as result of AO calculations on a depth/position buffer
+	DETAIL_TEXTURE_SEMANTICS, //for stuff like terrain to hide low res decal texture
+	NOISE_SEMANTICS,
+	DEPTH_BUFFER_SEMANTICS, //e.g. for memory optimized ambient occlusion calculation
+	STENCIL_BUFFER_SEMANTICS,
+	INTERMEDIATE_RENDERING_SEMANTICS,
+	FINAL_RENDERING_SEMANTICS,
+
+	//actually real amount is one less than this value, but that doesnt matter
+	__NUM_TOTAL_SEMANTICS__,
+
+	//indicator for "empty" stuff, e.g. an empty Color Attachment slot in an FBO
+	INVALID_SEMANTICS
+};
+\end{lstlisting}
+
+
+\begin{lstlisting}[caption={GLImageFormat-Definition für intern symmetrischeren Umgang mit den 
+		Type-/Layout-/Precision-/Normalization- Makros von OpenCL und OpenGL },label=listing:GLImageFormat]	
+struct GLImageFormat
+{
+	//"internalformat" paramater of glTexImageXD; specifies
+	//	-	number of channels
+	//	-	number of bits per channel
+	//	-	data type of channel values (float, uint, int)
+	//	-	if (u)int values shall be normalized;
+	// All of this packed in one enum! Plus, this enum must comply with the channelOrder
+	// and the channelDataType below! So much invalid combinations are possible!
+	// Thus, the values of those enums are determined
+	//valid values: see the big table within the comment of BufferElementInfo: GL_RGBA32F .. GL_R8_SNORM;
+	GLint  	desiredInternalFormat;
+
+	//"format" paramater of glTexImageXD resp. cl_channel_order:
+	// texelInfo.numChannels == 1 --> GL_RED, 2 -->	GL_RG, 4 --> GL_RGBA
+	GLenum channelOrder;
+	
+	//"type" parameter of glTexImageXD, i.e cpu data layout;
+	//Compared to OpenCL, the if a (u)int- texel is normalized during texture lookup or not is
+	//determined via the "internalformat" param and not together with the CPU data type specifier;
+	//Therefore, only the following values are allowed;
+	//	GL_FLOAT		|GL_INT		|GL_UNSIGNED_INT
+	//	GL_HALF_FLOAT	|GL_SHORT   |GL_UNSIGNED_SHORT
+	//	--				|GL_BYTE	|GL_UNSIGNED_BYTE
+	GLenum	channelDataType;
+};			
+		\end{lstlisting}
+
+
+  	\begin{lstlisting}[caption={BufferElementInfo},label=listing:BufferElementInfo]
+struct BufferElementInfo
+{
+	/*
+	In this framework, it is strongly recommended to specify 
+	the desired internal layout	exactly, i.e. specify
+		1. number of channels: 1,2 or 4; 
+		   three channel types are not supported 
+		   by this framework due to alignment reasons;
+		2. internal data format on GPU memory: float,int, unsigned int
+		3. byte size per element: 8,16, or 32
+		4. flag, if  unsigned integer data formats 
+		   should be normalized to float in [0..1]
+		   resp.if signed integer data formats 
+		   should be normalized to float in [-1..1]
+
+	There is one minor drawback at the moment: 
+	CPU data must have the same format as the data 
+	which will reside on the GPU;
+	*/
+
+	//will be mapped internally to:
+	//	the "format" param of glTexImageXD:
+	//		GL_RED, 	GL_RG, 	GL_RGB (forbidden), GL_RGBA resp.
+	//	the  cl::ImageFormat.image_channel_order:
+	//		CL_R, 	CL_RG,	CL_RGB (forbidden), CL_RGBA
+	int numChannels; 	
+	GPU_DataType internalGPU_DataType;
+	int bitsPerChannel;	//8,16 or 32
+	bool normalizeIntegralValuesFlag;
+	
+	//guard to tell the validate() function that this struct is unused
+	//(e.g. for lightsource uniform buffers, generic opencl buffers etc);
+	//is set to true in the default constructor,
+	//copied in the copy constructor and set to false in the value-passing consturctor
+	bool hasNoChanneledElements;
+
+	/*...Constructors, equality and assignment operators omitted...*/
+	
+	void validate()const throw (BufferException);
+};
+	\end{lstlisting}
+
+
+
+
+\begin{lstlisting}[caption={Mapping von BufferElementInfo-Members zu OpenGL/OpenCL-Makros, exemplarischer Ausschnitt},label=listing:BufferElementInfoToCLGL]	
+/*...*/		
+		
+bool normalize =  elementInfo.normalizeIntegralValuesFlag;
+
+switch(elementInfo.internalGPU_DataType)
+{
+case GPU_DATA_TYPE_UINT :
+	switch(elementInfo.bitsPerChannel)
+	{
+	case 8:
+		glImageFormat.channelDataType = GL_UNSIGNED_BYTE;
+		if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT8;
+		else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT8;
+		switch(elementInfo.numChannels)
+		{
+		case 1:
+			elementType = TYPE_UINT8;
+			if(normalize)	glImageFormat.desiredInternalFormat  = GL_R8;
+			else			glImageFormat.desiredInternalFormat  = GL_R8UI;
+			break;
+		case 2:
+			elementType = TYPE_VEC2UI8;
+			if(normalize)	glImageFormat.desiredInternalFormat  = GL_RG8;
+			else			glImageFormat.desiredInternalFormat  = GL_RG8UI;
+			break;
+		case 4:
+			elementType = TYPE_VEC4UI8;
+			if(normalize)	glImageFormat.desiredInternalFormat  = GL_RGBA8;
+			else			glImageFormat.desiredInternalFormat  = GL_RGBA8UI;
+			break;
+		default:
+			assert(0&&"should never end here");
+		}
+		break;
+		case 16:
+			glImageFormat.channelDataType = GL_UNSIGNED_SHORT;
+			if(normalize)	clImageFormat.image_channel_data_type = CL_UNORM_INT16;
+			else			clImageFormat.image_channel_data_type = CL_UNSIGNED_INT16;
+
+		switch(elementInfo.numChannels)
+		{
+		case 1:
+			elementType = TYPE_UINT16;
+						
+	/*... continuing that way for many many lines...*/	
+\end{lstlisting}
+
+
+\begin{lstlisting}[
+	caption={
+		API- und Buffertyp-abhängige Operationen auf Buffern -- Implementationen durch die Buffer-Klasse
+	},
+	label=listing:bufferOpImpls_Buffer
+	]	
+void Buffer::generateGL()throw(BufferException)
+{
+	glGenBuffers(1, &mGraphicsBufferHandle);
+}
+void Buffer::generateCL()throw(BufferException)
+{
+	mComputeBufferHandle = cl::Buffer(
+			PARA_COMP_MANAGER->getCLContext(),
+			//TODO check performance and interface "set-ability" of CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY
+			CL_MEM_READ_WRITE,
+			mBufferInfo->bufferSizeInByte,
+			NULL,
+			PARA_COMP_MANAGER->getLastCLErrorPtr()
+	);
+}
+void Buffer::generateCLGL()throw(BufferException)
+{
+	mComputeBufferHandle = cl::BufferGL(
+			PARA_COMP_MANAGER->getCLContext(),
+			//TODO check performance and interface "set-ability" of CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY
+			CL_MEM_READ_WRITE,
+			mGraphicsBufferHandle,
+			PARA_COMP_MANAGER->getLastCLErrorPtr()
+	);
+	PARA_COMP_MANAGER->registerSharedBuffer(mComputeBufferHandle);
+}
+void Buffer::bindGL()throw(BufferException)
+{
+	glBindBuffer(mGlBufferTargetEnum, mGraphicsBufferHandle);
+}
+void Buffer::allocGL()throw(BufferException)
+{
+	glBufferData(
+		//which target?
+		mGlBufferTargetEnum,
+		// size of storage
+		mBufferInfo->bufferSizeInByte,
+		//data will be passed in setData();
+		NULL,
+		//draw static if not modded, dynamic otherwise ;)
+		mContentsAreModifiedFrequently ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+}
+void Buffer::writeGL(const void* data)throw(BufferException)
+{
+	glBufferSubData(mGlBufferTargetEnum,0,mBufferInfo->bufferSizeInByte,data);
+}
+void Buffer::writeCL(const void* data)throw(BufferException)
+{
+	PARA_COMP_MANAGER->getCommandQueue().enqueueWriteBuffer(
+			static_cast<cl::Buffer&>(mComputeBufferHandle),
+			PARA_COMP_MANAGER->getBlockAfterEnqueue(),
+			0,
+			mBufferInfo->bufferSizeInByte,
+			data,
+			0,
+			PARA_COMP_MANAGER->getLastEventPtr()
+	);
+}
+void Buffer::readGL(void* data)throw(BufferException)
+{
+	glGetBufferSubData(mGlBufferTargetEnum,0,mBufferInfo->bufferSizeInByte,data);
+}
+void Buffer::readCL(void* data)throw(BufferException)
+{
+	PARA_COMP_MANAGER->getCommandQueue().enqueueReadBuffer(
+			static_cast<cl::Buffer&>(mComputeBufferHandle),
+			PARA_COMP_MANAGER->getBlockAfterEnqueue(),
+			0,
+			mBufferInfo->bufferSizeInByte,
+			data,
+			0,
+			PARA_COMP_MANAGER->getLastEventPtr()
+	);
+}
+void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
+{
+	//bind other buffer as read target
+	GUARD(glBindBuffer(mGlBufferTargetEnum, bufferToCopyContentsFrom););
+	//bind own buffer as write target;
+	GUARD(glBindBuffer(GL_COPY_WRITE_BUFFER, mGraphicsBufferHandle););
+
+	GUARD(glCopyBufferSubData(
+			mGlBufferTargetEnum, //operator==() asserts that buffer types are equal, so mGlBufferTargetEnum == rhs.mGlBufferTargetEnum
+			GL_COPY_WRITE_BUFFER,
+			0,
+			0,
+			mBufferInfo->bufferSizeInByte);
+	);
+}
+void Buffer::copyCLFrom(ComputeBufferHandle& bufferToCopyContentsFrom)throw(BufferException)
+{
+	PARA_COMP_MANAGER->getCommandQueue().enqueueCopyBuffer(
+			static_cast<const cl::Buffer&>(bufferToCopyContentsFrom),
+			static_cast<const cl::Buffer&>(mComputeBufferHandle),
+			0,
+			0,
+			mBufferInfo->bufferSizeInByte,
+			0,
+			PARA_COMP_MANAGER->getLastEventPtr()
+	);
+}
+void Buffer::freeGL()throw(BufferException)
+{
+	glDeleteBuffers(1, &mGraphicsBufferHandle);
+}
+\end{lstlisting}
+
+
+
+
+\begin{lstlisting}[
+	caption={
+		API- und Buffertyp-abhängige Operationen auf Buffern -- teilweise Implementationen für alle Textur-Typen
+		durch die abstrakte Texture-Klasse
+	},	
+	label=listing:bufferOpImpls_Texture
+	]	
+//not pure, as all the same for every texture;
+void Texture::generateGL()throw(BufferException)
+{
+	glGenTextures(1, & mGraphicsBufferHandle);
+}
+//the two non-symmetrci GL-only routines:
+//non-pure, as binding is all the same, only the enum is different, and that can be looked up in mTexturInfo;
+void Texture::bindGL()throw(BufferException)
+{
+	glBindTexture(mTextureInfoCastPtr->textureTarget, mGraphicsBufferHandle);
+}
+//can be non-pure, as clEnqueueWriteImage is quite generic;
+void Texture::writeCL(const void* data)throw(BufferException)
+{
+	cl::size_t<3> origin; origin[0]=0;origin[1]=0;origin[2]=0;
+	cl::size_t<3> region;
+	region[0] =	mTextureInfoCastPtr->dimensionExtends.x;
+	region[1] =	mTextureInfoCastPtr->dimensionExtends.y;
+	region[2] =	mTextureInfoCastPtr->dimensionExtends.z;
+	PARA_COMP_MANAGER->getCommandQueue().enqueueWriteImage(
+			static_cast<cl::Image&>(mComputeBufferHandle),
+			PARA_COMP_MANAGER->getBlockAfterEnqueue(),
+			origin,
+			region,
+			0,
+			0,
+			//BAAAD haxx due to a bug in the ocl-c++-bindings: a otherwise const-param is non-const here,
+			//although it is const in the wrapped c-function 0_o
+			const_cast<void*>( data ),
+			0,
+			PARA_COMP_MANAGER->getLastEventPtr()
+	);
+}
+//non-pure, as glGetTexImage is quite generic :); at least one generic GL function ;(
+//BUT:
+//must be overidden with an exception-throw-implementation for certain concrete Texture classes
+//(namely multisample textures), which dont seem to be writable, copyable ar readable
+//must also be overridden by CubeMap class, as the read call must happen six times;
+void Texture::readGL(void* data)throw(BufferException)
+{
+	glGetTexImage(mTextureInfoCastPtr->textureTarget,
+			0,
+			mTextureInfoCastPtr->glImageFormat.channelOrder,
+			mTextureInfoCastPtr->glImageFormat.channelDataType,
+			data
+			);listing
+}
+//can be non-pure, as clEnqueueReadImage is quite generic;
+void Texture::readCL(void* data)throw(BufferException)
+{
+	cl::size_t<3> origin; origin[0]=0;origin[1]=0;origin[2]=0;
+	cl::size_t<3> region;
+	region[0] =	mTextureInfoCastPtr->dimensionExtends.x;
+	region[1] =	mTextureInfoCastPtr->dimensionExtends.y;
+	region[2] =	mTextureInfoCastPtr->dimensionExtends.z;
+
+	PARA_COMP_MANAGER->getCommandQueue().enqueueReadImage(
+			static_cast<cl::Image&>(mComputeBufferHandle),
+			PARA_COMP_MANAGER->getBlockAfterEnqueue(),
+			origin,
+			region,
+			0,
+			0,
+			data,
+			0,
+			PARA_COMP_MANAGER->getLastEventPtr()
+	);
+}
+//as it seems that a generic copying of many texture types can happen in an agnostic way
+//via two helper FBOs, this can be non-pure;
+//BUT:
+//must be overidden with an exception-throw-implementation for certain concrete Texture classes
+//(namely multisample textures), which dont seem to be writable, copyable or readable;
+//must also be overriden by CubeMap, as there are six color attachments to copy; or should one work with
+//glFrameBufferTextureFace ? well see in the future ;(
+void Texture::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
+{
+	//TODO implement when FBO class exists;
+	throw(BufferException("Texture::copyGLFrom: sorry, for copying, FBOs are needed, and the still must be implemented "));
+}
+//can be non-pure, as clEnqueueCopyImage is quite generic;
+void Texture::copyCLFrom( ComputeBufferHandle & bufferToCopyContentsFrom)throw(BufferException)
+{
+	cl::size_t<3> origin; origin[0]=0;origin[1]=0;origin[2]=0;
+
+	cl::size_t<3> region;
+	region[0] =	mTextureInfoCastPtr->dimensionExtends.x;
+	region[1] =	mTextureInfoCastPtr->dimensionExtends.y;
+	region[2] =	mTextureInfoCastPtr->dimensionExtends.z;
+
+	PARA_COMP_MANAGER->getCommandQueue().enqueueCopyImage(
+			//source
+			static_cast<const cl::Image&>(bufferToCopyContentsFrom),
+			//destination
+			static_cast<const cl::Image&>(mComputeBufferHandle),
+			origin,
+			origin,
+			region,
+			0,
+			PARA_COMP_MANAGER->getLastEventPtr()
+	);
+}
+//can be non-pure, as glDeleteTextures() applies to every texture type :)
+void Texture::freeGL()throw(BufferException)
+{
+	glDeleteTextures(1, & mGraphicsBufferHandle);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[
+	caption={
+		API- und Buffertyp-abhängige Operationen auf Buffern -- restliche Implementationen durch die Texture2D-Klasse
+	},	
+	label=listing:bufferOpImpls_Texture2D
+	]	
+void Texture2D::generateCLGL()throw(BufferException)
+{
+	mComputeBufferHandle = cl::Image2DGL(
+			PARA_COMP_MANAGER->getCLContext(),
+			CL_MEM_READ_WRITE,
+			mTextureInfoCastPtr->textureTarget,
+			0,
+			mGraphicsBufferHandle,
+			PARA_COMP_MANAGER->getLastCLErrorPtr()
+	);
+}
+void Texture2D::allocGL()throw(BufferException)
+{
+	glTexImage2D(
+			mTextureInfoCastPtr->textureTarget,
+			0,
+			mTextureInfoCastPtr->glImageFormat.desiredInternalFormat,
+			mTextureInfoCastPtr->dimensionExtends.x,
+			mTextureInfoCastPtr->dimensionExtends.y,
+			0,
+			mTextureInfoCastPtr->glImageFormat.channelOrder,
+			mTextureInfoCastPtr->glImageFormat.channelDataType,
+			//dont set data yet, just alloc mem
+			0
+	);
+
+}
+void Texture2D::writeGL(const void* data)throw(BufferException)
+{
+	glTexSubImage2D(
+			mTextureInfoCastPtr->textureTarget,
+			0,
+			0,0,
+			mTextureInfoCastPtr->dimensionExtends.x,
+			mTextureInfoCastPtr->dimensionExtends.y,
+			mTextureInfoCastPtr->glImageFormat.channelOrder,
+			mTextureInfoCastPtr->glImageFormat.channelDataType,
+			data
+	);
+	if(mTextureInfoCastPtr->isMipMapped)
+	{
+		glGenerateMipmap( mTextureInfoCastPtr->textureTarget );
+	}
+}
+\end{lstlisting}

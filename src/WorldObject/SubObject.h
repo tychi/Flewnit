@@ -22,17 +22,6 @@ class SubObject
 : public SimulationObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS
-
-	//backtracking, to get transform and all stuff ;)
-	WorldObject* mOwningWorldObject;
-
-
-	Geometry* mGeometry;
-	Material* mMaterial;
-
-	friend class WorldObject;
-	void setOwningWorldObject(WorldObject* wo){mOwningWorldObject= wo;}
-
 public:
 	SubObject(String name, SimulationDomain simDomain, Geometry* geo, Material* mat);
 	virtual ~SubObject();
@@ -41,6 +30,16 @@ public:
 	Material* getMaterial()const{return mMaterial;}
 
 	WorldObject* getOwningWorldObject(){return mOwningWorldObject;}
+private:
+	friend class WorldObject;
+	//void setOwningWorldObject(WorldObject* wo){mOwningWorldObject= wo;}
+	//backtracking, to get transform and all stuff ;); is set by friend'ed WorldObject directly
+	WorldObject* mOwningWorldObject;
+
+	Geometry* mGeometry;
+	Material* mMaterial;
+
+
 };
 
 }

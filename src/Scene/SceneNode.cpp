@@ -16,14 +16,21 @@ SceneNode::SceneNode(String name, SceneNodeTypeFlags typeflags,
 		const AmendedTransform& localTransform)
 : mName(name),
   mTypeFlags(typeflags),
+
   mLocalTransform(localTransform),
+  mLocalAABB(Vector4D(localTransform.getPosition(),1.0f),Vector4D(localTransform.getPosition(),1.0f)),
   mGlobalTransform(localTransform), //set global equal to local as long there is no parent
+  mGlobalAABB(Vector4D(localTransform.getPosition(),1.0f),Vector4D(localTransform.getPosition(),1.0f)),
   mGlobalAABBisValidFlag(true),
+
   mParent(0),
   mIsCurrentlyUpdating(false)
 {
 	mLocalTransform.setOwningSceneNode(this,false);
 	mGlobalTransform.setOwningSceneNode(this,true);
+
+	updateLocalAABB();
+
 }
 
 SceneNode::~SceneNode()

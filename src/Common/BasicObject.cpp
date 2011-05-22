@@ -31,7 +31,7 @@ namespace Flewnit
 #if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 
 	BasicObject::BasicObject()
-	:	mUniqueID(FLEWNIT_INVALID_ID),mMemoryFootPrint(-1)
+	:	mUniqueID(FLEWNIT_INVALID_ID),mMemoryFootPrint(0)
 	{
 		registerToProfiler();
 	}

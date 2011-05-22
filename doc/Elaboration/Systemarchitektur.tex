@@ -4,6 +4,10 @@
 Dieses Kapitel soll ein Gefühl für die Komponenten von \emph{Flewnit} und 
 ihre Zusammenhänge vermitteln. Die Komponenten "`in Aktion"' werden im Detail im Verlauf des Kapitels 
 \ref{sec:simulation} beschrieben.
+Dieses Kapitel soll die groben Konzepte und Ideen teilweise anhand von Beispielen vorstellen.
+Nicht jedes Feature, welches erwähnt wird, ist auch tatsächlich vollständig implementiert und getestet.
+Über den Status der Implementierung zum Zeitpunkt der Abgabe dieser Ausarbeitung
+gebe ich am Ende dieses Kapitels (Abschnitt \ref{sec:statusImplementation}) einen Überblick.
 
 Das System wurde in C++ als (wahlweise statisch oder dynamisch zu linkende) Bibliothek implementiert.
 Der Code der GPU-Programme ist in GLSL bzw. OpenCL C verfasst.
@@ -159,22 +163,28 @@ vec4 fragmentColor =
 
 
 \subsection{Klassendiagramm}
-Abbildung \ref{fig:ClassDiagOverview1} und \ref{fig:ClassDiagOverview2} zeigen ein vereinfachtes Klassendiagramm
-von \emph{Flewnit}. Die roten Klassen stellen wichtige Meta-Informationen dar, um Kontrollfluss und Objekt-Erstellung
-zu delegieren. In den folgenden Unterabschnitten werden die einzelnen Komponenten detaillierter vorsgestellt.
 
 \begin{figure}[!h]
-	 \includegraphics[width=1.15\textwidth]{Overview_Flewnit_Architecture_After_Implementation1.pdf}
+	\includegraphics[width=1.09\textwidth]{Overview_Flewnit_Architecture_After_Implementation1.pdf}
+	%\includegraphics[width=\textwidth]{Overview_Flewnit_Architecture_After_Implementation1.pdf}
 	\caption{Klassendiagramm des Gesamtsystems, Teil 1}
 	\label{fig:ClassDiagOverview1}
 \end{figure}
 
 
 \begin{figure}[!h]
-	 \includegraphics[width=1.15\textwidth]{Overview_Flewnit_Architecture_After_Implementation2.pdf}
+	\includegraphics[width=1.09\textwidth]{Overview_Flewnit_Architecture_After_Implementation2.pdf}
+	%\includegraphics[width=\textwidth]{Overview_Flewnit_Architecture_After_Implementation2.pdf}	
 	\caption{Klassendiagramm des Gesamtsystems, Teil 2}
 	\label{fig:ClassDiagOverview2}
 \end{figure}
+
+
+
+Abbildung \ref{fig:ClassDiagOverview1} und \ref{fig:ClassDiagOverview2} zeigen ein vereinfachtes Klassendiagramm
+von \emph{Flewnit}. Die roten Klassen stellen wichtige Meta-Informationen dar, um Kontrollfluss und Objekt-Erstellung
+zu delegieren. In den folgenden Unterabschnitten werden die einzelnen Komponenten detaillierter vorgestellt.
+
 
 
 
@@ -381,173 +391,304 @@ protected:
     	
     	
 \subsection{Die \emph{Unified Rendering Engine} (URE)}
-Dies ist die Singleton-Klasse, die sämtliche Komponenten besitzt/verwaltet, und über welche direkt oder indirekt alle Daten
-beschafft oder Funktionalität aufgerufen werden kann, die nach außen hin verfügbar sein soll.
+	Dies ist die Singleton-Klasse, die sämtliche Komponenten besitzt/verwaltet, und über welche direkt oder indirekt alle 
+	Daten beschafft oder Funktionalität aufgerufen werden kann, die nach außen hin verfügbar sein soll.
 
 \subsection{Das UserInterface-Paket}
-Das User Interface hat einen abstraktes Window-Manager-Interface, welches von einer Implementation, die \emph{GLFW} verwendet, realisiert wird;
-Aus der geparsten Config wird die gewünschte OpenGL-Kontext-Version, Auflösung, Multisamples-Count, Fullscreen-Option
-etc. ausgelesen und ein entsprechendes Fenster mit OpenGL-Kontext erzeugt.\\
+	Das User Interface hat einen abstraktes Window-Manager-Interface, welches von einer Implementation, die \emph{GLFW} 	
+	verwendet, realisiert wird;
+	Aus der geparsten Config wird die gewünschte OpenGL-Kontext-Version, Auflösung, Multisamples-Count, Fullscreen-Option
+	etc. ausgelesen und ein entsprechendes Fenster mit OpenGL-Kontext erzeugt.\\
 
-Die Input-Verwaltung ist im Gegensatz zum Fenstermanager nicht vollständig von der verwendeten Input-Bibliothek (ebenfallse GLFW) abstrahiert, da beim Parsen des Inputs die von GLFW definierten Makros direkt verwendet werden, 
- wie z.B \lstinline|GLFW_KEY_ENTER|.
-Da die Austauschbarkeit von verwendeten Bibliotheken zwar erwünscht ist, aber ich mich nicht verzetteln wollte,
-bleibt die Abstraktion des Inputs noch ein langfristiges "`TODO"' mit geringerer Priorität.
+	Die Input-Verwaltung ist im Gegensatz zum Fenstermanager nicht vollständig von der verwendeten Input-Bibliothek 	
+	(ebenfallse GLFW) abstrahiert, da beim Parsen des Inputs die von GLFW definierten Makros direkt verwendet werden, 
+	 wie z.B \lstinline|GLFW_KEY_ENTER|.
+	Da die Austauschbarkeit von verwendeten Bibliotheken zwar erwünscht ist, aber ich mich nicht verzetteln wollte,
+	bleibt die Abstraktion des Inputs noch ein langfristiges "`TODO"' mit geringerer Priorität.
 
-Eine GUI wurde leider noch nicht implementiert, vor allem aus dem Grund, dass vorhandene GUI-Toolkits wie z.B.
-\emph{AntTweakBar}\footnote{http://www.antisphere.com/Wiki/tools:anttweakbar} Legacy-OpenGL-Routinen verwenden,
-was die Verwendung eines modernen Core-Profiles ausschließen würde.
-Da langfristig ein konsistentes Erscheinungsblid angestrebt wird, welches seine GUI vollständig in das OpenGL- Rendering-
-Fenster integriert hat, kam auch die  Verwendung von Toolkits wie Qt nicht in Frage.\\
-Letztendlich wollte ich schon immer mal eine kleine GUI entwickeln, wozu ich jedoch erwartungsgemäß im Rahmen dieser
-Arbeit keine Zeit hatte. Die GUI verbleibt also als ein "`TODO"' von mittlerer Priorität.
+	Eine GUI wurde leider noch nicht implementiert, vor allem aus dem Grund, dass vorhandene GUI-Toolkits wie z.B.
+	\emph{AntTweakBar}\footnote{http://www.antisphere.com/Wiki/tools:anttweakbar} Legacy-OpenGL-Routinen verwenden,
+	was die Verwendung eines modernen Core-Profiles ausschließen würde.
+	Da langfristig ein konsistentes Erscheinungsblid angestrebt wird, welches seine GUI vollständig in das 
+	OpenGL- Rendering-Fenster integriert hat, kam auch die  Verwendung von GUI-Toolkits wie dem von Qt nicht in Frage.\\
+	Letztendlich wollte ich schon immer mal eine kleine GUI entwickeln, wozu ich jedoch erwartungsgemäß im Rahmen dieser
+	Arbeit keine Zeit hatte. Die GUI verbleibt also als ein "`TODO"' von mittlerer Priorität.
 
 
 
 
 \subsection{Das Simulator-Paket}
 
-\begin{figure}[!h]
-	 \includegraphics[width=1.15\textwidth]{Detail_Simulator.pdf}
-	\caption{Grobes Beispiel von einer Simulation und den zugehörigen Daten-Abhängigkeiten}
-	\label{fig:detailSimulator}
-\end{figure}
+	\begin{figure}[!h]
+		 \includegraphics[width=1.15\textwidth]{Detail_Simulator.pdf}
+		\caption{Grobes Beispiel von einer Simulation und den zugehörigen Daten-Abhängigkeiten}
+		\label{fig:detailSimulator}
+	\end{figure}
 
 
-Wie bereits erwähnt, soll jede Simulationsdömane einen eigenen Simulator haben, 
-der eine eigene Pipeline an Simulations-Stages verwaltet.
-Es kann theoretisch beliebig viele Simulationsdomänen geben. Momentan sind jedoch nur drei
-über einen \lstinline|enum| definiert: Die visuelle, mechanische und akustische Domäne, wobei
-die akustische Domäne noch nicht in der prototypischen Implementierung vorkommt.
-Abb. \ref{fig:detailSimulator} zeigt grob beispielhaft den Ablauf einer Simulation und die verschiedenen
-Varianten, wie man sich die "`Rendering Results"' anderer Stages beschaffen kann:\\
-Entweder aus der Main Loop der Engine heraus oder von der benutzenden Applikation wird
-\lstinline|URE::stepSimulation()| aufgerufen; Diese Funktion iteriert in fester Reihenfolge über die
-vorhandenen Simulatoren und ruft deren \lstinline|stepSimulation()|-Routine auf; Hierin werden Simulator-
-spezifische Operationen ausgeführt (Framebuffers des Fensters resetten und Haupt-Viewport setzen beim 
-\lstinline|LightingSimulator|, CL/GL-shared Buffers für OpenCL akquirieren beim \lstinline|MechanicsSimulator|...),
-dann über die einzelnen zugehörigen \linebreak
-\lstinline|SimulationPipelineStage|'s iteriert, widerum deren 
-\lstinline|stepSimulation()|-Methode aufgerufen.
-Hier passiert dann das eigentlich \emph{generische Rendering}.
-So verschieden die Algorithmen sind, die in den einzelnen Stages abgearbeitet werden, so verschieden sind auch
-die Möglichkeiten, wie einzelne Stages miteinander Daten austauschen: Der generischste Ansatz ist, sich von einer
-Stage einen Buffer mit einer bestimmten Semantik zu beschaffen, sofern die entsprechende Stage ein solchen
-bereit stellt. Bei Lichtsimulation, die viel mit Texturen und OpenGL-Framebuffer-Objects (FBOs) umgeht,
-bietet sich an, sich das \lstinline|RenderTarget| (die Abtraktion des FBO in \emph{Flewnit}) zu beschaffen,
-um mit dem gesamten RenderTarget weiter zu arbeiten, oder sich einzelne Texturen zu beschaffen.
-Es gibt aber auch die relativ indirekte Methode des Datenaustausches, wie es z.B. zwischen der 
-\lstinline|ParticleMechanicsStage| und der \lstinline|ParticleLiquidDrawStage| der Fall ist: Die Buffer mit dem physikalischen Attributen sind in der SceneNode-abgeleiteten
-Klasse \lstinline|ParticleFluid| enthalten, so dass die aktualisierten Daten über schlichtes Szenegraphen-Traversieren
-beschafft werden können.\\
-Details zum Ablauf der Simulation(en) werden in Kapitel \ref{sec:simulation} behandelt.
+	Wie bereits erwähnt, soll jede Simulationsdömane einen eigenen Simulator haben, 
+	der eine eigene Pipeline an Simulations-Stages verwaltet.
+	Es kann theoretisch beliebig viele Simulationsdomänen geben. Momentan sind jedoch nur drei
+	über einen \lstinline|enum| definiert: Die visuelle, mechanische und akustische Domäne, wobei
+	die akustische Domäne noch nicht in der prototypischen Implementierung vorkommt.
+	Abb. \ref{fig:detailSimulator} zeigt grob beispielhaft den Ablauf einer Simulation und die verschiedenen
+	Varianten, wie man sich die "`Rendering Results"' anderer Stages beschaffen kann:\\
+	Entweder aus der Main Loop der Engine heraus oder von der benutzenden Applikation wird
+	\lstinline|URE::stepSimulation()| aufgerufen; Diese Funktion iteriert in fester Reihenfolge über die
+	vorhandenen Simulatoren und ruft deren \lstinline|stepSimulation()|-Routine auf; Hierin werden Simulator-
+	spezifische Operationen ausgeführt (Framebuffers des Fensters resetten und Haupt-Viewport setzen beim 
+	\lstinline|LightingSimulator|, CL/GL-shared Buffers für OpenCL akquirieren beim \lstinline|MechanicsSimulator|...),
+	dann über die einzelnen zugehörigen \linebreak
+	\lstinline|SimulationPipelineStage|'s iteriert, widerum deren 
+	\lstinline|stepSimulation()|-Methode aufgerufen.
+	Hier passiert dann das eigentlich \emph{generische Rendering}.
+	So verschieden die Algorithmen sind, die in den einzelnen Stages abgearbeitet werden, so verschieden sind auch
+	die Möglichkeiten, wie einzelne Stages miteinander Daten austauschen: Der generischste Ansatz ist, sich von einer
+	Stage einen Buffer mit einer bestimmten Semantik zu beschaffen, sofern die entsprechende Stage ein solchen
+	bereit stellt. Bei Lichtsimulation, die viel mit Texturen und OpenGL-Framebuffer-Objects (FBOs) umgeht,
+	bietet sich an, sich das \lstinline|RenderTarget| (die Abtraktion des FBO in \emph{Flewnit}) zu beschaffen,
+	um mit dem gesamten RenderTarget weiter zu arbeiten, oder sich einzelne Texturen zu beschaffen.
+	Es gibt aber auch die relativ indirekte Methode des Datenaustausches, wie es z.B. zwischen der 
+	\lstinline|ParticleMechanicsStage| und der \lstinline|ParticleLiquidDrawStage| der Fall ist: Die Buffer mit dem 		
+	physikalischen Attributen sind in der SceneNode-abgeleiteten
+	Klasse \lstinline|ParticleFluid| enthalten, so dass die aktualisierten Daten über schlichtes Szenegraphen-Traversieren
+	beschafft werden können.\\
+	Details zum Ablauf der Simulation(en) werden in Kapitel \ref{sec:simulation} behandelt.
 
 
 
 
 \subsection{Der SimulationResourceManger}
-Diese Singleton-Klasse besitzt und verwaltet die Assets,\linebreak 
-als \lstinline|std::map<String,X*>| für Referenzierung über einen Namen, 
-wobei \lstinline|X| folgende Klassen betrifft: 
-\begin{itemize}
-	\item \lstinline|Material|
-	\item \lstinline|Geometry|
-	\item \lstinline|BufferInterface|
-	\item \lstinline|Texture| \footnote{Da \lstinline|Texture| von \lstinline|BufferInterface| erbt, handelt es sich um 	
-		eine Handle-Sammlung der Untermenge der Texturen aller \lstinline|BufferInterface|s, um einen bequemeren Zugriff zu 
-		ermöglichen 
-		}
-	\item \lstinline|InstanceManager|
-\end{itemize}
-Außerdem bestitzt die Klasse den \lstinline|SceneGraph| und stellt einen Handle auf den aktuellen 
-\lstinline|SkyDome| zur Verfügung, so dass alle Objekte ein konsistentes Environment Mapping 
-betreiben können, sofern dies erwünscht ist.
+	Diese Singleton-Klasse besitzt und verwaltet die Assets,\linebreak 
+	als \lstinline|std::map<String,X*>| für Referenzierung über einen Namen, 
+	wobei \lstinline|X| folgende Klassen betrifft: 
+	\begin{itemize}
+		\item \lstinline|Material|
+		\item \lstinline|Geometry|
+		\item \lstinline|BufferInterface|
+		\item \lstinline|Texture| \footnote{Da \lstinline|Texture| von \lstinline|BufferInterface| erbt, 
+		handelt es sich um eine Handle-Sammlung der Untermenge der Texturen aller \lstinline|BufferInterface|s,
+		um einen bequemeren Zugriff zu ermöglichen}
+		\item \lstinline|InstanceManager|
+	\end{itemize}
+	Außerdem bestitzt die Klasse den \lstinline|SceneGraph| und stellt einen Handle auf den aktuellen 
+	\lstinline|SkyDome| zur Verfügung, so dass alle Objekte ein konsistentes Environment Mapping 
+	betreiben können, sofern dies erwünscht ist.
 
 		
 \subsection{Das Scene-Paket}		
-		
+	Neben dem klassischen Szene-Graphen, der vor allem im Kontext des visuellen Echtzeit-Rendering verwendet wird,
+	da er Culling und relative Transformationen ermöglicht, 
+	erfordern verschiedene Simulationsdomänen und Repräsentationen der beteiligten Simulations-Objekte
+	(z.B. als Dreiecks-Mesh, Komposition von komplexeren Primitiven, Punktwolke oder Voxel-Grid)  ggfs. 
+	unterschiedliche Szene-Repräsentationen, damit die spezifischen Anforderungen der Simulation als solchen und der
+	Respräsentation der simulierten Objekte optimal erfüllt sind.\\
+	Diese Szenen-Repräsentationen unterscheiden sich in der logischen Organisation ihrer Objekte 
+	(z.B. Baumstruktur, sortierte oder unsortierte Sammlung, Graph-Struktur, Voxel-Struktur) 
+	und in den Meta-Informationen, welche für die einzelnen	Objekte notwendig sind.
+	
+	Beispielsweise stellt die die effiziente Suche nach räumlich benachbarten Objekten eine wichtige Anforderung
+	bei vielen Simulationen (auch bei Lichtsimulation für globale Beleuchtungseffekte) dar.
+	Hierfür bieten sich verschiedene Beschleunigungsstrukturen an. Je nach Simulationsdomäne, 
+	Objekt-Repräsentation,verwendetem Simulations-Verfahren, verwendeter Hardware und Zielsetzung 
+	(Geschwindigkeit, Genauigkeit, Speicherverbrauch...) sind verschiedene Beschleunigungsstrukturen angemessen.
+	Somit besteht keine 1:1-Verbindung zwischen Szenen-Repräsentation und Beschleunigungsstruktur.\\
+	Beschleunigungsstruktur und Szenen-Repräsentatioen sind somit nur lose gekoppelt.
+	Um die verschiedenen Zwecke zu verdeutlichen, stellt Tabelle \ref{tab:sceneRepVsAccStruct} diese gegenüber.
+
+  	%column type with fixed width and centered	
+	\newcolumntype{x}[1]{ >{ \centering } p {#1} }
+	\begin{table}	 	
+	 	\begin{tabular}
+  		{ x{0.33\textwidth} | x{0.33\textwidth} | x{0.33\textwidth} | }	
+  					\cline{2-3}
+  					& Szenen-Repräsentation & Beschleunigungsstruktur
+  					\tabularnewline\cline{1-3}
+  		\multicolumn{1}{ |c| }{
+  			Organisation der Elemente
+  		}			&	
+  						logisch für Zugriff auf Ebene der Anwendungslogik
+  					&  
+						räumlich für effizienten Zugriff durch einen Simulations-Algorithmus
+  			 		\tabularnewline\cline{1-3}
+   		\multicolumn{1}{ |c| }{
+  			Zweck von Meta-Informationen
+  		}			&
+  						verschieden, je nach Repräsentation und Typ der Simulations-Objekte	
+  					&	
+  						(sofern vorhanden) unterschliedlich für verschiedene Algorithmen, z.b.
+ 						effiziente Traversierung und/oder Nachbarschaftssuche
+  					\tabularnewline\cline{1-3}	  	  	
+	  	\end{tabular}	  	
+  		\caption{Gegenüberstellung der Zwecke einer generischen Szenen-Repräsentation und einer Beschleunigungsstruktur}
+  		\label{tab:sceneRepVsAccStruct}
+	\end{table}	
+	
+	Es gibt also zwei Basis-Klassen, wie in Abb. \ref{fig:ClassDiagOverview2} zu sehen ist:
+	\lstinline|SceneRepresentation| und \lstinline|AccelerationStructure|.
+	\lstinline|AccelerationStructure| erbt von \lstinline|WorldObject|(siehe Abschnitt \ref{sec:worldObject}),
+	um optional Debug-Draw-Funktionalität bereit zu stellen.
+	Ansonsten handelt es sich schlicht um abstrakte Basis-Klassen ohne weitere Funktionalität.
+	
+	Für das gesamte System über den \lstinline|SimulationResourceManger| verfügbar ist der
+	\lstinline|SceneGraph|. Dieser enthält die Wurzel-\lstinline|SceneNode|, welche beliebig viele Kinder derselben
+	Klasse haben kann. Somit wird eine Baumstruktur gebildet.\\
+	Die SceneNode bildet die Basis-Klasse des \lstinline|WorldObject| (siehe Abschnitt \ref{sec:worldObject}).
+	
+	Es ist ein Mechanismus konzipiert, sowohl Kinder als auch Vorfahr über Änderungen der eigenen Transformation
+	und/oder Bounding Box zu informieren, so dass ggfs. globale Transformationen akkumuliert werden können und/oder
+	die Bounding Box für den eigenen Unterbaum ermittelt, die für Culling-Berechnungen verwendet werden kann.
+	Noch ist dieses Feature nicht in Nutzung und seine Implementation unvollständig und ungetestet,
+	daher wird auf weitere Details	verzichtet.
+	
+	Die klassischen Operationen (Einfügen, Aushängen, rekursives Suchen im Unterbaum nach Namen, Node bewegen,
+	Transformationen akkumulieren) sind jedoch implementiert. Es sei an die enge Kopplung dieser Klasse an
+	\lstinline|AmendedTransform| (s. Abschnitt \ref{{sec:AmendedTransform}}) erinnert.
+	
+	Der Scenegraph kann nach dem Visitor- Design Pattern traversiert werden. Z.B. erbt 
+	\lstinline|SimulationPipelineStage| von \lstinline|SceneNodeVisitor|, so dass bei Bedarf eine Pipeline-Stage
+	nur \lstinline|virtual void visitSceneNode(SceneNode* node)| implementieren muss, um Operationen auf oder mit
+	den Objekten des Szenegraphen auszuführen.
+	Momentan "`besitzt"' die \lstinline|SceneNode|-Klasse seine Kinder, was den Vorteil hat, dass die Nodes nicht woanders
+	verwaltet werden müssen, aber den Nachteil, dass ausgehängte Scene Nodes nicht automatisch beim Reset der Engine
+	gelöscht werden. Sollte sich dies später als Problem herausstellen, könnte man die Scene Nodes auch vom
+	\lstinline|SimulationResourceManger| verwalten lassen.
+	Auch empfiehlt sich langfristig die Möglichkeit zur Erschaffung und Verwaltung mehrerer Szenegraphen.
+	Aus Zeitgründen habe ich es jedoch erstmal bei dieser rudimentären Implementation belassen.
+	
+	Intern verwaltet die \lstinline|ParticleMechanicsStage|, die \lstinline|SimulationPipelineStage|,
+	die im \lstinline|MechanicsSimulator| für die partikelbasierte Simulation zuständig ist, 
+	eine \lstinline|ParticleSceneRepresentation|. Diese verwaltet 
+	\begin{itemize}
+		\item die "`makroskopischen Objekte"', die an dieser Simulation teilnehmen,
+		namentlich (allesamt von \lstinline|WorldObject| abgeleitete) 
+		partikelbasierte Fluide, partikel-repräsentierte Rigid Bodies und statische Kollisions-Meshes
+		\footnote{diese müssen in einem bestimmten Format vorliegen}
+		\item die einzelnen Attribute-Buffers der Partikel
+			(Position, Dichte, Geschwindigkeit, Beschleunigung usw.)
+		\item Buffers mit Meta-Informationen der "`makroskopischen Objekte"', die an OpenCL-Kernels übergeben werden
+	\end{itemize}
+	Ferner stellt die Klasse Factory-Methoden für die makroskopischen Objekte bereit, da diese direkt mit den
+	Partikel-Buffern assoziiert sind, sich also alle beteiligten Objekte die Buffers teilen müssen. Die korrekte
+	Delegierung der Offsets und Sicherstellung der richtigen Größen wird so übernommen.\\
+	Die \lstinline|ParticleMechanicsStage| nutzt außerdem ein \lstinline|UniformGrid| für die Simulation.
+	Details hierzu werden im Verlauf des Kapitels \ref{sec:mechanicalDomain} beschreiben.
+	
+	
+
 
 \subsection{Das WorldObject}
-	Basis-Klasse fuer alles was unified simuliert wird: pure viuelle objekt, uniform grid, fluid, rigid body etc..
+	\label{sec:worldObject}
+	Das \lstinline|WorldObject| stellt die abstrakte Basisklasse für sämtliche Objekte dar, mit denen eine oder mehrere 
+	Simulationen durchgeführt werden sollen\footnote{Und sei es nur Debug Drawing; Selbst dies kann als eine 
+	rudimentäre Form von Lichtsimulation aufgefasst werden.}. Sie erbt von \lstinline|SceneNode|. Damit ist sie bequem 
+	in den Szenegraphen integrierbar und hat außerdem schon seinen Transformations-Membervariable.
 	
-	\subsubsection{Das SubObject}
+	Bei dieser Klasse zeigt sich erstmals die angestrebte Symmetrie zwischen sen Simulationsdömanen: 
+	Für jede Simulationsdomäne
+	gibt es eine (möglicherweise leere) Liste an \lstinline|SubObject|'s. Das \lstinline|SubObject| 
+	stellt eine Abstraktion dessen dar, was in einer klassischen Graphik-Engine ein "`SubMesh"' oder
+	in einer klassischen Physik-Engine eine Komponente einer "`(Compound) Collision Shape"' sein könnte.\\
+	Ein \lstinline|SubObject| hat immer einen Pointer auf genau ein \lstinline|Material|, 
+	eine \lstinline|Geometry|  und für Backtracking-Zwecke auf sein besitzendes	\lstinline|WorldObject|.
+	Wie der Backtracking-Pointer andeutet, besitzt das ein \lstinline|WorldObject| jedes seiner \lstinline|SubObject|s.
+	Die vom \lstinline|SubObject| genutzte Geometrie und Materialien können jedoch --sofern sinnvoll -- von beliebig
+	vielen \lstinline|SubObject|s gemeinsam genutzt werden.
+	
+	Es sind verschiedenste Ableitungen von \lstinline|WorldObject| denkbar, z.B. 
+	(standard/particle based/voxel based) Rigid Body, Soft Body, rein visuelles Objekt,  
+	Kamera,Lichtquelle, Debug-Draw-Objekte, Cloth, Hair, oder (particle based/voxel based) Fluid.
+	
+	Welche Objekte im Szenegraph für die Nutzung in einer Simulations-Stage in Frage kommen, lässt sich entweder
+	über eine Vorfilterung bei Objekt-Erstellung (Factory-Pattern oder automatische Registierung bei einer 
+	Manager-Klasse im Konstruktor), oder über \lstinline|dynamic_cast<>()|'s und anschließendes Auslesen von spezifischer
+	Meta-Information ermitteln, oder aber durch "`property flags"', also Bit-Flags, die Features einer Scene Node andeuten.
+	Welche dieser Methoden langfristig die robusteste, flexibelste und eleganteste ist,
+	vermag ich noch nicht zu sagen. Da Typ-Informationen über \lstinline|enum|s 
+	(als Bitflags oder "`normale"' Aufzählungstypen)
+	eine gewisse Redundanz hat ggü. der dynamischen Typ-Information, die C++ bereit stellt, und außerdem eine weitere
+	Fehlerquelle für den Programmierer darstellt, sind die Bitflags nicht erste Wahl. Außerdem schränkt die explizite 
+	Auflistung von Features womöglich die Erweiterbarkeit des Systems ohne komplette Neu-Kompilierung ein.
+	Andererseits machen sie Programme vielleicht lesbarer, indem bestimmte Kategorien/Features explizit aufgelistet 
+	(und im Falle von Bitflags beliebig kombinierbar) sind, 
+	und nicht implizit in C++-Typinformationen codiert sind.
+	Ich verwende Aufzählungstypen intensiv in \emph{Flewnit}. Nicht immer sind diese für die Programmlogik nötig.
+	Sie halfen mir jedoch zur Strukturierung und Ideen-Sammlung. Letztere ist wichtig, da bei einem Softwaresystem,
+	welches generische Verwendbarkeit anstrebt, schon weit vor Implementierung konkreter Klassen die Struktur der
+	Basisklassen anhand von abstrahierten (erwarteten) gemeinsamen Features der möglichen abgeleiteten Klassen
+	möglichst exakt bestimmt werden sollte. Je weiter oben in der Klassenhierarchie Design-Fehler auftauchen, desto
+	aufwändiger droht das spätere Refactoring zu werden.
+
+%	Die Entscheidung, dass \lstinline|WorldObject| abstrakt sein soll, wurde getroffen, damit keine Funktionalität,
+%	die zunächst generisch erscheint, sich aber später als doch nicht allgemein auf alle konkreten 
+%	\lstinline|WorldObjects| anwendbar herausstellt, diese Basisklasse verunreinigt. 
+%	Es sind so viele verschiedenste Ableitungen denkbar (Rigid Body, Soft Body, rein visuelles Objekt, Kamera,
+%	Lichtquelle, Debug-Draw-Objekte, Cloth, Hair, Fluid...)	
   
  
 \subsection{Material}  
-	was stellt welches material in welcher Domain dar?
+
+	Der Begriff "`Material'", der sich in der Computergraphik eingebürgert hat als Beschreibung von visuellen Eigenschaften
+	einer Oberfläche, erscheint mir prädestiniert, sich in seiner Bedeutung in einem alltäglichen,
+	nicht computergraphischen Kontext wieder anzunähern:
+	das \emph{Material} in \emph{Flewnit} steht für "`sämtliche Eigenschaften von Materie 
+	außer ihrer geometrischen Form und internen Repräsentation dieser"'.
+
+	\begin{figure}[!h]
+		\centering
+	   	\includegraphics[width=0.3\textwidth]{velvetBlack1.jpg}
+		\caption{ Der Begriff \emph{Material} mit einer physikalisch orientierten Bedeutung:
+			sämtliche Eigenschaften von Materie	außer ihrer geometrischen Form.
+			(Bild entnommen aus \cite{microfacet})
+		}
+		\label{fig:material}
+	\end{figure}
 	
-\subsection{Geometry}
-	Abtract, Buffer based, Vertex based etc.. ein paar konzepte (implementiert/genutzt nur VertexBased)  
+	Würden wir über die entsprechende Rechenleistung verfügen und als Programmierer das physikalische Know-How
+	besitzen (z.b. über Maxwell'sche Gleichungen), bräuchte man dieses Konzept gar nicht weiter zu konkretisieren,
+	und könnte sämtliches Verhalten von Simulations-Objekten durch subatomare Material-Eigenschaften modellieren.
+	Dies wäre eine "wirkliche" Vereinheitlichung der bestehenden Engine-Konzepte, die unserer Realität Rechnung trüge.
+	Da wir jedoch realistisch (im Sinne der Machbarkeit) bleiben wollen jetzt und heute Echtzeit-Fähigkeit,
+	auch auf Kosten von physikalischer Korrektheit/Genauigkeit anstreben, sind Domänen-spezifische Konkretisierungen des
+	Material-Konzeptes notwendig, und wie so viele andere Klassen in diesem System wird die 
+	\lstinline|Material|-Klasse zur abstrakten Oberklasse.
+	Bei einem \lstinline|SubObject|, welches der visuellen Simulationsdömane angehört, wird implizit erwartet,
+	dass das genutzte \lstinline|Material| ein \lstinline|VisualMaterial| ist 
+	(mit Texturen, Shader, und verscheiedenen Meta-Informationen, um das visuelle Rendering zu delegieren,
+	siehe Abschnitt \ref{sec:visualMaterial}), 
+	und in der mechanischen Domäne muss es ein \lstinline|MechanicalMaterial|(mit Eigenschaften wie Masse, Reibung, 	
+	Elastizität etc.) sein. Diese domänenspezifischen Material-Typen können oder müssen (je nach Typ des nutzenden
+	\lstinline|WorldObject|s) noch weiter abgeleitet sein.
+	
+	Einen etwas schalen Beigeschmack haben die Routinen:
+	\begin{lstlisting}
+virtual void activate(
+		SimulationPipelineStage* currentStage,
+		SubObject* currentUsingSuboject) throw(SimulatorException){}
+//undoing stuff, like re-enable depth test etc.
+virtual void deactivate(SimulationPipelineStage* currentStage,
+		SubObject* currentUsingSuboject) throw(SimulatorException){}
+	\end{lstlisting}
+	Sie sind dem Statemachine-basierten visuellen Rendering mit OpenGL zu verdanken und müssen daher von den
+	\lstinline|VisualMaterial|-Klassen implementiert werden. Um der Möglichkeit Rechnung zu tragen, dass
+	ähnlich State-basierte Mechanismen an anderer Stelle als beim OpenGL-Rendering vorkommen sollten, sind diese
+	Routinen in die Oberklasse gelangt.
+
 	
 
     	
 \subsection{Die Buffer-Abstraktion}  
-	\label{sec:architecture:BufferAbstraction} 	
- 	die bombe, die cpu, ogl und ocl vereint, inclusive ping ponging etc.. 
- 	fundamentale Klassensammlung fuer den Unified-Aspekt
- 	
- 	\begin{figure}[!h]
-  		\begin{tabular}
-  		{
-  		 l  l | c | c | c |
-  		}
-																	\cline{3-5}
-  									&								&	\multicolumn{3}{ c | }{Context} \\ 
-  																	\cline{3-5}
-									&								& 	Host 	& 	OpenGL 	& 	OpenCL	\\
-    	\noalign{\hrule}								
-    	\multicolumn{1}{|c|}{
-    		generic Buffer
-    	}							& 								
-    		&	{\color{green}\checkmark} 	&	{\color{red}x}		& 	{\color{green}\checkmark}	\\ 
-    	
-    	\noalign{\hrule}								
-    	\multicolumn{1}{|c|}{
-    		\multirow{4}{*}{OpenGL Buffers}
-    	}							& Vertex Attribute Buffer		
-    		&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{orange}o}	\\  
-    								\cline{3-5}
-    	\multicolumn{1}{|c|}{}		& Vertex Index Buffer			
-    		&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{orange}o}	\\  
-    								\cline{3-5}
-    	\multicolumn{1}{|c|}{}		& Uniform Buffer
-    		&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{orange}o}	\\ 
-    								\cline{3-5} 
-    	\multicolumn{1}{|c|}{}		& Render Buffer					
-    		&	{\color{red}x} 	&	{\color{green}\checkmark}		& 	{\color{green}\checkmark}	\\ 
-    
-   		\noalign{\hrule}								
-   		\multicolumn{1}{|c|}{
-    		\multirow{4}{*}{Textures} 
-   		}							& 1D Texture					
-   			&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{red}x}	\\ 
-    								\cline{3-5}
-		\multicolumn{1}{|c|}{}		& 2D Texture				
-			&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{green}\checkmark}	\\ 
-									\cline{3-5}
-		\multicolumn{1}{|c|}{}		& 3D Texture		
-			&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{green}\checkmark}	\\ 
-									\cline{3-5}
-		\multicolumn{1}{|c|}{}		& Special Texture				
-			&	{\color{orange}?} 	&	{\color{green}\checkmark}		& 	{\color{orange}?}	\\ 
+	%Abschnitt ausgelagert weil er zu groß wurde!
+	\input{BufferAbstraktion.tex}
+		
 
 
-    	\noalign{\hrule}
-     
-     	
-  		\end{tabular}	
-  	
-  		\caption{		
-  			Verschiedene Buffertypen und ihre Verfügbarkeit in verschiedenen Kontexten \\	
-  			Legende: \\
-			{\color{green}\checkmark}	$\rightarrow$ nativ unterstützt;
-			{\color{orange}o}	$\rightarrow$ kompatibel;
-			{\color{red}x}	$\rightarrow$ nicht unterstützt;	\\
-			{\color{orange}?}	$\rightarrow$ Unterstützung abhängig von weiteren Parametern;	
-		}
-	
-  	\end{figure}
- 
+
+\subsection{Geometry}
+	\label{sec:geometry}
+	Abtract, Buffer based, Vertex based etc.. ein paar konzepte (implementiert/genutzt nur VertexBased)  
+		
+
 
 \subsection{Das MPP-Paket}
 Massively Parallel Program
@@ -559,10 +700,8 @@ Massively Parallel Program
 	\subsubsection{OpenCLProgram}
 		shader + manager+unterklassen + arguments etc.. event waiting, synch, acquire...
 
-weitere klassen/konzepte to go...	?
-
-
 \subsection{Status der Implementierung am Ende der BA}
+\label{sec:statusImplementation}
 	
 	Features auflisten;
 	\todo[color=green]{screenshots? oder lieber erst später,zusammen mit detaillierter erläuterung?}

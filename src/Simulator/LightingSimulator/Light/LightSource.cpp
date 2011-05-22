@@ -60,7 +60,7 @@ LightSource::LightSource(String name, LightSourceType type, bool castsShadows,  
 			const LightSourceShaderStruct& data)
 : WorldObject(
 	name,
-	LIGHT_NODE,
+	SceneNodeTypeFlags(LIGHT_OBJECT),
 	AmendedTransform(
 			Vector3D(data.position),
 			//set the direction:

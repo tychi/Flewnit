@@ -162,6 +162,8 @@ void VertexBasedGeometry::setAttributeBuffer(BufferInterface* buffi, BufferSeman
 
 	if(buffi)
 	{
+		//this assignment doesn't check if maybe there are all ping pong buffers removed in  the meanwhile;
+		//TODO fix this
 		mAnyAttribBufferIsPingPong = (mAnyAttribBufferIsPingPong || buffi->isPingPongBuffer() );
 
 		buffi->bind(OPEN_GL_CONTEXT_TYPE);

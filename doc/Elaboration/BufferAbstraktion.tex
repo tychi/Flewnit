@@ -1,0 +1,386 @@
+\label{sec:architecture:BufferAbstraction} 	
+
+	Logischerweise müsste nun eigentlich 
+	-- der Top-Down-Präsentation der einzelnen Pakete und Klassen entsprechend --
+	die \lstinline|Geometry|-Klasse vorgestellt werden. Um letztere Klasse jedoch besser zu verstehen,
+	ist die Kenntnis der Buffer-Abstraktion vorteilhaft. Die \lstinline|Geometry| wird in \ref{sec:geometry} beschrieben.
+	
+	Wie auf Seite \pageref{overview:bufferAbstraction} erwähnt, abstrahiert die \lstinline|BufferInterface|-Klasse
+	sämtliche Buffer-bezogene Funktionalität, namentlich für Host-Buffer, OpenCL-Buffer, 
+	verschiedene OpenGL-Buffertypen und letztendlich verschiedene Texturtypen (eine Teilmenge davon ist OpenCL-interop-
+	kompatibel bzw als reine OpenCL-Textur erschaffbar).
+	Es ergibt sich ein wahrer Moloch, der für eine relativ einheitliche Handhabung zu abstrahieren ist: 
+	
+	\begin{itemize}
+		\item verschiedene APIs (OpenGL C-Api "`vs."' OpenCL C++-API)
+		\item verschiedene Verwendungen und Verfügbarkeiten schon allein von non-Textur-Buffern 
+			(generisch, Vertex Index/Vertex Attribute Buffer, Uniform Buffer, Render Buffer),
+			siehe Tabelle \ref{tab:bufferSupportInContexts}
+		\item verschiedene OpenGL-Texturtypen mit nur bedingt kombinierbaren und nur teilweise zu OpenCL kompatiblen 
+			erweiterten  Features, siehe Tabelle \ref{tab:textureTypes} 
+			%(Tiefentextur ja/nein, MipMapping ja/nein, Textur-Array ja/nein, Multisample-Texture ja/nein, 
+			%Rectangle Texture ja/nein, Cube Map ja/nein)
+		\item verschiedene Datenformat/Channel-Layout-Deskriptoren, siehe Listing \ref{listing:BufferElementInfo}
+	\end{itemize}	
+	
+	Es hat schon sehr viel Zeit gekostet, sich aus den Spezifikations-Dokumenten 
+	(\cite{openGL_4_1_Spec}, \cite{openCL_1_0_Spec}) die möglichen Permutationen, Zusammenhänge, Entsprechungen
+	und unterstützten Operationen zu erarbeiten 
+	(siehe Tabellen \ref{tab:channelLayoutAndTypes} und \ref{tab:textureTypes}).
+	
+	Die Ergebnisse dieser Tabellen flossen in die Entscheidung ein, welche konkreten Buffer-
+	und Textur-Klassen mit welchen  verfügbaren Features durch Ableitung vom
+	\lstinline|BufferInterface| implementiert wurden. Die Konstruktor-Parameter sollten
+	so spezifisch zugeschnitten sein, dass der Benutzer der Klassen möglichst wenig invalide
+	Kombinationen angeben kann. Außerdem sollte er sich nicht um all die Makros
+	wie \lstinline|GL_RGBA32UI| bzw \lstinline|CL_RGBA| und \lstinline|CL_UNSIGNED_INT32|
+	kümmern müssen 
+	\footnote{Was in OpenCL getrennt ist und somit "`nur"' 
+		4 Channeltypen \emph{+} 3 Bitgrößen * (3 non-normalized + 2 normalized)= theoretisch 19 makros ergibt,
+		braucht bei OpenGL
+			4 Channeltypen \emph{*} 3 Bitgrößen * (3 non-normalized + 2 normalized)= theoretisch 60 makros;
+			Erstens stört die Asymmetrie, zweitens das "`Zusammenklatschen"' eigentlich unabhängiger Parameter in ein 
+			Makro}. 
+	Es soll ein Buffer mit einem einzigen Konstruktor-Call völlständig definiert,
+	falls erwünscht auf dem Host-Memory und -- sofern unterstützt --
+	in den gewünschten API-Contexten allokiert bzw registiert werden.
+	
+	Hierfür mussten einige \lstinline|enum|s und Meta-Info-Klassen/Structures definiert werden:
+	\begin{description}
+		
+		\item[enum Type] 
+		Beschreibt String-, boolsche, Skalar-, Vektor- und Matrix-Datentypen mit verschiedener 
+		Genauigkeit. Findet in \emph{Flewnit} u.a. auch beim Config-Parsen Verwendung.
+		
+		%--------------------------------------------------------------------------------------------
+		\item[enum ContextType und ContextTypeFlags] 
+		Mithilfe dieser Datentypen lässt sich spezifizieren, in welchem 
+		Kontexten (Host, OpenGL, OpenCL) man einen Buffer erstellt/allokiert/registriert haben will.
+		
+		%--------------------------------------------------------------------------------------------
+		\item[enum BufferSemantics] 
+		Eine sehr wichtige Auflistung konkreter Verwendungszwecke des Buffers,
+		siehe Listing \ref{listing:BufferSemantics} im Anhang \ref{append:bufferListings}.
+		Dieser Aufzählungstyp ist eine große Erleichterung beim Hantieren mit OpenGL Vertex Buffer Objects (VBO's) 
+		\footnote{abstrahiert von \lstinline|Flewnit::VertexBasedGeometry|, s. \ref{sec:geometry} }
+		und Frame Buffer Objects (FBO's) 
+		\footnote{abstrahiert von \lstinline|Flewnit::RenderTarget|}, 
+		da hier zur Assoziation von VBO-Vertex Attribute Buffern mit Input-Variablen im Vertex Shader
+		bzw and FBO gehängte Texturen mit Output-Variablen im Fragment Shader
+		ein Index angegeben werden muss. 
+		Wenn wir als Index die numerische Entsprechung der Buffer-Semantik verwenden, 
+		ist nicht nur die Lesbarkeit des Codes erhöht, es ist auch automatisch sichergestellt, 
+		dass Indizes keine Konflikte versursachen!
+		
+		%--------------------------------------------------------------------------------------------
+		\item[enum GPU\_DataType] Listet nur die von der GPU / OpenGL nativ unterstützten Datentypen auf, ohne
+		Präzisions- und Normalisierungs-Information:
+		\begin{lstlisting}		
+enum GPU_DataType
+{
+	GPU_DATA_TYPE_FLOAT,
+	GPU_DATA_TYPE_INT,
+	GPU_DATA_TYPE_UINT
+};
+		\end{lstlisting}
+		
+		%--------------------------------------------------------------------------------------------
+		\item[enum GLBufferType]
+		Listet die vom Buffer-Interface abstrahierten OpenGL-non-Textur-Buffertypen auf. 
+		Aus Zeitgründen und Erwartung, dass sie außerhalb der \lstinline|RenderTarget|-Klasse nicht benötigt werden,
+		werden z.B. Render Buffers nicht abstrahiert.
+		\begin{lstlisting}		
+enum GLBufferType
+{
+	NO_GL_BUFFER_TYPE,
+	VERTEX_ATTRIBUTE_BUFFER_TYPE,
+	VERTEX_INDEX_BUFFER_TYPE,
+	UNIFORM_BUFFER_TYPE 
+};
+		\end{lstlisting}	
+	
+		%--------------------------------------------------------------------------------------------
+		\item[struct BufferElementInfo] 
+		Beschreibt -- sofern erwünscht bzw nötig -- das Channel-Layout,die Datentypen, die Bit-Genauigkeit
+		und die etwaige Normalisierung eines Buffers mit Channels, 
+		z.B. einer Textur oder einem Vertex Attribute Buffer,
+		siehe Listing \ref{listing:BufferElementInfo} im Anhang \ref{append:bufferListings}.
+		Auf diese Weise spart man sich die verschiedenen "zusammengesklatschten", asymmetrischen GL/CL-Makros;
+		Die Structure validiert ihre Daten. Diese werden später für die internen CL/GL-API-Aufrufe in die
+		entsprechenden CL/GL-Makros transformiert,
+		siehe Listing \ref{listing:BufferElementInfoToCLGL} im Anhang \ref{append:bufferListings}.
+		
+		%--------------------------------------------------------------------------------------------
+		\item[struct GLImageFormat]
+		OpenCL definiert folgende Structure:
+		
+		\begin{lstlisting}		
+typedef struct _cl_image_format {
+    cl_channel_order        image_channel_order;
+    cl_channel_type         image_channel_data_type;
+} cl_image_format;	
+		\end{lstlisting}
+		
+		Um das interne Handling der CL/GL-Makros etwas symmetrischer zu machen (man verliert leicht den Überblick),
+		habe ich ein ähnliches Makro definiert, welches aufgrund der Kommentare im Anhang  \ref{append:bufferListings},
+		Listing \ref{listing:GLImageFormat} zu finden ist.\footnote{Die Kommentare geben weiteren Aufschluss über 
+		die Asymmetrie der einzelnen APIs: obwohl sie beide von der Khronos Group spezifiziert wurden und explizit 	
+		Interoperabilität ermöglichen, stiften viele mehr oder minder kleine Asymmetrien Verwirrung (zumindest bei mir);
+		Diese Umstände trugen zu der Entscheidung bei, das \lstinline|BufferInterface| zu entwickeln, trotz des
+		erheblichen Zeitaufwands.}
+		
+		
+		\item[class BufferInfo]
+		Dies ist die Klasse, die sowohl als "`Construction Info"' den Konstruktor-Code delegiert, als auch für 
+		den benutzer später Meta-Information bereitstellt.
+		Es sei hier nur der Standard-Konstruktor angegeben:
+		
+		\begin{lstlisting}	
+explicit BufferInfo(String name,
+	ContextTypeFlags usageContexts,
+	BufferSemantics bufferSemantics,
+	Type elementType,
+	cl_GLuint numElements,
+	const BufferElementInfo& elementInfo,
+	GLBufferType glBufferType = NO_GL_BUFFER_TYPE,
+	ContextType mappedToCPUContext = NO_CONTEXT_TYPE);
+		\end{lstlisting}
+		
+		Ich muss zugeben, dass \lstinline|elementType| und \lstinline|elementInfo| redundant sind, außerdem diese 
+		beiden Parameter eigentlich bei generischen Buffern, wo die Typ-Information zumindest für die GPU Computing APIs
+		keine Rolle spielt, fehl am Platze sind. Mangelndem Überblick in der Anfangsphase der Implementierung
+		über die Verschiedenen Arten, Buffers in CL und GL zu nutzen, sind diese Design Flaws zuzuschreiben.
+		Ein Refactoring mit besser speziell zugeschnittenen Konstruktoren ist geplant.
+		zu nutzen
+	
+	\item[class TextureInfo]
+		So wie \lstinline|Texture| von \lstinline|BufferInterface| erbt, erbt auch 
+		\lstinline|TextureInfo| von \lstinline|BufferInfo|. Sie stellt die gleiche Funktionalität für
+		die (abstrakte) \lstinline|Texture|-Klasse dar wie \lstinline|BufferInfo| für \lstinline|BufferInterface|.
+		Ein Unterschied besthet jedoch darin, dass \lstinline|TextureInfo| eigentlich nur dazu dient, 
+		die kombinierte Information aus den Parametern der "`eingeschränkten"' Konstruktoren 
+		der konkreten Textur-Klassen (\lstinline|Texture2D| etc.) und der inhärent klassenspezifischen
+		Eigenschaften an die \lstinline|Texture|-Oberklasse zu übergeben. Damit hat \lstinline|TextureInfo|
+		eher eine Textur-interne Funktion bei der Konstruktion. Das tut jedoch seiner Funktion als späterer
+		Meta-Daten-Lieferant keinen Abbruch.
+		Auch hier reicht der Standard-Konstruktor für eine Idee dieser Klasse:
+		 
+		\begin{lstlisting}	
+explicit TextureInfo(
+	const BufferInfo& buffi,
+	cl_GLuint dimensionality,
+	Vector3Dui dimensionExtends,
+	GLenum textureTarget,
+	bool isDepthTexture = false,
+	bool isMipMapped = false,
+	bool isRectangleTex = false,
+	bool isCubeTex = false,
+	GLint numMultiSamples = 1,
+	GLint numArrayLayers = 1
+	);
+		\end{lstlisting}			
+			
+	\end{description}	
+
+ 	
+ 	\begin{table}[!h]
+  		\begin{tabular}
+  		{
+  		 l  l | c | c | c |
+  		}
+																	\cline{3-5}
+  									&								&	\multicolumn{3}{ c | }{Context} \\ 
+  																	\cline{3-5}
+									&								& 	Host 	& 	OpenGL 	& 	OpenCL	\\
+    	\noalign{\hrule}								
+    	\multicolumn{1}{|c|}{
+    		generic Buffer
+    	}							& 								
+    		&	{\color{green}\checkmark} 	&	{\color{red}x}		& 	{\color{green}\checkmark}	\\ 
+    	
+    	\noalign{\hrule}								
+    	\multicolumn{1}{|c|}{
+    		\multirow{4}{*}{OpenGL Buffers}
+    	}							& Vertex Attribute Buffer		
+    		&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{orange}o}	\\  
+    								\cline{3-5}
+    	\multicolumn{1}{|c|}{}		& Vertex Index Buffer			
+    		&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{orange}o}	\\  
+    								\cline{3-5}
+    	\multicolumn{1}{|c|}{}		& Uniform Buffer
+    		&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{orange}o}	\\ 
+    								\cline{3-5} 
+    	\multicolumn{1}{|c|}{}		& Render Buffer					
+    		&	{\color{red}x} 	&	{\color{green}\checkmark}		& 	{\color{green}\checkmark}	\\ 
+    
+   		\noalign{\hrule}								
+   		\multicolumn{1}{|c|}{
+    		\multirow{4}{*}{Textures} 
+   		}							& 1D Texture					
+   			&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{red}x}	\\ 
+    								\cline{3-5}
+		\multicolumn{1}{|c|}{}		& 2D Texture				
+			&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{green}\checkmark}	\\ 
+									\cline{3-5}
+		\multicolumn{1}{|c|}{}		& 3D Texture		
+			&	{\color{orange}o} 	&	{\color{green}\checkmark}		& 	{\color{green}\checkmark}	\\ 
+									\cline{3-5}
+		\multicolumn{1}{|c|}{}		& Special Texture				
+			&	{\color{orange}?} 	&	{\color{green}\checkmark}		& 	{\color{orange}?}	\\ 
+
+
+    	\noalign{\hrule}
+     
+     	
+  		\end{tabular}	
+  	
+  		\caption{		
+  			Verschiedene Buffertypen und ihre Verfügbarkeit in verschiedenen Kontexten \\	
+  			Legende: \\
+			{\color{green}\checkmark}	$\rightarrow$ nativ unterstützt;
+			{\color{orange}o}	$\rightarrow$ kompatibel;
+			{\color{red}x}	$\rightarrow$ nicht unterstützt;	\\
+			{\color{orange}?}	$\rightarrow$ Unterstützung abhängig von weiteren Parametern, 
+								s. Tabelle \ref{tab:textureTypes};	
+		}
+		\label{tab:bufferSupportInContexts}
+  	\end{table}
+  	
+  	
+  	\begin{table}[!h]
+  		\begin{tabular}
+  		{
+  			|l|c|c|c|c|c|
+  		}
+		\noalign{\hrule}						
+  						&	CL interop	&	MipMap	& Depth	&	Array	&	Rectangle	\\
+  		\noalign{\hrule}						
+  		Texture1D		& {\color{red}x} & {\color{green}\checkmark} & {\color{red}x}
+  						& {\color{green}\checkmark} & {\color{red}x} \\
+		\noalign{\hrule}						
+  		Texture2D		& {\color{green}\checkmark} & {\color{green}\checkmark} & {\color{green}\checkmark}  
+  						& {\color{green}\checkmark} & {\color{green}\checkmark} \\
+  		\noalign{\hrule}						
+  		Texture2DCube 	& {\color{yellow}o} & {\color{green}\checkmark}  & {\color{green}\checkmark}
+  						& {\color{orange}o} & {\color{red}x} \\
+  		\noalign{\hrule}						
+  		Texture2DMultiSample& {\color{red}x} & {\color{red}x}  & {\color{red}x} 
+  						& {\color{green}\checkmark} & {\color{red}x} \\	
+  		\noalign{\hrule}						
+  		Texture3D		& {\color{green}\checkmark} & {\color{green}\checkmark}  & {\color{red}x} 
+  						& {\color{red}x} & {\color{red}x} \\
+  		\noalign{\hrule}						
+  		\end{tabular}
+  		
+  		\caption{Verschiedene Texturtypen und ihre Kompatibiltät zu bestimmten Features \\	
+  			Legende: \\
+			{\color{green}\checkmark}	$\rightarrow$ unterstützt;
+			{\color{yellow}o}	$\rightarrow$ In OpenCL unterstützt, aber nicht vom Framework;
+			{\color{orange}o}	$\rightarrow$ nur in OpenGL 4 unterstützt,
+								daher wegen Kompat. zu GL 3 nicht vom Framework unterstützt;
+			{\color{red}x}	$\rightarrow$ nicht unterstützt;
+		}
+  		\label{tab:textureTypes}
+	\end{table}
+	
+	Es sei bemerkt, dass die Tiefen-Texturen sich abgesehen von den automatisch bestimmten
+	entsprechenden OpenGL-Makros in ihrer Implementation nur geringfügig von ihren "`Farbtextur"'-
+	Oberklassen unterscheiden, nämlich in der Implementation der 
+	\lstinline|virtual void setupDefaultSamplerParameters()=0;|-Methode, die in \lstinline|Texture| definiert ist.
+	Hier z.B. der Compare-Mode und die Compare-Function für korrekten Lookup solcher Texturen als Shadow Map
+	über einen	Shadow-Sampler in GLSL.
+	
+	Man darf sich fragen, warum ich jede noch so sonderbar anmutende Spezial-Textur unterstützen will. Dies
+	hat den Grund, dass ich langfristig etliche Rendering Features unterstützen will, welche die meisten dieser 	
+	Spezialtexturen benötigen, und die verbleibenden paar ungenutzten Texturen noch zur Vollständigkeit mit zu 
+	implementieren, verursacht dank Vererbung nur einen minimalen Mehraufwand:
+	\begin{enumerate}
+		\item Layered Rendering in \lstinline|Texture2DDepthCube| zur Generierung von Point Light Shadow Maps
+		in nur einem Rendering Pass
+		\item Layered Rendering in \lstinline|Texture2DCube| zur Generierung von dynamischen Environment Maps
+		\item  Layered Rendering in \lstinline|Texture2DDepthArray| zur Generierung von vielen Spot Light Shadow Maps
+		in nur einem Rendering Pass
+		\item Deferred Shading mit Multisampling: Benötigt \lstinline|Texture2DMultiSample|-G-Buffers
+	\end{enumerate}
+	Zu weiten Teilen sind der Shadercode und die nötigen Framework-Klassen schon für diese Features implementiert,
+	es muss "`nur"' noch einiges ergänzt und aufgeräumt, alles zusammengefügt und debuggt werden. 
+	Da dieses "`Nur"' wirklich äußerst ironisch gemeint ist, habe ich gar nicht erst versucht, 
+	die Implementierung dieser Features zu beenden. Es muss vorerst reichen,
+	dass sie konzeptionell in der Framework-Struktur angelegt sind.
+	
+	
+	%------------------------------------------------------------------------------------------
+	
+	Alle Operationen auf den Buffern/Texturen werden dann über das \lstinline|BufferInterface|
+	getätigt. Fast sämtlicher Kontrollfluss (Synchronisation,Validierung, Auswahl des richtigen Kontextes etc.)
+	befindet sich in der Implementation	der (wohlgemerkt großteils \emph{nicht} virtuellen) 
+	Methoden von \lstinline|BufferInterface|. 
+	Nur die finale Bürde der verschiedenen API-Calls als Ergebnis des vorangegangenen Kontrollflusses
+	wird von \lstinline|protected| virtuellen Funktionen der abgeleiteten Klassen übernommen, wie im folgenden 	
+	Unterabschnitt beschrieben.
+	
+	\subsubsection{Die API-bezogenen internen Buffer-Operationen}
+	Zur Vermeidung von Boilerplate-Code sind die Signaturen für die GPU Computing API-bezogenen 
+	Buffer-Operationen ausgelagert in eine Datei namens "`BufferVirtualSignatures.h"'.
+	Um sowohl in der abstrakten Basisklasse als auch in den abgeleiteten Klassen included werden zu können,
+	lässt sich die Abstraktheit der Definitionen über das Makro \lstinline|FLEWNIT_PURE_VIRTUAL| steuern:
+		
+	\begin{lstlisting}[caption={API- und Buffertyp-abhängige Operationen auf Buffern -- Definitionen},
+					   label=listing:bufferOpDefs]	
+#ifdef FLEWNIT_PURE_VIRTUAL
+#	define PURENESS_TAG =0
+#else
+#	define PURENESS_TAG
+#endif
+
+	virtual void generateGL()	throw(BufferException)	PURENESS_TAG;
+	virtual void generateCL()		throw(BufferException)	PURENESS_TAG;
+	virtual void generateCLGL()		throw(BufferException)	PURENESS_TAG;
+
+	//there is no pendant to bind() in OpenCL, as the API needs no buffer binding mechanism;
+	//instead, buffers are passed as arguments to kernels
+	virtual void bindGL()			throw(BufferException)	PURENESS_TAG;
+	//there is no pendant to alloc() in OpenCL, as Buffer generation and allocation are coupled within
+	//the same API call
+	virtual void allocGL()			throw(BufferException)	PURENESS_TAG;
+
+	virtual void writeGL(const void* data)throw(BufferException)	PURENESS_TAG;
+	virtual void writeCL(const void* data)throw(BufferException)	PURENESS_TAG;
+	virtual void readGL(void* data)		throw(BufferException)	PURENESS_TAG;
+	virtual void readCL(void* data)		throw(BufferException)	PURENESS_TAG;
+	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)	PURENESS_TAG;
+	virtual void copyCLFrom(ComputeBufferHandle & bufferToCopyContentsFrom)throw(BufferException)	PURENESS_TAG;
+	//because the C++ Wrapper for OpenCL is used, deletion takes place automatically when th cl::Buffer is destroyed
+	virtual void freeGL()			throw(BufferException)	PURENESS_TAG;
+	
+//	//not implemented yet as not needed at the moment: mapping routines:
+//	virtual void* mapGLToHost()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+//	virtual void* mapCLToHost()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+//	virtual void* unmapGL()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+//	virtual void* unmapCL()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+
+#undef PURENESS_TAG
+	\end{lstlisting}
+	
+	So included \lstinline|BufferInterface| diese Datei innerhalb ihrer Klassendefinition über
+	\begin{lstlisting}
+#	define FLEWNIT_PURE_VIRTUAL
+#	include "BufferVirtualSignatures.h"
+#	undef FLEWNIT_PURE_VIRTUAL
+	\end{lstlisting},
+	
+	die anderen Klassen definieren das Makro nicht vor dem Includen.\\
+	
+	In Anhang \ref{append:bufferListings} sind exemplarisch Implementationen dieser Funktionen 
+	gelistet, einerseits die der konkreten \lstinline|Buffer|-Klasse (Listing \ref{listing:bufferOpImpls_Buffer}),
+	 die alle non-Textur-Buffer zusammengefasst abstrahiert, 
+	andererseits die der konkreten \lstinline|Texture2D|-Klasse 
+	(Listing \ref{listing:bufferOpImpls_Texture} und \ref{listing:bufferOpImpls_Texture2D}), 
+	die von der abstrakten \lstinline|Texture|-Klasse erbt und selbst die Basisklasse für
+	\lstinline|Texture2DDepth| und \lstinline|Texture1DArray| bildet, 
+	vgl. Klassendiagramm (Abb. \ref{fig:ClassDiagOverview2}). Die meisten Signaturen aus "`BufferVirtualSignatures.h"'
+	werden schon von \lstinline|Texture| implementiert, da nicht jede API-Routine Textur-spezifisch ist.
+	Ich muss gestehen, dass ich diese Funktionen noch nicht systematisch getestet habe, daher Fehlerfreiheit nicht 
+	garantiert ist. Es sei nochmals betont, dass der Schwerpunkt bei einer möglichst generischen Konzeption lag,
+	nicht bei einer vollständigen Implementation. Es ist viel "`schlafender"' Code im System, der noch getestet, 
+	integriert, weiter entwickelt, ergänzt werden will.

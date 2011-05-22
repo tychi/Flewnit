@@ -75,9 +75,7 @@ enum BufferSemantics
 	POSITION_SEMANTICS,
 	NORMAL_SEMANTICS,
 	TANGENT_SEMANTICS,
-	//BINORMAL_SEMANTICS,
 	TEXCOORD_SEMANTICS,
-
 
 	VELOCITY_SEMANTICS,
 	MASS_SEMANTICS,
@@ -86,12 +84,10 @@ enum BufferSemantics
 	FORCE_SEMANTICS,
 
 	Z_INDEX_SEMANTICS,
-
 	DIFFUSE_COLOR_SEMANTICS,
-
 	CUSTOM_SEMANTICS,
 
-	//we need tha value to have static-length arrays holding VBO maintainance information
+	//we need that value to have static-length arrays holding VBO maintainance information
 	__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__,
 
 	//Semantic of the index buffer from a VBO used via glDrawElements()
@@ -102,7 +98,7 @@ enum BufferSemantics
 	LIGHT_SOURCE_BUFFER_SEMANTICS,
 	///\}
 
-	//following texture-only semantics; Texture can also have the above Semantics
+	//following texture-only semantics; Texture can also have most of the above Semantics
 
 	DISPLACEMENT_SEMANTICS, //normal-depth or normal map
 	ENVMAP_SEMANTICS,
@@ -117,7 +113,7 @@ enum BufferSemantics
 	INTERMEDIATE_RENDERING_SEMANTICS,
 	FINAL_RENDERING_SEMANTICS,
 
-	//actually real amount is one less than this valu, but that doesnt matter
+	//actually real amount is one less than this value, but that doesnt matter
 	__NUM_TOTAL_SEMANTICS__,
 
 	//indicator for "empty" stuff, e.g. an empty Color Attachment slot in an FBO
@@ -236,7 +232,7 @@ struct BufferElementInfo
 	//4
 	bool normalizeIntegralValuesFlag;
 
-	//guard to tell the valiadte() function that this struct is unused
+	//guard to tell the validate() function that this struct is unused
 	//(e.g. for lightsource uniform buffers, generic opencl buffers etc);
 	//is set to true in the default constructor,
 	//copied in the copy constructor and set to false in the value-passing constrctor
@@ -244,8 +240,8 @@ struct BufferElementInfo
 
 
 	//default constructor for internal image loading or if this struct is unneeded;
-	//set the hasNoChanneledElements explicitely to force the programmer to think about what he is doing;
-	//has to be set always to true with this constrctor, otherwise, validation will fail;
+	//set the hasNoChanneledElements explicitly to force the programmer to think about what he is doing;
+	//has to be set always to true with this constructor, otherwise, validation will fail;
 	explicit BufferElementInfo(bool hasNoChanneledElements);
 	explicit BufferElementInfo(int numChannels,GPU_DataType internalGPU_DataType,int bitsPerChannel, bool normalizeIntegralValuesFlag);
 	explicit BufferElementInfo(const BufferElementInfo& rhs);
@@ -310,20 +306,24 @@ public:
 	ContextTypeFlags usageContexts;
 	BufferSemantics bufferSemantics;
 
-
-	Type elementType; //default TYPE_UNDEF
+	Type elementType;
 	cl_GLuint numElements;
 
-
-	//"clean" user provided info about the texels in the texture, or the components and types in a vertex attribute/index buffer;
+	//"clean" user provided info about the texels in the texture,
+	//resp. the components and types in a vertex attribute/index buffer;
 	BufferElementInfo elementInfo;
-	//guard if some buffer is mapped
 
-	GLBufferType glBufferType; //default NO_GL_BUFFER_TYPE; must have other value if the GL-flag is set in usageContexs
+	//default NO_GL_BUFFER_TYPE;
+	//must have other value if the OPEN_GL_CONTEXT_TYPE_FLAG is set in usageContexs
+	GLBufferType glBufferType;
 	bool isPingPongBuffer; //default false, set by the appropriate class;
 
-	ContextType mappedToCPUContext; //default NO_CONTEXT_TYPE, valid only the latter and OPEN_CL_CONTEXT_TYPE and OPEN_GL_CONTEXT_TYPE
 
+
+	//guard if some buffer is mapped
+	//default NO_CONTEXT_TYPE, valid only the latter and
+	//OPEN_CL_CONTEXT_TYPE and OPEN_GL_CONTEXT_TYPE
+	ContextType mappedToCPUContext;
 
 	//value automatically calulated by  numElements * BufferHelper::elementSize(elementType);
 	cl_GLuint bufferSizeInByte;
@@ -340,10 +340,10 @@ public:
 
 	BufferInfo(const BufferInfo& rhs);
 
-
-	//if alternate name is "", then the name of rhs is taken for the new object
-	//isPingPongBuffer is set by PingPongBuffer constructor
-	BufferInfo(const BufferInfo& rhs, String alternateName, bool isPingPongBuf);
+	//Constructor for Ping Pong Buffer: Copy everything of the info but the name
+	//names must be unique, so provide a new name!
+	//this->isPingPongBuffer is set to true
+	BufferInfo(const BufferInfo& rhs, String name);
 
 	virtual ~BufferInfo();
 	bool operator==(const BufferInfo& rhs) const;

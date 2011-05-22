@@ -61,12 +61,11 @@ void Profiler::printObjectStatus(BasicObject* bo)
 
 void Profiler::printMemoryStatus()
 {
-	if(mRegisteredButUntrackedObjects.size()==0)
+	if(mRegisteredButUntrackedObjects.size()!=0)
 	{
-
+		LOG<<WARNING_LOG_LEVEL<<"Profiler::printMemoryStatus(): Not all registered objects have their memory footprint initialized and tracked; "
+				"Call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n";
 	}
-	LOG<<WARNING_LOG_LEVEL<<"Profiler::printMemoryStatus(): Not all registered objects have their memory footprint initialized and tracked; "
-			"Call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n";
 
 
 	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
@@ -74,7 +73,7 @@ void Profiler::printMemoryStatus()
 			<<  mTotalObjectMemoryFootprint << " bytes are consumed by those objects;\n"
 			;
 
-	printBufferOnlyMemoryStatus();
+	printBufferMemoryStatus();
 }
 
 void Profiler::printRegisteredObjects()
@@ -86,7 +85,7 @@ void Profiler::printRegisteredObjects()
 		}
 }
 
-void Profiler::printBufferOnlyMemoryStatus()
+void Profiler::printBufferMemoryStatus()
 {
 	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
 				<< mPrivateAllocatedBufferMemories[HOST_CONTEXT_TYPE]  << " bytes are consumed by "
@@ -204,8 +203,8 @@ void Profiler::registerObjectMemoryFootPrint(BasicObject* bo)
 	bo->initBasicObject();
 	mTotalObjectMemoryFootprint += bo->getMemoryFootprint();
 
-	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"BasicObject memory footprint ("<< bo->getMemoryFootprint() <<" Bytes) of \" "<< bo->getClassName() <<" \" is now tracked by Profiler;\n";
-	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL<<"printing now Object Information:\n";
+	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
+			<<"new BasicObjet tracked:\n";
 	printObjectStatus(bo);
 }
 
@@ -272,7 +271,7 @@ void Profiler::modBufferAllocation_internal(ContextTypeFlags contextTypeFlags, i
 
 	assert("flags valid" && validFlagsGuard);
 
-	printBufferOnlyMemoryStatus();
+	printBufferMemoryStatus();
 	checkError();
 }
 
