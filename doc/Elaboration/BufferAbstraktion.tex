@@ -59,6 +59,7 @@
 		
 		%--------------------------------------------------------------------------------------------
 		\item[enum BufferSemantics] 
+		\label{item:BufferSemantics}
 		Eine sehr wichtige Auflistung konkreter Verwendungszwecke des Buffers,
 		siehe Listing \ref{listing:BufferSemantics} im Anhang \ref{append:bufferListings}.
 		Dieser Aufzählungstyp ist eine große Erleichterung beim Hantieren mit OpenGL Vertex Buffer Objects (VBO's) 
@@ -305,12 +306,12 @@ explicit TextureInfo(
 	es muss "`nur"' noch einiges ergänzt und aufgeräumt, alles zusammengefügt und debuggt werden. 
 	Da dieses "`Nur"' wirklich äußerst ironisch gemeint ist, habe ich gar nicht erst versucht, 
 	die Implementierung dieser Features zu beenden. Es muss vorerst reichen,
-	dass sie konzeptionell in der Framework-Struktur angelegt sind.
+	dass sie konzeptionell in der Framework-Struktur angelegt sind.\\
 	
 	
 	%------------------------------------------------------------------------------------------
 	
-	Alle Operationen auf den Buffern/Texturen werden dann über das \lstinline|BufferInterface|
+	Alle Operationen auf den Buffern/Texturen durch den Benutzer werden dann über das \lstinline|BufferInterface|
 	getätigt, siehe das exemplarische Listing \ref{listing:bufferOperationInterface}. 
 	Fast sämtlicher Kontrollfluss (Synchronisation,Validierung, Auswahl des richtigen Kontextes etc.)
 	befindet sich in der Implementation	der (wohlgemerkt großteils \emph{nicht} virtuellen) 
@@ -320,10 +321,11 @@ explicit TextureInfo(
 	Unterabschnitt beschrieben.
 	
 \begin{lstlisting}[caption={Operationen auf dem BufferInterface, Ausschnitt},label=listing:bufferOperationInterface]		
-	void bind(ContextType type)throw(BufferException);
+	//The binding-machanism is only relevant for OpenGL	
+	void bind()throw(BufferException);
 	void setData(const void* data, ContextTypeFlags where)throw(BufferException);
 	//if both CL and GL are enabled, then the buffer is shared and the implementation
-	//will decide which api will be used for the read/write;
+	//will decide which API will be used for the read/write;
 	void copyFromHostToGPU()throw(BufferException);
 	void readBack()throw(BufferException);
 \end{lstlisting}
@@ -342,31 +344,31 @@ explicit TextureInfo(
 #	define PURENESS_TAG
 #endif
 
-	virtual void generateGL()	throw(BufferException)	PURENESS_TAG;
-	virtual void generateCL()		throw(BufferException)	PURENESS_TAG;
-	virtual void generateCLGL()		throw(BufferException)	PURENESS_TAG;
+	virtual void generateGL() PURENESS_TAG;
+	virtual void generateCL() PURENESS_TAG;
+	virtual void generateCLGL() PURENESS_TAG;
 
 	//there is no pendant to bind() in OpenCL, as the API needs no buffer binding mechanism;
 	//instead, buffers are passed as arguments to kernels
-	virtual void bindGL()			throw(BufferException)	PURENESS_TAG;
+	virtual void bindGL() PURENESS_TAG;
 	//there is no pendant to alloc() in OpenCL, as Buffer generation and allocation are coupled within
 	//the same API call
-	virtual void allocGL()			throw(BufferException)	PURENESS_TAG;
+	virtual void allocGL()PURENESS_TAG;
 
-	virtual void writeGL(const void* data)throw(BufferException)	PURENESS_TAG;
-	virtual void writeCL(const void* data)throw(BufferException)	PURENESS_TAG;
-	virtual void readGL(void* data)		throw(BufferException)	PURENESS_TAG;
-	virtual void readCL(void* data)		throw(BufferException)	PURENESS_TAG;
-	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)	PURENESS_TAG;
-	virtual void copyCLFrom(ComputeBufferHandle & bufferToCopyContentsFrom)throw(BufferException)	PURENESS_TAG;
+	virtual void writeGL(const void* data) PURENESS_TAG;
+	virtual void writeCL(const void* data) PURENESS_TAG;
+	virtual void readGL(void* data)	PURENESS_TAG;
+	virtual void readCL(void* data)	PURENESS_TAG;
+	virtual void copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom) PURENESS_TAG;
+	virtual void copyCLFrom(ComputeBufferHandle & bufferToCopyContentsFrom) PURENESS_TAG;
 	//because the C++ Wrapper for OpenCL is used, deletion takes place automatically when th cl::Buffer is destroyed
-	virtual void freeGL()			throw(BufferException)	PURENESS_TAG;
+	virtual void freeGL() PURENESS_TAG;
 	
 //	//not implemented yet as not needed at the moment: mapping routines:
-//	virtual void* mapGLToHost()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
-//	virtual void* mapCLToHost()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
-//	virtual void* unmapGL()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
-//	virtual void* unmapCL()throw(BufferException)	FLEWNIT_SIGNATURE_PURENESS_TAG;
+//	virtual void* mapGLToHost() PURENESS_TAG;
+//	virtual void* mapCLToHost() PURENESS_TAG;
+//	virtual void* unmapGL() PURENESS_TAG;
+//	virtual void* unmapCL() PURENESS_TAG;
 
 #undef PURENESS_TAG
 	\end{lstlisting}
@@ -376,9 +378,8 @@ explicit TextureInfo(
 #	define FLEWNIT_PURE_VIRTUAL
 #	include "BufferVirtualSignatures.h"
 #	undef FLEWNIT_PURE_VIRTUAL
-	\end{lstlisting},
-	
-	die anderen Klassen definieren das Makro nicht vor dem Includen.\\
+	\end{lstlisting}
+	Die anderen Klassen definieren das Makro nicht vor dem Includen.\\
 	
 	In Anhang \ref{append:bufferListings} sind exemplarisch Implementationen dieser Funktionen 
 	gelistet, einerseits die der konkreten \lstinline|Buffer|-Klasse (Listing \ref{listing:bufferOpImpls_Buffer}),

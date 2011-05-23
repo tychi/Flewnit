@@ -218,13 +218,13 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 	}
 	if(keyboard->getRecentKey() == GLFW_KEY_F3)
 	{
-		GUARD(glDisable(GL_PROGRAM_POINT_SIZE));
+		//GUARD(glDisable(GL_PROGRAM_POINT_SIZE));
 
 		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 	}
 	if(keyboard->getRecentKey() == GLFW_KEY_F4)
 	{
-		GUARD(glDisable(GL_PROGRAM_POINT_SIZE));
+		//GUARD(glDisable(GL_PROGRAM_POINT_SIZE));
 
 		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	}

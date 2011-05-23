@@ -697,17 +697,17 @@ virtual void deactivate(SimulationPipelineStage* currentStage,
 		\item Voxel-basiert
 		\item Freiform-Flächen-basiert: NURBS, Bézier-Patches etc.
 		\item Primitiv-Basiert: das Objekt ist aufgebaut aus Primitiven die Quader, Kugel, Kapseln, Zylindern etc.;
-			Diese Repräsentation wird gerne für Collision Shapes bei mechanischen Simulation von Rigid Bodies verwendet.
+			Diese Repräsentation wird gerne für Collision Shapes bei der mechanischen Simulation von Rigid Bodies verwendet.
 	\end{itemize}
 	Die Repräsentationen Überschneiden sich in ihren Kategorisierungen und Eigenschaften, eine sinnvolle Strukturierung ist 
 	also weder trivial noch womöglich eindeutig. Die API-Spezifischen Beschränkungen erleichtern diese Aufgabe nicht 
-	geraden, wenn man das Effiziente Mapping auf eine API im Hinterkopf behalten muss.
+	gerade, wenn man das Effiziente Mapping auf eine API im Hinterkopf behalten muss.
 	Ich habe mir nicht weiter den Kopf zerbrochen, auch, weil mir spezifisches Wissen z.B. über Primitiv-basierte
 	Rigid Body- Simulation fehlt, und habe mich pragmatisch in der exemplarischen Implementierung auf die
 	beiden Basis-Repräsentationen beschränkt, die bei aktuellem visuellen Echzeitrendering und interaktiver
 	Fluidsimulation die wichtigste Rolle spielen: Vertex- und Voxel-basiert. Hierbei sind auch API-spezifische Überlegungen
-	mit eingeflossen. Man muss abwägen zwischen der konzeptionell saubersten und umfassendsten Konzeption
-	und der effizienten Realisierbarkeit mit verfügbaren Hardware- und Software-Architekturen;
+	mit eingeflossen. Man muss abwägen zwischen der konzeptionell saubersten und umfassendsten Lösung
+	und der effizienten Realisierbarkeit mit verfügbaren Hard- und Software-Architekturen;
 	im Zweifelsfalle siegt das Konzept, was die effiziente Realisierbarkeit begünstigt.\\
 	
 	Die Basisklasse hat die Methode
@@ -717,24 +717,95 @@ virtual void draw(
 	GeometryRepresentation desiredGeomRep = DEFAULT_GEOMETRY_REPRESENTATION ) = 0;
 	\end{lstlisting}
 	
-	TBC
-	
-	
+	\lstinline|numInstances| findet beim Hardware-Instancing Verwendung (s. Abschnitt \ref{sec:instancing}),
+	\lstinline|desiredGeomRep| bietet die Möglichkeit -- sofern kompatibel -- für den aktuellen Draw-Call
+	eine andere Repräsentation zu wählen. So lassen sich z.B. gezielt bestimmte Dreiecks-Meshes als Linen
+	oder Punkte zeichnen, ohne dass andere Objekte beeinflusst würden, wie es bei einer globalen Einstellung 
+	der Fall wäre (z.B. über \lstinline|glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)|).
 	
 	\subsubsection{BufferBasedGeometry}
+		Diese Klasse ist ebenfalls noch abstrakt; Sie ist die Basis für alle Klassen, deren geometrische
+		Repräsentation ein 1:1-Verhältnis zwischen all ihren Attributen aufweist, also keine komplexen
+		Datenstrukturen benötigt. 
+		Abgeleitet hiervon sind \lstinline|VertexBasedGeometry| (siehe Abschnitt \ref{sec:VertexBasedGeometry})
+		und \lstinline|VoxelGridGeometry| (nicht implementiert).\\
+		
+		\lstinline|BufferBasedGeometry| hat ein Array von \lstinline|BufferInterface|-Pointern als Member,
+		welches über den \lstinline|BufferSemantics|-Aufzählungstyp indiziert werden kann:
+		\begin{lstlisting}			
+BufferInterface* mAttributeBuffers[__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__];
+		\end{lstlisting}	
+		Diese Buffers können über 
+		\begin{lstlisting}			
+virtual void setAttributeBuffer(BufferInterface* buffi);
+		\end{lstlisting}
+		gesetzt werden.  Die Position in \lstinline|mAttributeBuffers| wird von der Semantik von \lstinline|buffi| 
+		bestimmt. Die Methode ist virtuell, da sie von \lstinline|VertexBasedGeometry| 
+		für das Setzen des entsprechenden OpenGL-States überschrieben werden muss.		
+		
+		Zur Information, falls man mit dem System eine Voxel-basierte Simulation plant:\\
+		\lstinline|VoxelGridGeometry|  könnte als konkrete Attribute-Buffers
+		entweder 3D-Texturen oder einen generischen Buffer haben. Hier tut sich ein Problem auf:
+		Das Schreiben in 3D-Texturen ist zwar als OpenCL-Extension verfügbar, wird aber zumindest noch nicht
+		von Nvidia-Treibern unterstützt, evtl. noch nicht einmal nativ von der Hardware (hierüber habe ich keine
+		Informationen gefunden).
+		Folglich würde man einen generischen Buffer verwenden wollen.
+		Dieser lässt sich jedoch nicht mehr direkt per OpenGL via Ray-Casting visualisieren.
+		Abhilfe könnte schaffen, dass man eine Textur allokiert, diese jedoch an OpenCL als klassischen Buffer übergibt.
+		Derartige Mechanismen stellt OpenCL jedoch nicht bereit. In CUDA ist es zumindest möglich, einen generischen 
+		Buffer als Textur zu binden, darüber, ob es umgekehrt auch geht, habe ich keine Information 
+		\footnote{Texturen liegen intern so im Speicher, dass eine gute 2D-räumliche Lokalität gewährleistet ist, z.B.
+		über eine Z-Order-Curve (siehe \cite{internet:zOrderCurve}). Auf diese Weise werden Cache Misses und 	
+		benötigte Bandbreite reduziert. Dieses Layout is non-disclosed, entsprechend ist es unwahrscheinlich,
+		dass man in CUDA Texturen als generische Buffer binden kann.}.
+		3D-Image Writes sind auch in CUDA noch nicht möglich. Man scheint sich also immer noch
+		mit Work-Arounds behelfen zu müssen, wie 3D-Texturen in 2D-Texturen zu encoden oder pro Frame von einem Buffer
+		in eine 3D-Textur zu kopieren.\\
+		Auch wenn das beschriebene Phänomen meine partikelbasierte Fluidsimulation nicht betrifft, 
+		finde ich es doch bemerkenswert, dass bei all den
+		Fortschritten, die Hardware und APIs gemacht haben, teils immer noch Beschränkungen wie diese
+		existieren.
+
 
 	\subsubsection{VertexBasedGeometry}
 	\label{sec:VertexBasedGeometry}
 	
+	Dies Klasse abstrahiert das OpenGL Vertex Buffer Object(VBO).
+	
+	Wie in den Textur- und Buffer-Klassen selbst, wird auch hier die \lstinline|BufferInfo|-Klasse genutzt,
+	um die relevanten Parameter (Datentyp und dessen Bit-Count, 
+	Anzahl Channel-Komponenten, Normalisierungs-Flags, BufferSemantics als Attribute Index, 
+	s. Seite \pageref{item:BufferSemantics}) der VBO-bezogenen API-Calls zu bestimmen .
+	
+	Die Klasse hat zusätzlich zu den Attribute Buffers einen Pointer, der optional als Vertex Index Buffer
+	gesetzt werden kann. Dann wird der OpenGL- Draw Call über \lstinline|glDrawElementsInstanced(..)|
+	getätigt.
+	Zusätzlich kann man optional ein Intervall angeben, welcher Bereich 
+	im Index Buffer genutzt werden soll.
+	Dies ist z.B. sinnvoll, wenn mehrere logische Objekte mit verschiedenen Materials in einem Buffer
+	liegen, wie es z.B. bei einer Fluidsimulation der Fall ist, in welcher mehrere Fluide und Rigid Bodies sich
+	ein Attribute Buffer Set teilen. So kann man kontrollieren, was im Buffer gezeichnet werden soll und was nicht.
+	In diesem Fall wird \lstinline|glDrawElementsInstancedBaseVertex(..)| für den OpenGL- Draw Call genutzt.
+	
+	Ist kein Index Buffer gesetzt, werden die Vertices über \lstinline|glDrawArraysInstanced(..)|	
+	 "`direkt"' gezeichnet, also wird z.B. angenommen, dass drei hintereinander liegende Vertices ein Dreick bilden. 
+	
+	Um bei Ping Pong- Buffers vor dem Draw Call sicher zu gehen, dass der aktive Buffer gebunden ist,
+	werden in der \lstinline|draw()|-Routine, falls eine Flag anzeigt, dass Ping Pong Buffers unter den 
+	Attribute Buffers sind, diese neu ans VBO gebunden, falls der aktive Buffer seit dem letzten Draw call gewechselt hat.
+	
+	
 	\subsubsection{InstancedGeometry}
+	Dies Klasse stellt eine reine "`Dummy-Geometrie"' dar. in Ihrer \lstinline|draw()|-Routine teilt sie ihrem
+	zugehörigen \lstinline|InstanceManager| nur mit, dass diese Instanz beim nächsten Instanced Rendering-Draw Call
+	ebenfalls gezeichnet werden will. Für Details sei auf Abschnitt \ref{sec:instancing} verwiesen.
 	
 	
-	
-	Abtract, Buffer based, Vertex based etc.. ein paar konzepte (implementiert/genutzt nur VertexBased)  
-		
-
 
 \subsection{Das MPP-Paket}
+
+
+
 Massively Parallel Program
 	Basisklasse von Shader und OpenCL Program
 	MPP und ParCompManager: hardware query, abstrakte methoden...

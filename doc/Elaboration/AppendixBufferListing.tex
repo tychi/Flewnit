@@ -187,11 +187,11 @@ case GPU_DATA_TYPE_UINT :
 	},
 	label=listing:bufferOpImpls_Buffer
 	]	
-void Buffer::generateGL()throw(BufferException)
+void Buffer::generateGL()
 {
 	glGenBuffers(1, &mGraphicsBufferHandle);
 }
-void Buffer::generateCL()throw(BufferException)
+void Buffer::generateCL()
 {
 	mComputeBufferHandle = cl::Buffer(
 			PARA_COMP_MANAGER->getCLContext(),
@@ -202,7 +202,7 @@ void Buffer::generateCL()throw(BufferException)
 			PARA_COMP_MANAGER->getLastCLErrorPtr()
 	);
 }
-void Buffer::generateCLGL()throw(BufferException)
+void Buffer::generateCLGL()
 {
 	mComputeBufferHandle = cl::BufferGL(
 			PARA_COMP_MANAGER->getCLContext(),
@@ -213,11 +213,11 @@ void Buffer::generateCLGL()throw(BufferException)
 	);
 	PARA_COMP_MANAGER->registerSharedBuffer(mComputeBufferHandle);
 }
-void Buffer::bindGL()throw(BufferException)
+void Buffer::bindGL()
 {
 	glBindBuffer(mGlBufferTargetEnum, mGraphicsBufferHandle);
 }
-void Buffer::allocGL()throw(BufferException)
+void Buffer::allocGL()
 {
 	glBufferData(
 		//which target?
@@ -229,11 +229,11 @@ void Buffer::allocGL()throw(BufferException)
 		//draw static if not modded, dynamic otherwise ;)
 		mContentsAreModifiedFrequently ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 }
-void Buffer::writeGL(const void* data)throw(BufferException)
+void Buffer::writeGL(const void* data)
 {
 	glBufferSubData(mGlBufferTargetEnum,0,mBufferInfo->bufferSizeInByte,data);
 }
-void Buffer::writeCL(const void* data)throw(BufferException)
+void Buffer::writeCL(const void* data)
 {
 	PARA_COMP_MANAGER->getCommandQueue().enqueueWriteBuffer(
 			static_cast<cl::Buffer&>(mComputeBufferHandle),
@@ -245,11 +245,11 @@ void Buffer::writeCL(const void* data)throw(BufferException)
 			PARA_COMP_MANAGER->getLastEventPtr()
 	);
 }
-void Buffer::readGL(void* data)throw(BufferException)
+void Buffer::readGL(void* data)
 {
 	glGetBufferSubData(mGlBufferTargetEnum,0,mBufferInfo->bufferSizeInByte,data);
 }
-void Buffer::readCL(void* data)throw(BufferException)
+void Buffer::readCL(void* data)
 {
 	PARA_COMP_MANAGER->getCommandQueue().enqueueReadBuffer(
 			static_cast<cl::Buffer&>(mComputeBufferHandle),
@@ -261,7 +261,7 @@ void Buffer::readCL(void* data)throw(BufferException)
 			PARA_COMP_MANAGER->getLastEventPtr()
 	);
 }
-void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
+void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)
 {
 	//bind other buffer as read target
 	GUARD(glBindBuffer(mGlBufferTargetEnum, bufferToCopyContentsFrom););
@@ -276,7 +276,7 @@ void Buffer::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(Buff
 			mBufferInfo->bufferSizeInByte);
 	);
 }
-void Buffer::copyCLFrom(ComputeBufferHandle& bufferToCopyContentsFrom)throw(BufferException)
+void Buffer::copyCLFrom(ComputeBufferHandle& bufferToCopyContentsFrom)
 {
 	PARA_COMP_MANAGER->getCommandQueue().enqueueCopyBuffer(
 			static_cast<const cl::Buffer&>(bufferToCopyContentsFrom),
@@ -288,7 +288,7 @@ void Buffer::copyCLFrom(ComputeBufferHandle& bufferToCopyContentsFrom)throw(Buff
 			PARA_COMP_MANAGER->getLastEventPtr()
 	);
 }
-void Buffer::freeGL()throw(BufferException)
+void Buffer::freeGL()
 {
 	glDeleteBuffers(1, &mGraphicsBufferHandle);
 }
@@ -305,18 +305,18 @@ void Buffer::freeGL()throw(BufferException)
 	label=listing:bufferOpImpls_Texture
 	]	
 //not pure, as all the same for every texture;
-void Texture::generateGL()throw(BufferException)
+void Texture::generateGL()
 {
 	glGenTextures(1, & mGraphicsBufferHandle);
 }
 //the two non-symmetrci GL-only routines:
 //non-pure, as binding is all the same, only the enum is different, and that can be looked up in mTexturInfo;
-void Texture::bindGL()throw(BufferException)
+void Texture::bindGL()
 {
 	glBindTexture(mTextureInfoCastPtr->textureTarget, mGraphicsBufferHandle);
 }
 //can be non-pure, as clEnqueueWriteImage is quite generic;
-void Texture::writeCL(const void* data)throw(BufferException)
+void Texture::writeCL(const void* data)
 {
 	cl::size_t<3> origin; origin[0]=0;origin[1]=0;origin[2]=0;
 	cl::size_t<3> region;
@@ -342,7 +342,7 @@ void Texture::writeCL(const void* data)throw(BufferException)
 //must be overidden with an exception-throw-implementation for certain concrete Texture classes
 //(namely multisample textures), which dont seem to be writable, copyable ar readable
 //must also be overridden by CubeMap class, as the read call must happen six times;
-void Texture::readGL(void* data)throw(BufferException)
+void Texture::readGL(void* data)
 {
 	glGetTexImage(mTextureInfoCastPtr->textureTarget,
 			0,
@@ -352,7 +352,7 @@ void Texture::readGL(void* data)throw(BufferException)
 			);listing
 }
 //can be non-pure, as clEnqueueReadImage is quite generic;
-void Texture::readCL(void* data)throw(BufferException)
+void Texture::readCL(void* data)
 {
 	cl::size_t<3> origin; origin[0]=0;origin[1]=0;origin[2]=0;
 	cl::size_t<3> region;
@@ -379,13 +379,13 @@ void Texture::readCL(void* data)throw(BufferException)
 //(namely multisample textures), which dont seem to be writable, copyable or readable;
 //must also be overriden by CubeMap, as there are six color attachments to copy; or should one work with
 //glFrameBufferTextureFace ? well see in the future ;(
-void Texture::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)throw(BufferException)
+void Texture::copyGLFrom(GraphicsBufferHandle bufferToCopyContentsFrom)
 {
 	//TODO implement when FBO class exists;
 	throw(BufferException("Texture::copyGLFrom: sorry, for copying, FBOs are needed, and the still must be implemented "));
 }
 //can be non-pure, as clEnqueueCopyImage is quite generic;
-void Texture::copyCLFrom( ComputeBufferHandle & bufferToCopyContentsFrom)throw(BufferException)
+void Texture::copyCLFrom( ComputeBufferHandle & bufferToCopyContentsFrom)
 {
 	cl::size_t<3> origin; origin[0]=0;origin[1]=0;origin[2]=0;
 
@@ -407,7 +407,7 @@ void Texture::copyCLFrom( ComputeBufferHandle & bufferToCopyContentsFrom)throw(B
 	);
 }
 //can be non-pure, as glDeleteTextures() applies to every texture type :)
-void Texture::freeGL()throw(BufferException)
+void Texture::freeGL()
 {
 	glDeleteTextures(1, & mGraphicsBufferHandle);
 }
@@ -419,7 +419,7 @@ void Texture::freeGL()throw(BufferException)
 	},	
 	label=listing:bufferOpImpls_Texture2D
 	]	
-void Texture2D::generateCLGL()throw(BufferException)
+void Texture2D::generateCLGL()
 {
 	mComputeBufferHandle = cl::Image2DGL(
 			PARA_COMP_MANAGER->getCLContext(),
@@ -430,7 +430,7 @@ void Texture2D::generateCLGL()throw(BufferException)
 			PARA_COMP_MANAGER->getLastCLErrorPtr()
 	);
 }
-void Texture2D::allocGL()throw(BufferException)
+void Texture2D::allocGL()
 {
 	glTexImage2D(
 			mTextureInfoCastPtr->textureTarget,
@@ -446,7 +446,7 @@ void Texture2D::allocGL()throw(BufferException)
 	);
 
 }
-void Texture2D::writeGL(const void* data)throw(BufferException)
+void Texture2D::writeGL(const void* data)
 {
 	glTexSubImage2D(
 			mTextureInfoCastPtr->textureTarget,
