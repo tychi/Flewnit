@@ -349,7 +349,7 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 	//skip if not necessary;
 	if(computeIsInControl()) return;
 
-	//the stupidest and slowes way of synchronization:
+	//the stupidest and slowest way of synchronization:
 	//TODO make this more efficient
 	///\{
 	//force to wait for all GL commands to complete
@@ -357,21 +357,12 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 	//force to wait for all other CL commands to complete;
 	//barrierCompute();
 	///\}
-
-
-	GUARD(
-		mLastCLError = mCommandQueue.enqueueAcquireGLObjects(
-			& mRegisteredCLGLSharedBuffers,
-			//TODO maybe manage a set of events in order for more efficient synch;
-			//at the moment, we
-			0
-			//,& mLastEvent
-			)
+	mLastCLError = mCommandQueue.enqueueAcquireGLObjects(
+		& mRegisteredCLGLSharedBuffers,
+		0//& mLastEvent
 	);
 
 	mCLhasAcquiredSharedObjects = true;
-
-
 }
 
 void ParallelComputeManager::acquireSharedBuffersForGraphics()
@@ -413,7 +404,7 @@ void ParallelComputeManager::barrierCompute()
 {
 
 	//usleep(50000);
-	GUARD(mCommandQueue.enqueueBarrier());
+	mCommandQueue.enqueueBarrier();
 
 	//mCommandQueue.flush();
 //	mCommandQueue.finish();
@@ -460,7 +451,7 @@ void ParallelComputeManager::checkCLGLErrors()
 	//but in case of a catch, let's do some "pretty printing" anyway ;( :
 	if(mLastCLError != CL_SUCCESS)
 	{
-		LOG<<ERROR_LOG_LEVEL<<" OpenGL Error: "<< oglErrorString(mLastCLError) <<";\n";
+		LOG<<ERROR_LOG_LEVEL<<" OpenCL Error: "<< oclErrorString(mLastCLError) <<";\n";
 	}
 
 	if (mLastGLError  != GL_NO_ERROR )

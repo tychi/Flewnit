@@ -804,13 +804,256 @@ virtual void setAttributeBuffer(BufferInterface* buffi);
 
 \subsection{Das MPP-Paket}
 
+Dieses Paket stellt dem \emph{Flewnit}-System alle Funktionaltät zur Vefügung, die mit
+GPU-Programmen zu tun hat, außer der OpenGL-Kontext-Erstellung,
+welche vom \lstinline|WindowManager| übernommen wird.
 
 
-Massively Parallel Program
-	Basisklasse von Shader und OpenCL Program
-	MPP und ParCompManager: hardware query, abstrakte methoden...
+	\subsubsection{MPP}
+	Das \lstinline|MPP|, kurz für "`Massively Parallel Program"', ist die Basis-Klasse für
+	\lstinline|Shader| und \lstinline|CLProgram|.
+	
+	\begin{lstlisting}[escapechar=\%]
+class MPP
+: public SimulationObject %\footnote{SimulationObject ist schlicht eine Klasse, die Namen und Simulations-Domäne speichert, damit diese nicht überall neu definiert und Getter implementiert werden müssen.}%
+{
+	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
+public:
+	MPP(String name, SimulationDomain sd);
+	virtual ~MPP();
+	virtual void build()=0;
+protected:
+	virtual void setupTemplateContext(TemplateContextMap& contextMap)=0;
+	virtual void validate()throw(SimulatorException)=0;
+	//for later debugging of the final code of a stage:
+	void writeToDisk(String sourceCode, Path where);
+};
+\end{lstlisting}
+
+
+
+
+	\subsubsection{ParallelComputeManager}
+	Diese Singleton-Klasse erstellt einen OpenCL-Kontext, der für CL/GL-Interoperabilität 
+	mit dem (zuvor vom \lstinline|WindowManager| erstellten) OpenGL-Kontext assoziiert wird.\\
+	Dann werden über OpenCL-Queries die Members einer \lstinline|ParallelComputeDeviceInfo|-Instanz
+	gesetzt, so dass System-global alle relevanten/interessanten Hardware Features bequem verfügbar sind.\\
+	
+	Die Klasse besitzt die OpenCL-C++-Objekte, die mit dem Kontext assoziiert sind:
+	Den \lstinline|cl::Context| selbst, das assoziierte \lstinline|cl::Device| (also für gewöhnlich die
+	Repräsentation der GPU des Rechners), und die assoziierte \lstinline|cl::CommandQueue|, in die die einzelnen
+	Kernel Launches, Buffer/Image Reads/Writes/Copies, Synchronisations-Punkte etc. eingefügt werden,
+	und stellt diese über Getter-Funktionen dem System zur Verfügung.\\
+	
+	Der OpenCL-C++-Wrapper implementiert Error-Handling inklusive dem Werfen von \lstinline|cl::Exceptions|.
+	Bei der OpenGL-C-API muss man Errors aber nach wie vor explizit abfragen. Dieses - mit zusätzlich formatiertem
+	Konsolen-Output - übernimmt \lstinline|void checkCLGLErrors()| (checkt auch den letzten CL-Error, einfach zur 
+	Vollständigkeit, auch wenn es nicht nötig ist).\\
+	Um bei der Entwicklung des Systems	sofort auf OpenGL-Errors aufmerksam gemacht zu werden, ist folgendes Makro
+	definiert:
+\begin{lstlisting}	
+#ifdef _DEBUG
+	//Macro to permanently check for errors in debug mode
+#	define GUARD(expression) \
+	expression; \
+	ParallelComputeManager::getInstancePtr()->checkCLGLErrors()
+#else
+#	define GUARD(expression) expression
+#endif
+\end{lstlisting}
+	Sämtliche OpenGL-Calls sind irgendwie durch dieses Makro eingeschlossen. Der etwaige Performance-Overhead spielt
+	durch bedingte Kompilierung im Release-Build keine Rolle.\\
+	
+	Da auf die Klasse sehr häufig zugegriffen wir, ist das Shortcut-Makro \\
+	\lstinline|#define PARA_COMP_MANAGER ParallelComputeManager::getInstancePtr()|\\
+	für bequemere Refernzierung der Singleton-Instanz im Code definiert.
+
+	\lstinline|ParallelComputeManager| besitzt sämtliche \lstinline|MPP|-Instanzen, die sich bei ihr über ihren 
+	Konstruktor automatisch registrieren,
+	und ist für deren Löschung beim Engine-Reset zuständig.\\
+	
+	Alle \lstinline|BufferInterface|-Instanzen, die sowohl eine OpenCL- als auch eine OpenGL- Repräsentation
+	haben, registrieren sich automatisch bei dieser Instanz, so dass die Akquisition von Shared Buffers
+	für einen bestimmten Kontext ganz einfach geschehen kann:
+	\begin{lstlisting}[escapechar=\%]
+void ParallelComputeManager::acquireSharedBuffersForCompute()
+{
+	//skip if not necessary;
+	if(computeIsInControl()) return;
+	//force to wait for all GL commands to complete
+	barrierGraphics();%\footnote{barrierGraphics() ist schlicht ein Wrapper für GUARD(glFinish()), so wie	barrierCompute() als mCommandQueue.enqueueBarrier() implementiert ist.}%
+	mLastCLError = mCommandQueue.enqueueAcquireGLObjects(& mRegisteredCLGLSharedBuffers);
+	mCLhasAcquiredSharedObjects = true;
+}
+	\end{lstlisting}
+	\lstinline|void acquireSharedBuffersForGraphics()| ist ähnlich implementiert.\\
+	
+	Ob Buffer-Operationen mit dem Host-Code synchronisiert werden soll 
+	(also ob API-Calls wie \lstinline|cl::CommandQueue::enqueueWriteImage(..)| bis zum Beenden der Buffer-Operation
+	nicht zurückkehren sollen) oder nicht, lässt sich global über \lstinline|void setBlockAfterEnqueue(cl_bool val)|
+	und \lstinline|cl_bool getBlockAfterEnqueue()const| setzen bzw abfragen 
+	(vgl. Listing \ref{listing:bufferOpImpls_Buffer} ff.).
+	Letztendlich hat sich jedoch herausgestellt, dass Blocking bei Write-Operationen nicht nötig ist, weil ich
+	(zumindest bei Kernel Launches) intensiv von 
+	\lstinline|cl::Events| Gebrauch mache, auf von denen man Listen als Parameter an 
+	\lstinline|cl::CommandQueue::enqueueXY()|
+	übergeben kann, und dieser Command wird frühstens dann ausgeführt, wenn das alle Commands, die mit der Event-Liste
+	assoziiert sind, vollständig ausgeführt sind. Blocking von Buffer-Operationen ist also nur dann nötig, wenn man nach
+	einem 	Read-Back sofort im Host-Code die ausgelesenen Werte benötigt. Ich hätte mich beim Design noch mehr auf den
+	Event-Waiting-Mechanismus fokussieren sollen, der zur Zeit vom \lstinline|Bufferinterface| noch nicht unterstützt ist.
+	Ich wollte das \lstinline|BufferInterface| so schlicht wie möglich halten. 
+	Momentan kommt deshalb die Synchronisation von Buffer-Operationen etwas holprig daher; 
+	Man kann den Design Flaw umgehen, indem man vor einer Buffer-Operation
+	\lstinline|PARA_COMP_MANAGER->getCommandQueue().enqueueWaitForEvents(eventVector)| aufruft, ein Refactoring ist dennoch 
+	in Planung.
+	
+	%-----------------------------------------------------------------------------------------------------------
+	
+	\subsubsection{ShaderManager}
+	Diese Singleton-Klasse hat zum Ziel, so viele visuelle Rendering-Techniken und -Effekte 
+	in beliebigen (sinnvoller) sinnvollen Permutationen zu ermöglichen. Um nicht hunderte Shader
+	von Hand anlegen zu müssen, die vor Boilerplate-Code überlaufen, wird wie gesagt die
+	\emph{Grantlee}-Template-Engine verwendet, um aus relativ wenigen Dateien angepasste Shader zu generieren.
+	
+	Sie ist dafür zuständig, immer wenn sich das "`Rendering Szenario"' ändert, also eine neue 
+	\lstinline|LightinSimStageBase| im \lstinline|LightingSimulator| aktiv wird,  anhand von diversen Parametern
+	allen \lstinline|VisualMaterial|s einen zum Material, dem Szenario und den globalen Shader-Features
+	kompatiblen \lstinline|Shader| zuzuweisen. Dieser wird entweder zur Laufzeit
+	per \emph{Grantlee} generiert, oder wenn schon ein Shader mit benötigten Features existiert, aus einer
+	Hash-Map beschafft, wo der Hash-Wert der Shader-Features als Schlüssel dient.
+	Das Sequenz-Diagramm in Abb. \ref{fig:shaderGen} skizziert den Ablauf.
+	
+	\begin{figure}[!h]
+	\includegraphics[width=1.09\textwidth]{ShaderGeneration.pdf}
+	\caption{Sequenz-Diagramm der Shader-Generierung}
+	\label{fig:shaderGen}
+	\end{figure}
+	
+	Die Parameter sind:	
+	\begin{description}
+	
+	
+		\item[ShaderFeaturesGlobal] Parameter, die global per Config gesetzt wurden und ohne Reset der Engine nicht
+			mehr zu ändern sind, und aufgrund von Buffergrößen, Kompatibilitäten und/oder der schlichten Konsitenz
+			des visuellen Renderings sich zwischen den einzelnen Shadern nicht unterscheiden dürfen; dazu zählen:
+		 	\begin{itemize}
+		 	\item die maximale Anzahl an Lichtquellen
+		 	\item die maximale Anzahl an Lichtquellen, die Schatten werfen (Shadow Caster),
+		 	\item die maximale Anzahl an Instanzen, die pro Draw Call per Hardware Instancing gezeichnet werden kann
+		 	\item falls man Deferred Rendering betreibt:
+		 		 Der Textur-Typ des G-Buffers (\lstinline|Texture2D, Texture2DMultisample| etc.),
+		 	\item falls man Deferred Rendering betreibt: Der MultiSample-Count des G-Buffers, falls er aus 
+		 		MultiSample-Texturen besteht
+		 	\item das
+		 	\begin{lstlisting}
+enum LightSourcesLightingFeature
+{
+	LIGHT_SOURCES_LIGHTING_FEATURE_NONE						=0,
+	LIGHT_SOURCES_LIGHTING_FEATURE_ONE_SPOT_LIGHT			=1,
+	LIGHT_SOURCES_LIGHTING_FEATURE_ONE_POINT_LIGHT			=2,
+	LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_LIGHTS			=3,
+	LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS			=4,
+	LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS	=5,
+	__NUM_LIGHT_SOURCES_LIGHTING_FEATURES__					=6
+}; 
+		 	\end{lstlisting}
+		 	Dieser Aufzählungstyp delegiert bei der Shader-Generierung per Template-Engine, welche Typen 
+		 	und welche Anzahl an Lichtquellen vom Shader unterstützt werden sollen.
+			\item das
+		 	\begin{lstlisting}		 	
+enum LightSourcesShadowFeature
+{
+	LIGHT_SOURCES_SHADOW_FEATURE_NONE			=0,
+	LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT	=1,
+	LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT	=2,
+	LIGHT_SOURCES_SHADOW_FEATURE_ALL_SPOT_LIGHTS	=3,
+	__NUM_LIGHT_SOURCES_SHADOW_FEATURES__		=4
+};	
+		 	\end{lstlisting}
+		 	Es gibt an, ob und wenn ja, welcher Art Shadow Mapping vonstatten gehen soll.
+		 	
+		 	\item das
+		 	\begin{lstlisting}
+enum ShadowTechnique
+{
+	SHADOW_TECHNIQUE_NONE		=0,
+	SHADOW_TECHNIQUE_DEFAULT	=1,
+	SHADOW_TECHNIQUE_PCFSS		=2,
+	__NUM_SHADOW_TECHNIQUES__	=3
+};		 	
+		 	\end{lstlisting}
+		 	, welches bestimmt, nach welchem Algorithmus Shadowmapping vonstatten gehen soll
+		\end{itemize}
+		
+		
+		
+		\item[diverse ShadingFeatures] 
+		Diese Flags geben an, welche Shading-Features "`aktiv"' sind: Die \lstinline|ShadingFeatures| des letztendlich
+		generierten Shaders hängen von den Shading Features des Materials selbst ab, aber auch von denen der 
+		aktuell aktiven \lstinline|LightinSimStageBase| (eine \lstinline|ShadowMapGenerationStage| hat z.B. gar keine
+		"`Shading"'-Features) und von den aktuell global aktivierten Features; Welche Features global aktiv sind, kann
+		vom Benutzer bestimmt werden, hängt aber z.T. auch von der verwendeten OpenGL-Version ab; Tessellation kann z.B. 
+		erst ab OpenGL 4.0 verwendet werden.
+		
+		\begin{lstlisting}
+enum ShadingFeatures
+	{
+	SHADING_FEATURE_NONE				=1<<0,
+	SHADING_FEATURE_DIRECT_LIGHTING		=1<<1,
+	//global lighting via layered depth images or stuff... just a brainstroming, wont be implemented
+	SHADING_FEATURE_GLOBAL_LIGHTING		=1<<2,
+	SHADING_FEATURE_DIFFUSE_TEXTURING		=1<<3,
+	SHADING_FEATURE_DETAIL_TEXTURING	=1<<4,
+	SHADING_FEATURE_NORMAL_MAPPING		=1<<5,
+	SHADING_FEATURE_CUBE_MAPPING		=1<<6,
+	SHADING_FEATURE_AMBIENT_OCCLUSION	=1<<7,
+	SHADING_FEATURE_TESSELATION			=1<<8,
+	__NUM_SHADING_FEATURES__			=9
+};
+	\end{lstlisting}
+		
+		
+	\item[VisualMaterialType]
+	Der Typ bestimmt für gewöhnlich die Klasse des konkreten Shaders (erinnere: \lstinline|Shader| ist eine abstrakte 
+	Basisklasse):	
+	\begin{lstlisting}
+enum VisualMaterialType
+{
+	VISUAL_MATERIAL_TYPE_NONE					=0,
+	VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING  		=1,
+	VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING		=2,
+	VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY		=3,	//just set a color value or something
+	VISUAL_MATERIAL_TYPE_GAS_RENDERING			=4,
+	VISUAL_MATERIAL_TYPE_LIQUID_RENDERING		=5,
+	__NUM_VISUAL_MATERIAL_TYPES__				=6
+};
+	\end{lstlisting}
+	
+	
+	\item[VisualMaterialFlags]
+	Der Konstruktor gibt eine Idee: Die Klasse trägt nicht nur zur Delegation der Shader-Generierung bei, sie
+	gibt auch bei einem \lstinline|VisualMaterial| bestimmte Eigenschaften an,
+	welche auf Kompatibilität mit den Flags der aktuellen \lstinline|LightingSimStageBase| getestet werden können.
+	Auf diese Weise können inkompatible Objekte masikert werden.
+	Der Konstruktor reicht aus für eine Idee:
+	\begin{lstlisting}
+VisualMaterialFlags(
+	bool castsShadows = true,
+	bool isTransparent = false,
+	bool isShadable = true,
+	bool isDynamicCubeMapRenderable = true,
+	bool isInstanced=false,
+	bool isCustomMaterial=false);
+	\end{lstlisting}
+		
+	\end{description}
+
+
 	\subsubsection{Shader}
-		shader + manager+unterklassen
+		
+		TO BE CONTINUED!!111
+		
+	%----------------------------------------------------------------------------------------------------------
 		
 	\subsubsection{OpenCLProgram}
 		shader + manager+unterklassen + arguments etc.. event waiting, synch, acquire...

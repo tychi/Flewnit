@@ -28,30 +28,19 @@ namespace Grantlee
 namespace Flewnit
 {
 
-
-
 class MPP
 : public SimulationObject
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
-
 public:
 	MPP(String name, SimulationDomain sd);
 	virtual ~MPP();
-
 	virtual void build()=0;
-
 protected:
 	virtual void setupTemplateContext(TemplateContextMap& contextMap)=0;
 	virtual void validate()throw(SimulatorException)=0;
-
-
 	//for later debugging of the final code of a stage:
 	void writeToDisk(String sourceCode, Path where);
-
-private:
-
-
 };
 
 }
