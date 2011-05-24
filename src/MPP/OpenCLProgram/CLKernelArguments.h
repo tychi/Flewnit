@@ -152,8 +152,8 @@ public:
 	CLKernelArguments(const std::vector< CLKernelArgumentBase* > & argVec);
 	virtual ~CLKernelArguments();
 
-	//throw exception is arg with name doesn't exist, i < mArgVec.size,
-	//if a bad cast occured;
+	//throw exception if arg with name doesn't exist, i < mArgVec.size,
+	//if a bad cast occurred;
 	CLBufferKernelArgument* getBufferArg(unsigned int i) throw(BufferException);
 	CLBufferKernelArgument* getBufferArg(String argName) throw(BufferException);
 

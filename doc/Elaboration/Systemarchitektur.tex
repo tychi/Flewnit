@@ -809,7 +809,7 @@ GPU-Programmen zu tun hat, außer der OpenGL-Kontext-Erstellung,
 welche vom \lstinline|WindowManager| übernommen wird.
 
 
-	\subsubsection{MPP}
+	\subsubsection{MPP und ParallelComputeManager}
 	Das \lstinline|MPP|, kurz für "`Massively Parallel Program"', ist die Basis-Klasse für
 	\lstinline|Shader| und \lstinline|CLProgram|.
 	
@@ -832,9 +832,7 @@ protected:
 
 
 
-
-	\subsubsection{ParallelComputeManager}
-	Diese Singleton-Klasse erstellt einen OpenCL-Kontext, der für CL/GL-Interoperabilität 
+	Die \lstinline|ParallelComputeManager|- Singleton-Klasse erstellt einen OpenCL-Kontext, der für CL/GL-Interoperabilität 
 	mit dem (zuvor vom \lstinline|WindowManager| erstellten) OpenGL-Kontext assoziiert wird.\\
 	Dann werden über OpenCL-Queries die Members einer \lstinline|ParallelComputeDeviceInfo|-Instanz
 	gesetzt, so dass System-global alle relevanten/interessanten Hardware Features bequem verfügbar sind.\\
@@ -909,8 +907,40 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 	
 	%-----------------------------------------------------------------------------------------------------------
 	
-	\subsubsection{ShaderManager}
-	Diese Singleton-Klasse hat zum Ziel, so viele visuelle Rendering-Techniken und -Effekte 
+	\subsubsection{Shader und ShaderManager}
+	\label{sec:Shader}
+		
+		Die \lstinline|Shader|-Klasse wrappt erwartungsgemäß die OpenGL-Shader-Funktionalität,
+		stellt außerdem Convenience Functions zum Setzen von Uniform Variablen bereit, deren Kontrollfluss
+		z.T. von den \lstinline|ShaderFeaturesLocal| und den \lstinline|ShaderFeaturesGlobal| abhängt.
+		Das \lstinline|MPP|-Interfaces ist implementiert, jedoch noch ableitbar.
+		Nur die neue Routine  \lstinline|virtual void use(SubObject* so)throw(SimulatorException)=0;|
+		ist rein abstrakt.\\
+		
+		In wiefern das Shader-Interface und seine Implementatioen geschickt und generisch gewählt sind
+		oder nicht, konnte leider empirisch noch nicht umfassend ermittelt werden, da bisher der
+		Shader-Template-Code aller abgeleiteten
+		Shader-Klassen auf eine einzige Sammlung von Dateien zurück gehen, nämlich der mit dem suggestiven Namen
+		"`GenericLightingUberShader"'; diese realisiert sowohl das klassische visuelle Rendering mit den in Abschnitt
+		\ref{sec:usedOpenGLfeatures} vorgestellten Features, als auch die Shadow Map Generation und die
+		Debug-Draw-Funktionalität.\\
+		Die Wahre Probe für die \lstinline|Shader|-Klasse wird jedoch die, wenn eine Datei-Sammlung und mit ihr
+		eine (Multi-Pass)-Shaderstruktur, die nicht viel mit dem "`GenericLightingUbershader"' gemeinsam hat,
+		zur Code-Basis wird. Inwiefern die Convenience Functions dann noch sinnvoll sind,
+		(nicht-virtuell) in der Shader-Oberklasse definiert zu sein, vermag ich schwer abzuschätzen.
+		Ob trotz der signifikanten Unterschiede diese Klasse gut abstrahiert ist und so allgemein nutzbar bleibt,
+		wird sich erst dann herausstellen, wenn die  \lstinline|ParticleLiquidDrawStage| 
+		(s. Abb. \ref{fig:detailSimulator}) implementiert ist. 
+		Aus Zeitmangel konnte ich das Fluid noch nicht angemessen visualisieren, das 
+		\lstinline|LiquidVisualMat| ist momentan noch 
+		-- entgegen dem Klassendiagramm in Abb. \ref{fig:ClassDiagOverview2} --
+		"`hacky"' von \lstinline|DegugDrawVisualMat| abgeleitet.\\
+		In Anbetracht eines solchen nicht unerheblichen Vollständigkeits-Mangels bei der Implementierung 
+		sei hier explizit auf Abschnitt \ref{sec:statusImplementation} verwiesen, der den Status der Implementierung
+		zur Zeit der Abgabe der Ausarbeitung skizziert.\\
+	
+	
+	Die \lstinline|ShaderManager|-Singleton-Klasse hat zum Ziel, so viele visuelle Rendering-Techniken und -Effekte 
 	in beliebigen (sinnvoller) sinnvollen Permutationen zu ermöglichen. Um nicht hunderte Shader
 	von Hand anlegen zu müssen, die vor Boilerplate-Code überlaufen, wird wie gesagt die
 	\emph{Grantlee}-Template-Engine verwendet, um aus relativ wenigen Dateien angepasste Shader zu generieren.
@@ -922,6 +952,9 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 	per \emph{Grantlee} generiert, oder wenn schon ein Shader mit benötigten Features existiert, aus einer
 	Hash-Map beschafft, wo der Hash-Wert der Shader-Features als Schlüssel dient.
 	Das Sequenz-Diagramm in Abb. \ref{fig:shaderGen} skizziert den Ablauf.
+	
+	Außerdem lassen sich einige Features abfragen, die ansonsten nur indirekt in den Feature-Structures
+	encoded sind, wie z.B. ob die aktuelle Stage einen Framebuffer braucht oder nicht.
 	
 	\begin{figure}[!h]
 	\includegraphics[width=1.09\textwidth]{ShaderGeneration.pdf}
@@ -970,7 +1003,7 @@ enum LightSourcesShadowFeature
 	__NUM_LIGHT_SOURCES_SHADOW_FEATURES__		=4
 };	
 		 	\end{lstlisting}
-		 	Es gibt an, ob und wenn ja, welcher Art Shadow Mapping vonstatten gehen soll.
+		 	Es gibt an, ob und wenn ja, welche Art Shadow Mapping vonstatten gehen soll.
 		 	
 		 	\item das
 		 	\begin{lstlisting}
@@ -1031,7 +1064,7 @@ enum VisualMaterialType
 	
 	
 	\item[VisualMaterialFlags]
-	Der Konstruktor gibt eine Idee: Die Klasse trägt nicht nur zur Delegation der Shader-Generierung bei, sie
+	Diese Klasse trägt nicht nur zur Delegation der Shader-Generierung bei, sie
 	gibt auch bei einem \lstinline|VisualMaterial| bestimmte Eigenschaften an,
 	welche auf Kompatibilität mit den Flags der aktuellen \lstinline|LightingSimStageBase| getestet werden können.
 	Auf diese Weise können inkompatible Objekte masikert werden.
@@ -1047,20 +1080,157 @@ VisualMaterialFlags(
 	\end{lstlisting}
 		
 	\end{description}
+	
+	\sectionlevelfour{Probleme}
+	Es sei noch ein nicht so unwichtiges Wort verloren über den Versuch, viele Effekte und Techniken in beliebiger
+	Permutation zu kombinieren: Da dank der Template-Engine nun die Möglichkeit besteht, in Vererbungs-Hierachien zu denken
+	und somit objektorientierte Ansätze ins Shader-Design einfließen zu lassen, zeigt sich umso krasser,
+	wie schwer es ist, Effekte und Techniken sauber und modular zu kombinieren, wenn man obendrein noch maximale
+	Performance haben will.\\
+	Viele Features in einem Shader bringen bei Integration neue Einschränkungen mit sich, 
+	die besonderer Behandlung bedürfen.
+	Ein Beispiel ist die Kombination von Tessellation mit Shadow Mapping und/oder Layered Rendering: 
+	Hier tut sich das Problem auf, dass wir zur Shadowmap-Generierung aus Sicht der Lichtquelle rendern 
+	(die View-Matrix ist aus Position und Richtung der \emph{Lichtquelle} konstruiert), wir aber für Level-Of-Detail-	
+	Berechnungen zur Bestimmung des Tessellation-Levels	Vertex-Positionen im \emph{Betrachter}-Viewspace benötigen!
+	Dies hat den Grund, dass das LOD eines jeden Patches sowohl in der Shadow Map als auch im finalen Rendering
+	gleich sein müssen! Wenn dies nämlich nicht der Fall ist, ist die Geometrie, die dem Shadow-Map-Lookup
+	zugrunde liegt, eine andere als die des finalen Renderings; somit werden sprichwörtlich Äpfel mit Birnen verglichen,
+	und es kann zu Artefakten kommen, z.B. Selbstverschattung, wo keine sein sollte (wenn durch Tessellation z.B.
+	eine Furche generiert wird und die Lichtquelle weiter weg von der Geometrie ist als die Betrachter-Kamera, 
+	s. Abb. \ref{fig:tessellationSelbstverschattung}).
+	
+	\begin{figure}[!h]
+	\includegraphics[width=\textwidth]{tessellationSelbstverschattung.pdf}
+	\caption{Artefakte bei naiver Tessellation-Level-Berechnung mit Camera-Viewspace bei der Shadow Map Generation}
+	\label{fig:tessellationSelbstverschattung}
+	\end{figure}
+	
+	Um diese Artefakte zu vermeiden, muss für die LOD-Berechnung im Tesselation Control Shader
+	\emph{immer} die Viewspace-Position der Vertices aus Sicht der Betrachter-Kamera zur Verfügung stehen.
+	Bei der Shadow-Map-Generierung und/oder bei Layered Rendering (in Cube Maps und/oder Texture Arrays)
+	werden aber für alles weitere, wie Displacement Mapping im Tessellation Evaluation Shader oder Beleuchtung
+	im Fragment Shader, Viewspace-Positionen aus \emph{Lichtquellen}-Sicht bzw \emph{Worldspace}-Positionen durch die
+	einzelnen Shader Stages geschleift.\footnote{bei Layered Rendering muss man bis zur Geomtry Shader Stage im 
+	World Space (nur mit der Model Matrix) rechnen, da im Geometry Shader jedes Layer eine andere Kamera, also eine andere 
+	View Matrix hat; Entsprechend kann  man keine ModelView Matrix für frühzeitige View Space-Berechnungen akkumulieren!}
+	Somit sind die klassischen Interface-Varying-Veriablen schon belegt.
+	Man muss also eine eine neue Variable benutzen, um die Betrachter-Kamera-View Space-transformierte Vertex-Position
+	vom Vertex Shader an den Tessellation Control Shader zu übergeben. Da die built-in-Variable
+	\lstinline[language=GLSL]|gl_Position| für OpenGL erst direkt vor der Fragment Shader-Stage für die Rasterisierung
+	benötigt wird, kann man sie zuvor einfach zum Durchschleifen beliebiger Werte zweckentfremden. Somit ergibt sich
+	folgender Fragment Shader Template-Code:
+	\begin{lstlisting}[language=GLSL]
+// step 2: calculate the gl_Position, if necessary 
+{%if not layeredRendering and not SHADING_FEATURE_TESSELATION %} 
+  //default case:
+  //we need projected transform for rasterization because no tessCtrl/TessEval/geom shader follows the vertex shader;
+  gl_Position =  modelViewProjectionMatrix  * inVPosition; /*default MVP transform*/   
+{% endif %} 
+{%if SHADING_FEATURE_TESSELATION %} 
+  {%if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION %}
+    //write the "spectator view space position" to gl_Position for tessellation LOD calculations 
+    gl_Position =  spectatorCamViewMatrix * (modelMatrix * inVPosition);
+  {% else %}
+    {% if worldSpaceTransform  %}
+      //write the "own view space position" to gl_Position for tessellation LOD calculations; 
+      //Hence, even for dynamic cubemap generation, a modelViewMatrix must be passed 
+      //to the vertex shader for this scenario;
+      //The tessellation LOD calculation is invariant to cam rotation, 
+      //hence only the translational part of the view matrix
+      //is relevant, and this part is equal for every six cube map faces;
+      gl_Position =  modelViewMatrix * inVPosition;
+    {% endif %}
+  {% endif %}
+{% endif %}
+	\end{lstlisting}
+	
+	und für den Tesselation Control Shader:
+	
+	\begin{lstlisting}[language=GLSL]
+//In order to determine the tessellation levels,
+//we need all three vertex positions in spectator view space 
+//of the triangle patch to which the current vertex belongs:
+{%if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION or worldSpaceTransform %}
+  //every user varyings are either in spectator world space
+  //or in the light source- view- or world space;
+  //but we need the VIEW space vertex positions seen from the SPECTATOR camera for the tessellation level calculations!
+  //The vertex shader has written this value to gl_Position:
+  vec3 edgeStart = gl_in[ (gl_InvocationID + 1) % 3 ].gl_Position.xyz;
+  vec3 edgeEnd   = gl_in[ (gl_InvocationID + 2) % 3 ].gl_Position.xyz;
+  vec3 ownVert   = gl_in[  gl_InvocationID          ].gl_Position.xyz;
+{% else %}
+  //no special case, we do just default rendering in spectator- view space; So grab the default position value:
+  vec3 edgeStart = input[ (gl_InvocationID + 1) % 3 ].position.xyz;
+  vec3 edgeEnd   = input[ (gl_InvocationID + 2) % 3 ].position.xyz;
+  vec3 ownVert   = input[  gl_InvocationID          ].position.xyz;  
+{% endif %}  
+	\end{lstlisting}
+	
+	
+	Das Fazit ist: Modulares Shader-Design, welches effizienten Code produziert, scheint je nach Feature-Set
+	schwer bis unmöglich. Das Nutzen von Vererbungsmechanismen wird durch die notwendigen Spezial-Behandlungen 
+	ebenfalls erschwert.
+	Vor der Integration weiterer Features in diesen Uber Shader muss die Struktur überarbeitet werden.
+	Ich war zur Zeit des Schreibens des Shader-Codes weder mit dem Templating vertraut, noch habe ich alle Spezialfälle
+	antizipieren können. Ich hoffe, dass mit neuen Einsichten und Erfahrungen Les- und Erweiterbarkeit
+	vom Shader Code durch ein Refactoring verbessert können, und dass sich geeignete Wege finden, trotz Problemen wie dem
+	vorgestellten Komplexität durch Vererbung besser zu handhaben.\\
+	All diese Probleme betreffen nur den Shader-Code. Insbesondere die Vererbungsmechanismen
+	lassen sich in OpenCL-Code-Templates reibungslos nutzen.
 
 
-	\subsubsection{Shader}
-		
-		TO BE CONTINUED!!111
-		
 	%----------------------------------------------------------------------------------------------------------
 		
-	\subsubsection{OpenCLProgram}
-		shader + manager+unterklassen + arguments etc.. event waiting, synch, acquire...
+	\subsubsection{CLProgram und CLProgramManager}
+	\label{sec:CLProgram}
+	
+	\lstinline|CLProgram| und \lstinline|CLKernel| wrappen die entsprechende OpenCL-Funktionalität:
+	Das Programm repräsentiert kompletten ausführbaren Code, welches aus einem in OpenCL C geschriebenen
+	Source Code kompiliert wurde. Ein Kernel ist dagegen eine von womöglich mehreren Funktionen innerhalb
+	des Programmms (durch das \lstinline[language=OpenCL]|__kernel|-Tag gekennzeichnet),
+	welche vom Hostcode per \lstinline|cl::CommandQueue::enqueueNDRangeKernel()| aufgerufen werden kann.
+	Es besteht also eine $1:n$-Relation zwischen Programm und Kernel.
+	
+	Die \lstinline|CLProgramManager|-Singleton-Klasse gewährleistet einen Zugriff auf sämtliche OpenCL-Programme
+	im System über ihren Namen; Dies kann nützlich sein, wenn ein Kernel auf die Beendigung eines anderen Kernels
+	warten muss, dafür das Event, was mit der letzten Ausführung assoziiert ist, benötigt, aber kein Handle auf die 
+	entsprechenen \lstinline|CLProgram|s vorhanden ist.
+	
+	\lstinline|CLProgramManager| besitzt einen \lstinline|IntermediateResultBuffersManager|, der Buffers bereit stellt,
+	die sich verschiedenen Kernels für ihre Zwischen-Ergebnisse teilen können. Somit wird GPU-Speicher gespart.
+	Jedes \lstinline|CLProgram|, welches Kernels hat, die Zwischenergebnisse benötigen, kann eine bestimmte Menge
+	und Größe an Buffers requesten. Es ist dann sichergestellt, dass der Buffer mit entsprechendem Index nach 
+	Allokation (geschieht nach Erschaffung sämtlicher \lstinline|CLProgram|-Instanzen) mindestens die
+	gewünschte Größe hat.
+	 
+	
 		
 		\sectionlevelfour{CLKernelArguments}
 		\label{sec:CLKernelArguments}
-
+		Der Umgang mit Kernel-Argumenten, also Parametern, die an die Kernel-Funktionen übergeben werden, 
+		wird durch die Klasse \lstinline|CLKernelArguments| und seine Members deutlich erleichtert:
+		In OpenCL kann man Werte an Kernels nur über ihren Index in der formalen Parameter-Liste übergeben.
+		Diese holprige Methode ist nicht nur im Code wenig aussagekräftig, sie birgt auch die Gefahr,
+		dass wenn Kernel-Signaturen sich ändern, im Host-Code genutzte Indices invalid werden.
+		Wenn diese auch noch verteilt im System auftauchen, wird der Aufwand und die Fehlerwahrscheinlichkeit noch größer,
+		seinen Host-Code anzupassen. Aus diesem Grund erstellt jedes konkrete CLProgram seine eigenen Kernels,
+		und erstellt auch eine Liste an Default-Parametern für jeden Kernel. Auf diese Parameter kann nun bequem
+		sowohl per Index als auch über den Namen des Arguments zugegriffen werden. Typsicherheit ist ebenfalls
+		durch die Template-Klasse \lstinline|CLValueKernelArgument| gewährleistet, wo bei einem falschen
+		Cast eine Exception geworfen wird.
+		Ferner behebt das \lstinline|CLBufferKernelArgument| das bereits erwähnte Binding-Problem 
+		beim Toggle von PingPong-Buffers.\\
+		Ein detaillierteres Klassendiagramm zu den OpenCL-relevanten Klassen,
+		welches zusätzlich die Call-Hierarchie des Build-Prozesses sowie einer Kernel-Invocation skizziert,
+		zeigt Abb. \ref{fig:OCLRelatedClassDiag}.
+		
+		\begin{figure}[!h]
+		\includegraphics[width=\textwidth]{CLProgramAndCo.pdf}
+		\caption{Klassendiagramm der OpenCL-relevanten Klassen inkl. Skizze der Call-Hierarchie des Build-Prozesses
+		sowie dem Kernel-Launch}
+		\label{fig:OCLRelatedClassDiag}
+		\end{figure}
 
 
 

@@ -145,7 +145,7 @@ void main()
     {% endif %}       
   {% endif %}  
   
-  //++++++++++++++ step 2: calculate the gl_Position  ++++++++++++++++++++++++++++++++++++++++++++
+  //++++++++++++++ step 2: calculate the gl_Position, if necessary  ++++++++++++++++++++++++++++++++++++++++++++
   {%if not layeredRendering and not SHADING_FEATURE_TESSELATION %} 
     //default case
     //we need projected stuff for rasterization because no tessCtrl/TessEval/geom shader follows,
@@ -172,7 +172,7 @@ void main()
   {% endif %}
   
 	
-  //+++++++ step 3: calculate the shade space tranceform of the rest of the varyings (everything put position and gl_Position) ++
+  //+++++++ step 3: calculate the shade space transform of the rest of the varyings (everything put position and gl_Position) ++
 	
   {% if shaderPerformsColorCalculations or SHADING_FEATURE_TESSELATION %}              
       output.normal = 		shadeSpaceTransform * inVNormal; //output.normal =     transpose(inverse( modelViewMatrix)) * inVNormal;           
