@@ -18,6 +18,8 @@
 #include "Simulator/MechanicsSimulator/ParticleMechanicsStages/ParticleMechanicsStage.h"
 #include "Simulator/ParallelComputeManager.h"
 
+#include "URE.h"
+
 
 namespace Flewnit
 {
@@ -38,8 +40,7 @@ MechanicsSimulator::~MechanicsSimulator()
 
 bool MechanicsSimulator::stepSimulation() throw(SimulatorException)
 {
-	// TODO Auto-generated destructor stub
-	//LOG<<DEBUG_LOG_LEVEL<< typeid(*this).name() << " :  stepSimulation()";
+	if(URE_INSTANCE->mechanicalSimIsDisabled())return true;
 
 	PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 

@@ -1119,7 +1119,7 @@ VisualMaterialFlags(
 	vom Vertex Shader an den Tessellation Control Shader zu übergeben. Da die built-in-Variable
 	\lstinline[language=GLSL]|gl_Position| für OpenGL erst direkt vor der Fragment Shader-Stage für die Rasterisierung
 	benötigt wird, kann man sie zuvor einfach zum Durchschleifen beliebiger Werte zweckentfremden. Somit ergibt sich
-	folgender Fragment Shader Template-Code:
+	folgender Vertex Shader Template-Code:
 	\begin{lstlisting}[language=GLSL]
 // step 2: calculate the gl_Position, if necessary 
 {%if not layeredRendering and not SHADING_FEATURE_TESSELATION %} 
@@ -1174,7 +1174,7 @@ VisualMaterialFlags(
 	Vor der Integration weiterer Features in diesen Uber Shader muss die Struktur überarbeitet werden.
 	Ich war zur Zeit des Schreibens des Shader-Codes weder mit dem Templating vertraut, noch habe ich alle Spezialfälle
 	antizipieren können. Ich hoffe, dass mit neuen Einsichten und Erfahrungen Les- und Erweiterbarkeit
-	vom Shader Code durch ein Refactoring verbessert können, und dass sich geeignete Wege finden, trotz Problemen wie dem
+	vom Shader-Code durch ein Refactoring verbessert können, und dass sich geeignete Wege finden, trotz Problemen wie dem
 	vorgestellten Komplexität durch Vererbung besser zu handhaben.\\
 	All diese Probleme betreffen nur den Shader-Code. Insbesondere die Vererbungsmechanismen
 	lassen sich in OpenCL-Code-Templates reibungslos nutzen.
@@ -1225,7 +1225,7 @@ VisualMaterialFlags(
 		welches zusätzlich die Call-Hierarchie des Build-Prozesses sowie einer Kernel-Invocation skizziert,
 		zeigt Abb. \ref{fig:OCLRelatedClassDiag}.
 		
-		\begin{figure}[!h]
+		\begin{figure}[t]
 		\includegraphics[width=\textwidth]{CLProgramAndCo.pdf}
 		\caption{Klassendiagramm der OpenCL-relevanten Klassen inkl. Skizze der Call-Hierarchie des Build-Prozesses
 		sowie dem Kernel-Launch}
@@ -1234,25 +1234,226 @@ VisualMaterialFlags(
 
 
 
-
 \subsection{Status der Implementierung am Ende der BA}
 \label{sec:statusImplementation}
-	
-	Features auflisten;
-	\todo[color=green]{screenshots? oder lieber erst später,zusammen mit detaillierter erläuterung?}
 
-	großteils programmierte, aber ungenutzte/ungetestete features erwähnen (Deferred Rendering, Layered Rendering, 	
-	RenderTarget-Klasse, Partikel-Rigid bodies, verschiedene Fluid-Typen); 
+	Es sollten von Anfang an bei der Planung der \emph{Unified Engine} viele Aspekte berücksichtigt worden,
+	damit von vornherein ein flexibles und mächtiges System konzipiert werden konnte.
+	Das Potential zur Weiterentwicklung war wichtiger als eine "`schnell gehackte Demo"'.
+	Es wurden einige Features realisiert, andere sind nahezu vollständig programmiert, aber noch nie ausgeführt worden
+	\footnote{Mein Programmierstil ist sehr eigenwillig: ich kann wochenlang programmieren, 
+	ohne einmal compilen, geschweige denn ausführen zu können. Dieser Stil scheint mir bei einem solchen Projekt nicht 
+	völlig verkehrt, da bei der sukkessiven Entwickling der Fokus auf den Feature-Reichtum dem eines konsitenten 
+	Gesamtsystems vorgezogen werden könnte.}. Widerum andere Fesatures liegen als Algorithmen in Textdateien herum, und 
+	es ergab sich noch keine Gelegenheit, diese Algorithmen in Programm-Code zu transformieren.
+	Wieder andere Features wurden nur ganz grob im Hinterkopf behalten, um die Wahrscheinlichkeit zu erhöhen, 
+	dass sie in ferner Zukunft nahtlos mit den anderen Features integrierbar sind.\\
+	Eine Liste dieser Features, mit ihrem entsprechenden Implementations-Status ist in 
+	Tabelle \ref{tab:statusImpl1} und \ref{tab:statusImpl2} zu finden.\\
+										  
 
+ 	\begin{table}[!h]
+	 	\begin{minipage}{\textwidth}
+  		\begin{tabular}
+  		{
+  		 l  l | c |
+  		}
+																	\cline{3-3}
+  									&								&	Status \\ 
+    	\noalign{\hrule}
+    	%-------------------------------------------------------------------------------------------------
+    	\multicolumn{1}{|c|}{
+    		\multirow{3}{*}{used OpenGL Features}
+    	}							& 	Uniform Buffers				&  {\color{green}\checkmark}		\\	
+		\multicolumn{1}{|c|}{} 		& 	Instancing					&  {\color{green}\checkmark}
+												\footnote{Transformation Matrix set provided per Uniform Buffers} \\	
+		\multicolumn{1}{|c|}{} 		& 	Tessellation 
+										\footnote{providing dynamic LOD, detail added via Displacement Mapping}
+    																&  {\color{green}\checkmark}		\\	
+		\noalign{\hrule}
+		
+    	%-------------------------------------------------------------------------------------------------
+ 		\multicolumn{1}{|c|}{
+    		\multirow{3}{*}{Lighting}
+    	}							& 	arbitrary light source amount in Shader	&  {\color{green}\checkmark} 
+													    	\footnote{As long as they fit into an Uniform Buffer}	\\    	
+    	\multicolumn{1}{|c|}{} 		& 	point light lighting		&  {\color{green}\checkmark}		\\	
+    	\multicolumn{1}{|c|}{} 		& 	spot light lighting			&  {\color{green}\checkmark}		\\
+    	\multicolumn{1}{|c|}{} 		& 	both point and spot light lighting	&  {\color{green}\checkmark}		\\   	
+    	
+    	\noalign{\hrule}
+    	
+    	%-------------------------------------------------------------------------------------------------					
+    	\multicolumn{1}{|c|}{
+    		\multirow{8}{*}{Deferred Rendering}
+    	}							& 	Render to 2D Depth Texture		&  {\color{green}\checkmark}		\\				
+		\multicolumn{1}{|c|}{} 		& 	Render to 2D Color Texture		&  {\color{orange}o}		\\		
+		\multicolumn{1}{|c|}{} 		& 	Render to MultiSample  Color Texture		&  {\color{orange}o}		\\		
+		\multicolumn{1}{|c|}{} 		& 	G-Buffer Fill				&  {\color{orange}o}		\\		
+		\multicolumn{1}{|c|}{} 		& 	G-Buffer Shade				&  {\color{orange}o}		\\		
+		\multicolumn{1}{|c|}{} 		& 	G-Buffer MultiSample Shade	&  {\color{orange}o}		\\		
+		\multicolumn{1}{|c|}{} 		& 	Ambient Occlusion			&  {\color{red}x}		\\			
+		\multicolumn{1}{|c|}{} 		& 	Post Processing \footnote{Participating Media, Depth Of Field etc.}	
+																	&  {\color{red}x}		\\							
+		\noalign{\hrule}
+		
+		%-------------------------------------------------------------------------------------------------					
+		\multicolumn{1}{|c|}{
+    		\multirow{4}{*}{Layered Rendering}
+    	}							& 	Render to  Cube Depth Texture		&  {\color{orange}o}		\\		
+    	\multicolumn{1}{|c|}{} 		& 	Render to  Cube Color Texture		&  {\color{darkred}o}		\\		
+		\multicolumn{1}{|c|}{} 		& 	Render to  Depth Texture Array		&  {\color{orange}o}		\\
+		\multicolumn{1}{|c|}{} 		& 	Render to  Cube Depth Texture Array		&  -
+																	\footnote{only supported in OpenGL 4}\\
+																	
+		\noalign{\hrule}    	
+    	
+    	%-------------------------------------------------------------------------------------------------					
+		\multicolumn{1}{|c|}{
+    		\multirow{4}{*}{Shadow Mapping Support}
+    	}							& 	single spot light					&  {\color{green}\checkmark}	\\		
+		\multicolumn{1}{|c|}{} 		& 	single point light \footnote{requires render to  Cube Depth Texture}				
+																			&  {\color{orange}o}		\\
+		\multicolumn{1}{|c|}{} 		& 	multiple spot light \footnote{requires render to Depth Texture Array}				
+																			&  {\color{orange}o}		\\
+    	\multicolumn{1}{|c|}{} 		& 	multiple point light \footnote{requires render to Cube Depth Texture Array}																							&  -		\\
+    				
+		\noalign{\hrule}    	
+    	
+    	%-------------------------------------------------------------------------------------------------					
+		\multicolumn{1}{|c|}{
+    		\multirow{2}{*}{Shadow Map Sampling}
+    	}							& 	default				&  {\color{green}\checkmark}	\\		
+		\multicolumn{1}{|c|}{} 		& 	PCFSS				&  {\color{red}x}		\\
+    															
+																							
+		\noalign{\hrule}
+		
+		%-------------------------------------------------------------------------------------------------					
+		\multicolumn{1}{|c|}{
+    		\multirow{6}{*}{misc. Shading Features}
+    	}							& 	arbitrary (useful) effect combination	
+    														&  {\color{green}\checkmark}	\\		
+		\multicolumn{1}{|c|}{} 		& 	diffuse texturing	&  {\color{green}\checkmark}	\\	
+		\multicolumn{1}{|c|}{} 		& 	detail texturing 
+									\footnote{high frequency noise pattern to omit blurry appearance on close-up}
+															&  {\color{red}x}	\\	
+		\multicolumn{1}{|c|}{} 		& 	Normal Mapping		&  {\color{green}\checkmark}	\\	
+		\multicolumn{1}{|c|}{} 		& 	Environment Mapping	&  {\color{green}\checkmark}	\\	
+		\multicolumn{1}{|c|}{} 		& 	Sky Dome			&  {\color{green}\checkmark}	\\	
+		\multicolumn{1}{|c|}{} 		& 	transparency		&  {\color{red}x}		\\
+    																				
+		\noalign{\hrule}
 
-	überlegte aber nciht programmierte Konzepte/Algorithmen erwähnen (Triangle-Index-Voxelisierung)
-	
-	schlimmste schnitzer nennen, wie
-		- miese fluid-visualisierung, 
-		- unübersichtliche shadertemplates, besser gemacht bei CL-
-			Kernel-Templates, 1. weil struktur hier besser "vererbbar", 2. weil mehr erfahrung mit  Template-Engine
-	
-	  	
+  		\end{tabular}	
   	
+  		\caption{		
+  			Status der Implementation zum Zeitpunkt der Abgabe der Ausarbeitung (englisch wegen vielen Fachbegriffen)
+  			Legende: \\
+			{\color{green}\checkmark}	$\rightarrow$ implementiert;
+			{\color{orange}o}	$\rightarrow$ zu weiten Teilen programmiert, jedoch noch nicht 		
+				integriert/ausgeführt/getestet;
+			{\color{darkred}o} $\rightarrow$ detailliert Konzipiert, jedoch nicht programmiert;
+			{\color{red}x}	$\rightarrow$ im System langfristig konzipiert, jedoch nicht programmiert;
+			- $\rightarrow$ Unterstützung nicht geplant
+			\\
+		}
+		\label{tab:statusImpl1}
+		\end{minipage}
+  	\end{table}
+
+ 	\begin{table}[!h]
+	 	\begin{minipage}{\textwidth}
+  		\begin{tabular}
+  		{
+  		 l  l | c |
+  		}
+																	\cline{3-3}
+  									&								&	Status \\ 
+    	\noalign{\hrule}
+		
+		%-------------------------------------------------------------------------------------------------			
+		\multicolumn{1}{|c|}{
+    		\multirow{6}{*}{mech. fluid simulation}
+    	}							& 	basic efficient SPH mechanics
+    									\footnote{see section \ref{sec:fluidSim:ablauf}}
+    														&  {\color{green}\checkmark}	\\		
+		\multicolumn{1}{|c|}{} 		& 	hardware dependent optimizations
+										\footnote{see section \ref{sec:hardwareOptimizations} }
+															&  {\color{green}\checkmark}	\\
+		\multicolumn{1}{|c|}{} 		& 	algorithmic tricks \& optimizations 
+										\footnote{integrate density computation into force kernel,
+											less bandwidth consuming integration scheme, 
+											see section \ref{sec:ausblick} }
+															&  {\color{orange}o}	\\								
+		\multicolumn{1}{|c|}{} 		& 	multiple fluids		&  {\color{orange}o}	\\	
+		\multicolumn{1}{|c|}{} 		& 	particle Rigid Bodies
+															&  {\color{orange}o}	\\	
+		\multicolumn{1}{|c|}{} 		& 	static triangle collision mesh
+															&  {\color{darkred}o}	\\															
+		\noalign{\hrule}
+		
+		%-------------------------------------------------------------------------------------------------					
+		\multicolumn{1}{|c|}{
+    		\multirow{5}{*}{vis. fluid simulation 
+    			\footnote{implementation of \cite{Green2009FluidRenderingCurvatureFlow} is planned}
+    		} 
+    	}							& 	debug draw			&  {\color{green}\checkmark}	\\		
+		\multicolumn{1}{|c|}{} 		& 	curvature flow		&  {\color{red}x}	\\
+		\multicolumn{1}{|c|}{} 		& 	perlin noise		&  {\color{red}x}	\\
+		\multicolumn{1}{|c|}{} 		& 	foam rendering		&  {\color{red}x}	\\		
+		\multicolumn{1}{|c|}{} 		& 	fresnel effect		&  {\color{red}x}	\\		    																																					
+		\noalign{\hrule}
+		
+  		\end{tabular}	
+  	
+  		\caption{		
+  			Status der Implementation zum Zeitpunkt der Abgabe der Ausarbeitung (Fortsetzung)
+		}
+		\label{tab:statusImpl2}
+		\end{minipage}		
+  	\end{table}
+  	
+  	
+  	\begin{figure}[!h]
+		\includegraphics[width=1.3\textwidth]{Screenshot_prototypeSceneOverview.png}
+		\caption{Überblick über die prototypische Szene}
+		\label{fig:Screenshot_prototypeSceneOverview}
+	\end{figure}
+	
+	Abb \ref{fig:Screenshot_prototypeSceneOverview} zeigt einen Screenshot aus \emph{Flewnit} 
+	mit der prototypischen Scene. Sie zeigt die interaktive partikelbasierte
+	Fluid-Simulation inklusive der Visualisierung des Uniform Grid, eine weitere Box mit \lstinline|DebugDrawMaterial|,
+	einen Würfel aus Objekten, die per Instancing gezeichnet werden, tesseliert und normal mapped sind,
+	einen Sky Dome, und schließlich ein tesselliertes, normal und environment mapped Raptor-Modell.
+	Alle Objekte sind mit meheren Lichtquellen, sowohl spot als auch point lights, in einem Render-Pass beleuchtet.
+	Ein spot light wirft per Shadow Mapping Schatten.  
+	
+	Details werden im Verlauf des Abschnitts \ref{sec:simulation} erläutert.\\
+  	
+  	Der größte Wermutstropfen bei der Implementierung ist sicherlich die Visualisierung des Fluids, die minimalistischer
+  	technisch nicht sein könnte. Die Mechanik der Fluidsimulation stand erst wenige Wochen vor der 
+  	Abgabe (die ersten Monate waren rein der Framework-Programmierung und dem nicht-Fluid-bezogenen
+  	visuellen Rendering gewidmet), 
+  	so dass für eine angemessene Visualisierung des Fluids im Rahmen dieser Arbeit leider keine Zeit mehr blieb.
+  	Ich wollte dann auch meiner "`ganz oder gar nicht"'-Linie in diesem System treu bleiben, und werde die Visualiserung
+  	ohne "`Zwischenlösung"' direkt implementieren, sobald Zeit ist. Hierfür möchte ich die in
+  	"`Screen Space Fluid Rendering with Curvature Flow"' (\cite{Green2009FluidRenderingCurvatureFlow})
+  	vorgestellte Lösung nach-implementieren.
+  	
+  	Weiterhin fehlen noch sämtliche erweiterten Features und Optimierungen bei der mechanischen Fluid-Simulation.
+  	Der Kernel- und Host-Code für die partikel-basierten Rigid bodies ist fast komplett programmiert,
+  	da der Beginn der Ausarbeitung aber sehr dringend wurde, habe ich der Versuchung wiederstanden,
+  	diesen Code noch zu testen.
+  	
+  	Ferner habe ich zwar einen Scene-Loader mithilfe von \emph{Assimp} implementiert, es ist aber noch vieles
+  	hart-Codiert, so dass das Laden von beliebigen Assets noch nicht möglich ist. Mein Fokus lag
+  	auf der Realisierung von kombinierbaren Effekten, nicht auf künstlerischem Anspruch. Dennoch ist die Fertigstellung
+  	des Scene Loaders in Planung.
+	
+	Die fehlende GUI erschwert das Parameter-Tweaken, was zur Zeit noch per XML-Datei geschehen muss.
+	
+	Für weitere Details im Umgang mit fehlenden Features und unvöllständiger Implementation sei auf
+	den Ausblick in Abschnitt \ref{sec:ausblick} verwiesen.
 
 \clearpage

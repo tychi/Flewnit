@@ -100,7 +100,9 @@ URE::URE()
   mSimulationResourceManager(0),
   mCLProgramManager(0),
 
-  mGeometryTransformer(0)
+  mGeometryTransformer(0),
+
+  mDisableMechanicalSim(false)
 {
 //	mSimulators[MECHANICAL_SIM_DOMAIN]=0;
 //	mSimulators[VISUAL_SIM_DOMAIN]=0;

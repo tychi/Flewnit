@@ -103,7 +103,9 @@ public:
     void setCurrentlyActiveCamera(Camera* cam);
 
 
-    //inline cl::Context* getOpenCLContext()const{return mOpenCLContext;}
+    inline bool mechanicalSimIsDisabled()const{return mDisableMechanicalSim;}
+    inline void toggleMechanicalSim(){mDisableMechanicalSim= ! mDisableMechanicalSim;}
+
 
     //debug
     bool bufferDumpCondition();
@@ -142,6 +144,8 @@ private:
 
 
 	GeometryTransformer* 		mGeometryTransformer;
+
+	bool mDisableMechanicalSim;
 
 
 };

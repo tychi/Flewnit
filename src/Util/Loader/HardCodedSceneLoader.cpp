@@ -90,7 +90,7 @@ void HardCodedSceneLoader::loadGeometries()
 	Geometry* myDefaultBoxGeo1 = SimulationResourceManager::getInstance().getGeometry("myDefaultBoxGeo1");
 	if(! myDefaultBoxGeo1)
 	{
-		myDefaultBoxGeo1 = new BoxGeometry("myDefaultBoxGeo1",Vector3D(30.0f,7.0f,150.0f),true,
+		myDefaultBoxGeo1 = new BoxGeometry("myDefaultBoxGeo1",Vector3D(30.0f,7.0f,75.0f),true,
 				//patch stuff only for GL versions 4.0 or higher
 				false,
 				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
@@ -314,21 +314,21 @@ void HardCodedSceneLoader::loadMaterials()
 		std::map<BufferSemantics,Texture*> myMap;
 		myMap[DIFFUSE_COLOR_SEMANTICS] = SimulationResourceManager::getInstance().getTexture("bunnyDecalTex");
 		bunnyDecalMat =
-			new DebugDrawVisualMaterial("bunnyDecalMat", Vector4D(0,1,0,1),false, VERTEX_BASED_LINES);
+			//new DebugDrawVisualMaterial("bunnyDecalMat", Vector4D(0,1,0,1),false, VERTEX_BASED_LINES);
 
-//			new VisualMaterial("bunnyDecalMat",
-//				//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
-//				VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
-//				ShadingFeatures(
-//						SHADING_FEATURE_DIRECT_LIGHTING
-//						| SHADING_FEATURE_DIFFUSE_TEXTURING
-//				),
-//				myMap,
-//				//SHADING_FEATURE_DIRECT_LIGHTING,
-//				VisualMaterialFlags(true,false,true,true,false,false),
-//				1000.0f,
-//				0.5f
-//			);
+			new VisualMaterial("bunnyDecalMat",
+				//VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY, SHADING_FEATURE_NONE,
+				VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING,
+				ShadingFeatures(
+						SHADING_FEATURE_DIRECT_LIGHTING
+						| SHADING_FEATURE_DIFFUSE_TEXTURING
+				),
+				myMap,
+				//SHADING_FEATURE_DIRECT_LIGHTING,
+				VisualMaterialFlags(true,false,true,true,false,false),
+				1000.0f,
+				0.5f
+			);
 	}//endif !bunnyDecalMat
 
 
@@ -352,8 +352,8 @@ void HardCodedSceneLoader::loadMaterials()
 				//SHADING_FEATURE_DIRECT_LIGHTING,
 				//std::map<BufferSemantics,Texture*>(),
 				VisualMaterialFlags(true,false,true,true,false,false),
-				50.0f,
-				0.4f
+				40.0f,
+				0.2f
 			);
 	}//endif !rockbumpMat
 

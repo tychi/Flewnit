@@ -14,7 +14,7 @@
 
 #include "Simulator/SimulatorMetaInfo.h"
 
-#define FLEWNIT_DEFAULT_COLOR (Vector4D(1.0f,0.0f,0.0f,1.0f))
+#define FLEWNIT_DEFAULT_COLOR (Vector4D(1.0f,1.0f,1.0f,1.0f))
 
 
 namespace Flewnit

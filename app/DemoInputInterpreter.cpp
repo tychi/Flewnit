@@ -62,7 +62,7 @@ DemoInputInterpreter::DemoInputInterpreter(float cameraLookMouseSensivity, float
 
 	mUserForceControlPoint =
 			dynamic_cast<ParticleMechanicsStage*>( URE_INSTANCE->getSimulator(MECHANICAL_SIM_DOMAIN)->getStage("ParticleMechanicsStage") )
-				->addUserForceControlPoint( Vector4D(1,1,1,1),9,0.3f);
+				->addUserForceControlPoint( Vector4D(1,1,1,1),15,0.3f);
 }
 
 DemoInputInterpreter::~DemoInputInterpreter()
@@ -93,7 +93,7 @@ void DemoInputInterpreter::perFrameCallback()
 			+ 10.0f * Vector4D( URE_INSTANCE->getCurrentlyActiveCamera()->getGlobalTransform().getDirection(), 0.0f)
 	);
 
-	mUserForceControlPoint->setIntensity(mLeftMousePressed ? 7.5f: 0.0f);
+	mUserForceControlPoint->setIntensity(mLeftMousePressed ? 12.5f: 0.0f);
 
 
 
@@ -188,7 +188,7 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 		}
 	}
 
-	if( (keyboard->getRecentKey()) == 'Q')
+	if( (keyboard->getRecentKey()) == 'E')
 	{
 		if(keyboard->getRecentStatus() == GLFW_PRESS){
 			mMovementState[MOVEMENT_DIRECTION_UP_DOWN] = MOVEMENT_STATE_BACKWARD;
@@ -197,7 +197,7 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 			mMovementState[MOVEMENT_DIRECTION_UP_DOWN] = MOVEMENT_STATE_STILL;
 		}
 	}
-	if( (keyboard->getRecentKey()) == 'E')
+	if( (keyboard->getRecentKey()) == 'Q')
 	{
 		if(keyboard->getRecentStatus() == GLFW_PRESS){
 			mMovementState[MOVEMENT_DIRECTION_UP_DOWN] = MOVEMENT_STATE_FORWARD;
@@ -206,6 +206,14 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 			mMovementState[MOVEMENT_DIRECTION_UP_DOWN] = MOVEMENT_STATE_STILL;
 		}
 	}
+
+	if( (keyboard->getRecentKey()) == 'P')
+	{
+		if(keyboard->getRecentStatus() == GLFW_PRESS){
+			URE_INSTANCE->toggleMechanicalSim();
+		}
+	}
+
 
 	//----------------------------------------------------------------------------
 	if(keyboard->getRecentKey() == GLFW_KEY_F2)
