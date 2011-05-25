@@ -89,16 +89,16 @@
 
       <windowTitle type="STRING" value="Flewnit" />
 
-      <fullScreen type="BOOL" value="true"/>
+      <fullScreen type="BOOL" value="false"/>
 
       <enforceCustomResolutionInFullScreen type="BOOL" value="false" />
     
       <!--
       <resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
       <resolution type="VEC2I" x="1920" y="1200" GUIVisibility="read" tweakConfigString="TODO"/>      
-      <resolution type="VEC2I" x="1280" y="720" GUIVisibility="read" tweakConfigString="TODO"/>      
-      -->
       <resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
+      -->
+      <resolution type="VEC2I" x="1280" y="720" GUIVisibility="read" tweakConfigString="TODO"/>      
 	  
       <position type="VEC2I" x="0" y="0" GUIVisibility="read" tweakConfigString="TODO"/>
 
@@ -164,10 +164,10 @@
 
           <!--
           <numMaxParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
-          <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="262144" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <numMaxParticles type="INT" value="16384" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
           -->
           <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
@@ -260,10 +260,10 @@
             <name type="STRING" value="coldWater" />
             <!--          
             <numContainingParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
-            <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="16384" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="262144" GUIVisibility="read" tweakConfigString="TODO"/>
             <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
+            <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
             -->
             <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
           
@@ -370,7 +370,7 @@
             value="SHADOW_TECHNIQUE_NONE"/>
 					<!- - -->
 
-          <numMaxLightSources type="INT" value="5"/>
+          <numMaxLightSources type="INT" value="10"/>
           <numMaxShadowCasters type="INT" value="1"/>
           <numMaxInstancesRenderable type="INT" value="300"/>
           <GBufferType type="STRING" value="TEXTURE_TYPE_2D_RECT"/>

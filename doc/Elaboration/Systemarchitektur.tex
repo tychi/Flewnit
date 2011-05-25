@@ -496,8 +496,7 @@ protected:
 	Beschleunigungsstruktur und Szenen-Repräsentatioen sind somit nur lose gekoppelt.
 	Um die verschiedenen Zwecke zu verdeutlichen, stellt Tabelle \ref{tab:sceneRepVsAccStruct} diese gegenüber.
 
-  	%column type with fixed width and centered	
-	\newcolumntype{x}[1]{ >{ \centering } p {#1} }
+
 	\begin{table}	 	
 	 	\begin{tabular}
   		{ x{0.33\textwidth} | x{0.33\textwidth} | x{0.33\textwidth} | }	
@@ -1423,12 +1422,12 @@ VisualMaterialFlags(
 	
 	Abb \ref{fig:Screenshot_prototypeSceneOverview} zeigt einen Screenshot aus \emph{Flewnit} 
 	mit der prototypischen Scene. Sie zeigt die interaktive partikelbasierte
-	Fluid-Simulation inklusive der Visualisierung des Uniform Grid, eine weitere Box mit \lstinline|DebugDrawMaterial|,
+	Fluid-Simulation inklusive der Visualisierung des Uniform Grid, eine weitere Box mit 
+	\linebreak \lstinline|DebugDrawMaterial|,
 	einen Würfel aus Objekten, die per Instancing gezeichnet werden, tesseliert und normal mapped sind,
 	einen Sky Dome, und schließlich ein tesselliertes, normal und environment mapped Raptor-Modell.
-	Alle Objekte sind mit meheren Lichtquellen, sowohl spot als auch point lights, in einem Render-Pass beleuchtet.
-	Ein spot light wirft per Shadow Mapping Schatten.  
-	
+	Alle Objekte sind mit meheren Lichtquellen, sowohl Spot als auch Point Light, in einem Render-Pass beleuchtet.
+	Ein Spot Light wirft per Shadow Mapping Schatten.  
 	Details werden im Verlauf des Abschnitts \ref{sec:simulation} erläutert.\\
   	
   	Der größte Wermutstropfen bei der Implementierung ist sicherlich die Visualisierung des Fluids, die minimalistischer
@@ -1436,20 +1435,26 @@ VisualMaterialFlags(
   	Abgabe (die ersten Monate waren rein der Framework-Programmierung und dem nicht-Fluid-bezogenen
   	visuellen Rendering gewidmet), 
   	so dass für eine angemessene Visualisierung des Fluids im Rahmen dieser Arbeit leider keine Zeit mehr blieb.
-  	Ich wollte dann auch meiner "`ganz oder gar nicht"'-Linie in diesem System treu bleiben, und werde die Visualiserung
+  	Ich wollte schließlich meiner "`ganz oder gar nicht"'-Linie in diesem System treu bleiben, und werde die Visualiserung
   	ohne "`Zwischenlösung"' direkt implementieren, sobald Zeit ist. Hierfür möchte ich die in
   	"`Screen Space Fluid Rendering with Curvature Flow"' (\cite{Green2009FluidRenderingCurvatureFlow})
   	vorgestellte Lösung nach-implementieren.
   	
-  	Weiterhin fehlen noch sämtliche erweiterten Features und Optimierungen bei der mechanischen Fluid-Simulation.
-  	Der Kernel- und Host-Code für die partikel-basierten Rigid bodies ist fast komplett programmiert,
+  	Weiterhin fehlen noch sämtliche erweiterten Features und "`a posteriori"'-Optimierungen (also Optimierungen, die 
+  	nach der erfolgreichen ersten Implementierung programmiert sind) bei der mechanischen Fluid-Simulation.
+  	Der Kernel- und Host-Code für die partikel-basierten Rigid Bodies ist fast komplett programmiert,
   	da der Beginn der Ausarbeitung aber sehr dringend wurde, habe ich der Versuchung wiederstanden,
-  	diesen Code noch zu testen.
-  	
+  	diesen Code noch zu testen.\\
+  	Weiterhin wollte ich "`static triangle collision meshes"' in die ansonsten partikelbasierte
+  	mechanische Simulation integrieren, über den Entwurf eines
+  	Algorithmus zur Voxelisierung von Dreiecken ins Uniform Grid bin ich jedoch nicht hinaus gekommen 
+  	(mehr dazu im Ausblick, Kapitel \ref{sec:ausblick}).
+  
+
   	Ferner habe ich zwar einen Scene-Loader mithilfe von \emph{Assimp} implementiert, es ist aber noch vieles
   	hart-Codiert, so dass das Laden von beliebigen Assets noch nicht möglich ist. Mein Fokus lag
-  	auf der Realisierung von kombinierbaren Effekten, nicht auf künstlerischem Anspruch. Dennoch ist die Fertigstellung
-  	des Scene Loaders in Planung.
+  	auf der Realisierung von kombinierbaren Effekten, vorerst nicht auf künstlerischem Anspruch. 
+  	Dennoch ist die Fertigstellung des Scene Loaders geplant.
 	
 	Die fehlende GUI erschwert das Parameter-Tweaken, was zur Zeit noch per XML-Datei geschehen muss.
 	

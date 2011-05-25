@@ -6,7 +6,6 @@
 \usepackage{hypcap} 						% korrekte Verlinkung von Bildern o..
 	
 \usepackage[usenames]{color} 				% Einbindung von Farbe
-\definecolor{darkred}{RGB}{128,0,0}
 \usepackage{alltt}							% Umschaltung auf typewriter, z.B. fr Quellcode
 \usepackage{enumerate}						% Anpassung nummerierter Listen durch optionalen Parameter
 
@@ -47,6 +46,12 @@
 \input{GLSLSyntaxHighlight.tex}
 
 \usepackage{multirow}
+
+
+%column type with fixed width and centered	
+\newcolumntype{x}[1]{ >{ \centering } p {#1} }
+
+\definecolor{darkred}{RGB}{128,0,0}
 
 
 %-----------------------------------------------------------------------------------------------------------

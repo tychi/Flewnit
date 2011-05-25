@@ -10,13 +10,87 @@ setup 3: density calculation integrated into forcekernel
 
 
 device 0: Nvidia Geforce 435M GT (Fermi)
-device 1: Nvidia Geforce GTX 570 (Fermi)
-device 2: Nvidia Geforce GTX 280 (GT 200)
+device 1: Nvidia Geforce GTX 280 (GT 200)
+device 2: Nvidia Geforce GTX 570 (Fermi)
+
 device 3: Nvidia Geforce 9800 GT (G 80)
 
 
 --------------------------------------------------------
+1366 * 768, 4x MS, non-deferred, 5 light sources , shadow map resolution 4096
 
-device 0, setup 0,  65536 particles, 32^3 uniform grid:   3.0 -   3.1 avg. fps;
-device 0, setup 1,  65536 particles, 32^3 uniform grid:   3.3 -   3.3 avg. fps;
-device 0, setup 2,  65536 particles, 32^3 uniform grid:   3.3 -   3.6 avg. fps;
+
+raptor mit tess closeup: 	gt435m: 40 fps
+raptor ohne tess closeup: 	gt435m: 85 fps
+
+raptor mit tess dist: 	gt435m: 113 fps
+raptor ohne tess dist: 	gt435m:  90fps
+
+
+
+skydome pur: 173 fps
+boden: 87 fps
+
+
+
+instanced boxes: 
+
+  mit tess mittendrin: 23fps
+  ohne tess mittendrin: 81 fps
+
+  ohne tess direkt in eine linie gucken: 76 vs 51 fps je nach seite -> overdraw!
+  
+  mit tess direkt in eine linie gucken: 20 vs 27 fps je nach seite -> overdraw!
+  
+  
+fluid sim:
+
+  setup 0: download neighbours to local memory, then barrier() <-- no cach usage
+  setup 1: direct read of neighbours from global memory, no barrier()' at all in SPH kernels  -> implicit cach usage
+  
+  device 0: Nvidia Geforce 435M GT (Fermi)
+  device 1: Nvidia Geforce GTX 280 (GT 200)
+  device 2: Nvidia Geforce GTX 570 (Fermi)
+  
+
+  device 0, setup 0,   32768 particles, 32^3 uniform grid:   5.6 -   5.9  avg. fps;
+  device 0, setup 1,   32768 particles, 32^3 uniform grid:   5.9 -   6.2  avg. fps;
+  
+  device 0, setup 0,   65536 particles, 32^3 uniform grid:   3.3 -   3.3 avg. fps;
+  device 0, setup 1,   65536 particles, 32^3 uniform grid:   3.3 -   3.6 avg. fps;
+  
+  device 0, setup 0,  131072 particles, 32^3 uniform grid:   1.3 -   1.6 avg. fps;
+  device 0, setup 1,  131072 particles, 32^3 uniform grid:   1.3 -   1.66 avg. fps;
+  
+  device 0, setup 0,  262144 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 0, setup 1,  262144 particles, 32^3 uniform grid:  xxx -   xxx avg. fps;
+  
+  --------------------------------------------------------
+  
+  device 1, setup 0,   32768 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 1, setup 1,   32768 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  
+  device 1, setup 0,   65536 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 1, setup 1,   65536 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  
+  device 1, setup 0,  131072 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 1, setup 1,  131072 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  
+  device 1, setup 0,  262144 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 1, setup 1,  262144 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  
+  ----------------------------------------------------
+  
+  device 2, setup 0,   32768 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 2, setup 1,   32768 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  
+  device 2, setup 0,   65536 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 2, setup 1,   65536 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  
+  device 2, setup 0,  131072 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 2, setup 1,  131072 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  
+  device 2, setup 0,  262144 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 2, setup 1,  262144 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  
+  

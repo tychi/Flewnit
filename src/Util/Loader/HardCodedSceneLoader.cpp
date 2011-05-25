@@ -446,9 +446,9 @@ void HardCodedSceneLoader::createInstancingSetup()
 	Geometry* boxForInstancingGeom = SimulationResourceManager::getInstance().getGeometry("boxForInstancingGeom");
 	if(! boxForInstancingGeom)
 	{
-		boxForInstancingGeom = new BoxGeometry("boxForInstancingGeom",Vector3D(5.0f,25.0f,25.0f),true,
+		boxForInstancingGeom = new BoxGeometry("boxForInstancingGeom",Vector3D(15.0f,25.0f,25.0f),true,
 				true
-				//,Vector4D(0.25f)
+				,Vector4D(0.33f)
 		);
 	}
 
@@ -604,7 +604,7 @@ void HardCodedSceneLoader::loadLightSources()
 						ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
 						== LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT
 					),
-					Vector4D(1.0f,1.0f,1.4f,1.0f),
+					Vector4D(0.5f,1.0f,1.4f,1.0f),
 					Vector4D(0.4f,1.0f,3.0f,1.0f)
 			);
 
@@ -659,7 +659,7 @@ void HardCodedSceneLoader::loadLightSources()
 					35.0f,
 					50.0f,
 					10.0f,
-					Vector4D(1.0f,1.0f,1.4f,1.0f),
+					Vector4D(0.5f,1.0f,1.4f,1.0f),
 					Vector4D(0.4f,1.0f,3.0f,1.0f)
 			);
 
@@ -685,7 +685,7 @@ void HardCodedSceneLoader::loadLightSources()
 							45.0f,
 							60.5f,
 							10.0f,
-							Vector4D(0.0f,0.0f,1.0f,1.0f),
+							Vector4D(0.0f,0.5f,1.0f,1.0f),
 							Vector4D(0.0f,0.0f,1.0f,1.0f)
 					);
 				}
@@ -696,7 +696,7 @@ void HardCodedSceneLoader::loadLightSources()
 				{
 					float fraction = (float)(i)/(float)(numTotalLightSourcesToCreate);
 					LightSourceManager::getInstance().createSpotLight(
-						Vector4D(100.0f - 300.0f* fraction + 75 * (i%2) ,40.0f,240.0f + (-480.0f) * fraction + 100* (i%2) ,1.0f) ,
+						Vector4D(100.0f - 300.0f* fraction + 75 * (i%2) ,40.0f,0.0f + (-480.0f) * fraction + 100* (i%2) ,1.0f) ,
 						Vector4D(1.0f - 2*fraction,-1.0f,0.0f,0.0f),
 						(
 							//shadow casting or not depends on global shading features...
@@ -710,8 +710,8 @@ void HardCodedSceneLoader::loadLightSources()
 						20.0f  + 40* fraction,
 						30.5f + 40* fraction,
 						5.0f,
-						Vector4D(3.f * fraction ,0.6f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
-						Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
+						Vector4D(1.f * fraction ,1.6f,0.4f*fraction,1.0f)/ numTotalLightSourcesToCreate,
+						Vector4D((1.0f-fraction)*1.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
 					);
 				}
 			}
@@ -762,7 +762,7 @@ void HardCodedSceneLoader::loadLightSources()
 				if(i%2)
 				{
 					LightSourceManager::getInstance().createPointLight(
-						Vector4D(0.0f,30.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
+						Vector4D(0.0f,30.0f,0.0f + (-480.0f) * fraction ,1.0f) ,
 						false, //no multiple point light shadowmaps allowed due to gl3 restrictions ;)
 						Vector4D(1.0f,1.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
 						Vector4D((1.0f-fraction)*15.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
