@@ -102,7 +102,7 @@
 	  
       <position type="VEC2I" x="0" y="0" GUIVisibility="read" tweakConfigString="TODO"/>
 
-      <numMultiSamples type="INT" value ="4" />
+      <numMultiSamples type="INT" value ="8" />
 
     </windowSettings>
 
