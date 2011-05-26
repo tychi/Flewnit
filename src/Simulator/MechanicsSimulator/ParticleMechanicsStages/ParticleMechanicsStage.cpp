@@ -360,7 +360,6 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	PARA_COMP_MANAGER->barrierCompute();
 
 
-
 	if(
 	    (URE_INSTANCE->bufferDumpCondition() )
 	)
@@ -492,6 +491,8 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 
 
 		PARA_COMP_MANAGER->barrierCompute();
+		PARA_COMP_MANAGER->getCommandQueue().flush();
+		PARA_COMP_MANAGER->getCommandQueue().finish();
 
 
 

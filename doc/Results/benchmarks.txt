@@ -67,17 +67,17 @@ fluid sim:
   
   --------------------------------------------------------
   
-  device 1, setup 0,   32768 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
-  device 1, setup 1,   32768 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 1, setup 0,   32768 particles, 32^3 uniform grid:   12.6 -  13.3 avg. fps;
+  device 1, setup 1,   32768 particles, 32^3 uniform grid:   11.5 -  13.6 avg. fps;
   
-  device 1, setup 0,   65536 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
-  device 1, setup 1,   65536 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 1, setup 0,   65536 particles, 32^3 uniform grid:   6.8 -   7.5 avg. fps;
+  device 1, setup 1,   65536 particles, 32^3 uniform grid:   7.4 -   7.9 avg. fps;
   
-  device 1, setup 0,  131072 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
-  device 1, setup 1,  131072 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 1, setup 0,  131072 particles, 32^3 uniform grid:   3.2 -   3.66 avg. fps;
+  device 1, setup 1,  131072 particles, 32^3 uniform grid:   3.2 -   3.9 avg. fps;
   
-  device 1, setup 0,  262144 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
-  device 1, setup 1,  262144 particles, 32^3 uniform grid:   xxx -   xxx avg. fps;
+  device 1, setup 0,  262144 particles, 32^3 uniform grid:   1.7 -   1.9 avg. fps;
+  device 1, setup 1,  262144 particles, 32^3 uniform grid:   1.6 -   1.8 avg. fps;
   
   ----------------------------------------------------
   

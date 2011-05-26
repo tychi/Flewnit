@@ -94,15 +94,15 @@
       <enforceCustomResolutionInFullScreen type="BOOL" value="false" />
     
       <!--
-      <resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
       <resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
       <resolution type="VEC2I" x="1920" y="1200" GUIVisibility="read" tweakConfigString="TODO"/>      
+      <resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
       -->
       <resolution type="VEC2I" x="1280" y="720" GUIVisibility="read" tweakConfigString="TODO"/>      
 	  
       <position type="VEC2I" x="0" y="0" GUIVisibility="read" tweakConfigString="TODO"/>
 
-      <numMultiSamples type="INT" value ="8" />
+      <numMultiSamples type="INT" value ="4" />
 
     </windowSettings>
 
@@ -148,16 +148,28 @@
         	<useFrameRateIndependentSimulationTimestep type="BOOL" value="TRUE" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <!-- value is always used as timestep if useFrameRateIndependentSimulationTimestep==true;
 	             this values is to ensure stability, at the cost of maybe a slow-motion simulation -->
-          <maxTimestepPerSimulationStep type="FLOAT" value="0.9" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <maxTimestepPerSimulationStep type="FLOAT" value="0.3" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          
+          
+          <useConstantTimestep type="BOOL" value ="true" GUIVisibility="read"	tweakConfigString="TODO"/>
+          <!-- used alway as timestep if useConstantTimestep;  1/60 seconds -->
+          <!--
+          <constantTimeStep    type="FLOAT" value ="0.0166666" GUIVisibility="read"	tweakConfigString="TODO"/>
+          -->
+          <constantTimeStep    type="FLOAT" value ="0.166666" GUIVisibility="read"	tweakConfigString="TODO"/>
+          <!-- scale factor for elapsed time in seconds to be used if !useConstantTimestep -->
+          <timestepScale    type="FLOAT" value ="1.0" GUIVisibility="read"	tweakConfigString="TODO"/>
+
+
 
           <!--
           <numMaxParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
-          <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <numMaxParticles type="INT" value="16384" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
-          -->
           <numMaxParticles type="INT" value="262144" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="65536" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="16384" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <numMaxParticles type="INT" value="131072" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          -->
+          <numMaxParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
           <numMaxFluids type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -175,7 +187,7 @@
           <voxelSideLengthRepresentedByRigidBodyParticle type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
-          <SPHSupportRadius type="FLOAT" value="1.44"		GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <SPHSupportRadius type="FLOAT" value="2.9"		GUIVisibility="read/write" tweakConfigString="TODO"/>
           
           
           <!--as long i have no triangle-collision-mesh functionality, i have to keep the particles in a lame box ;( -->
@@ -190,20 +202,13 @@
           -->
           <simulationDomainBorderMax  type="VEC4" x="96.0" y="96.0" z="96.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
-          <gravityAcceleration  type="VEC4" x="0.0" y="-0.1" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <gravityAcceleration  type="VEC4" x="0.0" y="-0.2" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceSpringConstant type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceDamperConstant type="FLOAT" value="0.25" GUIVisibility="read/write" tweakConfigString="TODO"/>
  
           <numMaxUserForceControlPoints type="INT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
-          <useConstantTimestep type="BOOL" value ="true" GUIVisibility="read"	tweakConfigString="TODO"/>
-          <!-- used alway as timestep if useConstantTimestep;  1/60 seconds -->
-          <!--
-          <constantTimeStep    type="FLOAT" value ="0.0166666" GUIVisibility="read"	tweakConfigString="TODO"/>
-          -->
-          <constantTimeStep    type="FLOAT" value ="0.266666" GUIVisibility="read"	tweakConfigString="TODO"/>
-          <!-- scale factor for elapsed time in seconds to be used if !useConstantTimestep -->
-          <timestepScale    type="FLOAT" value ="1.0" GUIVisibility="read"	tweakConfigString="TODO"/>
+
           
           
           <!-- following values currently unused -->
@@ -255,18 +260,18 @@
             <name type="STRING" value="coldWater" />
             <!--          
             <numContainingParticles type="INT" value="8192" GUIVisibility="read" tweakConfigString="TODO"/>
-            <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
-            <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
             <numContainingParticles type="INT" value="16384" GUIVisibility="read" tweakConfigString="TODO"/>
-            <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
-            -->
             <numContainingParticles type="INT" value="262144" GUIVisibility="read" tweakConfigString="TODO"/>
+            <numContainingParticles type="INT" value="65536" GUIVisibility="read" tweakConfigString="TODO"/>
+            <numContainingParticles type="INT" value="131072" GUIVisibility="read" tweakConfigString="TODO"/>
+            -->
+            <numContainingParticles type="INT" value="32768" GUIVisibility="read/write" tweakConfigString="TODO"/>  
           
             <!--          
             <spawnAABBMin  type="VEC4" x="0.25" y="0.25" z="0.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             <spawnAABBMin  type="VEC4" x="45" y="30.5" z="45" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             --> 
-            <spawnAABBMin  type="VEC4" x="0.5" y="0.5" z="0.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            <spawnAABBMin  type="VEC4" x="22.5" y="0.5" z="22.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
         
             <!--          
             <spawnAABBMax  type="VEC4" x="16.25" y="16.25" z="16.25" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -274,10 +279,10 @@
             <spawnAABBMax  type="VEC4" x="32.5" y="32.5" z="32.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             <spawnAABBMax  type="VEC4" x="45" y="45" z="45" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>     
             -->  
-            <spawnAABBMax  type="VEC4" x="90" y="50" z="45" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/> 
+            <spawnAABBMax  type="VEC4" x="60.5" y="100" z="60.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/> 
             
             
-            <initialVelocity type="VEC4" x="0.0" y="0.0" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+            <initialVelocity type="VEC4" x="0" y="0.0" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
  
              <ParticleLiquidVisualMaterial>
               <name type="STRING" value="coldWaterParticleLiquidVisualMaterial" />
@@ -299,8 +304,8 @@
               <massPerParticle  type="FLOAT" value="1" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <!--0.037037037 2.8fieser crsh visc wert ;( --> 
               <restDensity      type="FLOAT" value="0.016" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <gasConstant      type="FLOAT" value="4.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
-              <viscosity        type="FLOAT" value="0.15" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <gasConstant      type="FLOAT" value="5.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+              <viscosity        type="FLOAT" value="0.25" GUIVisibility="read/write" tweakConfigString="TODO"/>
               <!-- -->         
               
               

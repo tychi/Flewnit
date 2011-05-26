@@ -47,6 +47,13 @@
 
   {% block performSPHCalculations %}
   //----------------------------------------------------------------------------------------------------
+		      {% if  useCacheUsingOpenCLImplementation %}
+ 			float4 currentNeighbourPosition = gPositionsOld[ neighbourParticleStartIndex + interactingLocalIndex ];
+		        uint currentNeighbourParticleObjectID = GET_OBJECT_ID( gParticleObjectInfos[ neighbourParticleStartIndex + interactingLocalIndex ] ) ;          
+
+		      {% endif %}
+
+
                       // 
                       //  Compute only SPH-density for fluid particles; Imagine a object consisting of Blumb within a Hydrogen cloud:
                       //  The density of the Hydrogen gas is NOT increased by the proximity of plumb!

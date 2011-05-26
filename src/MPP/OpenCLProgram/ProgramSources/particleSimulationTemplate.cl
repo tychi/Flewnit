@@ -29,6 +29,14 @@
       #define GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID ( GET_OBJECT_ID( gParticleObjectInfos[ neighbourParticleStartIndex + interactingLocalIndex ] ) )
       #define GET_CURRENT_NEIGHBOUR_PARTICLE_PREDICTED_VEL_CURRENT ( gPredictedVelocitiesCurrent[ neighbourParticleStartIndex + interactingLocalIndex ] )
       #define GET_CURRENT_NEIGHBOUR_PARTICLE_DENSITY ( gDensitiesOld[ neighbourParticleStartIndex + interactingLocalIndex ] )
+
+/*
+      #define GET_CURRENT_NEIGHBOUR_POS (  currentNeighbourPosition)
+      #define GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID ( currentNeighbourParticleObjectID )
+      #define GET_CURRENT_NEIGHBOUR_PARTICLE_PREDICTED_VEL_CURRENT ( currentNeighbourPredictedVelCurrent )
+      #define GET_CURRENT_NEIGHBOUR_PARTICLE_DENSITY ( currentNeighbourDensity )
+*/
+
   {% else %}
     #define GET_CURRENT_NEIGHBOUR_POS (  lCurrentNeighbourPositions[ interactingLocalIndex ] )
     #define GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID ( lCurrentNeighbourParticleObjectIDs[ interactingLocalIndex ] )
@@ -175,7 +183,10 @@
           //note: here are really __object__ IDs (not the compound named "object info", consisting ob object ID and particle index within object)
           //stored, i.e. no particle index info is in it;
           __local uint lCurrentNeighbourParticleObjectIDs[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
-        {% endif %}
+	{% else %}
+          float4 currentNeighbourPosition;
+	  uint currentNeighbourParticleObjectID;
+	{% endif %}
         
             
       {% endblock particleAttribsMalloc %}
@@ -225,8 +236,8 @@
       {
         //#pragma unroll   
        for(int x=-1;x<=1;x++)
-        {            
-        
+        {                    
+
         
           //get the "modulo" z-index, i.e border cells will interact with the border cells on the opposite side;
           //we accept this performance penalty, as we get en unlimited simulation domain this way, though performance
@@ -297,9 +308,8 @@
 
 
               
-{% else %}  {% comment %} not useCacheUsingOpenCLImplementation {% endcomment %} 
+{% else %}  {% comment %} not useCacheUsingOpenCLImplementation {% endcomment %}          
 
-              
               for(  uint interactingLocalIndex=0; 
                     interactingLocalIndex < numNeighbourParticlesToInteractWith;
 
@@ -347,10 +357,8 @@
             
 {% else %}  {% comment %} not useCacheUsingOpenCLImplementation {% endcomment %}             
      
-
-     
+             
             }// end sequential work on one neighbour cell's particles
-            
             
 {% endif %}  {% comment %} not useCacheUsingOpenCLImplementation {% endcomment %}         
           

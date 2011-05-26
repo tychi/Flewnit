@@ -142,6 +142,9 @@
     {% if not useCacheUsingOpenCLImplementation %}    
       __local float lCurrentNeighbourDensities[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
       __local float4 lCurrentNeighbourPredictedVelsCurrent[ NUM_MAX_ELEMENTS_PER_SIMULATION_WORK_GROUP  ];
+    {% else %}
+	float currentNeighbourDensity;
+	float4 currentNeighbourPredictedVelCurrent;
     {% endif %}    
         
   {% endblock particleAttribsMalloc %}
@@ -179,6 +182,22 @@
 
   {% block performSPHCalculations %}
   //----------------------------------------------------------------------------------------------------
+		  {% if  useCacheUsingOpenCLImplementation %}
+		     // #define GET_CURRENT_NEIGHBOUR_POS (   gPositionsOld[ neighbourParticleStartIndex + interactingLocalIndex ] )
+		     // #define GET_CURRENT_NEIGHBOUR_PARTICLE_OBJECT_ID ( GET_OBJECT_ID( gParticleObjectInfos[ neighbourParticleStartIndex + interactingLocalIndex ] ) )
+		     // #define GET_CURRENT_NEIGHBOUR_PARTICLE_PREDICTED_VEL_CURRENT ( gPredictedVelocitiesCurrent[ neighbourParticleStartIndex + interactingLocalIndex ] )
+		     // #define GET_CURRENT_NEIGHBOUR_PARTICLE_DENSITY ( gDensitiesOld[ neighbourParticleStartIndex + interactingLocalIndex ] )
+
+		      //currentNeighbourPosition = gPositionsOld[ neighbourParticleStartIndex + interactingLocalIndex ];
+		      //currentNeighbourParticleObjectID = GET_OBJECT_ID( gParticleObjectInfos[ neighbourParticleStartIndex + interactingLocalIndex ] ) ;
+		      //currentNeighbourPredictedVelCurrent =  gPredictedVelocitiesCurrent[ neighbourParticleStartIndex + interactingLocalIndex ];
+		      //currentNeighbourDensity = gDensitiesOld[ neighbourParticleStartIndex + interactingLocalIndex ];
+
+
+
+		  {% endif %}
+
+
                   // 
                   //  Pressure force
                   //
@@ -203,8 +222,9 @@
                       //kernel
                       * gradSpiky( ownPosition - GET_CURRENT_NEIGHBOUR_POS, cSimParams ).xyz
                       ;
-                      
 
+ //barrier(CLK_LOCAL_MEM_FENCE); 
+      barrier(CLK_GLOBAL_MEM_FENCE); 
                   // 
                   //  Viscosity force 
                   //
@@ -220,8 +240,8 @@
                       * laplacianViscosity( ownPosition - GET_CURRENT_NEIGHBOUR_POS, cSimParams ) 
                       ;    
 
-                 
-                      
+                     
+ 
                   // 
                   //   TODO maybe later Surface tension force
                   //
