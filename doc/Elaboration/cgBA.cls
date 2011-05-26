@@ -56,7 +56,7 @@
 %--- Package loading -----------------------------------------------------------
 
 \LoadClass[a4paper,11pt,titlepage]{article}
-\RequirePackage[english,ngerman]{babel}			% Unterstuetzung englische und neue deutsche Rechtschreibung
+\RequirePackage[ngerman]{babel}			% Unterstuetzung englische und neue deutsche Rechtschreibung
 
 \RequirePackage[utf8]{inputenc} 			% Unterstützung von Umlauten und ... 
 \RequirePackage[T1]{fontenc}      			% Umlaute korrekt codieren
@@ -81,6 +81,11 @@
          \RequirePackage{palatino}			% Schriftart Book Antiqua/Palatino
       }{}      
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\setlength{\emergencystretch}{3em}
+
+
 
 %--- Code ----------------------------------------------------------------------
 
