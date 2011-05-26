@@ -312,7 +312,6 @@
 
               for(  uint interactingLocalIndex=0; 
                     interactingLocalIndex < numNeighbourParticlesToInteractWith;
-
                     interactingLocalIndex++ )
               {               
               

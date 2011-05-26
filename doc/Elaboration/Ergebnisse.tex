@@ -1,4 +1,20 @@
 
+\label{sec:ergebnisse}
+
+Sämtliche Performance-Ergebnisse sind rein GPU-limitiert, daher seien hier nur die
+Graphikkarten vorgestellt, mit denen \emph{Flewnit} getestet wurde :
+
+Nvidia Geforce GT 435M 
+	\footnote{http://www.nvidia.com/object/product-geforce-gt-435m-us.html} - GPU, eine
+	Mittelklasse-Notebook-Graphikkarte der \emph{Fermi}-Architektur mit 1 GB RAM,
+	2 Compute Units zu je 48 Recheneinheiten, in CUDA-Terminologie auch "`CUDA-Cores"' genannt.
+
+\subsection{Visuelles Rendering}
+
+	Zunächst sollen die Ergebnisse ohne die mechanische Simulationsdömane, also die Fluid-Simulation
+	vorgestellt werden.
+	Sämtliche Non-OpenCl- Benchmarks wurden nur auf der auf einer 
+	
 
 \begin{figure}[!h]
 
@@ -8,8 +24,13 @@
 	\caption{Die Extremitäten des Raptor-modells; Oben: tesseliert, texturiert, normal mapped, environment mapped, 
 	beleuchtet von fünf Lichtquellen , shadow mapped von einer Lichtquelle; Unten: wie oben, nur ohne Tessellation
 	}
-	\label{fig:shaderfeaturePermutations}
+	\label{fig:raptorExtremitiesTessVSNonTess}
 \end{figure}
+
+	Abb. \ref{fig:raptorExtremitiesTessVSNonTess} zight die Komponenten des Raptor-Modells, die vom
+	zusätzlichen Geometrie-Detail besonders profitieren, nämlich die filigranen Extremitäten.
+	Alle zur Zeit funktionsfähigen Shading-Features waren an diesen Renderings beteiligt
+
 
 
 \begin{figure}[!h]	 	
