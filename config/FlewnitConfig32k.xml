@@ -19,7 +19,7 @@
           heavy usage of the Fermi-architecture's L1-cache feature and this way saves buffering to local memory
           and, most important work group synchronization;
     -->
-    <useCacheUsingOpenCLImplementation type="BOOL" value="false" GUIVisibility="read/write" tweakConfigString="TODO"/>
+    <useCacheUsingOpenCLImplementation type="BOOL" value="true" GUIVisibility="read/write" tweakConfigString="TODO"/>
 
 
     <!--
@@ -334,8 +334,8 @@
 
       <generalSettings>
         <Camera>
-          <position type="VEC3" x="0.0" y="0.0" z="10.0" />
-          <direction type="VEC3" x="0.0" y="0.0" z="-1.0" />
+          <position type="VEC3" x="-100.0" y="50.0" z="50.0" />
+          <direction type="VEC3" x="1.0" y="0.0" z="0.0" />
           <up type="VEC3" x="0.0" y="1.0" z="0.0" />
           <openingAngleVerticalDegrees type="FLOAT" value="45.0"/>
           <movementSpeed type="FLOAT" value="0.5"/>
