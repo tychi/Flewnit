@@ -46,15 +46,27 @@ float getShadowAttenuation(float shadowMapLayer, vec3 fragPos)
       {% endif %}
   
       //we don't want a squared shadow-throwing lightsource impression, but a circled one:  
-      if( length(vec2( shadowCoord.x -0.5, shadowCoord.y -0.5)) < 0.5 )
+      float shadowCoordVecDistFromCenter = length(vec2( shadowCoord.x -0.5, shadowCoord.y -0.5));
+      if( shadowCoordVecDistFromCenter < 0.5 )
       {
-        {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %} {%comment%} deistinguish between vec3 and vec4 lookup ;( {%endcomment%}
-          return  clamp(texture( shadowMap, shadowCoord.xyz ), minimalshadowAttenuation , 1.0);  
+        {% if LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %} {%comment%} distinguish between vec3 and vec4 lookup ;( {%endcomment%}
+          return  
+          clamp(
+            texture( shadowMap, shadowCoord.xyz ) - (4.0 * shadowCoordVecDistFromCenter * shadowCoordVecDistFromCenter  ),
+             0.0 , 1.0
+             );
+            //texture( shadowMap, shadowCoord.xyz ) //clamp(texture( shadowMap, shadowCoord.xyz ), minimalshadowAttenuation , 1.0)
+                  
+          ;  
         {% else %} 
-          return  clamp(texture( shadowMap, shadowCoord ), minimalshadowAttenuation , 1.0);   
+          clamp(texture( shadowMap, shadowCoord ), minimalshadowAttenuation , 1.0);   
         {% endif %}       
       }
-      else {return minimalshadowAttenuation;}
+      else 
+      {
+        return 0.0;
+        //return minimalshadowAttenuation;
+      }
     {% endif %}  {%comment%} endif spotlight calculations {%endcomment%}
 
     

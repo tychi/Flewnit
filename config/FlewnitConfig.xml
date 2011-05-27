@@ -108,7 +108,7 @@
 
 
     <OpenGL_Settings>
-      <contextVersion type="VEC2I" x="3" y="3" />
+      <contextVersion type="VEC2I" x="4" y="1" />
       <enforceCoreProfile type="BOOL" value="true" />
     </OpenGL_Settings>
 
@@ -355,7 +355,7 @@
         <GlobalShadingFeatures>
 
           <!-- -->
-          <lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_SPOT_LIGHTS"/>
+          <lightSourcesLightingFeature type="STRING" value="LIGHT_SOURCES_LIGHTING_FEATURE_ALL_POINT_OR_SPOT_LIGHTS"/>
           <lightSourcesShadowFeature type="STRING" value="LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT"/>
           <shadowTechnique type="STRING" value="SHADOW_TECHNIQUE_DEFAULT"/>
           <!-- -->

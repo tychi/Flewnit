@@ -80,7 +80,7 @@ void HardCodedSceneLoader::createSceneNodeHierarchy()
 		new PureVisualObject("myBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),3.0f))
 	);
 	mRootSceneNode->addChild(
-		new PureVisualObject("myEnvmapBox",AmendedTransform(Vector3D(100,20,-80) )) //, Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
+		new PureVisualObject("myEnvmapBox",AmendedTransform(Vector3D(100,5,-80) )) //, Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
 	);
 }
 
@@ -352,8 +352,8 @@ void HardCodedSceneLoader::loadMaterials()
 				//SHADING_FEATURE_DIRECT_LIGHTING,
 				//std::map<BufferSemantics,Texture*>(),
 				VisualMaterialFlags(true,false,true,true,false,false),
-				40.0f,
-				0.2f
+				25.0f,
+				0.5f
 			);
 	}//endif !rockbumpMat
 
@@ -499,7 +499,8 @@ void HardCodedSceneLoader::createInstancingSetup()
 					"boxInstanceArmyParent",
 					PURE_NODE,
 					AmendedTransform(
-						Vector3D(-80,0,-200),
+						//Vector3D(-80,0,-200),
+						Vector3D(200,0,-250),
 						Vector3D(0.2,-0.6,-0.8),
 						Vector3D(0,1,0),
 						0.5
@@ -584,6 +585,27 @@ void HardCodedSceneLoader::addSubObjectsToWorldObjects()
 	);
 }
 
+
+float wtf()
+{
+	float randnum=  ( (double)( rand() ) / (double)(RAND_MAX)  );
+	if(randnum> 0.5)
+	{
+		randnum +=  0.5* ( (double)( rand() ) / (double)(RAND_MAX)  );
+	}
+	else
+	{
+		randnum -=  0.5* ( (double)( rand() ) / (double)(RAND_MAX)  );
+	}
+	if(randnum < 0.0f) return 0.01f;
+	if(randnum > 1.0f) return 1.0f;
+
+	return randnum;
+}
+
+#define FLEWNIT_RAND_0_1 (wtf())
+//#define FLEWNIT_RAND_0_1 ( (double)( rand() ) / (double)(RAND_MAX)  )
+#define	FLEWNIT_RAND_1_1 (FLEWNIT_RAND_0_1 * 2.0f - 1.0f)
 
 void HardCodedSceneLoader::loadLightSources()
 {
@@ -709,7 +731,7 @@ void HardCodedSceneLoader::loadLightSources()
 						),
 						20.0f  + 40* fraction,
 						30.5f + 40* fraction,
-						5.0f,
+						10.0f,
 						Vector4D(1.f * fraction ,1.6f,0.4f*fraction,1.0f)/ numTotalLightSourcesToCreate,
 						Vector4D((1.0f-fraction)*1.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
 					);
@@ -726,21 +748,21 @@ void HardCodedSceneLoader::loadLightSources()
 		)
 		{
 			LightSourceManager::getInstance().createPointLight(
-					Vector4D(70.0f,90.0f,10.0f,1.0f),
+					Vector4D(-50.0f,0.0f,100.0f,1.0f),
 					(
 						//shadow casting or not depends on global shading features
 						ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
 							== LIGHT_SOURCES_SHADOW_FEATURE_ONE_POINT_LIGHT
 					),
-					Vector4D(1.0f,1.0f,1.0f,1.0f)*0.25,
-					Vector4D(1.0f,1.0f,1.0f,1.0f)*0.25
+					Vector4D(1.0f,0.3f,0.3f,1.0f)*2,
+					Vector4D(1.0f,1.0f,1.0f,1.0f)*2
 			);
 
 			if(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources >1)
 			{
 				LightSourceManager::getInstance().createSpotLight(
-					Vector4D(-70.0f,25.0f,10.0f,1.0f),
-					Vector4D(1.0f,-1.0f,-1.0f,0.0f),
+					Vector4D(-50.0f,65.0f,10.0f,1.0f),
+					Vector4D(1.0f,-2.0f,-1.0f,0.0f),
 					(
 						//shadow casting or not depends on global shading features
 						ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
@@ -749,10 +771,15 @@ void HardCodedSceneLoader::loadLightSources()
 					45.0f,
 					60.5f,
 					10.0f,
-					Vector4D(0.0f,0.0f,1.0f,1.0f),
-					Vector4D(0.0f,0.0f,1.0f,1.0f)
+					Vector4D(1.0f,1.0f,1.0f,1.0f)*8,
+					Vector4D(0.1f,0.3f,1.0f,1.0f)*2
 				);
 			}
+
+
+
+
+
 
 			//two lights already created, hence the -2
 			int numTotalLightSourcesToCreate = ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources -2;
@@ -762,17 +789,38 @@ void HardCodedSceneLoader::loadLightSources()
 				if(i%2)
 				{
 					LightSourceManager::getInstance().createPointLight(
-						Vector4D(0.0f,30.0f,0.0f + (-480.0f) * fraction ,1.0f) ,
+						Vector4D(
+								50.0f + 100* FLEWNIT_RAND_1_1,
+								5.0f + 5* FLEWNIT_RAND_1_1
+								,-150.0f + (200.0f) * FLEWNIT_RAND_1_1 ,
+								1.0f) ,
 						false, //no multiple point light shadowmaps allowed due to gl3 restrictions ;)
-						Vector4D(1.0f,1.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
-						Vector4D((1.0f-fraction)*15.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
+						Vector4D(FLEWNIT_RAND_0_1* 1.0f,
+								 FLEWNIT_RAND_0_1,
+								1.5f * FLEWNIT_RAND_0_1,
+								1.0f)
+									*2
+								/ numTotalLightSourcesToCreate,
+						Vector4D(
+							(1.0f-FLEWNIT_RAND_0_1)*15.0f * FLEWNIT_RAND_0_1,
+							40* FLEWNIT_RAND_0_1 * FLEWNIT_RAND_0_1 ,
+							FLEWNIT_RAND_0_1 *50 * FLEWNIT_RAND_0_1 ,
+							1.0f)
+							* 4.0f
+							/ numTotalLightSourcesToCreate
 					);
 				}
 				else
 				{
+					float outer = 35.0f;
+
 					LightSourceManager::getInstance().createSpotLight(
-							Vector4D(0.0f,30.0f,240.0f + (-480.0f) * fraction ,1.0f) ,
-							Vector4D(0.0f,-1.0f,0.0f,0.0f),
+							Vector4D(
+									100 + 50*  sin( FLEWNIT_RAND_1_1 * M_PI),
+									40+ 30.0f* FLEWNIT_RAND_0_1,
+									-200.0f + (400.0f) * fraction * FLEWNIT_RAND_0_1
+									,1.0f) ,
+							Vector4D(FLEWNIT_RAND_1_1  ,-1.0f,FLEWNIT_RAND_1_1  ,0.0f),
 							(
 								//shadow casting or not depends on global shading features...
 								(ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
@@ -782,11 +830,23 @@ void HardCodedSceneLoader::loadLightSources()
 								( LightSourceManager::getInstance().getNumTotalShadowingLightSources()
 										< ShaderManager::getInstance().getGlobalShaderFeatures().numMaxShadowCasters)
 							),
-							15.0f,
-							25.5f,
-							10.0f,
-							Vector4D(1.0f,1.2f,0.0f,1.0f)/ numTotalLightSourcesToCreate,
-							Vector4D((1.0f-fraction)*10.0f,fraction*50, fraction*50 ,1.0f)/ numTotalLightSourcesToCreate
+							outer - 4.5f* FLEWNIT_RAND_0_1,
+							outer,
+							1000.0f * (FLEWNIT_RAND_0_1+0.4f),
+							Vector4D(
+									 FLEWNIT_RAND_0_1*FLEWNIT_RAND_0_1,
+									 FLEWNIT_RAND_0_1*FLEWNIT_RAND_0_1,
+									 FLEWNIT_RAND_0_1 * FLEWNIT_RAND_0_1,
+									1.0f)
+									*100
+									/ numTotalLightSourcesToCreate,
+							Vector4D(
+									FLEWNIT_RAND_0_1* FLEWNIT_RAND_0_1,
+									  FLEWNIT_RAND_0_1* FLEWNIT_RAND_0_1,
+									  FLEWNIT_RAND_0_1 * FLEWNIT_RAND_0_1 ,
+									1.0f)
+									*270
+									/ numTotalLightSourcesToCreate
 						);
 				}
 

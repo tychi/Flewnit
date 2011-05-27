@@ -76,8 +76,7 @@ private:
 
 	//tracking buffer for fluid objects and rigid bodies to find their belonging particles in the
 	//recurrently reordered attribute buffers;
-	//used during (at least fluid) rendering as index buffer;
-	//mNumTotalParticles elements;
+	//used during (at least fluid) rendering as OpenGL index buffer;
 	//no ping pong necessary as no read/write or similar hazard can occur;
 	Buffer* mParticleIndexTableBuffer;
 
@@ -88,6 +87,7 @@ private:
 	 * */
 
 	PingPongBuffer* mZIndicesPiPoBuffer; //uint ping pong buffer
+
 	//the "backtracking" values for reordering of physical attributes,
 	//result of RadixSorter::sort()
 	//the ping pong functionality of mOldIndicesPiPoBuffer is only needed

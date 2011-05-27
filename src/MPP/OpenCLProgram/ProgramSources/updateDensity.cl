@@ -75,7 +75,7 @@
 
                           
                       //DEBUG
-if( (isnan(ownDensity)) ||  (isinf(ownDensity)) ) {ownDensity = cObjectGenericFeatures[ ownParticleObjectID ].restDensity  ; }
+//if( (isnan(ownDensity)) ||  (isinf(ownDensity)) ) {ownDensity = cObjectGenericFeatures[ ownParticleObjectID ].restDensity  ; }
                       // wtf, machine frezes and program crashes when uncommenting this... VERY strange; 
                       //   EDIT: not, after all... don't know what fixed this, too^^; but i have a suggestion: 
                       //   there was a false loop condition corrupting mem acceses; because of debug stuff, 

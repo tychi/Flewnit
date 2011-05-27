@@ -89,10 +89,11 @@ for(uint simGroupRunner=0; simGroupRunner <  NUM_MAX_ALLOWED_UNIGRID_CELL_SPLIT_
     /*global mem acces --> works!*/
 			\end{lstlisting}
 			
-		\item Bei wiederholtem lesender Zugriff auf globalen Speicher (selbst wenn Wert in eine 
-		\lstinline|__private| -Variable zwischengespeichert und diese im Anschluss durchgehend genutzt wird) 
-		innerhalb eines Schleifenrumpfes, verhält sich die Simulation so, als ob bestimmte (andere als die erste)
-		Operationnen gar nicht ausgeführt worden wären; Es bestehen keinerlei Datenabhängikeiten zwischen
+		\item Bei wiederholtem lesenden Zugriff auf die selbe Stelle im 
+		globalen Speicher innerhalb eines Schleifenrumpfes (selbst wenn Werte in eine 
+		\lstinline|__private| -Variable zwischengespeichert und diese im Anschluss durchgehend genutzt werden),
+		verhält sich die Simulation so, als ob bestimmte (andere als die erste)
+		Operationen gar nicht ausgeführt worden wären; Es bestehen keinerlei Datenabhängikeiten zwischen
 		den Operationen dieses Schleifenrumpfes;
 		dieses Problem tritt nur mit der GTX280 auf, nicht mit der GT435M (GTX 570 konnte ich noch nicht testen)
 		\begin{lstlisting}[language=OpenCL]
@@ -116,16 +117,16 @@ for(  uint interactingLocalIndex=0;
 		
 		\item 
 		\label{enum:oclSyncBug}		
-		Mit steigener Anzahl an Compute-Units und Partikeln wird die Simulation immer instabiler:
-		Partikel in Zellen oder ganzen Zell-Blöcken poppen weg, häufig friert die Anwendung ein; Ursache ist die 
-		Optimierung im Kernel, der das Uniform Grid komprimiert und in definiert große Work Groups für für
-		die SPH-Berechnungen aufteilt.
+		Mit steigener Anzahl an Compute-Units und Partikeln wird die Simulation unter folgenden Umständen immer instabiler:
 		Verteile ich den Scan, der für die Stream Compaction nötig ist, auf mehre Compute Units statt nur einer,
 		so dass im Compaction Kernel pro Work Group noch ein kleiner finaler Scan gemacht werden muss,
-		der die Teil-Summen der verschiedenen Scan-Work Groups aufsummiert, tritt das Problem auf;
+		der die Teil-Summen der verschiedenen Scan-Work Groups aufsummiert, poppen Partikel
+		in Zellen oder ganzen Zell-Blöcken weg, häufig friert die Anwendung ein; 
+		Mit nur einer Compute Unit, die diesen Kernel abarbeitet, also nur einer Work group, ist die Simulation stabil.
+		
 		Von den bisher erwähnten Bugs halte ich es hier für am wahrscheinlichsten, dass es sich um einen Programmierfehler 
 		meinerseits handelt, auch wenn ich bereits viel über diesen Kernel gegrübelt habe.
-		Mit nur einer Compute Unit, die diesen Kernel abarbeitet, also nur einer Work group, ist die Simulation stabil.
+		
 		Letztendlich ist der Kernel, der den Scan zu Stream Compaction macht, recht klein im Vergleich zu den
 		Radix-Sort- und SPH-Kernels; Daher ist es für die Performance nicht so tragisch, wenn hier nur eine Work 
 		Group aktiv ist; ärgerlich ist es trotzdem.

@@ -31,12 +31,17 @@
 	bereits aufgezeigt. Dieses Kapitel fasst die fehlenden Features zu einer priorisierten
 	"`to do"'-Liste zusammen:\\
 	\begin{enumerate}
+		\item Grund für den auf Seite \pageref{enum:oclSyncBug} beschriebenen Bug herausfinden und ihn fixen,
+		sofern es kein Treiber-Bug ist
 		\item Performance und Stabilität der Optimierung testen, welche Dichte-Berechnungen im selben
 		Kernel ausführt wie die Kraft-Berechnungen (die Stabilität kann insofern leiden, dass bei diesem Ansatz
 		immer die Dichte-Werte vom vorherigen Simulationsschritt verwendet werden müssen, welche somit veraltet sind)
+		\item Das Access Pattern für Nachbar-Partikel von Goswami (s. S. \pageref{enum:goswamiAccessPattern})
+			 auf linearen Buffern mit Fermi-Devices auf Performance prüfen, bei negativem Ergebnis Tricks mit 2D-Texturen
+			 erwägen
 		\item Die partikelbasierte Rigid-Body-Simulation lauffähig machen
 		\item Ein anderes Integrations-Schema als das sehr Bandbreiten-lastige und Speicher-hungrige 
-			\emph{Velocity Verlet}-Verfahren testen. 
+			\emph{Velocity Verlet}-Verfahren testen.
 			%Da das \emph{Leap Frog}-Verfahren seine Vorteile verliert,
 			%sobald man Geschwindigkeits-Werte zur Kraftberechnung benötigt (wie etwa bei Viskositäts-Berechnungen),
 			%muss ein geegnetes Schema, welches einen guten Kompromiss zwischen Genausigkeit und Performance

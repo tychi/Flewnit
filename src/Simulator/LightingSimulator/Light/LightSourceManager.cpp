@@ -367,7 +367,13 @@ PointLight* LightSourceManager::createPointLight(
 					position,diffuseColor,specularColor,
 					//some ought-to be unused (besides their function as indicator that ist NOT a spot light)
 					//default values
-					Vector4D(0.0f,0.0f,-1.0f,0.0f),0.0f,0.0f,0.0f,0.0f)
+					Vector4D(0.0f,0.0f,-1.0f,0.0f),
+					0.0f,
+					0.0f,
+					0.0f,
+					//HAXX todo ahndle layers more generically
+					-1.0f //(float)(mLightSources.size())
+					)
 		)
 	);
 
@@ -440,6 +446,7 @@ SpotLight* LightSourceManager::createSpotLight(
 					//the layer is not fixed but dependent on the number of currently active shadow casters
 					//on a per-frame basis;
 					//but again, non-initialized members make the coder shit into his pants ;)
+					//HAXX todo ahndle layers more generically
 					castsShadows? static_cast<float>(getNumTotalShadowingLightSources()) : -1.0f
 				)
 		)
