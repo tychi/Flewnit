@@ -401,12 +401,7 @@ System noch nicht getestet.
 	
 	
 	
-%-------------------------------------------------------------------------------------------------------------
-
-\todo{wtf beschreiben darüber dass non.local mem-stuff selbst auf der non-cahed gtx280 flüssiger läufgt WTF
-aber jetzt zu müde }
-
-%---------------------------------------------------------------------------------------------------	
+	
 	
 	
 	Ich habe mich bei meiner OpenCL-Implementation, wie erwähnt, soweit es mir technisch möglich war (erinnere: Buffer als
@@ -526,6 +521,39 @@ PingPongBuffer* mObjectInfoPiPoBuffer; //uint ping pong buffer
 		
 	\end{enumerate}	
 	
+%-------------------------------------------------------------------------------------------------------------
+
+	Was sehr überrascht, ist der Umstand dass selbst auf der GTX 280 die OpenCL-Implementation schneller läuft, die 
+	\emph{nicht} die Attribute der Nachbar-Partikel coalesced in den Local Memory herunter lädt, um dann 
+	mit Register-Latenz für die SPH-Berechnungen zur Verfügung zu stehen, sondern auch diese GPU
+	bringt mehr Leistung, wenn jedes Nachbar-Attribut direkt vom Global Memory gelesen wird.
+	Dieses Phänomen kann ich mir nur durch folgende Hypothesen erklären:
+	\begin{enumerate}
+		\item Mein Access Pattern (s.o., S. \pageref{enum:goswamiAccessPattern}) ist vielleicht so suboptimal
+		(Kontrollfluss- und Snychronisations-aufwändig), dass
+		der Synchronisationsaufwand den Vorteil der coalesced Reads aufwiegt. 
+		Sobald ich das Access Pattern in meiner Implementation angepasst habe, wird diese Hypothese
+		entweder bestätigt oder verworfen.
+		\item Der OpenCL-Compiler ist womöglich so ausgefeilt, dass er in der Schleifen-Laufvariable, die in die Index-
+		Berechnungen der Global Memory Reads einfließen, ein sequentielles Pattern erkennt, und automatisch
+		die Speicher-Zugriffe so optimiert, dass ein oder mehere "`Strides"' eines eines globalen Speicher-Transfers
+		(je nach Compute-Capability ist ein Stride 32-128 Byte groß, egal ob man nur ein Byte oder alle benötigt) 
+		automatisch lokal zwischengespeichert werden, ohne dass der aufwändige Kontrollfluss- und Snychronisations-Code 
+		ausgeführt werden muss.
+		\item Der Aufwand durch Kontrollfluss, Synchronisation und SPH-BerchnungenRechen-Aufwand ist 
+		(nicht zuletzt durch das momentane Access Pattern) so
+		aufwändig, dass der L2-Cache aureicht, um die Latenz zu verstecken, und ein Download in den Local Memory
+		in diesem Sinne	gar keinen Vorteil bringt, und viel mehr der Snychronisations- und Kontrollfluss-Code
+		die Geschwindigkeit weiter ausbremst.
+	\end{enumerate}
+	Es sei betont, dass dies reine Spekulationen sind.\\
+	
+	
+
+
+%---------------------------------------------------------------------------------------------------	
+	
+	
 	Zusammenfassend kann man sagen, dass Die Performance meiner SPH-Implementation nicht gerade hoch erfreulich ist, 
 	es jedoch noch genügend Stellschrauben gibt, um etwas dagegen zu tun.\\
 	
@@ -545,6 +573,10 @@ PingPongBuffer* mObjectInfoPiPoBuffer; //uint ping pong buffer
 	}
 	\label{fig:fluidSimForcePix}
 \end{figure}
+
+
+
+
 
 
 \clearpage
