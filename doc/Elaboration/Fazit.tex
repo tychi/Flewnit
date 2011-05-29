@@ -2,45 +2,44 @@
 \label{sec:Fazit}
 
 In der Einleitung wurde die Frage aufgeworfen, inwiefern eine "`Unified Engine"' sich als vorteilhaft
-gegenüber der Verwendung von zwei gesondertern Bibliotheken heraussstellt.
+gegenüber der Verwendung von zwei gesonderten Bibliotheken herausstellt.
 Im Verlauf der Implementation wurde vor allem das Buffer-Konzept abstrahiert und vereinheitlicht,
 so dass -- auch dank der OpenCL-Interoperabilität mit OpenGL -- Buffers für verschiedene Zwecke
 in verschiedenen Domänen gemeinsam genutzt werden können. Dies stellt durchaus einen Vorteil dar
 in Bezug auf Kontrollfluss in der Simulation, den Speicherverbrauch und das Einsparen von Kopier-Operationen.
 
 Um den anderen "`Unified"'-Aspekt, nämlich den der Synchronisation von weiteren Features, vor allem
-Transformationen, bewerten zu können,
-bräuchte man erst einmal eine Implementation, welche diese Synchronisation nötig macht. Leider fehlte am Ende
-der Implementations-Phase die Zeit, die Partikel-basierte Rigid Body-Simulatoin in \emph{Flewnit}
-zu integrieren, so dass diese Frage leider noch unbeantwortet bleiben muss.\\
+Transformationen, bewerten zu können, bräuchte man erst einmal eine Simulations-Komponente, 
+in welcher diese Synchronisation nötig ist, z.B. eine Rigid Body- Simulation.
+Leider fehlte am Ende der Implementations-Phase die Zeit, die Partikel-basierte Rigid Body-Simulation 
+in \emph{Flewnit} zu integrieren, so dass diese Frage leider noch unbeantwortet bleiben muss.\\
 
 Letztendlich wurde jedoch betont, dass nicht der Forschungs-Aspekt, sondern vor allem die didaktische Komponente
 die Motivation dieser Arbeit ausgemacht hat. Das Thema hatte letztendlich drei Schwerpunkte: 
 Software-Technik in Bezug auf Engine- und GPU-Programm- Design, visuelle Effekte und Fluid-Simulation.
 
 Das Ergebnis der softwaretechnischen Leistung vermag ich nicht zu beurteilen, und es hängt auch von dem
-Erfolg der weiteren Entwicklung dieses Software-Systems ab. Es stellt immerhin eine Framework- Basis dar, 
-so dass man nicht für jeden Test von bestimmten Algortihmen aus dem Bereich Graphik und Physiksimulation 
+Erfolg der weiteren Entwicklung dieses Software-Systems ab. Es stellt immerhin eine Basis als Framework dar, 
+so dass man nicht für jeden Test von bestimmten Algorithmen aus dem Bereich Graphik und Physiksimulation 
 bei Null anfangen muss.
 
-Jedoch habe ich in den anderen beiden Domänen sehr viel gelernt:
+Jedoch habe ich in den anderen beiden Domänen viel gelernt:
 Funktionsweisen gängiger Effekte aus dem Bereich des (visuellen) Echtzeit-Renderings durch kombinierte Implementierung vertieft, mir Konzepte und Verwendung zweier moderner und offener GPU-Computing APIs angeeignet, und im
 Zuge dessen die Kenntnisse über GPU-Hardware vertieft.
 
-Der Schwerpunkt in der visuellen Domäne auf das Hardware-Feature der Tessellation kommt dem jahrelangen Sehnen
-nach mehr geometrischem Detail beim Echtzeit-Rendering nach.
+Der Schwerpunkt in der visuellen Domäne auf das Hardware-Feature der Tessellation ist durch mein besonderes
+Interesse an mehr geometrischem Detail beim Echtzeit-Rendering beeinflusst.
 
-Die Recherchen über Fluid-Simulation haben meine Mathematik- und Physik-Kenntnisse erweitert, auch wenn diese bei der Implementation keiner Rolle mehr gespielt haben.
+Die Recherchen über Fluid-Simulation haben meine Mathematik- und Physik-Kenntnisse erweitert, auch wenn diese
+aufgrund der einfachen Programmierbarkeit der reinen SPH-Mechanik bei der Implementation kaum ein Rolle mehr gespielt haben; denn die Herausforderung bei der Implementation lag beim effizienten Mappen des eigentlich einfachen 
+Algorithmus auf eine massiv parallele Hardware-Architektur: Durch Nach-Implementation von Algorithmen wie "`Work Efficient Parallel Scan"' und dem darauf aufbauenden "`Parallel Radix Sort"' hab ich das theoretische Verständnis 
+der Konzepte der massiv parallelen Programmierung durch die Praxis überprüfen und vertiefen können.\\
 
-Ferner habe ich durch Nach-Implementation von Algorithmen wie "`Work Efficient Parallel Scan"' und dem
-darauf aufbauenden "`Parallel Radix Sort"' das theoretische Verständnis der Konzepte der 
-massiv parallelen Programmierung durch die Praxis validieren und vertiefen können.\\
-
-Was im Rahmen dieser Ausarbeitung keine Rolle spielt, aber doch sehr positiv zu vermerken ist,
+Was im Rahmen dieser Ausarbeitung keine Rolle spielt, aber von mir doch sehr positive empfunden wird,
 ist der Umstand, dass ich mich mit der Unix-Welt und vielen Tools, vor allem CMake und Git vertraut
 machen konnte. Das "`Freistrampeln"' von den Strukturen und Entwicklungs-Umgebungen,
 zu denen ich jahrelang vor lauter Fokus auf Inhalt/Algorithmen (im Gegensatz zu den verwendeten Werkzeugen)
-nie eine Alternative auszuprobieren gewagt habe (Windows, Visual Studio, GLUT, SVN und zu guter Letzt auch OpenGL 2 und 32Bit-Umgebungen), hat geklappt.\\
+keine Alternative ausprobiert habe (Windows, Visual Studio, GLUT, SVN und zu guter Letzt auch OpenGL 2 und 32Bit-Umgebungen), hat geklappt.\\
 
 Was die Vollständigkeit der Implementierung angeht (s. Abschnitt \ref{sec:statusImplementation}), ist es schade,
 dass so viel "`kurz davor"' zu sein schien, und letztendlich doch nichts zum funktionsfähigen Feature Set
@@ -48,7 +47,9 @@ des Systems beitragen konnte. In Anbetracht der vielen Schwerpunkte, die schon s
 das permanente Gefühl des Zeitdrucks mit sich brachten (und dieses war nicht unangebracht), halte ich die
 Vollständigkeit der Implementation aber für vertretbar.
 
-Zusammenfassend kann man sagen: Das didaktische Ziel wurde erreicht, der Forschungs-Aspekt ist "`Work in Progress"'.
+
+Zusammenfassend möchte ich sagen:\\
+Hinsichtlich des didaktischen Zieles habe ich in der verfügbaren Zeit meine Vorstellungen in etwa realisieren können. Der Forschungsaspekt ist im Rahmen dieser Arbeit zwangsläufig "Work in Progress" geblieben.
 
 
 \clearpage

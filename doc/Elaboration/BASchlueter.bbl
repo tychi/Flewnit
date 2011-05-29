@@ -9,6 +9,12 @@ Robert Bridson and Matthias M\"{u}ller-Fischer.
 \newblock Fluid simulation: Siggraph 2007 course notes.
 \newblock In {\em ACM SIGGRAPH 2007 courses}, SIGGRAPH '07, pages 1--81, 2007.
 
+\bibitem[CLT07]{CraneLlamas2007}
+Keenan Crane, Ignacio Llamas, and Sarah Tariq.
+\newblock {Real-Time Simulation and Rendering of 3D Fluids}.
+\newblock In Hubert Nguyen, editor, {\em GPU Gems 3}, chapter~30. Addison
+  Wesley Professional, 2007.
+
 \bibitem[Ebe04]{Eberly2004}
 David~H. Eberly.
 \newblock {\em {Game Physics}}.
@@ -20,6 +26,12 @@ Prashant Goswami, Philipp Schlegel, Barbara Solenthaler, and Renato Pajarola.
 \newblock In {\em Proceedings of the 2010 ACM SIGGRAPH/Eurographics Symposium
   on Computer Animation}, SCA '10, pages 55--64. Eurographics Association,
   2010.
+
+\bibitem[Har07]{Harada2007}
+Takahiro Harada.
+\newblock {Real-Time Rigid Body Simulation on GPUs}.
+\newblock In Hubert Nguyen, editor, {\em GPU Gems 3}, chapter~29. Addison
+  Wesley Professional, 2007.
 
 \bibitem[HSO07]{Harris2007}
 Mark Harris, Shubhabrata Sengupta, and John~D. Owens.

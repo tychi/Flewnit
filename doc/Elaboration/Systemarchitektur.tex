@@ -7,7 +7,7 @@ ihre Zusammenhänge vermitteln. Die Komponenten "`in Aktion"' werden im Detail i
 Dieses Kapitel soll die groben Konzepte und Ideen teilweise anhand von Beispielen vorstellen.
 Nicht jedes Feature, welches erwähnt wird, ist auch tatsächlich vollständig implementiert und getestet.
 Über den Status der Implementierung zum Zeitpunkt der Abgabe dieser Ausarbeitung
-gebe ich am Ende dieses Kapitels (Abschnitt \ref{sec:statusImplementation}) einen Überblick.
+wird am Ende dieses Kapitels (Abschnitt \ref{sec:statusImplementation}) ein Überblick gegeben.
 
 Das System wurde in C++ als (wahlweise statisch oder dynamisch zu linkende) Bibliothek implementiert.
 Der Code der GPU-Programme ist in GLSL bzw. OpenCL C verfasst.
@@ -37,17 +37,17 @@ Der Code der GPU-Programme ist in GLSL bzw. OpenCL C verfasst.
 	    bestimmte Hardware (wie bei Nvidia CUDA) oder ein bestimmtes Betriebssystem (wie Microsofts DirectCompute)
 	    gebunden.
 	    
-	    Zur Zeit der Implementierung waren noch keine Non-Developer-Treiber für OpenCL 1.1 verfügbar, 
-	    außerdem gab es kein Feature dieser Version, welches ich dringend benötigt hätte.
-	    Deshalb habe ich die Version 1.0 verwendet.
+	    Zur Zeit der Implementierung waren für Nvidia-GPUs noch keine Non-Developer-Treiber für OpenCL 1.1 verfügbar, 
+	    außerdem gab es kein Feature dieser Version, welches dringend benötigt worden wäre.
+	    Deshalb wurde die Version 1.0 verwendet.
 	    
-	    Es gibt einen C++ -Wrapper der C-API, welcher stark auf C++-Templates basiert und in einer einzigen Headerdatei 
+	    Es gibt einen C++ -Wrapper der C-API, welcher stark auf C++-Templates basiert und der in einer einzigen Headerdatei 
 	    implementiert ist. Dieser ist direkt von der Khronos-Homepage\footnote{http://www.khronos.org/registry/cl/} 	
-	    beziehbar. Diesen Wrapper habe ich verwendet, da er die Nutzung der API wesentlich eleganter macht.
+	    beziehbar. Dieser Wrapper wurde verwendet, da er die Nutzung der API wesentlich eleganter macht.
 	    
     	
    		\item[GLFW 2.7]
-		Wie auf Seite \pageref{focus:dependencies} angedeutet, waren mir folgende Dinge wichtig, damit die Einsetzbarkeit
+		Wie auf Seite \pageref{focus:dependencies} angedeutet, waren folgende Dinge wichtig, damit die Einsetzbarkeit
 		des Frameworks in professionelleren Kontexten nicht schon im Vorfeld verbaut ist:
 		\begin{itemize}
 			\item Option auf Fullscreen
@@ -57,16 +57,15 @@ Der Code der GPU-Programme ist in GLSL bzw. OpenCL C verfasst.
 			\item Option auf "`\emph{Mouse Grab}"', so dass man wie in einem Computerspiel mit ausgeblendetem Mauszeiger
 			nur durch Bewegung der Maus ohne Bildschirm-/Fenster-Grenzen die virtuelle Kamera rotieren kann;
 			\item "`Input events"', d.h. Aktualisierungen von Benutzereingaben sollen häufig und mit minimaler 
-			Latenz geschehen, außerdem so unabhängig wie möglich von der Framerate sein;
-			Nach möglichkeit sollten Input-Updates zumindest "aktiv abfragbar" sein 
+			Latenz geschehen, außerdem so unabhängig wie möglich von der Framerate sein.
+			Nach Möglichkeit sollten Input-Updates zumindest "`aktiv abfragbar"' sein 
 			(im Gegensatz zum passiven Warten darauf, dass von der Input-Library eine Callback-Funktion 
-			aufgerufen wird)
+			aufgerufen wird).
 			\item Es soll volle Kontrolle über die "Render-Loop" geben, so dass man nicht 
 			den Kontrollfluss an eine Funktion übergibt, die womöglich nie zurückkehrt und weiteren Kontrollfluss
 			durch das Benutzerprogramm	nur über Callback-Funktionen ermöglicht
 			(wie \lstinline[language=C]|glutEnterMainLoop()| beim in die Jahre gekommenen \emph{GLUT}).
-			Ein derartiges Konstrukt ist einer
-			Engine nicht würdig und verhindert womöglich sauberes Herunterfahren und Neu-Initialisierung,
+			Ein derartiges Konstrukt verhindert womöglich sauberes Herunterfahren und Neu-Initialisierung,
 			wie es z.B. beim Wechseln einer Szene oder eines fundamentalen globalen Settings nötig sein könnte.	
 		\end{itemize}
 		\emph{GLFW}\footnote{http://www.glfw.org/} in der Version 2.7, die zum Zeitpunkt der Implementation aktuellste 
@@ -79,23 +78,24 @@ Der Code der GPU-Programme ist in GLSL bzw. OpenCL C verfasst.
     	wie \lstinline[language=GLSL]|gl_ModelViewProjectionMatrix| oder
     	\lstinline[language=GLSL]|ftransform()|
     	in GLSL abgeschafft wurden, führt um eine Bibliothek für Vektor- und Matrix-Algebra kein Weg mehr herum.
-    	Ich habe mich für \emph{GLM}\footnote{http://glm.g-truc.net/} entschieden, da sie klein und dennoch mächtig ist,
-    	und einige Convenience-Functions hat; QT hat ebenfalls eine Mathe-Bibliothek, verwendet jedoch
+    	Es wurde sich für \emph{GLM}\footnote{http://glm.g-truc.net/} entschieden, da sie klein und dennoch mächtig ist,
+    	und einige Convenience-Functions hat. QT hat ebenfalls eine Mathe-Bibliothek, verwendet jedoch
     	\lstinline[language=C]|double|, also 64bit-Fließkomma-Werte als Basis-Datentyp, was das direkte Übergeben
     	als Array von \lstinline[language=C]|float|-Uniforms an die OpenGL-Shader verhindert. Zwar unterstützen OpenGL
     	und moderne Graphikkarten \lstinline[language=C]|double| nativ, jedoch mit drastisch geringerer Geschwindigkeit,
-    	da weniger Recheneinheiten für diesen Datentypen zur Vervügung stehen.\\
-    	Es sei bemerkt, dass ich persönlich die direkte Verwendung einer C++ - Mathe-Bibiothek mit überladenen Operatoren
-    	und eigener Akkumulation von Matrizen wesentlich angenehmer und eleganter finde als das zähe Hantieren
-    	mit der C-API zum modifizieren des OpenGL-State mit seinen Matrix-Modes.
+    	da weniger Recheneinheiten für diesen Datentyp zur Verfügung stehen.\\
+    	Die direkte Verwendung einer C++ - Mathe-Bibiothek mit überladenen Operatoren
+    	und eigener Akkumulation von Matrizen vereinfacht den Umgang mit Matrix- Algebra
+		im Vergleich zum zähen Hantieren mit der C-API zum Modifizieren des OpenGL-States mit seinen Matrix-Modes.
     	
     	\item[Grantlee]
+    		\label{sec:archtitectured:dependencies:Grentlee}
 	 		\lstset{language=GLSL} 
        		Die bereits erwähnte Template-Engine; die Syntax entspricht der der Template-Sprache des 
-       		\emph{Django} web Frameworks\footnote{https://www.djangoproject.com/}.\\
+       		\emph{Django} Web Frameworks\footnote{https://www.djangoproject.com/}.\\
 
        		Es lassen sich durch die Applikation Werte an die Template-Engine übergeben, anhand derer
-       		dann die Code-Generierung Kontrolliert wird, bzw welche durch durch Einschluss in doppelte
+       		dann die Code-Generierung kontrolliert wird, bzw. welche durch Einschluss in doppelte
        		geschwungene Klammern direkt eingefügt werden können. \\
        		Beipiel:
 			\begin{lstlisting}      		
@@ -123,7 +123,7 @@ vec4 fragmentColor =
 {% endblock performSPHCalculations %}
        		\end{lstlisting}
        		
-       		, die von anderen Datein geerbt und entsprechend angepasst implementiert werden.\\
+       		, die von anderen Dateien geerbt und entsprechend angepasst implementiert werden.\\
        		"`updateDensity.cl"' erbt von dieser Datei durch die Directive
        		\lstinline[language=GLSL]|{% extends "particleSimulationTemplate.cl" %}| 
        		und implementiert die Dichte-Berechnungen, 
@@ -146,18 +146,18 @@ vec4 fragmentColor =
     	Die \emph{Open Asset Import Library}\footnote{http://assimp.sourceforge.net/} ermöglicht das Auslesen
     	von Szenen direkt aus .blend-Dateien, dem nativen Datenformat des exzellenten Free Software -- 3D-
     	Modellierungsprogramms \emph{Blender}\footnote{http://www.blender.org/}.
-    	Somit entfällt der Umständliche Export in ein Zwischenformat.
+    	Somit entfällt der umständliche Export in ein Zwischenformat.
 
     	
    		\item[TinyXML]
    		Um zu gewährleisten, dass das System schon in der frühen Entwicklungsphase weitgehend ohne 
-   		Recompile-benötigenden "`Hard-Codes"' konfigurierbar ist, wurde TinyXML verwended, um eine XML-
+   		Recompile-benötigende "`Hard-Codes"' konfigurierbar ist, wurde TinyXML verwended, um eine XML-
    		config-Datei zu parsen.    	
     
 	
 	\end{description}	
 
-	Außerdem haben manche Komponenten der \emph{Boost}-Libraries\footnote{http://www.boost.org/} verwendet.
+	Außerdem wurden manche Komponenten der \emph{Boost}-Libraries\footnote{http://www.boost.org/} verwendet.
 	
 	
 
@@ -197,15 +197,15 @@ zu delegieren. In den folgenden Unterabschnitten werden die einzelnen Komponente
 	Programmierer überlassen ist, und man daher vor allem bei massiver Nutzung von Pointern schnell den Überblick
 	verliert, 
 	\begin{itemize}
-		\item welches Objekt welche anderen erschaffen hat
+		\item welches Objekt welche anderen erschaffen hat,
 		\item welche Objekte eine Klasse "`besitzt"' und somit für ihre Speicher-Freigabe zuständig ist bzw
 		\item auf welche Objekte eine Klasse nur ein Handle für Verwaltung oder	Backtracking hat, ohne für Erschaffung
-		 oder Löschung zuständig zu sein
+		 oder Löschung zuständig zu sein,
 	\end{itemize}
-	wurde in Anbetracht der oberen Forderung ein sehr simples Meta-Object-System system realisiert, welches Klassen-Namen
+	wurde in Anbetracht der oberen Forderung ein sehr simples Meta-Object-System realisiert, welches Klassen-Namen
 	und Speicherverbrauch eines Objektes feststellt sowie jedem Objekt eine \emph{unique ID} zuweist.
-	Zweck dieses Meta Object System-Systems war es, Speicherlecks durch Nicht-Löschen von Objekten während der Entwicklung 
-	zu finden;
+	Zweck dieses Meta-Object-Systems war es, Speicherlecks durch Nicht-Löschen von Objekten während der Entwicklung 
+	zu finden.
 	
 	Dafür erbt beinahe jede Klasse in \emph{Flewnit} von \lstinline|BasicObject|.
 	Diese Klasse registriert sich automatisch bei der \lstinline|MemoryTracker|-Singleton-Instanz, bekommt dort eine
@@ -213,8 +213,8 @@ zu delegieren. In den folgenden Unterabschnitten werden die einzelnen Komponente
 
 	Wie bei Qt das \lstinline[language=C++]|Q_OBJECT|-Makro muss in jede von 
 	\lstinline[language=C++]|BasicObject| erbende Klasse das Makro 
-	\lstinline[language=C++]|FLEWNIT_BASIC_OBJECT_DECLARATIONS| eingetragen werden; Dieses Makro definiert die 
-	Implementatoin einer virtuellen Funktion, welche die Meta-Information setzen:
+	\lstinline[language=C++]|FLEWNIT_BASIC_OBJECT_DECLARATIONS| eingetragen werden. Dieses Makro definiert die 
+	Implementation einer virtuellen Funktion, welche die Meta-Informationen setzen:
     \begin{lstlisting}
 #define FLEWNIT_BASIC_OBJECT_DECLARATIONS \
 	public:\
@@ -225,64 +225,66 @@ zu delegieren. In den folgenden Unterabschnitten werden die einzelnen Komponente
 		} \
 	private:	
 	\end{lstlisting}
-	Diese umständliche Implementierung hat die Urasache, dass Typ-Informationen der Blatt-Klasse einer
-	Klassenhierarchie erst dann zur verfügung stehen, wenn alle Konstruktoren der Basis-Klassen zurückgekehrt sind,
+	Diese umständliche Implementierung hat die Ursache, dass Typ-Informationen der Blatt-Klasse einer
+	Klassenhierarchie erst dann zur Verfügung stehen, wenn alle Konstruktoren der Basis-Klassen zurückgekehrt sind,
 	weshalb der obere Code also nicht im Konstruktor der Basisklasse stehen darf, da der \lstinline|this|-Pointer
 	noch nicht die Informationen der Blatt-Klasse enthält.
 	Ferner, um dem Programmierer nicht zuzumuten, \lstinline|initBasicObject()| in jedem Konstruktor aufzurufen
-	(das führt bei tiefen Klassenhierarchien zu unnötigen ausführungen dieser Funktion, da nur die Info der Blatt-Klasse
-	benötigt wird, außerdem entstünde so eine weitere Vergesslichkeits-Fehlerquelle, die durch das Meta Object System ja 
+	(das führt bei tiefen Klassenhierarchien zu unnötigen Ausführungen dieser Funktion, da nur die Info der Blatt-Klasse
+	benötigt wird, außerdem entstünde so eine weitere Vergesslichkeits-Fehlerquelle, die durch das Meta Object-System ja 
 	gerade \emph{vermieden} werden soll), stellt der Memory Tracker eine Routine \lstinline|updateMemoryTrackingInfo()|
 	bereit, die aufgerufen werden sollte, wenn man auf valide Meta-Information zugreifen will.
 	Aufpassen muss man bei tiefen Klassenhierarchien, da hier der Compiler keinen Fehler erzeugt, wenn eine Blatt-Klasse
-	das Makro nicht eingetragen hat, da eine Implementierung der Funktion ja bereits durch eine Oberklasse existiert.
+	das Makro nicht eingetragen hat, da eine Implementierung der Funktion bereits durch eine Oberklasse existiert.
 	
 	Über bedingte Kompilierung lässt sich diese Meta-Funktionalität deaktivieren.
-	Ein "`richtiges"' Meta Object System wie das von Qt wollte ich nicht verwenden, da es für meine Zwecke zu komplex und
-	mächtig ist, und ich nicht mit Kanonen auf Spatzen schießen wollte. Ohnehin gibt es Tools wie Valgrind, mit denen
+	Ein "`richtiges"' Meta Object-System wie das von Qt sollte keine Verwendung finden, 
+	da es für die Zwecke dieses Frameworks zu komplex und mächtig ist, und nicht 
+	mit Kanonen auf Spatzen geschossen werden sollte. Ohnehin gibt es Tools wie Valgrind, mit denen
 	man Speicherlecks finden kann. 
 
-	Letztendlich ist meine Lösung nicht wirklich elegant (auch wenn ich ohne Meta-Object-Compiler (MOC) keine bessere 	
+	Letztendlich ist diese Lösung nicht wirklich elegant (auch wenn ich ohne Meta-Object-Compiler (MOC) keine bessere 	
 	Lösung gefunden habe) und daher eher als eine Spielerei anzusehen
 	mit dem Zwecke, die C++-Interna zu verinnerlichen und zu jeder Zeit daran erinnert zu werden, 
 	Destruktoren zu implementieren und sich über 
 	"`Besitz- und Verwaltungs-Verhältnisse"' der Klassen Gedanken zu machen.
 	
 	Der \lstinline|MemoryTracker| verfolgt auch sämtliche Allokationen der \lstinline|BufferInterface|-Klasse,
-	also der Basisklasse sämtlicher Buffer-Typen;
+	also der Basisklasse sämtlicher Buffer-Typen.
 	
 \subsection{AmendedTransform}
 	\label{sec:AmendedTransform}
  	Im Zuge der Überlegungen zum Szenegraphen, der Kamera und des visuellen Renderings vieler Objekte per
- 	Hardware-Instancing entschied ich mich, die klassische 4x4-Transformationsmatrix zu wrappen und mit
- 	convenience functions anzureichern, siehe Listing \ref{listing:AmendedTransformDef}.\\
+ 	Hardware-Instancing fiel die Entscheidung, die klassische 4x4-Transformationsmatrix zu wrappen und mit
+ 	Convenience Functions anzureichern, siehe Listing \ref{listing:AmendedTransformDef}.\\
  	Der Zweck dieser Klasse ist es, Transformationsmatrizen anhand "`anschaulicher"' Parameter 
  	(Position, Richtung, Up-Vektor, Skalierung) zu definieren,
  	und diese Parameter auch nach Akkumulationen, Modifikationen und/oder Animationen zur Verfügung zu haben.\\
- 	Der Fokus liegt hier klar auf der Bequemlichkeit für den Entwickler, nicht auf der Performanz.
- 	Sobald sehr große, dynamisch animierte und tiefe Scenegraphen zum Einsatz kommen, könnte diese Klasse
- 	zum Flaschenhals werden. Dann ist vielleicht ein Refactoring vonnöten; Vorerst scheint mir die Implementation jedoch
+ 	Der Fokus liegt hier klar auf der Bequemlichkeit für den Entwickler, nicht auf der Performance.
+ 	Sobald sehr große, dynamisch animierte und tiefe Szenegraphen zum Einsatz kommen, könnte diese Klasse
+ 	zum Flaschenhals werden. Dann ist vielleicht ein Refactoring vonnöten. Vorerst scheint mir die Implementation jedoch
  	angemessen.\\
  	
  	So lässt sich z.B. bequem ein \lstinline|Camera|-Objekt, welches selber von \lstinline|WorldObject| erbt,
  	welches wiederum von \lstinline|SceneNode| abgeleitet ist, an eine andere SceneNode anhängen, und aus der automatisch
  	berechneten globalen Transformation erhält man durch \lstinline|AmendedTransform::getLookAtMatrix()|
- 	direkt die lookAt-Matrix, so  dass die Camera-Klasse selber sich nur noch um seine Projektionsmatrix kümmern muss.
+ 	direkt die lookAt-Matrix, so  dass die Camera-Klasse selber sich nur noch um ihre Projektionsmatrix kümmern muss.
  	Auch typische Animationen werden von der Klasse übernommen. Ob dies guter Stil ist, oder doch lieber in die
  	SceneNode-Klasse ausgelagert werden sollte, ist eine Frage, die ich noch nicht abschließend beantworten kann.
  	Es wurde hier dem Paradigma der Datenlokalität gefolgt, evtl. auf Kosten der Separation of Concerns.
- 	Eine weitere Erörtertung lasse ich aus, da das Refactoring in diesem Falle nicht zu aufwändig wäre;
+ 	Eine weitere Erörtertung lasse ich aus, da das Refactoring in diesem Falle nicht zu aufwändig wäre.
 
-	Es sei bemerkt, dass durch die Menge an Matrizen, die an den Vertex Shader beim Instanced Rendering übergeben
+	Es sei bemerkt, dass die Menge an Matrizen, die an den Vertex Shader beim Instanced Rendering übergeben
 	werden müssen, wenn man für alle Fälle gewappnet sein will
 	\footnote{z.B. für Layered Rendering in verschiedene Texturen, z.B in ein Textur-Array zur Generierung mehrerer 
-	Spotlight-Shadowmaps mit einem Draw-Call; Hierbei braucht es explizit nur die Model-Matrix, da es pro Layer 
+	Spotlight-Shadowmaps mit einem Draw-Call; hierbei braucht es explizit nur die Model Matrix, da es pro Layer 
 	verschiedene View-Matrices (pro Spotlight eine) gibt, von daher nicht im Vorfeld eine ModelView Matrix akkumuliert 
-	werden kann}, nicht unerheblich ist, da für jede Instanz ein anderes Matrix-Set übergeben werden muss;
+	werden kann.}
+	, nicht unerheblich ist, da für jede Instanz ein anderes Matrix-Set übergeben werden muss.
 	Die Menge an Daten, die per Uniform-Variable übergeben werden kann, ist begrenzt, daher hängt die maximale Anzahl
-	an Instanzen, die pro Draw-Call gezeichnet werdne können, direkt davon ab, wie viele Daten pro Instanz übergeben 
-	werden müssen;\\
-	Dieser Umstand hat mich dazu verleitet, die Normal Matrix, die transponierte Inverse der ModelView-Matrix,
+	an Instanzen, die pro Draw-Call gezeichnet werden können, direkt davon ab, wie viele Daten pro Instanz übergeben 
+	werden müssen.\\
+	Dieser Umstand hat dazu verführt, die Normal Matrix, die transponierte Inverse der ModelView-Matrix,
 	"`einzusparen"': da Normalen und Tangenten durch Interpolation für den Fragment Shader ohnehin normalisiert werden 
 	müssen, spielt beim Ergebnis  der Transformation eines Vektors 
 	\footnote{mit homogener Koordinate 0,im Gegensatz zu Punkten, homog. Koord. 1} 
@@ -295,8 +297,8 @@ zu delegieren. In den folgenden Unterabschnitten werden die einzelnen Komponente
 	Eben dies versuche ich, durch die \lstinline|AmendedTransform|-Klasse zu forcieren, indem nur ein eingeschränkter
 	\lstinline|public|-Konstruktor existiert, direkte Initialisierung per Matrix-Konstruktor nur für bestimmte
 	\lstinline|friend|-Klassen erlaubt sind, und auch dann diese Matrix validiert wird.
-	Die Einschränkung erscheint mir legitim, da eine Uniform Rendering Engine den Anspruch hat, zumindest
-	im Ansatz "`physikalisch basiert"' zu sein; Deshalb sollten sich  Skalierungen ohnehin nur selten
+	Die Einschränkung erscheint legitim, da eine Uniform Rendering Engine den Anspruch hat, zumindest
+	im Ansatz "`physikalisch basiert"' zu sein. Deshalb sollten sich  Skalierungen ohnehin nur selten
 	zur Laufzeit ändern, und dann nur einheitlich. So kann man im Vorfeld die Geometrie so anpassen, 
 	dass keine nicht-uniforme Skalierung in der Transformationsmatrix auftaucht.
 	
@@ -305,13 +307,13 @@ zu delegieren. In den folgenden Unterabschnitten werden die einzelnen Komponente
 	\lstinline|AmendedTransform|-Instanz als Tranformation einer Scene-Node dient, erstere ein Handle auf die Scene Node 
 	bekommt. Auf diese Weise kann die Scene Node immer automatisch informiert werden, wenn sich bei der 
 	\lstinline|AmendedTransform| etwas geändert hat (es müssen dann ggfs. die Kinder der Scene-Node aktualisiert werden,
-	z.B. für eventuelles Updade von Bounding Boxes). Auf diese Weise muss weder die \lstinline|AmendedTransform|
+	z.B. für eventuelles Update von Bounding Boxes). Auf diese Weise muss weder die \lstinline|AmendedTransform|
 	nochmal durch die \lstinline|SceneNode| gewrappt werden, noch können Seiteneffekte durch direkte Manipulation der 
 	Transformation auftreten, sollte der Programmierer vergessen, anschließend die Scenenode über ihre 
 	Transformations-Änderung zu informieren.
-	Die Scene-Node-Kopplung ist rein intern, und braucht den Benutzer der Klasse nicht weiter zu interessieren,
+	Die Scene-Node-Kopplung ist rein intern und braucht den Benutzer der Klasse nicht weiter zu interessieren,
 	außer in der Hinsicht, dass Scene-Node-Manipulation direkt geschieht und die \lstinline|SceneNode|-Klasse
-	kein eigenes Interface zur manipulation von Tranformationen bereit stellt.
+	kein eigenes Interface zur Manipulation von Tranformationen bereit stellt.
 	
  	
  	\begin{lstlisting}[caption={AmenededTransform Klassendefinition, gekürzt},label=listing:AmendedTransformDef]
@@ -395,23 +397,23 @@ protected:
 	Daten beschafft oder Funktionalität aufgerufen werden kann, die nach außen hin verfügbar sein soll.
 
 \subsection{Das UserInterface-Paket}
-	Das User Interface hat einen abstraktes Window-Manager-Interface, welches von einer Implementation, die \emph{GLFW} 	
-	verwendet, realisiert wird;
+	Das User Interface hat ein abstraktes Window-Manager-Interface, welches von einer Implementation, die \emph{GLFW} 	
+	verwendet, realisiert wird.
 	Aus der geparsten Config wird die gewünschte OpenGL-Kontext-Version, Auflösung, Multisamples-Count, Fullscreen-Option
 	etc. ausgelesen und ein entsprechendes Fenster mit OpenGL-Kontext erzeugt.\\
 
 	Die Input-Verwaltung ist im Gegensatz zum Fenstermanager nicht vollständig von der verwendeten Input-Bibliothek 	
-	(ebenfallse GLFW) abstrahiert, da beim Parsen des Inputs die von GLFW definierten Makros direkt verwendet werden, 
+	(ebenfalls GLFW) abstrahiert, da beim Parsen des Inputs die von GLFW definierten Makros direkt verwendet werden, 
 	 wie z.B \lstinline|GLFW_KEY_ENTER|.
-	Da die Austauschbarkeit von verwendeten Bibliotheken zwar erwünscht ist, aber ich mich nicht verzetteln wollte,
-	bleibt die Abstraktion des Inputs noch ein langfristiges "`TODO"' mit geringerer Priorität.
+	Da die Austauschbarkeit von verwendeten Bibliotheken zwar erwünscht ist, aber der Fokus nicht aus den Augen 
+	verloren werden sollte, bleibt die Abstraktion des Inputs noch ein langfristiges "`TODO"' mit geringerer Priorität.
 
 	Eine GUI wurde leider noch nicht implementiert, vor allem aus dem Grund, dass vorhandene GUI-Toolkits wie z.B.
 	\emph{AntTweakBar}\footnote{http://www.antisphere.com/Wiki/tools:anttweakbar} Legacy-OpenGL-Routinen verwenden,
 	was die Verwendung eines modernen Core-Profiles ausschließen würde.
-	Da langfristig ein konsistentes Erscheinungsblid angestrebt wird, welches seine GUI vollständig in das 
+	Da langfristig ein konsistentes Erscheinungsbild angestrebt wird, welches seine GUI vollständig in das 
 	OpenGL- Rendering-Fenster integriert hat, kam auch die  Verwendung von GUI-Toolkits wie dem von Qt nicht in Frage.\\
-	Letztendlich wollte ich schon immer mal eine kleine GUI entwickeln, wozu ich jedoch erwartungsgemäß im Rahmen dieser
+	Letztendlich wollte ich schon immer eine kleine GUI entwickeln, wozu ich jedoch erwartungsgemäß im Rahmen dieser
 	Arbeit keine Zeit hatte. Die GUI verbleibt also als ein "`TODO"' von mittlerer Priorität.
 
 
@@ -434,22 +436,21 @@ protected:
 	Abb. \ref{fig:detailSimulator} zeigt grob beispielhaft den Ablauf einer Simulation und die verschiedenen
 	Varianten, wie man sich die "`Rendering Results"' anderer Stages beschaffen kann:\\
 	Entweder aus der Main Loop der Engine heraus oder von der benutzenden Applikation wird
-	\lstinline|URE::stepSimulation()| aufgerufen; Diese Funktion iteriert in fester Reihenfolge über die
-	vorhandenen Simulatoren und ruft deren \lstinline|stepSimulation()|-Routine auf; Hierin werden Simulator-
+	\lstinline|URE::stepSimulation()| aufgerufen. Diese Funktion iteriert in fester Reihenfolge über die
+	vorhandenen Simulatoren und ruft deren \lstinline|stepSimulation()|-Routine auf. Hierin werden Simulator-
 	spezifische Operationen ausgeführt (Framebuffers des Fensters resetten und Haupt-Viewport setzen beim 
-	\lstinline|LightingSimulator|, CL/GL-shared Buffers für OpenCL akquirieren beim \lstinline|MechanicsSimulator|...),
-	dann über die einzelnen zugehörigen \linebreak
-	\lstinline|SimulationPipelineStage|'s iteriert, widerum deren 
+	\lstinline|LightingSimulator|, CL/GL-shared Buffers für OpenCL akquirieren beim \lstinline|MechanicsSimulator| ...),
+	dann über die einzelnen zugehörigen	\lstinline|SimulationPipelineStage|'s iteriert, wiederum deren 
 	\lstinline|stepSimulation()|-Methode aufgerufen.
-	Hier passiert dann das eigentlich \emph{generische Rendering}.
+	Hier passiert dann das eigentliche \emph{generische Rendering}.
 	So verschieden die Algorithmen sind, die in den einzelnen Stages abgearbeitet werden, so verschieden sind auch
 	die Möglichkeiten, wie einzelne Stages miteinander Daten austauschen: Der generischste Ansatz ist, sich von einer
-	Stage einen Buffer mit einer bestimmten Semantik zu beschaffen, sofern die entsprechende Stage ein solchen
+	Stage einen Buffer mit einer bestimmten Semantik zu beschaffen, sofern die entsprechende Stage einen solchen
 	bereit stellt. Bei Lichtsimulation, die viel mit Texturen und OpenGL-Framebuffer-Objects (FBOs) umgeht,
 	bietet sich an, sich das \lstinline|RenderTarget| (die Abtraktion des FBO in \emph{Flewnit}) zu beschaffen,
-	um mit dem gesamten RenderTarget weiter zu arbeiten, oder sich einzelne Texturen zu beschaffen.
+	um mit dem gesamten \lstinline|RenderTarget| weiter zu arbeiten, oder sich einzelne Texturen zu beschaffen.
 	Es gibt aber auch die relativ indirekte Methode des Datenaustausches, wie es z.B. zwischen der 
-	\lstinline|ParticleMechanicsStage| und der \lstinline|ParticleLiquidDrawStage| der Fall ist: Die Buffer mit dem 		
+	\lstinline|ParticleMechanicsStage| und der \lstinline|ParticleLiquidDrawStage| der Fall ist: Die Buffer mit den 		
 	physikalischen Attributen sind in der SceneNode-abgeleiteten
 	Klasse \lstinline|ParticleFluid| enthalten, so dass die aktualisierten Daten über schlichtes Szenegraphen-Traversieren
 	beschafft werden können.\\
@@ -487,7 +488,7 @@ protected:
 	(z.B. Baumstruktur, sortierte oder unsortierte Sammlung, Graph-Struktur, Voxel-Struktur) 
 	und in den Meta-Informationen, welche für die einzelnen	Objekte notwendig sind.
 	
-	Beispielsweise stellt die die effiziente Suche nach räumlich benachbarten Objekten eine wichtige Anforderung
+	Beispielsweise stellt die effiziente Suche nach räumlich benachbarten Objekten eine wichtige Anforderung
 	bei vielen Simulationen (auch bei Lichtsimulation für globale Beleuchtungseffekte) dar.
 	Hierfür bieten sich verschiedene Beschleunigungsstrukturen an. Je nach Simulationsdomäne, 
 	Objekt-Repräsentation,verwendetem Simulations-Verfahren, verwendeter Hardware und Zielsetzung 
@@ -542,7 +543,7 @@ protected:
 	
 	Die klassischen Operationen (Einfügen, Aushängen, rekursives Suchen im Unterbaum nach Namen, Node bewegen,
 	Transformationen akkumulieren) sind jedoch implementiert. Es sei an die enge Kopplung dieser Klasse an
-	\lstinline|AmendedTransform| (s. Abschnitt \ref{{sec:AmendedTransform}}) erinnert.
+	\lstinline|AmendedTransform| (s. Abschnitt \ref{sec:AmendedTransform}) erinnert.
 	
 	Der Scenegraph kann nach dem Visitor- Design Pattern traversiert werden. Z.B. erbt 
 	\lstinline|SimulationPipelineStage| von \lstinline|SceneNodeVisitor|, so dass bei Bedarf eine Pipeline-Stage
@@ -553,10 +554,10 @@ protected:
 	gelöscht werden. Sollte sich dies später als Problem herausstellen, könnte man die Scene Nodes auch vom
 	\lstinline|SimulationResourceManger| verwalten lassen.
 	Auch empfiehlt sich langfristig die Möglichkeit zur Erschaffung und Verwaltung mehrerer Szenegraphen.
-	Aus Zeitgründen habe ich es jedoch erstmal bei dieser rudimentären Implementation belassen.
+	Aus Zeitgründen wurde es jedoch erst einmal bei dieser rudimentären Implementation belassen.
 	
-	Intern verwaltet die \lstinline|ParticleMechanicsStage|, die \lstinline|SimulationPipelineStage|,
-	die im \lstinline|MechanicsSimulator| für die partikelbasierte Simulation zuständig ist, 
+	Intern verwaltet die \lstinline|ParticleMechanicsStage| (die  \linebreak \lstinline|SimulationPipelineStage|,
+	welche im \lstinline|MechanicsSimulator| für die partikelbasierte Simulation zuständig ist), 
 	eine \lstinline|ParticleSceneRepresentation|. Diese verwaltet 
 	\begin{itemize}
 		\item die "`makroskopischen Objekte"', die an dieser Simulation teilnehmen,
@@ -579,18 +580,18 @@ protected:
 \subsection{Das WorldObject}
 	\label{sec:worldObject}
 	Das \lstinline|WorldObject| stellt die abstrakte Basisklasse für sämtliche Objekte dar, mit denen eine oder mehrere 
-	Simulationen durchgeführt werden sollen\footnote{Und sei es nur Debug Drawing; Selbst dies kann als eine 
+	Simulationen durchgeführt werden sollen\footnote{Und sei es nur Debug Drawing. Selbst dies kann als eine 
 	rudimentäre Form von Lichtsimulation aufgefasst werden.}. Sie erbt von \lstinline|SceneNode|. Damit ist sie bequem 
-	in den Szenegraphen integrierbar und hat außerdem schon seinen Transformations-Membervariable.
+	in den Szenegraphen integrierbar und hat außerdem schon seine Transformations-Membervariable.
 	
-	Bei dieser Klasse zeigt sich erstmals die angestrebte Symmetrie zwischen sen Simulationsdömanen: 
+	Bei dieser Klasse zeigt sich erstmals die angestrebte Symmetrie zwischen den Simulationsdömanen: 
 	Für jede Simulationsdomäne
 	gibt es eine (möglicherweise leere) Liste an \lstinline|SubObject|'s. Das \lstinline|SubObject| 
 	stellt eine Abstraktion dessen dar, was in einer klassischen Graphik-Engine ein "`SubMesh"' oder
 	in einer klassischen Physik-Engine eine Komponente einer "`(Compound) Collision Shape"' sein könnte.\\
 	Ein \lstinline|SubObject| hat immer einen Pointer auf genau ein \lstinline|Material|, 
 	eine \lstinline|Geometry|  und für Backtracking-Zwecke auf sein besitzendes	\lstinline|WorldObject|.
-	Wie der Backtracking-Pointer andeutet, besitzt das ein \lstinline|WorldObject| jedes seiner \lstinline|SubObject|s.
+	Wie der Backtracking-Pointer andeutet, besitzt ein \lstinline|WorldObject| jedes seiner \lstinline|SubObject|s.
 	Die vom \lstinline|SubObject| genutzte Geometrie und Materialien können jedoch --sofern sinnvoll -- von beliebig
 	vielen \lstinline|SubObject|s gemeinsam genutzt werden.
 	
@@ -605,17 +606,17 @@ protected:
 	Welche dieser Methoden langfristig die robusteste, flexibelste und eleganteste ist,
 	vermag ich noch nicht zu sagen. Da Typ-Informationen über \lstinline|enum|s 
 	(als Bitflags oder "`normale"' Aufzählungstypen)
-	eine gewisse Redundanz hat ggü. der dynamischen Typ-Information, die C++ bereit stellt, und außerdem eine weitere
-	Fehlerquelle für den Programmierer darstellt, sind die Bitflags nicht erste Wahl. Außerdem schränkt die explizite 
+	eine gewisse Redundanz haben ggü. der dynamischen Typ-Information, die C++ bereit stellt, und außerdem eine weitere
+	Fehlerquelle für den Programmierer darstellen, sind die Bitflags nicht erste Wahl. Außerdem schränkt die explizite 
 	Auflistung von Features womöglich die Erweiterbarkeit des Systems ohne komplette Neu-Kompilierung ein.
 	Andererseits machen sie Programme vielleicht lesbarer, indem bestimmte Kategorien/Features explizit aufgelistet 
 	(und im Falle von Bitflags beliebig kombinierbar) sind, 
 	und nicht implizit in C++-Typinformationen codiert sind.
-	Ich verwende Aufzählungstypen intensiv in \emph{Flewnit}. Nicht immer sind diese für die Programmlogik nötig.
-	Sie halfen mir jedoch zur Strukturierung und Ideen-Sammlung. Letztere ist wichtig, da bei einem Softwaresystem,
+	Aufzählungstypen werden intensiv in \emph{Flewnit} verwendet. Nicht immer sind diese für die Programmlogik nötig.
+	Sie halfen jedoch zur Strukturierung und Ideen-Sammlung. Letztere ist wichtig, da bei einem Softwaresystem,
 	welches generische Verwendbarkeit anstrebt, schon weit vor Implementierung konkreter Klassen die Struktur der
 	Basisklassen anhand von abstrahierten (erwarteten) gemeinsamen Features der möglichen abgeleiteten Klassen
-	möglichst exakt bestimmt werden sollte. Je weiter oben in der Klassenhierarchie Design-Fehler auftauchen, desto
+	möglichst exakt bestimmt werden sollte. Je weiter oben in der Klassenhierarchie Design-Fehler auftreten, desto
 	aufwändiger droht das spätere Refactoring zu werden.
 
 %	Die Entscheidung, dass \lstinline|WorldObject| abstrakt sein soll, wurde getroffen, damit keine Funktionalität,
@@ -627,9 +628,9 @@ protected:
  
 \subsection{Material}  
 
-	Der Begriff "`Material'", der sich in der Computergraphik eingebürgert hat als Beschreibung von visuellen Eigenschaften
-	einer Oberfläche, erscheint mir prädestiniert, sich in seiner Bedeutung in einem alltäglichen,
-	nicht computergraphischen Kontext wieder anzunähern:
+	Der Begriff "`Material"', der sich in der Computergraphik eingebürgert hat als Beschreibung von visuellen Eigenschaften
+	einer Oberfläche, erscheint in diesem Zusammenhang prädestiniert, sich inhaltlich seiner Bedeutung 
+	in einem alltäglichen, nicht computergraphischen Kontext wieder anzunähern:
 	das \emph{Material} in \emph{Flewnit} steht für "`sämtliche Eigenschaften von Materie 
 	außer ihrer geometrischen Form und internen Repräsentation dieser"'.
 
@@ -644,31 +645,30 @@ protected:
 	\end{figure}
 	
 	Würden wir über die entsprechende Rechenleistung verfügen und als Programmierer das physikalische Know-How
-	besitzen (z.b. über Maxwell'sche Gleichungen), bräuchte man dieses Konzept gar nicht weiter zu konkretisieren,
+	besitzen (z.B. über Maxwell'sche Gleichungen), bräuchte man dieses Konzept gar nicht weiter zu konkretisieren,
 	und könnte sämtliches Verhalten von Simulations-Objekten durch subatomare Material-Eigenschaften modellieren.
-	Dies wäre eine "wirkliche" Vereinheitlichung der bestehenden Engine-Konzepte, die unserer Realität Rechnung trüge.
-	Da wir jedoch realistisch (im Sinne der Machbarkeit) bleiben wollen jetzt und heute Echtzeit-Fähigkeit,
+	Dies wäre eine "`echte"' Vereinheitlichung der bestehenden Engine-Konzepte, die unserer Realität Rechnung trüge.
+	Da wir jedoch realistisch (im Sinne der Machbarkeit) bleiben wollen und jetzt und heute Echtzeit-Fähigkeit,
 	auch auf Kosten von physikalischer Korrektheit/Genauigkeit anstreben, sind Domänen-spezifische Konkretisierungen des
 	Material-Konzeptes notwendig, und wie so viele andere Klassen in diesem System wird die 
 	\lstinline|Material|-Klasse zur abstrakten Oberklasse.
 	Bei einem \lstinline|SubObject|, welches der visuellen Simulationsdömane angehört, wird implizit erwartet,
 	dass das genutzte \lstinline|Material| ein \lstinline|VisualMaterial| ist 
-	(mit Texturen, Shader, und verscheiedenen Meta-Informationen, um das visuelle Rendering zu delegieren,
-	siehe Abschnitt \ref{sec:visualMaterial}), 
+	(mit Texturen, Shader, und verschiedenen Meta-Informationen, um das visuelle Rendering zu delegieren, 
 	und in der mechanischen Domäne muss es ein \lstinline|MechanicalMaterial|(mit Eigenschaften wie Masse, Reibung, 	
 	Elastizität etc.) sein. Diese domänenspezifischen Material-Typen können oder müssen (je nach Typ des nutzenden
 	\lstinline|WorldObject|s) noch weiter abgeleitet sein.
 	
-	Einen etwas schalen Beigeschmack haben die Routinen:
+	Die Routinen
 	\begin{lstlisting}
 virtual void activate(
 		SimulationPipelineStage* currentStage,
 		SubObject* currentUsingSuboject) throw(SimulatorException){}
-//undoing stuff, like re-enable depth test etc.
+//undoing stuff, like e.g. re-enable depth test etc.
 virtual void deactivate(SimulationPipelineStage* currentStage,
 		SubObject* currentUsingSuboject) throw(SimulatorException){}
 	\end{lstlisting}
-	Sie sind dem Statemachine-basierten visuellen Rendering mit OpenGL zu verdanken und müssen daher von den
+	sind dem Statemachine-basierten visuellen Rendering mit OpenGL zu verdanken und müssen daher von den
 	\lstinline|VisualMaterial|-Klassen implementiert werden. Um der Möglichkeit Rechnung zu tragen, dass
 	ähnlich State-basierte Mechanismen an anderer Stelle als beim OpenGL-Rendering vorkommen sollten, sind diese
 	Routinen in die Oberklasse gelangt.
@@ -687,7 +687,7 @@ virtual void deactivate(SimulationPipelineStage* currentStage,
 	\label{sec:geometry}
 	Die \lstinline|Geometry|-Klasse bildet die abstrakte Basisklasse verschiedenster geometrischer Reräsentationen.\\
 	%\footnote{und ergänzt und bildet somit in Kombination  mit dem \lstinline|Material| eine Manifestation eines 
-	%materiellen Objektes};
+	%materiellen Objektes}.
 	Beispiele solcher Repäsentationen sind:
 	\begin{itemize}
 		\item Vertex-basiert:  Punkte, Linien(-Züge), Dreicke, Quads und beliebige Polygone lassen sich theoretisch
@@ -695,18 +695,19 @@ virtual void deactivate(SimulationPipelineStage* currentStage,
 		Falle von Tessellation noch Quads, aber das ist buchstäblich ein anderes Kapitel}
 		\item Voxel-basiert
 		\item Freiform-Flächen-basiert: NURBS, Bézier-Patches etc.
-		\item Primitiv-Basiert: das Objekt ist aufgebaut aus Primitiven die Quader, Kugel, Kapseln, Zylindern etc.;
-			Diese Repräsentation wird gerne für Collision Shapes bei der mechanischen Simulation von Rigid Bodies verwendet.
+		\item Primitiv-Basiert: das Objekt ist aufgebaut aus Primitiven wie Quader, Kugel, Kapseln, Zylindern etc.;
+			diese Repräsentation wird gerne für Collision Shapes bei der mechanischen Simulation von Rigid Bodies 
+			verwendet.
 	\end{itemize}
-	Die Repräsentationen Überschneiden sich in ihren Kategorisierungen und Eigenschaften, eine sinnvolle Strukturierung ist 
+	Die Repräsentationen überschneiden sich in ihren Kategorisierungen und Eigenschaften, eine sinnvolle Strukturierung ist 
 	also weder trivial noch womöglich eindeutig. Die API-Spezifischen Beschränkungen erleichtern diese Aufgabe nicht 
-	gerade, wenn man das Effiziente Mapping auf eine API im Hinterkopf behalten muss.
+	gerade, wenn man das effiziente Mapping auf eine API im Hinterkopf behalten muss.
 	Ich habe mir nicht weiter den Kopf zerbrochen, auch, weil mir spezifisches Wissen z.B. über Primitiv-basierte
-	Rigid Body- Simulation fehlt, und habe mich pragmatisch in der exemplarischen Implementierung auf die
-	beiden Basis-Repräsentationen beschränkt, die bei aktuellem visuellen Echzeitrendering und interaktiver
+	Rigid Body- Simulation fehlt. So wurde sich pragmatisch in der exemplarischen Implementierung auf die
+	beiden Basis-Repräsentationen beschränkt, die bei aktuellem visuellen Echtzeitrendering und interaktiver
 	Fluidsimulation die wichtigste Rolle spielen: Vertex- und Voxel-basiert. Hierbei sind auch API-spezifische Überlegungen
 	mit eingeflossen. Man muss abwägen zwischen der konzeptionell saubersten und umfassendsten Lösung
-	und der effizienten Realisierbarkeit mit verfügbaren Hard- und Software-Architekturen;
+	und der effizienten Realisierbarkeit mit verfügbaren Hard- und Software-Architekturen.
 	im Zweifelsfalle siegt das Konzept, was die effiziente Realisierbarkeit begünstigt.\\
 	
 	Die Basisklasse hat die Methode
@@ -723,7 +724,7 @@ virtual void draw(
 	der Fall wäre (z.B. über \lstinline|glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)|).
 	
 	\subsubsection{BufferBasedGeometry}
-		Diese Klasse ist ebenfalls noch abstrakt; Sie ist die Basis für alle Klassen, deren geometrische
+		Diese Klasse ist ebenfalls noch abstrakt. Sie ist die Basis für alle Klassen, deren geometrische
 		Repräsentation ein 1:1-Verhältnis zwischen all ihren Attributen aufweist, also keine komplexen
 		Datenstrukturen benötigt. 
 		Abgeleitet hiervon sind \lstinline|VertexBasedGeometry| (siehe Abschnitt \ref{sec:VertexBasedGeometry})
@@ -752,16 +753,18 @@ virtual void setAttributeBuffer(BufferInterface* buffi);
 		Dieser lässt sich jedoch nicht mehr direkt per OpenGL via Ray-Casting visualisieren.
 		Abhilfe könnte schaffen, dass man eine Textur allokiert, diese jedoch an OpenCL als klassischen Buffer übergibt.
 		Derartige Mechanismen stellt OpenCL jedoch nicht bereit. In CUDA ist es zumindest möglich, einen generischen 
-		Buffer als Textur zu binden, darüber, ob es umgekehrt auch geht, habe ich keine Information 
+		Buffer als Textur zu binden, darüber, ob es umgekehrt auch geht, habe ich keine offizielle Information, halte
+		es jedoch für unwahrscheinlich 
 		\footnote{Texturen liegen intern so im Speicher, dass eine gute 2D-räumliche Lokalität gewährleistet ist, z.B.
 		über eine Z-Order-Curve (siehe \cite{internet:zOrderCurve}). Auf diese Weise werden Cache Misses und 	
 		benötigte Bandbreite reduziert. Dieses Layout is non-disclosed, entsprechend ist es unwahrscheinlich,
-		dass man in CUDA Texturen als generische Buffer binden kann.}.
+		dass man in CUDA Texturen als generische Buffer binden kann, denn für definierten Zugriff über normale
+		Adressen und Offsets müsste man das Daten-Layout kennen.}.
 		3D-Image Writes sind auch in CUDA noch nicht möglich. Man scheint sich also immer noch
 		mit Work-Arounds behelfen zu müssen, wie 3D-Texturen in 2D-Texturen zu encoden oder pro Frame von einem Buffer
 		in eine 3D-Textur zu kopieren.\\
-		Auch wenn das beschriebene Phänomen meine partikelbasierte Fluidsimulation nicht betrifft, 
-		finde ich es doch bemerkenswert, dass bei all den
+		Auch wenn das beschriebene Phänomen die partikelbasierte Fluidsimulation dieser Arbeit nicht betrifft, 
+		ist es doch bemerkenswert, dass bei all den
 		Fortschritten, die Hardware und APIs gemacht haben, teils immer noch Beschränkungen wie diese
 		existieren.
 
@@ -769,7 +772,7 @@ virtual void setAttributeBuffer(BufferInterface* buffi);
 	\subsubsection{VertexBasedGeometry}
 	\label{sec:VertexBasedGeometry}
 	
-	Dies Klasse abstrahiert das OpenGL Vertex Buffer Object(VBO).
+	Diese Klasse abstrahiert das OpenGL Vertex Buffer Object(VBO).
 	
 	Wie in den Textur- und Buffer-Klassen selbst, wird auch hier die \lstinline|BufferInfo|-Klasse genutzt,
 	um die relevanten Parameter (Datentyp und dessen Bit-Count, 
@@ -795,7 +798,7 @@ virtual void setAttributeBuffer(BufferInterface* buffi);
 	
 	
 	\subsubsection{InstancedGeometry}
-	Dies Klasse stellt eine reine "`Dummy-Geometrie"' dar. in Ihrer \lstinline|draw()|-Routine teilt sie ihrem
+	Diese Klasse stellt eine reine "`Dummy-Geometrie"' dar. In ihrer \lstinline|draw()|-Routine teilt sie ihrem
 	zugehörigen \lstinline|InstanceManager| nur mit, dass diese Instanz beim nächsten Instanced Rendering-Draw Call
 	ebenfalls gezeichnet werden will. Für Details sei auf Abschnitt \ref{sec:instancing} verwiesen.
 	
@@ -803,7 +806,7 @@ virtual void setAttributeBuffer(BufferInterface* buffi);
 
 \subsection{Das MPP-Paket}
 
-Dieses Paket stellt dem \emph{Flewnit}-System alle Funktionaltät zur Vefügung, die mit
+Dieses Paket stellt dem \emph{Flewnit}-System alle Funktionaltät zur Verfügung, die mit
 GPU-Programmen zu tun hat, außer der OpenGL-Kontext-Erstellung,
 welche vom \lstinline|WindowManager| übernommen wird.
 
@@ -863,7 +866,7 @@ protected:
 	
 	Da auf die Klasse sehr häufig zugegriffen wir, ist das Shortcut-Makro \\
 	\lstinline|#define PARA_COMP_MANAGER ParallelComputeManager::getInstancePtr()|\\
-	für bequemere Refernzierung der Singleton-Instanz im Code definiert.
+	für bequemere Referenzierung der Singleton-Instanz im Code definiert.
 
 	\lstinline|ParallelComputeManager| besitzt sämtliche \lstinline|MPP|-Instanzen, die sich bei ihr über ihren 
 	Konstruktor automatisch registrieren,
@@ -885,21 +888,21 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 	\end{lstlisting}
 	\lstinline|void acquireSharedBuffersForGraphics()| ist ähnlich implementiert.\\
 	
-	Ob Buffer-Operationen mit dem Host-Code synchronisiert werden soll 
+	Ob Buffer-Operationen mit dem Host-Code synchronisiert werden sollen 
 	(also ob API-Calls wie \lstinline|cl::CommandQueue::enqueueWriteImage(..)| bis zum Beenden der Buffer-Operation
 	nicht zurückkehren sollen) oder nicht, lässt sich global über \lstinline|void setBlockAfterEnqueue(cl_bool val)|
 	und \lstinline|cl_bool getBlockAfterEnqueue()const| setzen bzw abfragen 
 	(vgl. Listing \ref{listing:bufferOpImpls_Buffer} ff.).
 	Letztendlich hat sich jedoch herausgestellt, dass Blocking bei Write-Operationen nicht nötig ist, weil ich
 	(zumindest bei Kernel Launches) intensiv von 
-	\lstinline|cl::Events| Gebrauch mache, auf von denen man Listen als Parameter an 
+	\lstinline|cl::Events| Gebrauch mache, von denen man Listen als Parameter an 
 	\lstinline|cl::CommandQueue::enqueueXY()|
-	übergeben kann, und dieser Command wird frühstens dann ausgeführt, wenn das alle Commands, die mit der Event-Liste
+	übergeben kann, und dieser Command wird frühestens dann ausgeführt, wenn alle Commands, die mit der Event-Liste
 	assoziiert sind, vollständig ausgeführt sind. Blocking von Buffer-Operationen ist also nur dann nötig, wenn man nach
-	einem 	Read-Back sofort im Host-Code die ausgelesenen Werte benötigt. Ich hätte mich beim Design noch mehr auf den
+	einem 	Read-Back sofort im Host-Code die ausgelesenen Werte benötigt. Beim Design hätte man sich noch mehr auf den
 	Event-Waiting-Mechanismus fokussieren sollen, der zur Zeit vom \lstinline|Bufferinterface| noch nicht unterstützt ist.
-	Ich wollte das \lstinline|BufferInterface| so schlicht wie möglich halten. 
-	Momentan kommt deshalb die Synchronisation von Buffer-Operationen etwas holprig daher; 
+	Das \lstinline|BufferInterface| sollte so schlicht wie möglich gehalten sein. 
+	Momentan kommt deshalb die Synchronisation von Buffer-Operationen etwas holprig daher. 
 	Man kann den Design Flaw umgehen, indem man vor einer Buffer-Operation
 	\lstinline|PARA_COMP_MANAGER->getCommandQueue().enqueueWaitForEvents(eventVector)| aufruft, ein Refactoring ist dennoch 
 	in Planung.
@@ -913,24 +916,24 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 		stellt außerdem Convenience Functions zum Setzen von Uniform Variablen bereit, deren Kontrollfluss
 		z.T. von den \lstinline|ShaderFeaturesLocal| und den \lstinline|ShaderFeaturesGlobal| abhängt.
 		Das \lstinline|MPP|-Interfaces ist implementiert, jedoch noch ableitbar.
-		Nur die neue Routine  \lstinline|virtual void use(SubObject* so)throw(SimulatorException)=0;|
+		Nur die neue Routine  \lstinline|virtual void use(ubObject* so)throw(SimulatorException)=0;|
 		ist rein abstrakt.\\
 		
-		In wiefern das Shader-Interface und seine Implementatioen geschickt und generisch gewählt sind
+		Inwiefern das Shader-Interface und seine Implementatioen geschickt und generisch gewählt sind
 		oder nicht, konnte leider empirisch noch nicht umfassend ermittelt werden, da bisher der
 		Shader-Template-Code aller abgeleiteten
 		Shader-Klassen auf eine einzige Sammlung von Dateien zurück gehen, nämlich der mit dem suggestiven Namen
-		"`GenericLightingUberShader"'; diese realisiert sowohl das klassische visuelle Rendering mit den in Abschnitt
+		"`GenericLightingUberShader"'. diese realisiert sowohl das klassische visuelle Rendering mit den in Abschnitt
 		\ref{sec:usedOpenGLfeatures} vorgestellten Features, als auch die Shadow Map Generation und die
 		Debug-Draw-Funktionalität.\\
-		Die Wahre Probe für die \lstinline|Shader|-Klasse wird jedoch die, wenn eine Datei-Sammlung und mit ihr
+		Die wahre Probe für die \lstinline|Shader|-Klasse erfolgt jedoch, wenn eine Datei-Sammlung und mit ihr
 		eine (Multi-Pass)-Shaderstruktur, die nicht viel mit dem "`GenericLightingUbershader"' gemeinsam hat,
 		zur Code-Basis wird. Inwiefern die Convenience Functions dann noch sinnvoll sind,
-		(nicht-virtuell) in der Shader-Oberklasse definiert zu sein, vermag ich schwer abzuschätzen.
+		(nicht-virtuell) in der Shader-Oberklasse definiert zu sein, ist zur Zeit noch schwer abschätzbar.
 		Ob trotz der signifikanten Unterschiede diese Klasse gut abstrahiert ist und so allgemein nutzbar bleibt,
 		wird sich erst dann herausstellen, wenn die  \lstinline|ParticleLiquidDrawStage| 
 		(s. Abb. \ref{fig:detailSimulator}) implementiert ist. 
-		Aus Zeitmangel konnte ich das Fluid noch nicht angemessen visualisieren, das 
+		Aus Zeitmangel konnte das Fluid noch nicht angemessen visualisiert werden, das 
 		\lstinline|LiquidVisualMat| ist momentan noch 
 		-- entgegen dem Klassendiagramm in Abb. \ref{fig:ClassDiagOverview2} --
 		"`hacky"' von \lstinline|DegugDrawVisualMat| abgeleitet.\\
@@ -939,8 +942,8 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 		zur Zeit der Abgabe der Ausarbeitung skizziert.\\
 	
 	
-	Die \lstinline|ShaderManager|-Singleton-Klasse hat zum Ziel, so viele visuelle Rendering-Techniken und -Effekte 
-	in beliebigen (sinnvoller) sinnvollen Permutationen zu ermöglichen. Um nicht hunderte Shader
+	Die \lstinline|ShaderManager|-Singleton-Klasse hat zum Ziel, möglichst viele visuelle Rendering-Techniken und -Effekte 
+	in beliebigen (sinnvollen) Permutationen zu ermöglichen. Um nicht hunderte Shader
 	von Hand anlegen zu müssen, die vor Boilerplate-Code überlaufen, wird wie gesagt die
 	\emph{Grantlee}-Template-Engine verwendet, um aus relativ wenigen Dateien angepasste Shader zu generieren.
 	
@@ -967,7 +970,7 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 	
 		\item[ShaderFeaturesGlobal] Parameter, die global per Config gesetzt wurden und ohne Reset der Engine nicht
 			mehr zu ändern sind, und aufgrund von Buffergrößen, Kompatibilitäten und/oder der schlichten Konsitenz
-			des visuellen Renderings sich zwischen den einzelnen Shadern nicht unterscheiden dürfen; dazu zählen:
+			des visuellen Renderings sich zwischen den einzelnen Shadern nicht unterscheiden dürfen. dazu zählen:
 		 	\begin{itemize}
 		 	\item die maximale Anzahl an Lichtquellen
 		 	\item die maximale Anzahl an Lichtquellen, die Schatten werfen (Shadow Caster),
@@ -1023,8 +1026,8 @@ enum ShadowTechnique
 		Diese Flags geben an, welche Shading-Features "`aktiv"' sind: Die \lstinline|ShadingFeatures| des letztendlich
 		generierten Shaders hängen von den Shading Features des Materials selbst ab, aber auch von denen der 
 		aktuell aktiven \lstinline|LightinSimStageBase| (eine \lstinline|ShadowMapGenerationStage| hat z.B. gar keine
-		"`Shading"'-Features) und von den aktuell global aktivierten Features; Welche Features global aktiv sind, kann
-		vom Benutzer bestimmt werden, hängt aber z.T. auch von der verwendeten OpenGL-Version ab; Tessellation kann z.B. 
+		"`Shading"'-Features) und von den aktuell global aktivierten Features. Welche Features global aktiv sind, kann
+		vom Benutzer bestimmt werden, hängt aber z.T. auch von der verwendeten OpenGL-Version ab. Tessellation kann z.B. 
 		erst ab OpenGL 4.0 verwendet werden.
 		
 		\begin{lstlisting}
@@ -1066,7 +1069,7 @@ enum VisualMaterialType
 	Diese Klasse trägt nicht nur zur Delegation der Shader-Generierung bei, sie
 	gibt auch bei einem \lstinline|VisualMaterial| bestimmte Eigenschaften an,
 	welche auf Kompatibilität mit den Flags der aktuellen \lstinline|LightingSimStageBase| getestet werden können.
-	Auf diese Weise können inkompatible Objekte masikert werden.
+	Auf diese Weise können inkompatible Objekte maskiert werden.
 	Der Konstruktor reicht aus für eine Idee:
 	\begin{lstlisting}
 VisualMaterialFlags(
@@ -1095,7 +1098,7 @@ VisualMaterialFlags(
 	Berechnungen zur Bestimmung des Tessellation-Levels	Vertex-Positionen im \emph{Betrachter}-Viewspace benötigen!
 	Dies hat den Grund, dass das LOD eines jeden Patches sowohl in der Shadow Map als auch im finalen Rendering
 	gleich sein müssen! Wenn dies nämlich nicht der Fall ist, ist die Geometrie, die dem Shadow-Map-Lookup
-	zugrunde liegt, eine andere als die des finalen Renderings; somit werden sprichwörtlich Äpfel mit Birnen verglichen,
+	zugrunde liegt, eine andere als die des finalen Renderings. somit werden sprichwörtlich Äpfel mit Birnen verglichen,
 	und es kann zu Artefakten kommen, z.B. Selbstverschattung, wo keine sein sollte (wenn durch Tessellation z.B.
 	eine Furche generiert wird und die Lichtquelle weiter weg von der Geometrie ist als die Betrachter-Kamera, 
 	s. Abb. \ref{fig:tessellationSelbstverschattung}).
@@ -1111,11 +1114,11 @@ VisualMaterialFlags(
 	Bei der Shadow-Map-Generierung und/oder bei Layered Rendering (in Cube Maps und/oder Texture Arrays)
 	werden aber für alles weitere, wie Displacement Mapping im Tessellation Evaluation Shader oder Beleuchtung
 	im Fragment Shader, Viewspace-Positionen aus \emph{Lichtquellen}-Sicht bzw \emph{Worldspace}-Positionen durch die
-	einzelnen Shader Stages geschleift.\footnote{bei Layered Rendering muss man bis zur Geomtry Shader Stage im 
+	einzelnen Shader Stages geschleift.\footnote{bei Layered Rendering muss man bis zur Geometry Shader Stage im 
 	World Space (nur mit der Model Matrix) rechnen, da im Geometry Shader jedes Layer eine andere Kamera, also eine andere 
-	View Matrix hat; Entsprechend kann  man keine ModelView Matrix für frühzeitige View Space-Berechnungen akkumulieren!}
-	Somit sind die klassischen Interface-Varying-Veriablen schon belegt.
-	Man muss also eine eine neue Variable benutzen, um die Betrachter-Kamera-View Space-transformierte Vertex-Position
+	View Matrix hat. Entsprechend kann  man keine ModelView Matrix für frühzeitige View Space-Berechnungen akkumulieren!}
+	Somit sind die klassischen Interface-Varying-Variablen schon belegt.
+	Man muss also eine neue Variable benutzen, um die Betrachter-Kamera-View Space-transformierte Vertex-Position
 	vom Vertex Shader an den Tessellation Control Shader zu übergeben. Da die built-in-Variable
 	\lstinline[language=GLSL]|gl_Position| für OpenGL erst direkt vor der Fragment Shader-Stage für die Rasterisierung
 	benötigt wird, kann man sie zuvor einfach zum Durchschleifen beliebiger Werte zweckentfremden. Somit ergibt sich
@@ -1173,9 +1176,10 @@ VisualMaterialFlags(
 	ebenfalls erschwert.
 	Vor der Integration weiterer Features in diesen Uber Shader muss die Struktur überarbeitet werden.
 	Ich war zur Zeit des Schreibens des Shader-Codes weder mit dem Templating vertraut, noch habe ich alle Spezialfälle
-	antizipieren können. Ich hoffe, dass mit neuen Einsichten und Erfahrungen Les- und Erweiterbarkeit
-	vom Shader-Code durch ein Refactoring verbessert können, und dass sich geeignete Wege finden, trotz Problemen wie dem
-	vorgestellten Komplexität durch Vererbung besser zu handhaben.\\
+	antizipieren können. Mit neuen Einsichten und Erfahrungen werden Les- und Erweiterbarkeit
+	vom Shader-Code durch ein Refactoring hoffentlich verbessert werden können.
+	Ferner sollen dann geeignete Wege gefunden werden, Komplexität mithilfe von Vererbungsmechanismen
+	besser zu handhaben, trotz Problemen wie dem vorgestellten.\\
 	All diese Probleme betreffen nur den Shader-Code. Insbesondere die Vererbungsmechanismen
 	lassen sich in OpenCL-Code-Templates reibungslos nutzen.
 
@@ -1186,19 +1190,19 @@ VisualMaterialFlags(
 	\label{sec:CLProgram}
 	
 	\lstinline|CLProgram| und \lstinline|CLKernel| wrappen die entsprechende OpenCL-Funktionalität:
-	Das Programm repräsentiert kompletten ausführbaren Code, welches aus einem in OpenCL C geschriebenen
+	Das Programm repräsentiert den kompletten ausführbaren Code, welcher aus einem in OpenCL C geschriebenen
 	Source Code kompiliert wurde. Ein Kernel ist dagegen eine von womöglich mehreren Funktionen innerhalb
-	des Programmms (durch das \lstinline[language=OpenCL]|__kernel|-Tag gekennzeichnet),
+	des Programmmes (durch das \lstinline[language=OpenCL]|__kernel|-Tag gekennzeichnet),
 	welche vom Hostcode per \lstinline|cl::CommandQueue::enqueueNDRangeKernel()| aufgerufen werden kann.
 	Es besteht also eine $1:n$-Relation zwischen Programm und Kernel.
 	
 	Die \lstinline|CLProgramManager|-Singleton-Klasse gewährleistet einen Zugriff auf sämtliche OpenCL-Programme
-	im System über ihren Namen; Dies kann nützlich sein, wenn ein Kernel auf die Beendigung eines anderen Kernels
+	im System über ihren Namen. Dies kann nützlich sein, wenn ein Kernel auf die Beendigung eines anderen Kernels
 	warten muss, dafür das Event, was mit der letzten Ausführung assoziiert ist, benötigt, aber kein Handle auf die 
 	entsprechenen \lstinline|CLProgram|s vorhanden ist.
 	
 	\lstinline|CLProgramManager| besitzt einen \lstinline|IntermediateResultBuffersManager|, der Buffers bereit stellt,
-	die sich verschiedenen Kernels für ihre Zwischen-Ergebnisse teilen können. Somit wird GPU-Speicher gespart.
+	die sich verschiedene Kernels für ihre Zwischen-Ergebnisse teilen können. Somit wird GPU-Speicher gespart.
 	Jedes \lstinline|CLProgram|, welches Kernels hat, die Zwischenergebnisse benötigen, kann eine bestimmte Menge
 	und Größe an Buffers requesten. Es ist dann sichergestellt, dass der Buffer mit entsprechendem Index nach 
 	Allokation (geschieht nach Erschaffung sämtlicher \lstinline|CLProgram|-Instanzen) mindestens die
@@ -1214,8 +1218,9 @@ VisualMaterialFlags(
 		In OpenCL kann man Werte an Kernels nur über ihren Index in der formalen Parameter-Liste übergeben.
 		Diese holprige Methode ist nicht nur im Code wenig aussagekräftig, sie birgt auch die Gefahr,
 		dass wenn Kernel-Signaturen sich ändern, im Host-Code genutzte Indices invalid werden.
-		Wenn diese auch noch verteilt im System auftauchen, wird der Aufwand und die Fehlerwahrscheinlichkeit noch größer,
-		seinen Host-Code anzupassen. Aus diesem Grund erstellt jedes konkrete CLProgram seine eigenen Kernels,
+		Wenn diese auch noch verteilt im System auftauchen, werden der Aufwand und die 
+		Fehlerwahrscheinlichkeit noch größer, seinen Host-Code anzupassen. 
+		Aus diesem Grund erstellt jedes konkrete \lstinline|CLProgram| seine eigenen Kernels,
 		und erstellt auch eine Liste an Default-Parametern für jeden Kernel. Auf diese Parameter kann nun bequem
 		sowohl per Index als auch über den Namen des Arguments zugegriffen werden. Typsicherheit ist ebenfalls
 		durch die Template-Klasse \lstinline|CLValueKernelArgument| gewährleistet, wo bei einem falschen
@@ -1238,14 +1243,15 @@ VisualMaterialFlags(
 \subsection{Status der Implementierung am Ende der BA}
 \label{sec:statusImplementation}
 
-	Es sollten von Anfang an bei der Planung der \emph{Unified Engine} viele Aspekte berücksichtigt worden,
+	Es sollten von Anfang an bei der Planung der \emph{Unified Engine} viele Aspekte berücksichtigt werden,
 	damit von vornherein ein flexibles und mächtiges System konzipiert werden konnte.
 	Das Potential zur Weiterentwicklung war wichtiger als eine "`schnell gehackte Demo"'.
-	Es wurden einige Features realisiert, andere sind nahezu vollständig programmiert, aber noch nie ausgeführt worden
-	\footnote{Mein Programmierstil ist sehr eigenwillig: ich kann wochenlang programmieren, 
-	ohne einmal compilen, geschweige denn ausführen zu können. Dieser Stil scheint mir bei einem solchen Projekt nicht 
-	völlig verkehrt, da bei der sukkessiven Entwickling der Fokus auf den Feature-Reichtum dem eines konsitenten 
-	Gesamtsystems vorgezogen werden könnte.}. Widerum andere Fesatures liegen als Algorithmen in Textdateien herum, und 
+	Es wurden einige Features realisiert, andere sind nahezu vollständig programmiert, aber noch nie ausgeführt worden.
+	%\footnote{Mein Programmierstil ist sehr eigenwillig: ich kann wochenlang programmieren, 
+	%ohne einmal compilen, geschweige denn ausführen zu können. Dieser Stil scheint mir bei einem solchen Projekt nicht 
+	%völlig verkehrt, da bei der sukkessiven Entwicklung der Fokus auf den Feature-Reichtum dem eines konsitenten 
+	%Gesamtsystems vorgezogen werden könnte.}
+	Wiederum andere Features liegen als Algorithmen in Textdateien, und 
 	es ergab sich noch keine Gelegenheit, diese Algorithmen in Programm-Code zu transformieren.
 	Wieder andere Features wurden nur ganz grob im Hinterkopf behalten, um die Wahrscheinlichkeit zu erhöhen, 
 	dass sie in ferner Zukunft nahtlos mit den anderen Features integrierbar sind.\\
@@ -1349,12 +1355,12 @@ VisualMaterialFlags(
   		\end{tabular}	
   	
   		\caption{		
-  			Status der Implementation zum Zeitpunkt der Abgabe der Ausarbeitung (englisch wegen vielen Fachbegriffen)
+  			Status der Implementation zum Zeitpunkt der Abgabe der Ausarbeitung (englisch wegen vieler Fachbegriffe)
   			Legende: \\
 			{\color{green}\checkmark}	$\rightarrow$ implementiert;
 			{\color{orange}o}	$\rightarrow$ zu weiten Teilen programmiert, jedoch noch nicht 		
 				integriert/ausgeführt/getestet;
-			{\color{darkred}o} $\rightarrow$ detailliert Konzipiert, jedoch nicht programmiert;
+			{\color{darkred}o} $\rightarrow$ detailliert konzipiert, jedoch nicht programmiert;
 			{\color{red}x}	$\rightarrow$ im System langfristig konzipiert, jedoch nicht programmiert;
 			- $\rightarrow$ Unterstützung nicht geplant
 			\\
@@ -1428,7 +1434,7 @@ VisualMaterialFlags(
 	\linebreak \lstinline|DebugDrawMaterial|,
 	einen Würfel aus Objekten, die per Instancing gezeichnet werden, tesseliert und normal mapped sind,
 	einen Sky Dome, und schließlich ein tesselliertes, normal und environment mapped Raptor-Modell.
-	Alle Objekte sind mit meheren Lichtquellen, sowohl Spot als auch Point Light, in einem Render-Pass beleuchtet.
+	Alle Objekte sind mit mehreren Lichtquellen, sowohl Spot als auch Point Lights, in einem Render-Pass beleuchtet.
 	Ein Spot Light wirft per Shadow Mapping Schatten.  
 	Details werden im Verlauf des Abschnitts \ref{sec:simulation} erläutert.\\
   	
@@ -1437,24 +1443,22 @@ VisualMaterialFlags(
   	Abgabe (die ersten Monate waren rein der Framework-Programmierung und dem nicht-Fluid-bezogenen
   	visuellen Rendering gewidmet), 
   	so dass für eine angemessene Visualisierung des Fluids im Rahmen dieser Arbeit leider keine Zeit mehr blieb.
-  	Ich wollte schließlich meiner "`ganz oder gar nicht"'-Linie in diesem System treu bleiben, und werde die Visualiserung
-  	ohne "`Zwischenlösung"' direkt implementieren, sobald Zeit ist. Hierfür möchte ich die in
-  	"`Screen Space Fluid Rendering with Curvature Flow"' (\cite{Green2009FluidRenderingCurvatureFlow})
-  	vorgestellte Lösung nach-implementieren.
+  	Es soll außerhalb des Rahmens dieser vorgelegten Arbeit "`Screen Space Fluid Rendering with Curvature Flow"' 
+  	(siehe \cite{Green2009FluidRenderingCurvatureFlow}) vorgestellte Lösung nach-implementiert werden.
   	
   	Weiterhin fehlen noch sämtliche erweiterten Features und "`a posteriori"'-Optimierungen (also Optimierungen, die 
   	nach der erfolgreichen ersten Implementierung programmiert sind) bei der mechanischen Fluid-Simulation.
-  	Der Kernel- und Host-Code für die partikel-basierten Rigid Bodies ist fast komplett programmiert,
-  	da der Beginn der Ausarbeitung aber sehr dringend wurde, habe ich der Versuchung wiederstanden,
+  	Der Kernel- und Host-Code für die partikelbasierten Rigid Bodies ist fast komplett programmiert.
+  	da der Beginn der Ausarbeitung aber sehr dringend wurde, wurde der Versuchung widerstanden,
   	diesen Code noch zu testen.\\
-  	Weiterhin wollte ich "`static triangle collision meshes"' in die ansonsten partikelbasierte
-  	mechanische Simulation integrieren, über den Entwurf eines
-  	Algorithmus zur Voxelisierung von Dreiecken ins Uniform Grid bin ich jedoch nicht hinaus gekommen 
+  	Weiterhin ist geplant, "`static triangle collision meshes"' in die ansonsten partikelbasierte
+  	mechanische Simulation integrieren, es liegt allerdings zur Zeit nur der Entwurf 
+  	eines Algorithmus zur Voxelisierung von Dreiecken ins Uniform Grid vor
   	(mehr dazu im Ausblick, Kapitel \ref{sec:ausblick}).
   
 
-  	Ferner habe ich zwar einen Scene-Loader mithilfe von \emph{Assimp} implementiert, es ist aber noch vieles
-  	hart-Codiert, so dass das Laden von beliebigen Assets noch nicht möglich ist. Mein Fokus lag
+  	Ferner wurde zwar ein Scene-Loader mithilfe von \emph{Assimp} implementiert, es ist aber noch vieles
+  	hart-codiert, so dass das Laden von beliebigen Assets noch nicht möglich ist. Der Fokus lag
   	auf der Realisierung von kombinierbaren Effekten, vorerst nicht auf künstlerischem Anspruch. 
   	Dennoch ist die Fertigstellung des Scene Loaders geplant.
 	

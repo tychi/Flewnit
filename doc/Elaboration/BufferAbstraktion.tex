@@ -3,7 +3,8 @@
 	Logischerweise müsste nun eigentlich 
 	-- der Top-Down-Präsentation der einzelnen Pakete und Klassen entsprechend --
 	die \lstinline|Geometry|-Klasse vorgestellt werden. Um letztere Klasse jedoch besser zu verstehen,
-	ist die Kenntnis der Buffer-Abstraktion vorteilhaft. Die \lstinline|Geometry| wird in \ref{sec:geometry} beschrieben.
+	ist die Kenntnis der Buffer-Abstraktion vorteilhaft. Die \lstinline|Geometry| wird in Abschnitt
+	\ref{sec:geometry} beschrieben.
 	
 	Wie auf Seite \pageref{overview:bufferAbstraction} erwähnt, abstrahiert die \lstinline|BufferInterface|-Klasse
 	sämtliche Buffer-bezogene Funktionalität, namentlich für Host-Buffer, OpenCL-Buffer, 
@@ -20,7 +21,7 @@
 			erweiterten  Features, siehe Tabelle \ref{tab:textureTypes} 
 			%(Tiefentextur ja/nein, MipMapping ja/nein, Textur-Array ja/nein, Multisample-Texture ja/nein, 
 			%Rectangle Texture ja/nein, Cube Map ja/nein)
-		\item verschiedene Datenformat/Channel-Layout-Deskriptoren, siehe Listing \ref{listing:BufferElementInfo}
+		\item verschiedene Datenformat/Channel-Layout-Deskriptoren %, siehe Listing \ref{listing:BufferElementInfo}
 	\end{itemize}	
 	
 	Es hat schon sehr viel Zeit gekostet, sich aus den Spezifikations-Dokumenten 
@@ -36,11 +37,11 @@
 	wie \lstinline|GL_RGBA32UI| bzw \lstinline|CL_RGBA| und \lstinline|CL_UNSIGNED_INT32|
 	kümmern müssen 
 	\footnote{Was in OpenCL getrennt ist und somit "`nur"' 
-		4 Channeltypen \emph{+} 3 Bitgrößen * (3 non-normalized + 2 normalized)= theoretisch 19 makros ergibt,
+		4 Channeltypen \emph{+} 3 Bitgrößen * (3 non-normalized + 2 normalized)= theoretisch 19 Makros ergibt,
 		braucht bei OpenGL
 			4 Channeltypen \emph{*} 3 Bitgrößen * (3 non-normalized + 2 normalized)= theoretisch 60 makros;
 			Erstens stört die Asymmetrie, zweitens das "`Zusammenklatschen"' eigentlich unabhängiger Parameter in ein 
-			Makro}. 
+			Makro.}. 
 	Es soll ein Buffer mit einem einzigen Konstruktor-Call völlständig definiert,
 	falls erwünscht auf dem Host-Memory und -- sofern unterstützt --
 	in den gewünschten API-Contexten allokiert bzw registiert werden.
@@ -54,24 +55,24 @@
 		
 		%--------------------------------------------------------------------------------------------
 		\item[enum ContextType und ContextTypeFlags] 
-		Mithilfe dieser Datentypen lässt sich spezifizieren, in welchem 
+		Mithilfe dieser Datentypen lässt sich spezifizieren, in welchen
 		Kontexten (Host, OpenGL, OpenCL) man einen Buffer erstellt/allokiert/registriert haben will.
 		
 		%--------------------------------------------------------------------------------------------
 		\item[enum BufferSemantics] 
 		\label{item:BufferSemantics}
-		Eine sehr wichtige Auflistung konkreter Verwendungszwecke des Buffers,
-		siehe Listing \ref{listing:BufferSemantics} im Anhang \ref{append:bufferListings}.
+		Eine wichtige Auflistung konkreter Verwendungszwecke des Buffers,
+		siehe Listing \ref{listing:BufferSemantics} im Anhang \ref{append:Listings}.
 		Dieser Aufzählungstyp ist eine große Erleichterung beim Hantieren mit OpenGL Vertex Buffer Objects (VBO's) 
 		\footnote{abstrahiert von \lstinline|Flewnit::VertexBasedGeometry|, s. \ref{sec:geometry} }
 		und Frame Buffer Objects (FBO's) 
 		\footnote{abstrahiert von \lstinline|Flewnit::RenderTarget|}, 
-		da hier zur Assoziation von VBO-Vertex Attribute Buffern mit Input-Variablen im Vertex Shader
-		bzw ans FBO gehängte Texturen mit Output-Variablen im Fragment Shader
-		ein Index angegeben werden muss. 
+		da hier ein Index zur Assoziation von VBO-Vertex Attribute Buffern mit Input-Variablen im Vertex Shader
+		angegeben werden muss. Dasselbe gilt für den Fragment Shader bei der Assoziation zwischen Output-Variablen 
+		und an verschiedene Color-Attachments gebundenen Texturen.
 		Wenn wir als Index die numerische Entsprechung der Buffer-Semantik verwenden, 
 		ist nicht nur die Lesbarkeit des Codes erhöht, es ist auch automatisch sichergestellt, 
-		dass Indizes keine Konflikte versursachen!
+		dass Indizes keine Konflikte versursachen.
 		
 		%--------------------------------------------------------------------------------------------
 		\item[enum GPU\_DataType] Listet nur die von der GPU / OpenGL nativ unterstützten Datentypen auf, ohne
@@ -104,12 +105,12 @@ enum GLBufferType
 		\item[struct BufferElementInfo] 
 		Beschreibt -- sofern erwünscht bzw nötig -- das Channel-Layout,die Datentypen, die Bit-Genauigkeit
 		und die etwaige Normalisierung eines Buffers mit Channels, 
-		z.B. einer Textur oder einem Vertex Attribute Buffer,
-		siehe Listing \ref{listing:BufferElementInfo} im Anhang \ref{append:bufferListings}.
-		Auf diese Weise spart man dem Benutzer die verschiedenen "`zusammengesklatschten"', asymmetrischen GL/CL-Makros;
+		z.B. einer Textur oder einem Vertex Attribute Buffer.
+		%siehe Listing \ref{listing:BufferElementInfo} im Anhang \ref{append:Listings}.
+		Auf diese Weise spart man dem Benutzer die verschiedenen "`zusammengeklatschten"', asymmetrischen GL/CL-Makros;
 		Die Structure validiert ihre Daten. Diese werden später für die internen CL/GL-API-Aufrufe in die
-		entsprechenden CL/GL-Makros transformiert,
-		siehe Listing \ref{listing:BufferElementInfoToCLGL} im Anhang \ref{append:bufferListings}.
+		entsprechenden CL/GL-Makros transformiert.
+		%siehe Listing \ref{listing:BufferElementInfoToCLGL} im Anhang \ref{append:Listings}.
 		
 		%--------------------------------------------------------------------------------------------
 		\item[struct GLImageFormat]
@@ -123,12 +124,11 @@ typedef struct _cl_image_format {
 		\end{lstlisting}
 		
 		Um das interne Handling der CL/GL-Makros etwas symmetrischer zu machen (man verliert leicht den Überblick),
-		habe ich ein ähnliches Makro definiert, welches aufgrund der Kommentare im Anhang  \ref{append:bufferListings},
-		Listing \ref{listing:GLImageFormat} zu finden ist.\footnote{Die Kommentare geben weiteren Aufschluss über 
-		die Asymmetrie der einzelnen APIs: obwohl sie beide von der Khronos Group spezifiziert wurden und explizit 	
-		Interoperabilität ermöglichen, stiften viele mehr oder minder kleine Asymmetrien Verwirrung (zumindest bei mir);
-		Diese Umstände trugen zu der Entscheidung bei, das \lstinline|BufferInterface| zu entwickeln, trotz des
-		erheblichen Zeitaufwands.}
+		ist eine ähnliche Structure definiert 
+		\footnote{Obwohl beide APIs von der Khronos Group spezifiziert wurden und explizit 	
+			Interoperabilität ermöglichen, bestehen viele kleine Asymmetrien zwischen den veschiedenen Makros mit
+			eigentlich gleicher Semantik. Diese Umstände trugen zu der Entscheidung bei, 
+			das \lstinline|BufferInterface| zu entwickeln, trotz des erheblichen Zeitaufwands.}
 		
 		
 		\item[class BufferInfo]
@@ -147,10 +147,10 @@ explicit BufferInfo(String name,
 	ContextType mappedToCPUContext = NO_CONTEXT_TYPE);
 		\end{lstlisting}
 		
-		Ich muss zugeben, dass \lstinline|elementType| und \lstinline|elementInfo| redundant sind, außerdem diese 
+		Es sei gestanden, dass \lstinline|elementType| und \lstinline|elementInfo| redundant sind, außerdem diese 
 		beiden Parameter eigentlich bei generischen Buffern, wo die Typ-Information zumindest für die GPU Computing APIs
-		keine Rolle spielt, fehl am Platze sind. Mangelndem Überblick in der Anfangsphase der Implementierung
-		über die verschiedenen Arten, Buffers in CL und GL zu nutzen, sind diese Design Flaws zuzuschreiben.
+		keine Rolle spielt, fehl am Platze sind. Diese Design Flaws sind mangelndem Überblick in der Anfangsphase der 
+		Implementierung zu verdanken, auf welche verschiedenen Arten man Buffers in CL und GL nutzen kann. 
 		Ein Refactoring mit spezieller zugeschnittenen Konstruktoren ist geplant.
 	
 	\item[class TextureInfo]
@@ -290,8 +290,8 @@ explicit TextureInfo(
 	Hier wird z.B. der Compare-Mode und die Compare-Function für korrekten Lookup solcher Texturen als Shadow Map
 	über einen	Shadow-Sampler in GLSL gesetzt.
 	
-	Man darf sich fragen, warum ich jede noch so sonderbar anmutende Spezial-Textur unterstützen will. Dies
-	hat den Grund, dass ich langfristig etliche Rendering Features unterstützen will, welche die meisten dieser 	
+	Man darf sich fragen, warum jede noch so sonderbar anmutende Spezial-Textur unterstützt werden soll. Dies
+	hat den Grund, dass mittelfristig etliche Rendering Features implementiert werden soll, welche die meisten dieser 	
 	Spezialtexturen benötigen, und die verbleibenden paar ungenutzten Texturen noch zur Vollständigkeit mit zu 
 	implementieren, verursacht dank Vererbung nur einen minimalen Mehraufwand:
 	\begin{enumerate}
@@ -304,7 +304,7 @@ explicit TextureInfo(
 	\end{enumerate}
 	Zu weiten Teilen sind der Shadercode und die nötigen Framework-Klassen schon für diese Features implementiert,
 	es muss "`nur"' noch einiges ergänzt und aufgeräumt, alles zusammengefügt und debuggt werden. 
-	Da dieses "`Nur"' wirklich äußerst ironisch gemeint ist, habe ich gar nicht erst versucht, 
+	Da dieses "`Nur"' wirklich äußerst ironisch gemeint ist, wurde gar nicht erst versucht, 
 	die Implementierung dieser Features zu beenden. Es muss vorerst reichen,
 	dass sie konzeptionell in der Framework-Struktur angelegt sind.\\
 	
@@ -380,20 +380,9 @@ explicit TextureInfo(
 #	undef FLEWNIT_PURE_VIRTUAL
 	\end{lstlisting}
 	Die anderen Klassen definieren das Makro nicht vor dem Includen.\\
-	
-	In Anhang \ref{append:bufferListings} sind exemplarisch Implementationen dieser Funktionen 
-	gelistet, einerseits die der konkreten \lstinline|Buffer|-Klasse (Listing \ref{listing:bufferOpImpls_Buffer}),
-	 die alle non-Textur-Buffer zusammengefasst abstrahiert, 
-	andererseits die der konkreten \lstinline|Texture2D|-Klasse 
-	(Listing \ref{listing:bufferOpImpls_Texture} und \ref{listing:bufferOpImpls_Texture2D}), 
-	die von der abstrakten \lstinline|Texture|-Klasse erbt und selbst die Basisklasse für
-	\lstinline|Texture2DDepth| und \lstinline|Texture1DArray| bildet, 
-	vgl. Klassendiagramm (Abb. \ref{fig:ClassDiagOverview2}). Die meisten Signaturen aus "`BufferVirtualSignatures.h"'
-	werden schon von \lstinline|Texture| implementiert, da nicht jede API-Routine Textur-spezifisch ist.\\
-	Ich muss gestehen, dass ich diese Funktionen noch nicht systematisch getestet habe, daher Fehlerfreiheit nicht 
-	garantiert ist. Es sei nochmals betont, dass der Schwerpunkt bei einer möglichst generischen Konzeption lag,
-	nicht bei einer vollständigen Implementation. Es ist viel "`schlafender"' Code im System, der noch getestet, 
-	integriert, weiter entwickelt, ergänzt werden will.
+	Bei den Textur-Klassen werden die meisten Signaturen aus "`BufferVirtualSignatures.h"'
+	schon von der Oberklasse \lstinline|Texture| implementiert, da nicht jede API-Routine Textur-spezifisch ist.\\
+
 	
 	\subsubsection{PingPongBuffer}
 	Auch die für viele Algorithmen aufgrund ihrer inhärenten Struktur oder aufgrund der Beschränkungen bei der 	
@@ -403,7 +392,7 @@ explicit TextureInfo(
 	\lstinline|BufferInterface|-Objekte und leitet die Methoden-Aufrufe, die durch das \lstinline|BufferInterface| 
 	definiert sind,	an den aktuell aktiven Buffer weiter. Der Rollentausch geschieht dann über 
 	\lstinline|PingPongBuffer::toggleBuffers()|.
-	Bei komplexeren Algorithmen, wei denen viele Toggles passieren, kann man schnell den Überblick verlieren, welcher
+	Bei komplexeren Algorithmen, bei denen viele Toggles passieren, kann man schnell den Überblick verlieren, welcher
 	Buffer jetzt gerade aktiv ist; Besonders kritisch ist dieser Umstand dort, wo ein OpenGL Buffer-Handle
 	gebunden ist, oder ein OpenCL-Buffer-Handle als Argument für einen OpenCL-Kernel gesetzt ist.
 	Diese Bindings lassen sich nicht von einem \lstinline|toggleBuffers()| beeindrucken, 

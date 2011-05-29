@@ -46,7 +46,7 @@ System noch nicht getestet.
 \subsection{Visuelles Rendering}
 
 
-	Zunächst sollen die Ergebnisse ohne die mechanische Simulationsdömane, also ohne die Fluid-Simulation,
+	Zunächst sollen die Ergebnisse ohne die mechanische Simulationsdomäne, also ohne die Fluid-Simulation,
 	vorgestellt werden.
 	Sämtliche Non-OpenCl- Benchmarks wurden nur auf der auf der GT435M durchgeführt.
 	
@@ -55,9 +55,9 @@ System noch nicht getestet.
 	nur von Tessellation erzeugt; Der eigentliche Triangle Count spielt damit kaum eine Rolle.
 	So lässt sich besonders gut der Performance-Einbruch durch Overdraw bei großer Tiefen-Komplexität und vielen
 	Lichtquellen feststellen, was die Notwendigkeit von Deferred Rendering in solchen Szenarien verdeutlicht,
-	siehe Tabelle \ref{tab:VisualSimFPS}. Sieht man in die selbe Richtung ,in welche die Primitive rasterisiert werden,
+	siehe Tabelle \ref{tab:VisualSimFPS}. Sieht man in dieselbe Richtung ,in welche die Primitive rasterisiert werden,
 	wird durch early-Z-Culling der Fragment Shader für alle außer die vordersten Primitive gar nicht ausgeführt.
-	Sieht man jedoch in entgegen gesetzte Richtung, baut sich der Z-Buffer von hinten nach vorne auf, immer werden 
+	Sieht man jedoch in entgegengesetzte Richtung, baut sich der Z-Buffer von hinten nach vorne auf, immer werden 
 	Beleuchtungs-Operationen durch den Fragement Shader ausgeführt, die anschließend von darüber liegenden
 	Fragments überschrieben werden. Mit Deferred Rendering würde man die Performance der Beleuchtung 
 	vom Overdraw entkoppeln.
@@ -130,18 +130,18 @@ System noch nicht getestet.
 	Damit würde das Gouraud- Shading ein Revival erleben. Ich habe diese Optimierung nicht probiert, kann daher 
 	keine Aussage über Qualität und womögliche Artefakte machen.
 	
-	Die Kombination von Point- und Spot Lights in beliebiger Anzahl, (solange ihre sie definierenden
-	Structures in den Uniform Buffer passen), und damit eine effiziente Verwendungsmöglichkeit von
+	Die Kombination von Point- und Spot Lights in beliebiger Anzahl (solange ihre sie definierenden
+	Structures in den Uniform Buffer passen) und damit eine effiziente Verwendungsmöglichkeit von
 	Uniform Buffers demonstriert Abb. \ref{fig:sceneOverview40LQ}.
 	
 	Das dynamische LOD dank Tessellation ist anhand von Abb. \ref{fig:LODwall} und \ref{fig:instancedBoxesMiddle}
 	verdeutlicht. Letztere Abbildung ist durch Hardware Instancing gezeichnet. Ich habe leider noch keine 
-	Vergleichs-Tests zu non-Instanced Draw Calls gemacht. Momentan kann ich wegen den vielen Matrix-Permuationenen
-	(Model, ModelView und ModelViewProjection), die pro Instanz übergeben werden müssen und wegen der 
+	Vergleichs-Tests zu non-Instanced Draw Calls gemacht. Momentan kann ich wegen der vielen Matrix-Permuationenen
+	(Model, ModelView und ModelViewProjection), die pro Instanz übergeben werden müssen, und wegen der 
 	begrenzten Größe der Uniform Buffers (sie müssen in den	Constant Memory der GPU passen) nicht viel mehr als 300
 	Instanzen pro Draw Call zeichnen. Texture Buffers statt Uniform Buffers würden eine wesentlich größere
-	Anzahl an Instanzen erlauben, zum Preis einer höheren Latenz und GPU-RAM-Bandbreite. Um wissenschaftlich zu bleiben,
-	möchte ich hier keine Spekulationen über erwartete Performance anstellen.
+	Anzahl an Instanzen erlauben, zum Preis einer höheren Latenz und GPU-RAM-Bandbreite. Aus Mangel an Erfahrung 
+	mit Texture Buffers sollen hier keine Spekulationen über die erwartete Performance angestellt werden.
 	
 	In Abb. \ref{fig:instancedBoxesMiddle} fällt auf, dass ich die Materials einfach zu Zwecken des "`Show-Offs"'
 	auf die Boxen gelegt habe, ohne liebevolle Modellierung, mit denen sich die Bruchstellen rein technisch
@@ -298,16 +298,17 @@ System noch nicht getestet.
 
 	Bei der Fluid-Simulation mit OpenCL wird jetzt die verschiedene Hardware interessant:
 	Tabelle \ref{tab:fluidSimPerformance} zeigt die durchschnittlichen Frames pro Sekunde
-	mit verschiedenen Particle Counts auf den gestesteten Devices, nachdem das Fluid einen repäsentativen
+	mit verschiedenen Particle Counts auf den getesteten Devices, nachdem das Fluid einen repäsentativen
 	Status erreicht hat, also seine Ruhe-Dichte, die vornehmlich vom SPH-Support-Radius und der Gas-Konstante abhängt
 	\footnote{"`repräsentativ"' deshalb, weil in der Anfangsphase, wo das Fluid z.B. aus einer Säule zerfällt, die Partikel
 	zeitweilig so komprimiert werden können, dass die Frame-Rate drastisch einbricht, weil bei vollen Grid-Zellen
 	es dann sehr viele Nachbar-Partikel gibt, die alle heruntergeladen und verrechnet werden müssen.
 	Beim Aufwand $O(N*M)$ steigt in diesem Falle das $M$ an. Ein weiteres Problem ist die Erzeugung vieler Work-Groups
 	für die SPH-Kernels in diesem Fall, wo manche vielleicht nur wenige Partikel enthalten, 
-	dennoch muss der volle Kontrollfluss und die volle Bandbreite für die Beschaffung Nachbar-Partikel für eine Work Group 
-	genutzt werden. Die Verwaltung der Work Items in Warps à 32 work items, die implizit synchronisiert sind, verschlimmert 	die Situation, da egal ob ein oder 32 Partikel bearbeitet werden, die Anzahl an Berechnungen auf der GPU die gleiche 
-	ist.}.
+	dennoch müssen der volle Kontrollfluss und die volle Bandbreite für die Beschaffung der Nachbar-Partikel 
+	für eine Work Group genutzt werden. Die Verwaltung der Work Items in Warps à 32 Work Items, 
+	die implizit synchronisiert sind, verschlimmert die Situation, da egal ob ein oder 32 Partikel 
+	bearbeitet werden, die Anzahl an Berechnungen auf der GPU die gleiche ist.}.
 	Die Fluid-Simulation ist so rechenaufwändig, dass das visuelle Rendering für die Benchmark-Ergebnisse fast keine 
 	Rolle mehr spielt. Dennoch sei erwähnt, dass die Benchmarks in der im vorherigen Abschnitt gezeigten prototypischen
 	Szene durchgeführt wurden, und zwar mit einer Auflösung von 1280*720, 4x Multisampling, 5 Lichtquellen zur Beleuchtung,
@@ -367,14 +368,14 @@ System noch nicht getestet.
 		Performance-Unterschied ist wohl der höheren Taktung und weiteren Desktop-GPU- vorbehaltenen Features zu verdanken.
 		\item Aus der oberen Feststelung, dass die Performance mit der Anzahl an Compute Units zu korrellieren scheint,
 		und nicht mit der Gesamt-Anzahl an Rechen-Einheiten (96 zu 480), mag zwei Gründe haben: Entweder sind die
-		Kernels so voller Daten-Ebhängigkeiten und Synchronisations-Punkte, dass die Superskalarität, die nötig ist, um 
+		Kernels so voller Daten-Abhängigkeiten und Synchronisations-Punkte, dass die Superskalarität, die nötig ist, um 
 		alle 48 Recheneinheiten einer solchen Compute-Unit zu nutzen \footnote{Work Items sind auch bei diesen Chips in 
 		"`Warps"' à 32 Stück organisiert und synchronisiert, so dass weitere Recheneinheiten nur durch Ausnutzen von 
-		Superskalarität	genutzt werden können}, nicht mehr gegeben ist,
+		Superskalarität	genutzt werden können}, nicht mehr gegeben ist;
 		oder aber der Unterschied ist noch stärker der höheren Taktung und weiteren Stärken der GTX 570 zu verdanken.
 		\item Der Perfomance-Unterschied zwischen der GT435M und der GTX 280 liegt nur bei einem Faktor von gut 2,
-		obwohl die GTX280 mehr als doppelt so viele Recheneinheiten (96 zu 240) hat, und zum Release der GT200-Generation
-		das Flagschiff darstellte, wohingegen die GT435M innerhalb der Fermi-Generation nur eine Midrange-Notebook-GPU
+		obwohl die GTX280 mehr als doppelt so viele Recheneinheiten (96 zu 240) hat und zum Release der GT200-Generation
+		das Flaggschiff darstellte, wohingegen die GT435M innerhalb der Fermi-Generation nur eine Midrange-Notebook-GPU
 		repräsentiert. Nvidia hatte für die Fermi-Generation u.a. mit sehr guter Performance bei Fluid-Simulationen
 		geworben. Gründe für die relativ deutlich bessere Performance pro Recheneinheit zwischen GT200 und Fermi-
 		Architektur 
@@ -394,7 +395,7 @@ System noch nicht getestet.
 				Hierdurch kann eine Work Group z.B. mehr Radix Counters beim Radix Sort pro Work Group haben, 
 				was die lokalen Scan-Intervalle größer und effektiver macht, denn ein großer Scan pro WorkGroup 
 				hat in den letzten Scan-Schritten nur noch eine aktive Warp, wohingegen bei vielen kleinen Scans pro Work 					Group am Ende so viele Warps aktiv sind, wie lokale Radix-Counter-Intervalle gleichzeitig pro Work Group 	
-				gescannt werden; Außerdem nimt mit größeren "`local Scan"'-Intervallen die Anzahl der Elemente für den
+				gescannt werden; Außerdem nimmt mit größeren "`local Scan"'-Intervallen die Anzahl der Elemente für den
 				"`global Scan"' ab, so dass auch dieser schneller geht.
 			\end{enumerate}	
 	\end{enumerate}
@@ -407,14 +408,14 @@ System noch nicht getestet.
 	Ich habe mich bei meiner OpenCL-Implementation, wie erwähnt, soweit es mir technisch möglich war (erinnere: Buffer als
 	Textur binden geht in OpenCL nicht) und sinnvoll erschien
 	\footnote{manche Papers waren noch auf die G80- Architektur
-		ausgelegt, die Vorgänger-Generaterion vom GT200, welche noch sehr anfällig für nicht absolut 
+		ausgelegt, die Vorgänger-Generation vom GT200, welche noch sehr anfällig für nicht absolut 
 		"`aligned memory access Patterns"' war und außerdem keine atomaren Operationen unterstützte},
-	sowohl algorithmisch an Goswami2010 (\cite{Goswami2010}) orientiert, als auch wie er den 
+	sowohl algorithmisch an Goswami (\cite{Goswami2010}) orientiert, als auch wie er den 
 	"`Work Efficient Parallel Scan"' aus \cite{Harris2007} implementiert, der die Basis für den in \cite{Grand2008} 
 	erläuterten Parallel Radix Sort bildet, den wir ebenfalls beide nutzen.
 	Die Implementationen sind also durchaus vergleichbar.
 	
-	\cite{Goswami2010} erreicht jedoch auch bei 256000 partikeln ohne Visualisierung noch 10 FPS auf einer GTX280,
+	\cite{Goswami2010} erreicht jedoch auch bei 256000 Partikeln ohne Visualisierung noch 10 FPS auf einer GTX280,
 	wohingegen meine aktuelle OpenCL-Implementation auf dieser GPU nur 1.8 FPS erreicht, 
 	also mehr als fünf mal langsamer ist.
 	Dies hat vermutlich folgende Gründe:
@@ -426,14 +427,15 @@ System noch nicht getestet.
 		Kernel ausführt wie die Kraft-Berechnungen; Da mit einem SPH-Kernel ein signifikanter 
 		Anteil an Kontrollfluss und	Bandbreite verbunden ist, erwarte ich hiervon eine Performance-Steigerung von 
 		bis zu 1.5.
-		\item Um den Bug, der auf Seite \pageref{enum:oclSyncBug} beschrieben ist, einzukreisen, ist noch viel unnötiger 
-		Synchronisations-Code im Host-Programm; Die Löschung dieses sollte jedoch kaum signifikant sein.
-		Allerdings war in der Kernels zur Zeit der Benchmarks noch viel Code vom Typ
+		\item Um den Bug, der auf Seite \pageref{enum:oclSyncBug} beschrieben ist, einzukreisen, wurde viel unnötiger 
+		Synchronisations-Code ins Host-Programm eingestreut. Die Löschung diese sollte jedoch
+		für die Performance kaum signifikant sein.\\
+		Allerdings war in den Kernels zur Zeit der Benchmarks noch viel Code vom Typ
 		\begin{lstlisting}
 if(any(isnan(ownAccelerationNew)) || any(isinf(ownAccelerationNew)) ) 
 	{ownAccelerationNew =  (float4)(0.0f,0.0f,0.0f,0.0f); }
 		\end{lstlisting}
-		um etwaige numerische Fehler zu finden; 
+		, um etwaige "Not A Number"'s oder "`infinities"' heraus zu filtern; 
 		
 		\item
 		Durch den auf Seite \pageref{enum:oclSyncBug} beschriebenen Bug laufen sowohl die "`Global Scan Phase"'
@@ -458,27 +460,29 @@ PingPongBuffer* mObjectInfoPiPoBuffer; //uint ping pong buffer
 		Weil Scattered Writes auf der GPU aufgrund des fehlenden Coalescings extrem teuer sind,
 		und Speicherbandbreite ohnehin im Vergleich zur reinen Rechenleistung schnell zum Flaschenhals
 		zu werden droht, sind diese vier Buffers, von denen drei auch noch PingPong-Buffers und zwei
-		sogar vier-Komponenten-Buffers sind, vermutlich enorm teuer, durchzuschleifen. Wie im Ausblick
+		sogar vier-Komponenten-Buffers sind, vermutlich enorm teuer durchzuschleifen. Wie im Ausblick
 		aufgelistet, hat die Befreiung vom \emph{Velocity Verlet}-Verfahren eine der höchsten 
 		Prioritäten \footnote{Für Gischt-Rendering nach \cite{Green2009FluidRenderingCurvatureFlow} ist die 
-		Beschleunigung zwar relevant, muss aber dann nicht mehr zwischen den Simulations-Schritten gescattered
-		werden, außerdem reicht vielleicht ein skalarer Wert zur Bestimmung des "`Gischt-Faktors"'}.
+		Beschleunigung zwar relevant, muss aber dann nicht mehr zwischen den Simulations-Schritten gescattert
+		werden; außerdem reicht vielleicht ein skalarer Wert zur Bestimmung des "`Gischt-Faktors"'}.
 		Die beiden Buffers aus dem oberen Listing sind jedoch für die erweiterte Logik der Simulation erforderlich .
-		\todo{ins paper schaun und uberprüfen falls zeit ist}
+		\todo{ins paper schauen und uberprüfen falls zeit ist}
 		
 		\item 
 		\label{enum:goswamiAccessPattern}
 		Der vermutlich größte Flaschenhals meiner Implementation:
 		Ich iteriere sequentiell über alle 27 Nachbar-Zellen und lade pro Iterations-Schritt parallel in Portionen
-		à bis zu 32 Partikel die Attribute der Nachbar-Partikel auf den Local Memory herunter.
+		à bis zu 32 Partikeln die Attribute der Nachbar-Partikel auf den Local Memory herunter.
 		Dies mache ich, weil nach diesem Ansatz die Zugriffe auf den GPU-RAM coalesced sind.
 		Goswami bindet jedoch in CUDA einen generischen Buffer an eine Texture-Unit,
 		was den Vorteil hat, dass die Zugriffe über eine Texture Unit auch bei der GT200-Generation 
 		gecachet sind und eine definierte Latenz 
 		haben (und zwar die Latenz des Global Memories, was eigentlich schlecht ist, aber vielleicht wird das Scheduling 
 		hierdurch effizienter). Durch diesen Umstand ist das Coalescing der Speicherzugriffe nicht mehr so wichtig,
-		und er verwendet das folgende  Access Pattern: Er itereriert nicht über die 27 Nachbarzellen, sondern über die
-		maximale Anzahl an Partikeln, die sich in den Nachbar-Zellen befindet. 
+		und er verwendet das folgende  Access Pattern: Er iteriert nicht über die 27 Nachbarzellen, sondern über die
+		maximale Anzahl an Partikeln, die sich in einer der Nachbar-Zellen befindet, und lädt dann pro 
+		Iterationsschritt parallel aus jeder Nachbarzelle ein Partikel herunter (sofern noch nicht jedes Partikel 
+		in der entsprechenden Zelle abgearbeitet wurde). 
 		Somit lädt er zu Beginn pro Iterations-Schritt fast immer 27 Partikel-Attribute parallel herunter, 
 		aus jeder Nachbar-Zelle eines.
 		Den Vorteil dieses Patterns habe ich während meiner Implementation verkannt: Wenn deutlich weniger
@@ -487,7 +491,7 @@ PingPongBuffer* mObjectInfoPiPoBuffer; //uint ping pong buffer
 		Ich dachte, Verzicht auf Coalescing wäre schlimmer als ein komplexerer Kontrollfluss. 
 		Außerdem dachte ich, dass die Performance am besten ist, wenn in jeder Zelle so viele Partikel sind,
 		wie eine Warp groß ist, nämlich 32, denn bei geringerer Partikelzahl sind viele Recheneinheiten im Idle.
-		Doch es hat sich heraus gestellt, dass trotz des "`inhärenten Idles"' die Performance besser ist, wenn
+		Doch es hat sich herausgestellt, dass trotz des "`inhärenten Idles"' die Performance besser ist, wenn
 		deutlich \emph{weniger} als 32 Partikel in einer Zelle sind. Dies entspricht der Faustregel,
 		dass ein SPH-Partikel in etwa mit 33 Nachbar-Partikeln interagiert. Wären in jeder Zelle 32 Partikel,
 		wären es 27*32=864 Nachbarn. Ich habe die Rolle der GPU als "`Number Cruncher"', den man vor allem
@@ -499,33 +503,35 @@ PingPongBuffer* mObjectInfoPiPoBuffer; //uint ping pong buffer
 		untersucht).
 		Die Warp-Größe von 32 scheint suboptimal für SPH zu sein. Dennoch ist die Parallelität der GPU
 		immer noch hoch genug, um die CPU zu überflügeln.\\
-		Letztendlich hätte auf das jetzige Benchmark-Ergebnis meiner OpenCL-SPH-Implementation
+		Letztendlich hätte das jetzige Benchmark-Ergebnis meiner OpenCL-SPH-Implementation
 		auf einer GPU der GT200-Generation vermutlich auch nicht besser ausgesehen, wenn ich diese 
-		jetzigen Erkenntnisse schön früher gehabt hätte. Denn es bleibt das Problem: man muss sich in
+		jetzigen Erkenntnisse schon früher gehabt hätte. Denn es bleibt das Problem: man muss sich in
 		OpenCL zwischen Buffer oder Textur entscheiden.
 		 Das Pattern des zweimaligen Toggles der Particle-Attrbibute-Buffers
-		(einmal nach Reodering, einmal nach Integration) könnte ermöglichen, dass man statt PingPong-Buffers
+		(einmal nach Reordering, einmal nach Integration) könnte ermöglichen, dass man statt PingPong-Buffers
 		einen generischen Buffer und eine Textur verwendet, weil in jedem Simulationsschritt jede Komponente
-		des Ping Pong buffers die gleiche Rolle hat. Dann kommt aber schon die nächste Beschränkung von
+		des Ping Pong Buffers die gleiche Rolle hat. Dann kommt aber schon die nächste Beschränkung von
 		OpenCL: Es gibt keine 1D-Texturen. Man muss also dann den linearen Speicher auf 2D-Textur-Koordinaten
 		übertragen. Intellektuell ist dies möglich, wäre aber eine bittere Pille in Bezug auf konsitente Paradigmen.
 		Vielleicht werden zukünftige OpenCL-Spezifikationen 1D-Texturen und Binden von Buffern an Texture-Units
 		ermöglichen, jetzt jedoch bliebe auf GT200 nur dieser Trick, den ich aufgrund meines Fokus auf Fermi vorerst 
 		nicht bereit bin, zu probieren.
-		Da die Fermi-Architektur auch auch für den Non-Textur-Speicher einen Cache hat, hat sich ab dieser
+		Da die Fermi-Architektur auch für den Non-Textur-Speicher einen Cache hat, hat sich ab dieser
 		Hardware-Generation die 
 		oben breit erläuterte Problematik womöglich erledigt. Ich werde das Access Pattern von Goswami
-		testen, und dabei  rein lineare Buffer benutzen. Die Gefahr ist hier, dass der Cache zu klein ist
+		ausprobiern, und dabei  rein lineare Buffer benutzen. Die Gefahr ist hier, dass der Cache zu klein ist
 		(16 kB) und für Dinge wie Register Spilling genutzt werden könnte. Dies muss man wohl einfach ausprobieren,
 		solange man keinen Einblick in Hardware und Treiber hat.
+		Ob das Partikel -Access Pattern von Goswami allerdings auch auf Fermi-Devices irgendwelche Vorteile bringt, 
+		vermag ich noch schwer abzuschätzen. Auf eine weitere Erörtung sei hier verzichtet.
 		
 	\end{enumerate}	
 	
 %-------------------------------------------------------------------------------------------------------------
 
-	Was sehr überrascht, ist der Umstand dass selbst auf der GTX 280 die OpenCL-Implementation schneller läuft, die 
+	Was sehr überrascht, ist der Umstand, dass selbst auf der GTX 280 die OpenCL-Implementation schneller läuft, die 
 	\emph{nicht} die Attribute der Nachbar-Partikel coalesced in den Local Memory herunter lädt, um dann 
-	mit Register-Latenz für die SPH-Berechnungen zur Verfügung zu stehen, sondern auch diese GPU
+	mit Register-Latenz für die SPH-Berechnungen zur Verfügung zu stehen; auch diese GPU
 	bringt mehr Leistung, wenn jedes Nachbar-Attribut direkt vom Global Memory gelesen wird.
 	Dieses Phänomen kann ich mir nur durch folgende Hypothesen erklären:
 	\begin{enumerate}
@@ -535,15 +541,15 @@ PingPongBuffer* mObjectInfoPiPoBuffer; //uint ping pong buffer
 		Sobald ich das Access Pattern in meiner Implementation angepasst habe, wird diese Hypothese
 		entweder bestätigt oder verworfen.
 		\item Der OpenCL-Compiler ist womöglich so ausgefeilt, dass er in der Schleifen-Laufvariable, die in die Index-
-		Berechnungen der Global Memory Reads einfließen, ein sequentielles Pattern erkennt, und automatisch
-		die Speicher-Zugriffe so optimiert, dass ein oder mehere "`Strides"' eines eines globalen Speicher-Transfers
+		Berechnungen der Global Memory Reads einfließen, ein sequentielles Pattern erkennt und automatisch
+		die Speicher-Zugriffe so optimiert, dass ein oder mehrere "`Strides"' eines globalen Speicher-Transfers
 		(je nach Compute-Capability ist ein Stride 32-128 Byte groß, egal ob man nur ein Byte oder alle benötigt) 
-		automatisch lokal zwischengespeichert werden, ohne dass der aufwändige Kontrollfluss- und Snychronisations-Code 
+		automatisch lokal zwischengespeichert werden, ohne dass der aufwändige Kontrollfluss- und Synchronisations-Code 
 		ausgeführt werden muss.
-		\item Der Aufwand durch Kontrollfluss, Synchronisation und SPH-BerchnungenRechen-Aufwand ist 
+		\item Der Aufwand durch Kontrollfluss, Synchronisation und SPH-Berechnungen ist 
 		(nicht zuletzt durch das momentane Access Pattern) so
-		aufwändig, dass der L2-Cache aureicht, um die Latenz zu verstecken, und ein Download in den Local Memory
-		in diesem Sinne	gar keinen Vorteil bringt, und viel mehr der Snychronisations- und Kontrollfluss-Code
+		groß, dass der L2-Cache aureicht, um die Latenz zu verstecken, und ein Download in den Local Memory
+		in diesem Sinne	gar keinen Vorteil bringt, sondern viel mehr der Snychronisations- und Kontrollfluss-Code
 		die Geschwindigkeit weiter ausbremst.
 	\end{enumerate}
 	Es sei betont, dass dies reine Spekulationen sind.\\
@@ -554,7 +560,7 @@ PingPongBuffer* mObjectInfoPiPoBuffer; //uint ping pong buffer
 %---------------------------------------------------------------------------------------------------	
 	
 	
-	Zusammenfassend kann man sagen, dass Die Performance meiner SPH-Implementation nicht gerade hoch erfreulich ist, 
+	Zusammenfassend kann man sagen, dass die Performance meiner SPH-Implementation nicht gerade hoch erfreulich ist, 
 	es jedoch noch genügend Stellschrauben gibt, um etwas dagegen zu tun.\\
 	
 	

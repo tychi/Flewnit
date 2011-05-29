@@ -1,49 +1,65 @@
 
 
 Im Rahmen dieser Bachelorarbeit wurde der Frage nachgegangen, inwiefern eine sogenannte "`Unified Rendering-Engine", welche verschiedene Simulationsdomänen vereint, einen Mehrwert darstellen kann gegenüber dem klassischen Ansatz, z.B. gesondert sowohl eine Graphik- als auch eine Physik-Engine zu verwenden, die zunächst einmal keinen
-Bezug zueinander haben;\\
+Bezug zueinander haben.\\
 
 Hierbei wurde besonderer Wert auf die Verwendung moderner GPU-Computing-APIs gelegt, namentlich auf OpenGL3/4 und OpenCL.\\
 Da bei diesem ganzheitlichen Thema eine vollständige Implementierung einer solchen vereinheitlichten Engine unmöglich war,
-konnte nur ein Bruchteil der Konzepte implementiert werden;\\
+konnte nur ein Bruchteil der Konzepte implementiert werden.\\
 
-Dieser Umstand war von Vornherein bekannt, und die Versuchung ist stark, wie in einer Demo die schnelle Realisierung eines Feature-Sets einer konsistenteren, aber zeitaufwändigeren und zunächst karger wirkenden Implementierung vorzuziehen.
-Dieser Versuchung wurde versucht, nur dort nachzugeben, wo die negativen Auswirkung auf die Konsistenz des Gesamtsystems lokal bleiben, und so nicht "`Hacks"' sich irreversibel durch das gesamte System ziehen.\\
+Dieser Umstand war von Vornherein bekannt, und die Versuchung ist vor allem in der Computergraphik stark, 
+schnell ein reiches Feature-Set zu realisieren, anstatt auf die Belohnung durch ansprechende visuelle Ergebnisse
+zugunsten einer konsitenteren Implementierung vorerst zu verzichten.
+Es wurde versucht, dieser Verlockung nur dort nachzugeben,  wo die negativen Auswirkungen auf die Konsistenz des Gesamtsystems lokal bleiben. Somit sollte vermieden werden, dass sich "`Hacks"' derart in das System verstricken,
+dass sie durch spätere Refactorings nur schwer zu korrigieren sind.
 
-Letztendlich wurden exemplarisch für die Nutzung in  der visuellen Simulationsdomäne einige gängige visuelle Effekte einer Graphik-Engine implementiert, wie  Shadow Mapping, Normal Mapping, Environment Mapping, Displacement Mapping und dynamisches LOD. Es wurden moderne OpenGL- und Hardware-Features wie Instancing, Uniform Buffers und Hardware-Tesselation verwendet. Schwerpunkt war hier der Einsatz einer Template-Engine, damit
+Letztendlich wurden exemplarisch für die Nutzung in  der visuellen Simulationsdomäne einige gängige Effekte einer
+Graphik-Engine implementiert, wie  Shadow Mapping, Normal Mapping, Environment Mapping, Displacement Mapping und dynamisches Level Of Detail (LOD). Es wurden moderne OpenGL- und Hardware-Features wie Instancing, Uniform Buffers und Hardware-Tesselation verwendet. Schwerpunkt war hier der Einsatz einer Template-Engine, damit
 \begin{itemize}
 	\item Boilerplate-Code in den Shadern vermieden wird und
 	\item Effekte beliebig (sinnvoll) nach Möglichkeit zur Laufzeit miteinander kombinierbar sind
 \end{itemize}
 Mehr dazu in Kapitel \ref{sec:visualDomain}\\
-In der mechanischen Simulationsdomäne wurde eine partikelbasierte Fluidsimulation mit OpenCL auf Basis von Smoothed Particle Hydrodynamics implementiert. Mehr dazu in Kapitel \ref{sec:mechanicalDomain}.\\
+In der mechanischen Simulationsdomäne wurde eine partikelbasierte Fluidsimulation mit OpenCL auf Basis von Smoothed Particle Hydrodynamics (SPH) implementiert. Mehr dazu in Kapitel \ref{sec:mechanicalDomain}.\\
 
-Das System trägt den Namen "`Flewnit"', eine bewusst nicht auf den ersten Blick erkennbar sein sollende\footnote{Es soll der generische Ansatz des Frameworks nicht in den Hintergrund gedrängt werden.} Kombination der Worte "`Fluid"', in Anspielung auf den urspünglichen Zweck einer Bibliothek zur Fluidsimulation und "`Unit"', in Anspielung auf "`Unity"'-"`Einheit"'. Zufälligerweise ist das $Nit$ auch noch die englische Einheit für die Leuchtdichte, $Cd \over m^2$.
+Das System hat den Namen "`Flewnit"' bekommen. Er steht für eine Kombination der Worte "`Fluid"', in Anspielung auf den urspünglichen Zweck einer Bibliothek zur Fluidsimulation und "`Unit"', in Anspielung auf "`Unity"'-"`Einheit"'.
+Außerdem ist das $Nit$ auch  die englische Einheit für die Leuchtdichte, $Cd \over m^2$. Der Name sollte nicht
+zu suggestiv sein, um den generischen Ansatz des Frameworks nicht in den Hintergrund zu drängen.
+
 
 
 \subsection{Motivation}
 
-Ursprünglich als Arbeit zur Implementierung einer Fluidsimulation geplant, wurde bald ein generischer, eher softwaretechnisch orientierter Ansatz verfolgt, der jedoch die Implementierung einer Fluidsimulation als mittelfristiges Ziel hatte;\\
+Ursprünglich als Arbeit zur Implementierung einer Fluidsimulation geplant, wurde bald ein generischer, eher softwaretechnisch orientierter Ansatz verfolgt, der jedoch die Implementierung einer Fluidsimulation als mittelfristiges Ziel hatte.
 
 \subsubsection{"`Unified Rendering Engine"'}
-Der Wunsch nach einer "`Unified Rendering Engine" erwächst aus eigener Erfahrung der Kopplung von Physik- und Graphik-Engines, namentlich der Bullet Physics Library\footnote{http://bulletphysics.org} und der OGRE Graphik-Engine\footnote{http://www.ogre3d.org}. Diese Hochzeit zweier Engines, die jeweils für verschiedene "`Simulationsdomänen"' zuständig sind, bringt gewissen Overhead mit sich, da Konzepten wie  Geometrie und ihrer Transformationen unterschiedliche Repräsentationen bzw. Klassen zugrunde liegen;
-Hierdurch wird die gemeinsame Nutzung beider Domänen von Daten wie z.B. Geometrie nahezu unmöglich; Ferner müssen für eine die beiden Engines benutzende Anwendung diese Klassen mit ähnlicher Semantik durch neue Adapterklassen gewrappt werden,
-um dem Programmier der eigentlichen Anwendungslogik den ständigen Umgang mit verschiedenen Repräsentationen und deren Synchronisation zu ersparen.\\
+Der Wunsch nach einer "`Unified Rendering Engine"' erwächst aus eigener Erfahrung der Kopplung von Physik- und Graphik-Engines, namentlich der Bullet Physics Library\footnote{http://bulletphysics.org} und der OGRE Graphik-Engine\footnote{http://www.ogre3d.org}. Diese Verknüpfung zweier Engines, die jeweils für verschiedene "`Simulationsdomänen"' zuständig sind, bringt einen gewissen Overhead mit sich, da Konzepten wie  Geometrie und ihren Transformationen unterschiedliche Repräsentationen bzw. Klassen zugrunde liegen.
+Hierdurch wird die gemeinsame Nutzung von Daten wie z.B. Geometrie in beiden Domänen schwer bis unmöglich.
+Ferner müssen für eine Anwendung, welche die beiden Engines benutzt, diese Klassen mit ähnlicher Semantik durch neue Adapterklassen gewrappt werden,
+um dem Programmierer der eigentlichen Anwendungslogik den ständigen Umgang mit verschiedenen Repräsentationen und deren Synchronisation zu ersparen.\\
 
-\todo[color=green]{evtl. beispielschema erstellen für zwei klassischee transformationsklassen und adapter vs. unified transformation}
+Die Aussage "`Photorealistische Computergraphik ist die Simulation von Licht"' hat zur Inspiration beigetragen, den Simulationsbegriff allgemeiner aufzufassen und das Begriffspaar "`Rendering und Physiksimulation"' zu hinterfragen \footnote{Auch wenn dieses Framework nicht vornehmlich auf physikalisch basierte, also photorealistische Beleuchtung ausgelegt ist, soll diese aufgrund des generischen Konzepts jedoch integrierbar sein.}.
 
-Die Aussage "`Photorealistische Computergraphik ist die Simulation von Licht"' \todo[color=green]{Zitat einfügen? Stefan Müller, PCG? ;)} hat mich wohl auch inspiriert, den Simulationsbegriff allgemeiner aufzufassen und das Begriffspaar "Rendering und Physiksimulation"' zu hinterfragen\footnote{Auch wenn dieses Framework nicht vornehmlich auf physikalisch basierte, also photorealistische Beleuchtung ausgelegt ist, soll diese aufgrund des generischen Konzepts jedoch integrierbar sein.}.
+Es sei bemerkt, dass weder eine Hypothese bestätigt noch widerlegt werden sollte, geschweige denn überhaupt eine 
+Hypothese im Vorfeld existierte. Es sprechen etliche Argumente für eine Vereinheitlichung der Konzepte  (geringerer Overhead durch Wegfall der Adapterklassen, evtl. geringerer Speicherverbrauch durch z.T. gemeinsame Nutzbarkeit von Daten,
+Wegfall von Kopier-Operationen), aber auch einige dagegen (Komplexität eines Systems, Anzahl an theoretischen Kombinationsmöglichkeiten steigt, viele sind unsinnig und müssen implizit oder explizit ausgeschlossen werden). Letztendlich handelt es sich um ein Experiment, welches
+unabhängig von seinem Ergebnis einen didaktischen Wert hat, da Kenntnisse sowohl aus der Computergraphik als auch 
+aus der Physiksimulation erarbeitet bzw. vertieft werden.\\
 
-Es sei bemerkt, dass weder eine Hypothese bestätigt noch widerlegt werden sollte, geschweige denn überhaupt eine (mir bekannte) Hypothese im Vorfeld existierte; Es sprechen etliche Argumente für eine Vereinheitlichung der Konzepte  (geringerer Overhead durch Wegfall der Adapterklassen, evtl. Speicherverbrauch durch z.T. gemeinsame Nutzbarkeit von Daten), aber auch einige dagegen (Komplexität eines Systems, Anzahl an theoretischen Kombinationsmöglichkeiten steigt, viele sind unsinnig und müssen implizit oder explizit ausgeschlossen werden).\\
 
-Für mich persönlich bringt die Bearbeitung dieser Fragestellung zahlreiche Vorteile; Ich muss ein wenig ausholen:\\
-Schon als Kind war ich begeistert von technischen Geräten, auf denen interaktive Computergraphik möglich war; Sie sprechen sowohl das ästhetische Empfinden an, als auch bieten sie eine immer mächtigere Ergänzungs- und  Erweiterungsmöglichkeit zu unserer Realität an; Letztendlich stellten diese Geräte für mich wohl auch immer ein Symbol dafür dar, in wie weit die Menschheit inzwischen fähig ist, den Mikrokosmos zu verstehen und zu nutzen, damit demonstriert, dass sie zumindest die rezeptiven und motorischen Beschränkungen seiner Physiologie überwunden hat.\\
-Die Freude an Schönheit und Technologie findet für mich in der Computergraphik und der sie ermöglichenden Hardware eine Verbindungsmöglichkeit; Die informatische Seite mit seinen Algorithmen als auch die technische Seite mit seinen Schaltungen faszinieren mich gleichermaßen; Auch das "`große Ganze" der Realisierung solcher Computergraphischen Systeme, das Engine-Design mit seinen softwaretechnischen Aspekten, interessiert mich.\\
-Ferner wollte ich schon immer "die Welt verstehen", sowohl auf physikalisch-naturwissenschaftlich-technischer, als auch - aufgrund der system-immanenten Beschränkungen unseres Universums - auf metaphysischer Ebene\footnote{ob der Begriff "`Verständnis"' im letzten Falle ganz treffend ist, bleibt Ermessens-Sache};\\
 
-Und hier schließt sich der Kreis: Sowohl in der Philosophie als auch in der Informatik spielt das Konzept der Abstraktion eine wichtige Rolle; Nichts anderes tut eine "`Unified Engine": sie abstrahiert bestehende Konzepte teilgebiets-spezifischer Engines, wie z.B. Graphik und Physik; Ich erhoffe mir, dass mit dieser Abstraktion man in seinem konzeptionellen Denken der der realen Welt ein Stück weit näher kommt; Die verfügbaren Rechenressourcen steigen, die Komplexität von Simulationen ebenfalls; Ob eine semantische Generalisierung von seit Jahrzehnten verwendeten Begriffen wie "`Rendering"' und "`Physiksimulation"', welche dieser Entwicklung angemessen sein soll, eher hilfreich oder verwirrend ist, kann eine weitere Interessante Frage sein, die ich jedoch nicht weiter empirisch untersucht habe.\\
+\subsubsection{Persönliches}
+Für mich persönlich bringt die Bearbeitung dieser Fragestellung zahlreiche Vorteile. Ich muss ausholen:\\
+Schon als Kind war ich begeistert von technischen Geräten, auf denen interaktive Computergraphik möglich war. Sie sprechen  das ästhetische Empfinden an, und bieten eine immer mächtigere Ergänzungs- und  Erweiterungsmöglichkeit zu unserer Realität an. Letztendlich stellten diese Geräte für mich wohl auch immer ein Symbol dafür dar, in wie weit die Menschheit inzwischen fähig ist, den Mikrokosmos zu verstehen und zu nutzen, und damit demonstriert, dass sie zumindest die rezeptiven und motorischen (wenn schon nicht die kognitiven) Beschränkungen ihrer Physiologie überwunden hat.\\
+Die Freude an Schönheit und Technologie findet für mich in der Computergraphik und der sie berechnenden Hardware eine Verbindungsmöglichkeit. Sowohl die informatische Seite mit ihren Algorithmen als auch die technische Seite mit ihren Schaltungen faszinieren mich gleichermaßen. Auch das "`große Ganze" der Realisierung solcher computergraphischen Systeme, das Engine-Design mit seinen softwaretechnischen Aspekten, interessiert mich.\\
+Ferner wollte ich schon immer "die Welt verstehen", sowohl auf physikalisch-naturwissenschaftlich-technischer, als auch - aufgrund der system-immanenten Beschränkungen unseres Universums - auf metaphysischer Ebene\footnote{ob der Begriff "`Verständnis"' im letzten Falle ganz treffend ist, bleibt Ermessenssache}.\\
+
+Und hier schließt sich der Kreis: Sowohl in der Philosophie als auch in der Informatik spielt das Konzept der Abstraktion eine wichtige Rolle. Das zeichnet eine "`Unified Engine"' im Vergleich zu einer klassischen Engine aus:
+sie abstrahiert bestehende Konzepte teilgebiets-spezifischer Engines, wie z.B. Graphik und Physik. Ich erhoffe mir, dass man mit dieser Abstraktion in seinem konzeptionellen Denken der Abstraktion der realen Welt ein Stück weit näher kommt.
+Die verfügbaren Rechenressourcen steigen, die Komplexität von Simulationen ebenfalls. Ob eine semantische Generalisierung von seit Jahrzehnten verwendeten Begriffen wie "`Rendering"' und "`Physiksimulation"', welche dieser Entwicklung angemessen sein soll, eher hilfreich oder verwirrend ist, kann eine weitere interessante Frage sein, die ich jedoch nicht weiter empirisch untersucht habe.\\
 
 Letzendlich verbindet dieses Thema also viele meiner Interessen, welche die gesamte Pipeline eines Virtual-Reality-Systems,  vom Konzept einer Engine bis hin zu den Transistoren einer Graphikkarte, auf sämtlichen Abstraktionsstufen betreffen: Es gab mir die Möglichkeit,
+
 \begin{itemize}
 	\label{list:didacticGoals}
 	\item den Mehrwert einer Abstraktion gängiger Konzepte von Computergraphik und Physiksimulation zu erforschen
@@ -52,67 +68,73 @@ Letzendlich verbindet dieses Thema also viele meiner Interessen, welche die gesa
 	\item mich mit Physiksimulation (genauer: Simulation von Mechanik) zu beschäftigen, konkret mit Fluidsimulation
 	
 	\item mich in OpenGL 3 und 4 einzuarbeiten, drastisch entschlackten Versionen der Graphik-API, deren gesäuberte Struktur die Graphikprogrammierung wesentlich generischer macht und somit die Abstraktion erleichtert
-	\item mich in OpenCL einzuarbeiten, den ersten offenen Standard für \linebreak GPGPU\footnote{General Purpose Graphics Processing Unit- Computing, die Nutzung der auf massiver Paralleltät beruhenden Rechenleistung von Graphikkarten in nicht explizit Graphik-relevanten Kontexten}
-	\item  mich intensiver mit Graphikkarten-Hardware, der zu Zeit komplexesten und leistungsfähigsten Consumer-Hardware zu beschäftigen, aus purem Interesse und um die OpenCL-Implementierung effizienter zu gestalten
+	\item mich in OpenCL einzuarbeiten, den ersten offenen Standard für GPGPU
+		\footnote{General Purpose Graphics Processing Unit- Computing, die Nutzung der auf massiver Paralleltät beruhenden 
+			Rechenleistung von Graphikkarten in nicht explizit Graphik-bezogenen Kontexten}
+	\item  mich intensiver mit Graphikkarten-Hardware, der zu Zeit komplexesten und leistungsfähigsten 
+		Consumer-Hardware zu beschäftigen, aus purem Interesse und um die OpenCL-Implementierung effizienter zu gestalten
 \end{itemize}
-Die vielseitigen didaktischen Aspekte hatten bei dieser Themenwahl also ein größeres Gewicht als der Forschungsaspekt, was dem Ziel einer Bachelorarbeit angemessen ist. 
+
+Die vielseitigen didaktischen Aspekte hatten bei dieser Themenwahl also ein größeres Gewicht als der Forschungsaspekt. 
 
 
 \subsubsection{Fluidsimulation}
 
-Warum ich mich bei der exemplarischen Implementierung einer mechanischen Simulationsdomäne für eine partikelbasierte Fluidsimulation entschieden habe, hat viele Gründe:
+Warum bei der exemplarischen Implementierung einer mechanischen Simulationsdomäne eine partikelbasierte Fluidsimulation 
+gewählt wurde, hat viele Gründe:
 
-Wohingegen Rigid Body-Simulation in aktuellen Virtual-Reality-Anwendungen wie Computerspielen schon eine recht große Verbreitung erreicht hat, sucht man eine komplexere physikalisch basierte Fluidsimulation, die über eine 2,5 D- Heightfield-Implementation hinausgehen, noch vergebens; 
- 	\todo[color=green]{Muss ich das irgendwie belegen? Ich wüsste nicht, wie/wo ;( } 
-Das Ziel, eine deratige Fluidsimulation in einen Anwendungskontext zu integrieren, der langfristig über den einer Demo hinausgehen soll, hat also einen leicht pionierhaften Beigeschmack.
+Während Rigid Body-Simulation in aktuellen Virtual-Reality-Anwendungen wie Computerspielen schon eine recht große Verbreitung erreicht hat, sucht man hier eine komplexere physikalisch basierte Fluidsimulation, die über eine 
+2,5D- Heightfield-Implementation hinausgeht und obendrein noch mit ihrer Umgebung für die Spielmechanik signifikant
+wechselwirkt, noch vergebens. 
+Das Ziel, eine deratige Fluidsimulation in einen Anwendungskontext zu integrieren, der langfristig über den einer Demo hinausgehen soll, hat also etwas leicht poinierhaftes.
 
-Mir ging es um eine Simulation, welche die Option eriner möglichst breiten Integration in die virtuelle Welt bietet; Wohingegen sich Grid-basierte Verfahren aufgrund Möglichkeit zur Visualisierung per Ray-Casting sehr gut zur Simulation von Gasen eignen, 
-\todo[color=green]{referenz auf Peschel, evtl weitere eigenschaften wie curl und sicherstellung der inkompressibilität}
-sind Partikel-basierte Verfahren eher für Liquide geeignet, da bei Grid-basierten Verfahren die Volumen-Erhaltung eines Liquids durch zu Instabilität und physikalischer Inplausibilität neigenden Level-Set-Berechnungen sichergestellt werden muss. 
-\todo[color=green]{referenz auf gpu-gems-gridbased-zeug, evtl jos stam} 
-Liquide beeinflussen aufgrund ihrer Dichte Objekte ihrer Umgebung im Alltag mechanisch stärker als Gase; Aufgrund dieser erhöhten gegenseitigen Beeinflussung von Fluid und Umgebung bevorzugte ich das Verfahren, welches Liquide besser simuliert.
+Es sollte eine Simulation realisiert werden, welche die Option einer möglichst breiten Integration in die virtuelle Welt bietet. Während sich Grid-basierte Verfahren aufgrund der Möglichkeit zur Visualisierung per Ray-Casting sehr gut zur Simulation von Gasen eignen (siehe z.B. \cite{Peschel2009}), 
+sind partikelbasierte Verfahren eher für Liquide geeignet, da bei Grid-basierten Verfahren die Volumen-Erhaltung eines Liquids durch zu Instabilität und physikalischer Inplausibilität neigenden Level-Set-Berechnungen sichergestellt werden muss, siehe. z.B \cite{CraneLlamas2007}. 
+Liquide beeinflussen aufgrund ihrer Dichte Objekte ihrer Umgebung im Alltag mechanisch stärker als Gase. 
+Aufgrund dieser erhöhten gegenseitigen Beeinflussung von Fluid und Umgebung wurde das Verfahren bevorzugt,
+welches Liquide besser simuliert.
 
 Die Partikel-Domäne bietet außerdem eine theoretisch unendlich große Simulationsdomäne, wohingegen in der Grid-Domäne der Simulationsbereich auf das Gebiet beschränkt ist, welches explizit durch Voxel repräsentiert ist.
-Ferner lassen sich relativ einfach auch Rigid Bodies durch einen partikelbasierten Simlator simulieren, indem eine Repräsentation der Geometrie des Rigid Bodies als Partikel gewählt wird; 
-\todo[color=green]{referenz auf thomas steil und GPU gems}
+Ferner lassen sich relativ einfach auch Rigid Bodies durch partikelbasierte Methoden simulieren,
+indem eine Repräsentation der Geometrie des Rigid Bodies als Partikel gewählt wird, 
+siehe z.B. \cite{Steil2007} oder \cite{Harada2007}.
 
-Bei grid-basierten Verfahren lässt sich die Simulations-Domäne z.B. als Sammlung von 3D-Texturen oder nach einem bestimmten Schema organisierten 2D-Texturen repräsentieren; Hiermit wird die Simulation auf der GPU mithilfe von Graphik-APIs wie OpenGL ohne weiteres möglich, und wurde auch schon erfolgreich implementiert \todo[color=green]{ref auf peschel}. Mein Anliegen war jedoch, explizit die Features moderner Graphikhardware und sie nutzender GPGPU-APIs wie Nvidia CUDA, Microsoft's DirectCompute oder OpenCL zu verwenden; Die Partikel-Domäne stellt damit eine größere Abgrenzung zu gewohnten Workflows auf der GPU dar. Vor allem die \emph{Scattered Writes}, die Graphik-Apis nicht oder nur sehr indirekt ermöglichen,  
-und die von so vielen Algorithmen benötigt werden, sollten zum Einsatz kommen dürfen.
-\todo[color=green]{'indirekt' erläutern? transform feedback buffer, scattering über  gl\_Position und ein-pixel point rendering, siehe DA von Sinje Thiedemann?} 
+
+Bei Grid-basierten Verfahren lässt sich die Simulations-Domäne z.B. als Sammlung von 3D-Texturen oder nach einem bestimmten Schema organisierten 2D-Texturen repräsentieren. Hiermit wird die Simulation auf der GPU mithilfe von Graphik-APIs wie OpenGL ohne weiteres möglich, und wurde auch schon erfolgreich implementiert, siehe \cite{Peschel2009}. 
+In dieser Arbeit sollten jedoch explizit die Features moderner Graphikhardware und sie nutzender GPGPU-APIs wie Nvidia CUDA, Microsoft's DirectCompute oder OpenCL verwendet werden. Die Partikel-Domäne stellt damit eine größere Abgrenzung zu gewohnten Workflows auf der GPU dar. Vor allem die \emph{Scattered Writes}, die Graphik-Apis nicht oder nur sehr indirekt ermöglichen \footnote{z.B. kann man in einen beliebigen Texel schreiben, indem man Points der Größe 1 zeichnet, und
+im Vertex Shader die \lstinline|gl_Position| so setzt, dass der Point in den gewünschten Pixel rasterisiert wird. Ein sehr umständliches Scattering, was so viele Point-Primitive wie zu schreibende Pixel benötigt.},  
+und die von so vielen Algorithmen benötigt werden, sollten zum Einsatz kommen.
 
 Die Fluidsimulation stellt einen relativ "`seichten"' Einstieg in die Welt der GPU-basierten Echtzeit-Physiksimulation dar:
 
 	\begin{itemize}
  	\item Es gibt schon zahlreiche Arbeiten zur Fluidsimulation, welche erfolgreich den Spagat zwischen Echtzeitfähigkeit 
- 	und physikalischer Plausibilität gemeistert haben (siehe Kapitel \ref{sec:relatedWork});
+ 	und physikalischer Plausibilität gemeistert haben (siehe Kapitel \ref{sec:relatedWork}).
  	\item Fluide sind für gewöhnlich ein homogenes Medium, daher eignet sich bei Partikel-Ansatz für die Suche nach 
  	Nachbarpartikeln die \linebreak Beschleunigungsstruktur des Uniform Grid besonders gut, wohingegen sich für Simulation 
  	von Festkörpern eher komplexere Beschleunigungsstrukturen wie Oct-Trees, Bounding Volume-Hierarchies oder kD-Trees 
- 	anbieten, da diese sich besser an die inhomogenen Strukturen, Ausmaßen und Verteilungen der Objekte anpassen.
- 		\todo[color=green]{Wo zum Henker soll ich dazu nun wieder ne Referenz herauskramen? Ich habe leider keine idee, außer zig 	
- 		allgemeine Papers und Übcher zu überfliegen Zeitproblem!... das ist der 
- 		nachteil, wenn man so viel recherchiert hat, zunächst mal fürs Verständnis und oder oder den ganz groben überblick, 
- 		und nicht für eine umfassende wissenschaftliche Dokumentation: All den Input, der nur als Hintergrundwissen dienen 
- 		sollte, jetzt noch wieder zu finden... :( Wie kann ich mit diesem allgemeinen Problem umgehen?}; 	
+ 	anbieten, da diese sich besser an die inhomogenen Strukturen, Ausmaße und Verteilungen der Objekte anpassen.	
  	Letztere Strukturen lassen sich schwerer auf die GPU mappen, welche als Stream-Prozessor nicht optimal für komplexe 
 	Kontrollflüsse und Datenstrukturen geeignet ist.
-		\todo[color=green]{Referenz eines guten Artikels zu GPGPU finden;}
-	\item Die Partikel lassen sich direkt als OpenGL-Vertices per Point Rendering darstellen, was während der 
-	Entwicklungsphase eine einfache Visualisierungmöglichkeit bietet;
-	\item Die gemeinsame Nutzung von Geometrie sowohl zur mechanischen Simulation als auch zur Visulalisierung mit OpenGL
+	\item Die Partikel lassen sich direkt als OpenGL-Vertices per Point Rendering darstellen, was eine einfache und doch 
+	mächtige Visualisierungsmöglichkeit bietet.
+	\item Die gemeinsame Nutzung von Geometrie sowohl zur mechanischen Simulation als auch zur Visualisierung mit OpenGL
 	ist hiermit ermöglicht. OpenCL ermöglicht diese gemeinsame Nutzung explizit über gemeinsame Buffer-Nutzung.
-		\todo[color=green]{ref auf späteren abschnitt oder OpenCL spec}
-	\item Nicht zuletzt ist die Mathematik bei Partikel-Simulation einfacher: Die \emph{"`eulersche Sicht"'} auf die 
-	Simulationsdomäne beim Grid-Ansatz erfordert einen Advektionsterm, der dank der \emph{"`lagrange'schen Sicht"'} bei
-	Partikeln wegfällt; Außerdem erfordern Partikelsysteme keine Berechnungen zur Sicherstellung der
+	\item Nicht zuletzt ist die Mathematik bei Partikel-Simulation einfacher: 
+	Die \emph{"`eulersche Sicht"'}
+	\footnote{Beobachtung des Fluids von einem festen Standpunkt aus, wie z.B. durch eine Wetterstation;
+	 	Entsprechung ist bei der Simulation die Grid-Zelle}	 
+	auf die Simulationsdomäne beim Grid-Ansatz erfordert einen Advektionsterm, 
+	der dank der \emph{"`lagrange'schen Sicht"'} 
+	\footnote{Beobachtung des Fluids, indem man sich der Beobachter mitbewegt, wie z.B. durch einen Wetterballon;
+		Entsprechung ist bei der Simulation das Partikel}	
+	bei Partikeln wegfällt. Außerdem erfordern Partikelsysteme keine Berechnungen zur Sicherstellung der
 	Inkompressibilität
 	\footnote{
-		Das heißt nicht, dass die Inkompressibilität automatisch gewährleistet ist; Im Gegenteil 
+		Das heißt nicht, dass die Inkompressibilität automatisch gewährleistet ist. Im Gegenteil 
 		hat man öfter mit "`Flummi-artigem"' Verhalten des Partikel-Fluids zu tun, weil diese eben \emph{nicht} ohne 
-		weiteres forcierbar ist;
-	} \todo[color=green]{hier bin ich mir nicht mal sicher, ob  das stimmt; meine Erinnerung ist nur sehr vage, diese 
-		Fragestellung wurde in meiner Literatur höchstens ganz marginal behandelt; Was tun? Aussage weg lassen, mich tod-
-		suchen, oder diese gewagte These nach bestem Wissen und Gewissen stehen lassen?} 
+		weiteres forcierbar ist.
+	} 
 	oder Bewahrung des Volumens.
 
 	\end{itemize}
