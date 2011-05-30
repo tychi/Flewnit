@@ -105,8 +105,7 @@ void main()
   barrier(); //------------------------------------------ 
   if (gl_InvocationID == 0) 
   {
-    gl_TessLevelInner[0] = max(max(gl_TessLevelOuter[0],gl_TessLevelOuter[1]),gl_TessLevelOuter[2]) ;//+1.0;//+1.0;
-    //distanceDependentDisplacementFactor = distanceFactor;
+    gl_TessLevelInner[0] = max(max(gl_TessLevelOuter[0],gl_TessLevelOuter[1]),gl_TessLevelOuter[2]) ;
   }
   
 

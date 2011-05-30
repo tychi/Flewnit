@@ -59,7 +59,7 @@ float getShadowAttenuation(float shadowMapLayer, vec3 fragPos)
                   
           ;  
         {% else %} 
-          clamp(texture( shadowMap, shadowCoord ), minimalshadowAttenuation , 1.0);   
+          return clamp(texture( shadowMap, shadowCoord ),  0.0 , 1.0);   
         {% endif %}       
       }
       else 

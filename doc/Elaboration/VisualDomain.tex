@@ -275,11 +275,14 @@ void SimulationResourceManager::executeInstancedRendering(SimulationPipelineStag
 {% endif %}		
 	\end{lstlisting}
 	
+	
+	%--------------------------------------------------------------------------------------------
+	
 	\paragraph{Hardware Tesselation}
 	Dieses Feature ist erst in OpenGL 4 verfügbar. Es ermöglicht dem Progammierer, dynamisch pro Frame
 	und pro geometrischem Primitiv dort zusätzliche Geometrie erzeugen zu lassen, wo sie für ein hochdetailliertes 
 	visuelles Rendering benötigt wird. Diese neue Geometrie entsteht durch Zerlegung größerer (und damit gröberer)
-	Primitive in eine Menge kleinere. Durch zusätzliche Modifikation dieser neu erzeugten Geometrie kann
+	Primitive in eine Menge kleinerer. Durch zusätzliche Modifikation dieser neu erzeugten Geometrie kann
 	geometrisches Detail hinzugefügt werden, z.B. durch Verschiebung der Vertices entlang der Normalen anhand einer
 	Displacement Map (Erläuterung s.u.), um relief-artige Strukturen zu erzeugen. 
 	Alternativ können die Vertex-eigenen Primitiv-relativen Koordinaten zu einem Sample-Punkt z.B. eines 
@@ -297,7 +300,7 @@ void SimulationResourceManager::executeInstancedRendering(SimulationPipelineStag
 	
 	Es handelt sich also um ein hardwarebeschleunigtes, für den Programmierer relativ einfach zu verwendendes
 	Verfahren für dynamisches Level Of Detail (LOD). Somit lassen sich extreme Detail-Grade bei Nah-Aufnahmen
-	erzeugen, ohne dass die Performance bei größerer Entfernung durch ein hochpolygonales Basis-Mesh leidet; 
+	erzeugen, ohne dass die Performance bei größerer Entfernung durch ein hochpolygonales Basis-Mesh leidet. 
 	Für gewöhnlich hängt die Metrik zur LOD-Berechnung zumindest von der Entfernung der Geometrie zur Kamera,
 	zuweilen auch von der Auflösung des zu rendernden Bildes, dem Kamera-Öffnungswinkel und weiteren Parametern ab.
 	
@@ -344,9 +347,9 @@ void SimulationResourceManager::executeInstancedRendering(SimulationPipelineStag
 	Diese beiden Stages folgen direkt auf den Vertex Shader, und kommen somit vor dem  Geometry
 	und Fragment Shader.\\
 	
-	Jeder der beiden Tessellation Shaders wird pro \emph{Patch}-Vertex aufgerufen. Der \emph{Patch}
+	Der \emph{Tessellation Control Shader} wird pro \emph{Patch}-Vertex aufgerufen. Der \emph{Patch}
 	ist ein neuer Primitiv-Typ in OpenGL. Er ist vertexbasiert und repräsentiert das, was sich
-	an Semenatik einer bestimmten Menge von Vertices zuweisen lässt: ein schlichtes Dreieck, ein Viereck,
+	an Semantik einer bestimmten Menge von Vertices zuweisen lässt: ein schlichtes Dreieck, ein Viereck,
 	oder aber die 16 Kontrollpunkte eines kubischen Bézier-Patches (s. Abb. \ref{fig:bezierByTess}), oder beliebige 
 	weitere implizite oder explizite Oberflächen-Beschreibungen.
 
@@ -363,14 +366,14 @@ void SimulationResourceManager::executeInstancedRendering(SimulationPipelineStag
 	Basis-Primitivs zerlegt werden soll. Die OpenGL-Implementation stellt sicher, dass die inneren und äußeren
 	Tessellierungs-Levels sinnvoll miteinander verknüpft werden, so dass valide, zusammenhängende
 	Primitive generiert werden. \\
-	Je nach Typ des Basis-Primitivs, welches tesselliert wird sind die \lstinline|gl_TessLevel...|
-	nur für bestimmte Längen definiert: Ein Dreieck hat. z.B. drei äußere Levels, pro Kante einen,
+	Je nach Typ des Basis-Primitivs, welches tesselliert wird sind die \lstinline|gl_TessLevel...| -Variablen
+	nur für bestimmte Array-Längen definiert: Ein Dreieck hat. z.B. drei äußere Levels, pro Kante einen,
 	und einen inneren. Ein Viereck hat jeweils einen Tessellation Level mehr, beim inneren also einen Level pro Achse.
 	Dass man vor allem die Tessellation Levels für die Kanten des Basis-Primitivs einzeln bestimmten kann,
 	ist sehr wichtig zur Vermeidung von  Unstetigkeiten zwischen benachbarten Patches. Hier sollten gemeinsame Kanten
 	auch den selben Tessellation Level bekommen, damit die Kanten nicht "`aufbrechen"', indem Vertices der tessellierten
-	Primitive nicht mehr benachbart sind.\\
-	Dadurch, dass die Tessellation Levels nicht 1:1 mit der Anzahl an Vertices assoziiert sind, sollte immer nur
+	Primitive nicht mehr benachbart sind und somit verschieden displaced werden.\\
+	Dadurch, dass die Tessellation Levels nicht 1:1 mit der Anzahl an Patch-Vertices assoziiert sind, sollte immer nur
 	ein bestimmter Vertex sich für das Schreiben eines bestimmten Tessellation Levels verantwortlich fühlen.
 	Teilweise spielen für diese Berechnungen auch die Ergebnisse der anderen Vertices im Patch eine Rolle;
 	Diese Ergebnisse sind für alle Vertices im Patch lesbar, sofern in eine (built-in oder selbst definierte
@@ -397,7 +400,7 @@ float calculateDistanceDependentLODFactor( float distanceVS )
 {
  //distanceVS > distanceToBeginWithTesselation --> 0
  //distanceVS < distanceUntilFullSubdivision   --> 1
- //inbetween --> grow fast when far away (user doesnt notice becaus of distance), 
+ //inbetween --> grow fast when far away (user doesnt notice because of distance), 
  //				 grow slower when coming closer
  //				 ==>> square root function in [0..1] satisfies these conditions
  float distFraction = 
@@ -409,10 +412,10 @@ float calculateDistanceDependentLODFactor( float distanceVS )
  return 1.0- (sqrt(distFraction));
 }
 	\end{lstlisting}
-	Diese Funktion ist rein experimentell entstanden. Eine weitere Option, um störende "Popping"-Artefakte
+	Diese Funktion ist rein experimentell entstanden. Eine weitere Option, um störende "`Popping"'-Artefakte
 	zu vermeiden, ist, die Tessellierungs-Methode auf eine Form von "`fractional spacing"' zu stellen,
 	z.B. über den Befehl \lstinline|layout(triangles, fractional_odd_spacing, ccw) in;| im Tess. Evaluation Shader:
-	Diese Option bewirkt, dass mit steigenem Tessellation Level (es handelt sich um FLießkomma-Werte)
+	Diese Option bewirkt, dass mit steigendem Tessellation Level (es handelt sich um Fließkomma-Werte)
 	entlang der Primitiv-Kanten von außen "`neue Vertices nachwachsen"'; beim "`equal spacing"' bleiben die
 	Vertices des aktuellen Tesellation Levels an einem festen Ort innerhalb des Primitivs, bis ein
 	Tessellation Level erreicht ist, der neue Vertices in die bestehenden "`zwischen streut"'. Somit
@@ -435,21 +438,32 @@ gl_TessLevelOuter[gl_InvocationID] =
 	(Tess. Level 0 heißt, dass gar kein Primitiv erzeugt wird), bzw. dass der Tess. Level einen benutzerdefinierten 	
 	Grenzwert nicht überschreiten darf.
 	Der \lstinline|tessQualityFactor| ist ebenso eine benutzerdefinierbare Uniform Variable. 
-	\lstinline|edgeLengthVS| gibt die Länge der Kante im Viewspace an. Hier sei explizit erwähnt, dass die Tessellation-
-	Parameter invariant zur Kamera-Orientierung sein müssen, da es sonst bei Rotationen wieder zu störenden
-	"`Popping-Artefakten"' kommt. Daher müssen wir im View- oder Worldspace rechnen, selbst wenn dann bei Primitiven,
+	\lstinline|edgeLengthVS| gibt die Länge der Kante im View Space an. Hier sei explizit erwähnt, dass die Tessellation-
+	Parameter invariant zur Kamera-Orientierung sein müssen, da es sonst bei Rotationen zu störenden schnellen 
+	Morphing-Artefakten kommt. Daher müssen wir im View- oder Worldspace rechnen, selbst wenn dann bei Primitiven,
 	die in einem spitzen Winkel betrachtet werden, für die Bildqualität eines spezifischen Renderings eigentlich
-	unnötig hohe Tesellation Levels generiert werden.
+	unnötig hohe Tessellation Levels generiert werden.
 	Das LOD in \emph{Flewnit} weicht insofern von der in Metro 2033 verwendeten Formel ab, dass nicht durch
 	die Distanz der Kantenmitte zur Betrachter-Kamera dividiert wird, sondern mit dem Wert multipliziert wird,
 	der durch \lstinline|calculateDistanceDependentLODFactor(edgeDistVS)| errechnet wird.
 	Somit ergibt sich eine bessere Kontrolle über den Bereich, in dem das Morphing zwischen niedrigstem
 	und höchsten Tessellierungs- und Displacement- Faktor stattfinden soll.\\
 	
+	Der innere Tessellation Level des Dreiecks-Patches wird vom Vertex mit Invocation-ID 0 gesetzt,
+	und zwar durch Bestimmung des Maximums sämtlicher äußerer Tessellation Levels:
+	\begin{lstlisting}[language=GLSL]
+barrier(); //------------------------------------------ 
+if (gl_InvocationID == 0) 
+{
+  gl_TessLevelInner[0] = max(max(gl_TessLevelOuter[0],gl_TessLevelOuter[1]),gl_TessLevelOuter[2]) ;
+}	
+	\end{lstlisting}
+	
 	Schließlich, nach der Primitiv-Erzeugung durch den Tessellator, wird der Tessellation Evalutaion Shader
-	pro generierten Vertex aufgerufen. Wieder stehen alle Eingangs-Patch-Vertices zur Verfügung.
+	pro generiertem Vertex aufgerufen. Wieder stehen alle Eingangs-Patch-Vertices jeder Shader-Instanz,
+	die zum Patch gehört, zur Verfügung.
 	Bei Dreicks-Tessellierung sind die Primitiv-relativen Koordinaten eines Vertices im Tess- Eval. Shader
-	baryzentrische Koordinaten. Die Viewspace-Attribute eines generierten Vertex lassen sich also einfacher
+	baryzentrische Koordinaten. Die View Space-Attribute eines generierten Vertex lassen sich also einfacher
 	(zunächst einmal ohne Displacement Mapping) bestimmen durch das Makro:
 	\begin{lstlisting}[language=GLSL]
 	 #define BARYCENTRIC_WEIGHTED(var) ( gl_TessCoord.x * input[0].var + gl_TessCoord.y * input[1].var + gl_TessCoord.z * input[2].var )
@@ -476,7 +490,7 @@ output.texCoords =  BARYCENTRIC_WEIGHTED(texCoords);
 	im Fragment Shader verfügbar).
 	Um diesen Wert, skaliert mit einem benutzerdefinierten Faktor (der durchaus angebracht sein kann, wenn die
 	Displacement Map aufgrund der niedrigen Bit-Auflösung unpassend skaliert ist) und dem gewichteten
-	\lstinline|distanceDependentDisplacementFactor| aus der Control Stage, wird die Vertex-Position shcließlich entlang 
+	\lstinline|distanceDependentDisplacementFactor| aus der Control Stage, wird die Vertex-Position schließlich entlang 
 	ihrer normalisierten Normale verschoben:
 	
 	\begin{lstlisting}[language=GLSL]  
@@ -487,8 +501,8 @@ float displacementVal =
       texelPos,
       0  //mip map level 0; not thought about sophisticated mip map usage in this context yet
     ).x 
-    //note: when applying shift,scale and type conversion from uint to int and setting the texture parameters accordingly,
-    //we could omit the following two operations: TODO test it
+    //note: when applying shift,scale and type conversion from uint to int on the texture values and setting the texture parameters accordingly,
+    //we could omit the following two operations in this shader; TODO test it
     -0.5 //normalized values: shift from [0..1] to [-0.5 .. +0.5]
   )
   *2.0 //scale from [-0.5 .. +0.5] to [-1..+1]
@@ -504,50 +518,161 @@ output.position +=
   weightedDistanceDependentDisplacementFactor
   ;
 	\end{lstlisting}
-	Man bemerke, dass durch die baryzentrische Gewichtung des \lstinline|distanceDependentDisplacementFactor|
-	für jeden Vertex, der auf einer Kante des Basis-Primitivs liegt, immer derselbe Dasplacement- Faktor bestimmt wird, 
-	unabhänging zu welchem Patch er gerade gehört. Dies gilt allerding nicht für Patch-Kanten, wo auch
+	Man bemerke, dass durch die baryzentrische Gewichtung des \linebreak \lstinline|distanceDependentDisplacementFactor|
+	für jeden Vertex, der auf einer Kante des Basis-Primitivs liegt, immer derselbe Displacement- Faktor bestimmt wird, 
+	unabhänging zu welchem Patch er gerade gehört. Dies gilt allerdings nicht für Patch-Kanten, wo auch
 	sog. Seams, also Ränder der Textur-Koordinaten-Inseln (vgl. Abb. \ref{fig:normalDisp}), vorliegen, und die Displacement
-	map nicht optimal (also mit Überlappungen, die über die UV-Inseln hinausgehen) gebaked ist.
-	Leider zeigt meine zuletzt gebakte Displacement Map diese Seams. Es fehlt mir noch an Routine im Umgang mit Blender.
+	Map nicht optimal (also nicht mit Überlappungen, die über die UV-Inseln hinausgehen) gebaked ist.
+	Leider zeigen die Renderings mit meiner zuletzt gebakten Displacement Map diese Seams. 
+	Es fehlt mir noch an Routine im Umgang mit Blender.
 	Innerhalb der UV-Inseln sorgt jedoch das vorgestellte LOD für weiche Übergänge zwischen verschiedenen Patches.
 
 	
 \subsubsection{Implementierte Effekte}
 	\label{sec:genericVisualEffects}
-	Neben der Beleuchtung mit belibig vielen Point- und Spot Lights und dem oben vorgestellten LOD per Tessellation
+	Neben der Beleuchtung mit beliebig vielen Point- und Spot Lights und dem oben vorgestellten LOD per Tessellation
 	wurden noch Shadow Mapping, Normal Mapping und Environment Mapping implementiert. 
 	Diese schon seit mehreren Jahren zum Standard- Feature-Set einer Graphik-Engine gehörenden Effekte
 	sollen im Folgenden kurz vorgeststellt werden.
 	
 
 	\paragraph{Shadow Mapping}
+	\emph{Shadow Mapping} ist eine bildbasierte Technik zur Erzeugung von Schatten-Effekten; sie wird vor
+	allem in Kombination mit Spot Lights benutzt, da die definierte Richtung, Lichtkegel und damit
+	der beschränkte Einflussbereich sich sehr gut auf ein Kamera-View-Frustum übertragen lassen.
+	
+	In der Initialisierungsphase wird an jedes \lstinline|VisualMaterial| die Textur zugewiesen,
+	die die \lstinline|ShadowmapGenerationStage| als Depth Buffer verwenden wird. Diese 
+	Textur hat als \lstinline|BufferSemantics| den Wert \lstinline|SHADOW_MAP_SEMANTICS|.
+	
+	Die Szene wird in \emph{Flewnit} von der \lstinline|ShadowmapGenerationStage| aus Sicht einer
+	\lstinline|SpotLightSource| in ein \lstinline|RenderTarget|  mit einer ans
+	Depth-Attachment angehängten \lstinline|Texture2DDepth| gerendert.
+	Rendering in Farb-Texturen wird explizit deaktiviert (\lstinline|glDrawBuffer(GL_NONE)|),
+	da wir nur am Depth Buffer interessiert sind.
+	Es werden nur die \lstinline|WorldObjects| gezeichnet, deren \lstinline|VisualMaterials| 
+	das ShadowCaster-Flag gesetzt haben. Die Vertex Shader mit den entsprechenden Kontext-Variablen
+	werden generiert bzw ausgelesen und an die kompatiblen \lstinline|VisualMaterial|s zugewiesen.
+	Statt der ViewProjection-Matrix der Betrachter-Camera wird das Pendant abgefragt:
+	Die Matrix, die von 
+	\lstinline|Matrix4x4 SpotLight::getViewProjectionMatrix()| zurück gegeben wird, wird mit der ModelMatrix
+	der WorldObjects verrechnet, und diese akkummulierte ModelVieProjectionMatrix wird vor jedem Draw Call 
+	in dem \lstinline|VisualMaterial| zugewiesenen Shader gesetzt. Auch der Instance Manager muss die korrekten
+	Matrizen benutzen, um seinen Uniform Buffer zu aktualisieren.
+	Im Falle von Tessellation muss dennoch die Betrachter-Kamera gesetzt werden (siehe Abschnitt 
+	\ref{par:ShaderManager:Problems}).
+	
+	In der \lstinline|DefaultLightingStage| werden zunächst die entsprechenden Beleuchtungs-Shader generiert/beschafft
+	und zugewiesen. Die Objekte werden ebenfalls gerendert, allerdings in den Bildschirm-Frame Buffer oder ein
+	\lstinline|RenderTarget| mit Color-Attachment. In \lstinline|GenericLightingUberShader::use(SubObject *so)|
+	wird dann anhand der Shader Features ermittelt, ob Shadow Mapping aktiviert ist, und wenn ja, die entsprechende
+	Textur an die "`shadowMap"' \lstinline|sampler2DShadow|-Uniform Variable gebunden. Außerdem
+	wird von dem Spot Light, was zuvor zur Generierung der Shadow Map verwendet wurde, die
+	Shadowmap-LookUp-Matrix beschafft und an die entsprechende Uniform Variable gebunden.
+	Diese Matrix transformiert eine Fragment-Position in Betrachter-Kamera- View Space zu einer im
+	Clip-Space $\in [-w .. +w] $ der Shadow Map, zu Lookup-Zwecken mit homogenen Textur-Koordinaten $\in [0..w]$ 
+	multipliziert mit der Bias-Matrix \\
+	$
+	\begin{bmatrix}
+       \frac{1}{2} & 	0	& 0    &  \frac{1}{2}     \\[0.3em]
+       0 & \frac{1}{2}    & 0       & \frac{1}{2} \\[0.3em]
+       0     & 0      & \frac{1}{2} & \frac{1}{2} \\[0.3em]
+        0     & 0      & 0  & 1						\\[0.3em]
+     \end{bmatrix}
+	$\\
+	Die Shadow Map- LookUp-Matrix setzt sich also zusammen aus
+	\begin{equation*}
+		lookUpMat=bias*perspLight*viewLight* viewSpectator^{-1}	
+	\end{equation*}	
+	Die mit dieser Matrix multiplizierte Fragment-Position ergibt eine homogene Lookup-Koordinate,
+	welche direkt als Parameter für die \lstinline|textureProj(..)|-Shadow-Sampler-Lookup-Funktion dienen kann,
+	oder -- wenn zuvor durch die homogene Koordinate dividiert wird, in folgendem Codeschnipsel für ein
+	quadratisch abfallendes Fading-Out sorgen kann, so dass nicht auffällt,
+	wo der Rand des definierten Bereichs der Shadow Map ist. 
+	Die z-Koordinate dieses Vektors wird mit dem Wert in der Shadow Map verglichen: Ist er kleiner 
+	oder gleich groß, gilt das entsprechende Fragment als unverdeckt 
+	(\lstinline|texture( shadowMap, shadowCoord.xyz )| auf einen Shadow Sampler angewandt gibt in diesem Falle 1 zurück, 	
+	sonst 0, bzw. bei linearer Filterung im Randbereich des Schatten einen Wert dazwischen ),
+	sonst als verdeckt.
+	
+		\begin{lstlisting}[language=GLSL]
+/* we have already calculated the w-divided lookup-coordinate	*/
+//we dont want a squared shadow-throwing lightsource impression, but a smmoth circled one:  
+float shadowCoordVecDistFromCenter = length(vec2( shadowCoord.x -0.5, shadowCoord.y -0.5));
+//is fragment within this circle?
+if( shadowCoordVecDistFromCenter < 0.5 )
+{
+	return  
+		clamp(
+			texture( shadowMap, shadowCoord.xyz ) 
+            //falloff along this half-unit-long circle to hide the shadow maps limited domain
+            - (4.0 * shadowCoordVecDistFromCenter * shadowCoordVecDistFromCenter  ),
+             0.0 , 1.0
+            ); 
+}
+else {return 0.0;}
+	\end{lstlisting}
+	
+	
+	%-----------------------------------------
 	
 	\paragraph{Normal Mapping}
 	\label{par:normalMapping}
+	\emph{Normal Mapping} ist der Effekt, bei dem die interpolierte Normale eines Fragments durch eine andere
+	Normale, die in einer Textur, der sog. \emph{Normal Map} 
+	(Beisiel einer Normal Map ist in Abb. \ref{fig:normalDisp} links)
+	nachgeschaut wird, ersetzt wird. 
+	Somit ergeben sich hochfrequente Normalen-Pattern, die mit der grobschlächtigen Basis-Geometrie 
+	überhaupt nicht möglich wären. Da die Normale bei sämtlicher Beleuchtung eine Rolle spielt, 
+	suggeriert ihre Richtung dem Betrachter diejenige Richtung, in welche die zugrundeliegene 
+	Geometrie zu weisen scheint. Hiermit ergibt sich ein sehr plastischer Eindruck, obwohl die 
+	zugrundeliegende Geometrie womöglich völlig flach ist.
+	Abb. \ref{fig:sceneOverview40LQ} auf Seite \pageref{fig:sceneOverview40LQ}
+	zeigt z.B die Szene mit und ohne aktiviertes Normal Mapping: 
+	Der	Boden ist nur ein riesiges Rechteck, aber für ein unbedarftes Auge wirkt er zunächst einmal wie eine plastische,
+	hubbellige Stein-Landschaft. Dieser Trick der Illusion von Plastizität bricht jedoch bei spitzen
+	Betrachtungwinkeln, vor allem bei Silhouetten, ein. Abhilfe Schaffen erweitere Techniken wie Parallax Occlucion
+	Mapping, Relief Mapping, oder aber -- was am robustesten ist, weil es als einziges dieser Verfahren "`echte"' Geometrie
+	erzeugt, die breit erläuterte Tessellation. Normal Mapping richtet die Normalen aus, die durch das reine
+	Displacement Mapping nicht modifiziert wurden. Erst so entsteht ein konsitenter Gesamt-Eindruck beim Displacement 
+	Mapping. Normal Mapping gehört somit keinesfalls zum alten Eisen. Es ist vielmehr die ideale Ergänzung zum Displacement
+	Mapping via Tessellation.\\
+	
+	Technisches: Die Richtungs-Werte der Normal Map liegen im sog. \emph{Tangent Space} vor.
+	Dies ist das Koordinatensystem, welches auf einem Primitiv aufgespannt wird durch seine Tangente, welche die
+	x-Achse repräsentiert, durch die Normale, die für die Z-Achse steht, und das Kreuzprodukt dieser beiden Vektoren
+	erstellt die sog. Bitangente, die die y-Achse des Tangent Space gibt.
+	Die Tangente kann z.B. als Vorprozess aus den Textur-Koordinaten und der Normale errechnet werden.
+	\emph{Assimp} übernimmt diese Funktionalität auf Wunsch.
+	Diese drei Vektoren bilden, als Zeilen-Vektor in eine 3x3-Matrix geschrieben eine orthonormale Matrix,
+	also eine Rotationsmatrix, mit welcher multipliziert ein Vektor im Tangent Space in den View Space
+	transformiert werden kann, sofern Tangente,Bitangente und Normale im View Space vorliegen.
+	Genau eine solche Funktionalität brauchen wir für Normal Mapping: Die Primitiv-relative Normale muss erst noch
+	durch diese sogenannte TBN-Matrix in den View Space transformiert werden, damit man auf ihr valide
+	Beleuchtungs-Operationen ausführen kann.
 	
 		
 	\paragraph{Environment Mapping}
+	Beim \emph{Environment Mapping} handelt es sich um den Trick, dem Betrachter perfekt spiegelnde Materialien 
+	wie z.B. Auto-Lack zu suggerieren, ohne dass man sich aufwändiger Ray-Tracing-Methoden bedienen muss.
+	Das Environment Mapping-Verfahren, welches von OpenGL nativ unterstützt wird durch entsprechende Texturtypen 
+	und GLSL-Samplers ist das \emph{Cube Mapping}. Eine Cube Map besteht auch sechs einzelnen Bildern,
+	wo jedes ein Raum-Richtung abdeckt. In Kombination bildet dieser "`Würfel aus Bildern"' ein Panorama,
+	was für jede Raumrichtung einen definierten Farbwert hat.
+	Diese Cube Map kann sowohl für das Environment Mapping in GLSL über einen 
+	\lstinline[language=GLSL]|samplerCube| benutzt werden, dessen Lookup-Funktion einen
+	3D-Vektor, nämlich die Normale als Parameter hat, als auch für das Rendering des Sky Domes verwendet werden.
+	Abb. \ref{fig:cubeMapSkyDome} zeigt die Verwendung derselben Cube Map sowohl als Environment Map
+	auf der Geometrie im Vordergrund, als auch als Sky Dome im Hintergrund.
+	
+	\begin{figure}[!h]
+	\includegraphics[width=1.0\textwidth]{Screenshot_cubeMappingAndSkyDome.png} 
+	\caption{ 
+		Dieselbe Cube Map dient sowohl als Environment Map als auch als Textur für den Sky Dome
+	}
+	\label{fig:cubeMapSkyDome}
+\end{figure}
+	
 
-
-%%-------------------------------------------------------------------------------------------------------
-\todo[color=green]{diesen klumbatsch in form bringen, mit bildern anreichern etc pp}
-
-Zunächst zum Begriff "Mapping", der so oft auftaucht: Englisch "map"-"Landkarte", "to map"-"abbilden" Bedeutet in der Computergrafik meist die Abbildung eines Bildes auf eine Oberfläche nach einem bestimmten Algorithmus;
-
-- Beleuchtung durch beliebig viele Punkt- und Spot-Lichtquellen (also Lichtquellen mit eineme gerichteten Kegel, Scheinwerfer)
-
-- Shadow Mapping: Erzeugen eines bildes aus Tiefenwerten, anschließend vergleich der Tiefenwerte aus Kamerasicht mit denen aus Lichtquellensicht (der "shadow map", Schattenkarte), pixel im finalen Bild gilt als verdeckt wenn Tiefenwert aus Kamerasicht größer als der entsprechende Pixel in der shadow map, unverdeckt wenn nicht;
-
-- Normal Mapping: Verzerrung der Oberflächen-Normalen (Vektor Sekrecht zur Oberfläche) um relief-artige Geometriedetails zu simulieren, ohne dass tatsächlich diese feine Geometrie in der virtuellen Szene existiert; Dies spart Rechenleistung und Speicher im Vergelcih zu einer Szene, wo all dieses Detail tatächlich in der Geometrie vorhanden wäre; Anschauliches Anwendungsbeispiel: Illusion der feinen Geometrie von Rauhfasertapete auf einem schlichten Quadrat; Nachteil: Die geometrische Illusion brich bei flachen Betrachtungswinkeln ein, die Flachheit der eigentlichen, simplen Geometrie fällt dann auf; Die Information der verzerrten Normalen stammt ebenfall aus einem Bild, der "normal map"; Diesmal werden die Pixelwerte jedoch nicht als Farben oder Tiefenwerte, sondern als Abweichung von der unverzerrten Normalen interpretiert (rot->x-Achse;grün->y-Achse; blau->z-Achse); Da im Computer alles nur Zahlen sind und Semantik erst durch unsere Verwendung und Wahrnehmung erlangen, und da die Graphikkarten so weit flexibel/programmierbar geworden sind, dass man als Programmierer Kontrolle über derartige "Um-Interpretierung" hat, ist dies möglich;
-
-- Environment mapping: Der Trick, perfekt spiegelnde Materialen vorzugaukeln: Es wird in einer "Cube map" nachgeschaut, einer Sammlung von sechs bildern, wo jedes Bild eine Würfelseite repräsentiert; Die Reichtung der Normalen eines Pixels wird umgerechnet in eine Koordinaten, mit der in der Cube Map nachgeschaut wird; Dieser Frabwert fießt dann in die Farbe des Pixels des finalen Bildes ein; Vorteil: Dinge wie lackierte Autokarosserien lassen sich ganz gut vorgaukeln, mit recht geringem Rechenaufwand; Nachteil: Da für gewöhnlich nur in einem statischen Bild nachgeschaut wird, können dynamische Änderungen der Szene bei der "pseudo-spiegelung" nicht erfasst werden; Ein Objekt, welches sich nache eines autos bewegt, bewegt sich ein seiner "Spiegelung" nicht; Aus solchen Gründen sind in Cube maps oft nur sehr entfernte Dinge dargestellt: Horizong, Himmel, Wolken etc.; Diese Dinge ändern sich in der Realistät ja nicht so schnell, daher fällt der Nachteil beim environment mapping unter dieser Einschränkung nicht mehr so drastisch auf; Der Hintergrund, die orangene Dämmerung, ist gnau diese Cube map, die ich also sowohl für die Pseudo-Spiegelung als auch als "Füllmaterial" dort, wo ich keine Geometrie in der Szene habe, verwende;
-
-- Tesselation: Wie Bei Normal Mapping soll der wahrgenommene Detailgrad der Geometrie erhöht werden; Jedoch erzeugt die Tesselation "`echte"' Geometrie, in Abhängigkeit von der Entwerfnung eines Objekte zur Betracher-Kamera; Somit wird dort Geometrie erzeugt, wo sie nötig für den Detailgrad des aktuellen Bildes ist, und dort eingespart, wo sie momentan unnötig ist; Diese Technik hat nicht die Nachteile des Normal mappings; Jedoch Ist durch die Reine Erzeugung von Geometrie noch nicht viel gewonnen; Sinn bekommt diese neue  Geometrie wert dann, wenn sich auch wirklich mehr Datail mit ihr darstellen lässt; Erreicht wird dies durch eine sogenannte Displacement Map (frei Übersetzt "Verschiebungs-Karte", ein Bild, in dem Tiefenwerte der Hoch-detaillierten Geometrie gepeichert sind). Die neu erzeugte Geometrie wird also entlang der Normalen um den Betrag verschoben, wie in der Displacement Map eingetragen ist; Somit entsteht ein "tatsächliches Relief", im gegensatz zum Vorgegaukelten Relief beim Normal Mapping; MEhr Details erspare ich dir, z.b. Warum man Normal Mapping trotzdem immer noch für die Beleuchtung braucht, trotz der Tesselation und dem Displacement mapping;
-
-Anmerkung: Weil ich Tesselation so toll finde, habe ich mir das Velociraptor-3D-Modell aus dem Internet besorgt; Dieses hatte 5 Milloonen Dreiecke; Ich habe es mit einem Programm (was ich nicht selbst geschrieben habe, davon versteh ich leider noch viel zu wenig) herunterrechnen lassen, so  dass ein vereinfachtes Modell mit etwa 11000 Dreicken entstand, also ein etwa zweitausend mal simpleres Modell. Mit einem anderen Programm habe ich dann die Geometrie des komplexen Modells auf die des simplen Modells projeziert, die detailgrad-bedingte Distanz zwischen den Geometrien in ein Bild geschrieben; Dieses Bild ist die Displacement map für die Tesselation izur Darstellung in meinem eigenen Programm; Somit kann ich nun den Dinosaurier beinahe so detailliert darstellen, wir er im Originalmodell vorliegt, jedoch mit viel höheren Bildwiederholungsraten; 
-
-%%-------------------------------------------------------------------------------------------------------
-	  
 
 \clearpage

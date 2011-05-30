@@ -12,19 +12,13 @@ vec3 getNormal(int sampleIndex)
       return normalize(input.normal.xyz);
     {% else %}
       vec3 nonPerturbedNormal = (texture(normalMap,input.texCoords.xy).xyz - vec3(0.5)) ;//* 2.0;
-      //vec3 nonPerturbedNormal = (texture(normalMap,input.texCoords.xy).xyz );
       nonPerturbedNormal = normalize(nonPerturbedNormal);
 
       vec3 normalN = normalize(input.normal.xyz);
       vec3 tangentN = normalize(input.tangent.xyz);
       vec3 binormalN = cross(normalN,tangentN.xyz);
-      //binormalN = normalize(binormalN);
 		  
       mat3 TBNMatrix= mat3(tangentN.xyz,binormalN.xyz,normalN.xyz);
-      
-      //vec3 debugNormal = TBNMatrix * nonPerturbedNormal;   
-      //if(debugNormal.z < 0.0) return vec3(100.0,0.0,0.0); 
-      
       return TBNMatrix * nonPerturbedNormal;   
     {% endif %}	
   {% endif %}	

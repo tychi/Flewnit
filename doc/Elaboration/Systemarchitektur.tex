@@ -1080,6 +1080,7 @@ VisualMaterialFlags(
 	
 	%\sectionlevelfour{Probleme}
 	\paragraph{Probleme}
+	\label{par:ShaderManager:Problems}
 	Es sei noch ein nicht so unwichtiges Wort verloren über den Versuch, viele Effekte und Techniken in beliebiger
 	Permutation zu kombinieren: Da dank der Template-Engine nun die Möglichkeit besteht, in Vererbungs-Hierachien zu denken
 	und somit objektorientierte Ansätze ins Shader-Design einfließen zu lassen, zeigt sich umso deutlicher,
@@ -1090,7 +1091,7 @@ VisualMaterialFlags(
 	Ein Beispiel ist die Kombination von Tessellation mit Shadow Mapping und/oder Layered Rendering: 
 	Hier tut sich das Problem auf, dass wir zur Shadowmap-Generierung aus Sicht der Lichtquelle rendern 
 	(die View-Matrix ist aus Position und Richtung der \emph{Lichtquelle} konstruiert), wir aber für Level-Of-Detail-	
-	Berechnungen zur Bestimmung des Tessellation-Levels	Vertex-Positionen im \emph{Betrachter}-Viewspace benötigen!
+	Berechnungen zur Bestimmung des Tessellation-Levels	Vertex-Positionen im \emph{Betrachter}-View Space benötigen!
 	Dies hat den Grund, dass das LOD eines jeden Patches sowohl in der Shadow Map als auch im finalen Rendering
 	gleich sein müssen. Wenn dies nämlich nicht der Fall ist, ist die Geometrie, die dem Shadow-Map-Lookup
 	zugrunde liegt, eine andere als die des finalen Renderings. Somit werden sprichwörtlich Äpfel mit Birnen verglichen,
@@ -1101,20 +1102,20 @@ VisualMaterialFlags(
 	\begin{figure}[!h]
 		\includegraphics[width=\textwidth]{tessellationSelbstverschattung.pdf}
 		\caption{Artefakte bei naiver Tessellation-Level-Berechnung mit 
-		"`Lichtquellen-Viewspace"' bei der Shadow Map Generation}
+		"`Lichtquellen-View Space"' bei der Shadow Map Generation}
 		\label{fig:tessellationSelbstverschattung}
 	\end{figure}
 	
 	Um diese Artefakte zu vermeiden, muss für die LOD-Berechnung im Tesselation Control Shader
-	\emph{immer} die Viewspace-Position der Vertices aus Sicht der Betrachter-Kamera zur Verfügung stehen.
+	\emph{immer} die View Space-Position der Vertices aus Sicht der Betrachter-Kamera zur Verfügung stehen.
 	Bei der Shadow-Map-Generierung und/oder bei Layered Rendering (in Cube Maps und/oder Texture Arrays)
 	werden aber für alles weitere, wie Displacement Mapping im Tessellation Evaluation Shader oder Beleuchtung
-	im Fragment Shader, Viewspace-Positionen aus \emph{Lichtquellen}-Sicht bzw. \emph{Worldspace}-Positionen durch die
+	im Fragment Shader, View Space-Positionen aus \emph{Lichtquellen}-Sicht bzw. \emph{Worldspace}-Positionen durch die
 	einzelnen Shader Stages geschleift.\footnote{bei Layered Rendering muss man bis zur Geometry Shader Stage im 
 	World Space (nur mit der Model Matrix) rechnen, da im Geometry Shader jedes Layer eine andere Kamera, also eine andere 
 	View Matrix hat. Entsprechend kann  man keine ModelView Matrix für frühzeitige View Space-Berechnungen akkumulieren!}
 	Somit sind die klassischen Interface-Varying-Variablen schon belegt.
-	Man muss also eine neue Variable benutzen, um die Betrachter-Kamera- Viewspace-transformierte Vertex-Position
+	Man muss also eine neue Variable benutzen, um die Betrachter-Kamera- View Space-transformierte Vertex-Position
 	vom Vertex Shader an den Tessellation Control Shader zu übergeben. Da die built-in-Variable
 	\lstinline[language=GLSL]|gl_Position| für OpenGL erst direkt vor der Fragment Shader-Stage für die Rasterisierung
 	benötigt wird, kann man sie zuvor einfach zum Durchschleifen beliebiger Werte zweckentfremden. Somit ergibt sich
