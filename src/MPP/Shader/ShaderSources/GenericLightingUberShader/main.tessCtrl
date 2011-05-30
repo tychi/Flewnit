@@ -37,13 +37,17 @@ out InterfaceData
 
 float calculateDistanceDependentDisplacementFactor( float distanceVS )
 {
+ //distanceVS > distanceToBeginWithTesselation --> 0
+ //distanceVS < distanceUntilFullSubdivision   --> 1
+ //inbetween --> grow fast when far away (user doesnt notice becaus of distance), 
+ //				 grow slower when coming closer
+ //				 ==>> square root function in [0..1] satisfies these conditions
  float distFraction = 
     clamp(
       (distanceVS - distanceUntilFullSubdivision) / (distanceToBeginWithTesselation - distanceUntilFullSubdivision),
       0.0,
       1.0 
     );
-  
  return 1.0- (sqrt(distFraction));
 }
 
@@ -77,17 +81,27 @@ void main()
 
  float edgeLengthVS = length( edgeEndVS - edgeStartVS  );
    
+  /*
   float originalTessLevel =  
         edgeLengthVS 
       *640 //* numScreenPixels 
       * tessQualityFactor 
       * distanceFactor ;
+  */
   //originalTessLevel -= 8.0; 
   //float originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor * (1.0- (sqrt(sqrt(distFraction)))) ; 
   //originalTessLevel =  edgeLengthVS * numScreenPixels * tessQualityFactor / edgeDistVS ;
-  originalTessLevel = clamp(originalTessLevel , minTessLevel, maxTessLevel);    
+  //originalTessLevel = clamp(originalTessLevel , minTessLevel, maxTessLevel);    
  
-  gl_TessLevelOuter[gl_InvocationID] = originalTessLevel;
+  //gl_TessLevelOuter[gl_InvocationID] = originalTessLevel;
+  gl_TessLevelOuter[gl_InvocationID] =
+   clamp(	
+        edgeLengthVS 
+      	* 640//numScreenPixels 
+      	* tessQualityFactor 
+      	* distanceFactor,
+      minTessLevel, maxTessLevel );   
+  
   barrier(); //------------------------------------------ 
   if (gl_InvocationID == 0) 
   {

@@ -700,7 +700,7 @@ virtual void deactivate(SimulationPipelineStage* currentStage,
 			verwendet.
 	\end{itemize}
 	Die Repräsentationen überschneiden sich in ihren Kategorisierungen und Eigenschaften, eine sinnvolle Strukturierung ist 
-	also weder trivial noch womöglich eindeutig. Die API-Spezifischen Beschränkungen erleichtern diese Aufgabe nicht 
+	also weder trivial noch womöglich eindeutig. Die API-spezifischen Beschränkungen erleichtern diese Aufgabe nicht 
 	gerade, wenn man das effiziente Mapping auf eine API im Hinterkopf behalten muss.
 	Ich habe mir nicht weiter den Kopf zerbrochen, auch, weil mir spezifisches Wissen z.B. über Primitiv-basierte
 	Rigid Body- Simulation fehlt. So wurde sich pragmatisch in der exemplarischen Implementierung auf die
@@ -712,16 +712,10 @@ virtual void deactivate(SimulationPipelineStage* currentStage,
 	
 	Die Basisklasse hat die Methode
 	\begin{lstlisting}	
-virtual void draw(
-	unsigned int numInstances=1,
-	GeometryRepresentation desiredGeomRep = DEFAULT_GEOMETRY_REPRESENTATION ) = 0;
+virtual void draw( unsigned int numInstances=1 ) = 0;
 	\end{lstlisting}
 	
-	\lstinline|numInstances| findet beim Hardware-Instancing Verwendung (s. Abschnitt \ref{sec:instancing}),
-	\lstinline|desiredGeomRep| bietet die Möglichkeit -- sofern kompatibel -- für den aktuellen Draw-Call
-	eine andere Repräsentation zu wählen. So lassen sich z.B. gezielt bestimmte Dreiecks-Meshes als Linen
-	oder Punkte zeichnen, ohne dass andere Objekte beeinflusst würden, wie es bei einer globalen Einstellung 
-	der Fall wäre (z.B. über \lstinline|glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)|).
+	\lstinline|numInstances| findet beim Hardware-Instancing Verwendung (s. Abschnitt \ref{sec:instancing}).
 	
 	\subsubsection{BufferBasedGeometry}
 		Diese Klasse ist ebenfalls noch abstrakt. Sie ist die Basis für alle Klassen, deren geometrische
@@ -756,7 +750,7 @@ virtual void setAttributeBuffer(BufferInterface* buffi);
 		Buffer als Textur zu binden, darüber, ob es umgekehrt auch geht, habe ich keine offizielle Information, halte
 		es jedoch für unwahrscheinlich 
 		\footnote{Texturen liegen intern so im Speicher, dass eine gute 2D-räumliche Lokalität gewährleistet ist, z.B.
-		über eine Z-Order-Curve (siehe \cite{internet:zOrderCurve}). Auf diese Weise werden Cache Misses und 	
+		über eine Z-Order-Curve (siehe \cite{wiki:ZCurve}). Auf diese Weise werden Cache Misses und 	
 		benötigte Bandbreite reduziert. Dieses Layout is non-disclosed, entsprechend ist es unwahrscheinlich,
 		dass man in CUDA Texturen als generische Buffer binden kann, denn für definierten Zugriff über normale
 		Adressen und Offsets müsste man das Daten-Layout kennen.}.
@@ -786,7 +780,7 @@ virtual void setAttributeBuffer(BufferInterface* buffi);
 	im Index Buffer genutzt werden soll.
 	Dies ist z.B. sinnvoll, wenn mehrere logische Objekte mit verschiedenen Materials in einem Buffer
 	liegen, wie es z.B. bei einer Fluidsimulation der Fall ist, in welcher mehrere Fluide und Rigid Bodies sich
-	ein Attribute Buffer Set teilen. So kann man kontrollieren, was im Buffer gezeichnet werden soll und was nicht.
+	ein Attribute Buffer- Set teilen. So kann man kontrollieren, was im Buffer gezeichnet werden soll und was nicht.
 	In diesem Fall wird \lstinline|glDrawElementsInstancedBaseVertex(..)| für den OpenGL- Draw Call genutzt.
 	
 	Ist kein Index Buffer gesetzt, werden die Vertices über \lstinline|glDrawArraysInstanced(..)|	
@@ -798,6 +792,7 @@ virtual void setAttributeBuffer(BufferInterface* buffi);
 	
 	
 	\subsubsection{InstancedGeometry}
+	\label{architecture:InstancedGeometry}
 	Diese Klasse stellt eine reine "`Dummy-Geometrie"' dar. In ihrer \lstinline|draw()|-Routine teilt sie ihrem
 	zugehörigen \lstinline|InstanceManager| nur mit, dass diese Instanz beim nächsten Instanced Rendering-Draw Call
 	ebenfalls gezeichnet werden will. Für Details sei auf Abschnitt \ref{sec:instancing} verwiesen.
@@ -864,7 +859,7 @@ protected:
 	Sämtliche OpenGL-Calls sind irgendwie durch dieses Makro eingeschlossen. Der etwaige Performance-Overhead spielt
 	durch bedingte Kompilierung im Release-Build keine Rolle.\\
 	
-	Da auf die Klasse sehr häufig zugegriffen wir, ist das Shortcut-Makro \\
+	Da auf die Klasse sehr häufig zugegriffen wird, ist das Shortcut-Makro \\
 	\lstinline|#define PARA_COMP_MANAGER ParallelComputeManager::getInstancePtr()|\\
 	für bequemere Referenzierung der Singleton-Instanz im Code definiert.
 
@@ -891,18 +886,18 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 	Ob Buffer-Operationen mit dem Host-Code synchronisiert werden sollen 
 	(also ob API-Calls wie \lstinline|cl::CommandQueue::enqueueWriteImage(..)| bis zum Beenden der Buffer-Operation
 	nicht zurückkehren sollen) oder nicht, lässt sich global über \lstinline|void setBlockAfterEnqueue(cl_bool val)|
-	und \lstinline|cl_bool getBlockAfterEnqueue()const| setzen bzw abfragen 
-	(vgl. Listing \ref{listing:bufferOpImpls_Buffer} ff.).
-	Letztendlich hat sich jedoch herausgestellt, dass Blocking bei Write-Operationen nicht nötig ist, weil ich
+	und \lstinline|cl_bool getBlockAfterEnqueue()const| setzen bzw. abfragen.
+	Letztendlich hat sich jedoch herausgestellt, dass Blocking bei Write-Operationen nicht nötig ist, weil 
 	(zumindest bei Kernel Launches) intensiv von 
-	\lstinline|cl::Events| Gebrauch mache, von denen man Listen als Parameter an 
-	\lstinline|cl::CommandQueue::enqueueXY()|
+	\lstinline|cl::Events| Gebrauch gemacht wird, von denen man Listen als Parameter an 
+	\lstinline|cl::CommandQueue::enqueueX()|
 	übergeben kann, und dieser Command wird frühestens dann ausgeführt, wenn alle Commands, die mit der Event-Liste
 	assoziiert sind, vollständig ausgeführt sind. Blocking von Buffer-Operationen ist also nur dann nötig, wenn man nach
-	einem 	Read-Back sofort im Host-Code die ausgelesenen Werte benötigt. Beim Design hätte man sich noch mehr auf den
-	Event-Waiting-Mechanismus fokussieren sollen, der zur Zeit vom \lstinline|Bufferinterface| noch nicht unterstützt ist.
-	Das \lstinline|BufferInterface| sollte so schlicht wie möglich gehalten sein. 
-	Momentan kommt deshalb die Synchronisation von Buffer-Operationen etwas holprig daher. 
+	einem 	Read-Back sofort im Host-Code die ausgelesenen Werte benötigt. Beim Design hätte sich noch mehr auf den
+	Event-Waiting-Mechanismus fokussiert werden sollen, der zur Zeit vom \lstinline|Bufferinterface| noch nicht unterstützt 
+	ist.
+	Das \lstinline|BufferInterface| sollte so schlicht wie möglich gehalten sein; deshalb kommt momentan die 
+	Synchronisation von Buffer-Operationen noch etwas holprig daher. 
 	Man kann den Design Flaw umgehen, indem man vor einer Buffer-Operation
 	\lstinline|PARA_COMP_MANAGER->getCommandQueue().enqueueWaitForEvents(eventVector)| aufruft, ein Refactoring ist dennoch 
 	in Planung.
@@ -915,11 +910,11 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 		Die \lstinline|Shader|-Klasse wrappt erwartungsgemäß die OpenGL-Shader-Funktionalität,
 		stellt außerdem Convenience Functions zum Setzen von Uniform Variablen bereit, deren Kontrollfluss
 		z.T. von den \lstinline|ShaderFeaturesLocal| und den \lstinline|ShaderFeaturesGlobal| abhängt.
-		Das \lstinline|MPP|-Interfaces ist implementiert, jedoch noch ableitbar.
-		Nur die neue Routine  \lstinline|virtual void use(ubObject* so)throw(SimulatorException)=0;|
+		Das \lstinline|MPP|-Interface ist implementiert, jedoch noch ableitbar.
+		Nur die neue Routine  \lstinline|virtual void use(SubObject* so)throw(SimulatorException)=0;|
 		ist rein abstrakt.\\
 		
-		Inwiefern das Shader-Interface und seine Implementatioen geschickt und generisch gewählt sind
+		Inwiefern das Shader-Interface und seine Implementation geschickt und generisch gewählt sind
 		oder nicht, konnte leider empirisch noch nicht umfassend ermittelt werden, da bisher der
 		Shader-Template-Code aller abgeleiteten
 		Shader-Klassen auf eine einzige Sammlung von Dateien zurück gehen, nämlich der mit dem suggestiven Namen
@@ -936,7 +931,7 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 		Aus Zeitmangel konnte das Fluid noch nicht angemessen visualisiert werden, das 
 		\lstinline|LiquidVisualMat| ist momentan noch 
 		-- entgegen dem Klassendiagramm in Abb. \ref{fig:ClassDiagOverview2} --
-		"`hacky"' von \lstinline|DegugDrawVisualMat| abgeleitet.\\
+		"`hacky"' von \lstinline|DebugDrawVisualMat| abgeleitet.\\
 		In Anbetracht eines solchen nicht unerheblichen Vollständigkeits-Mangels bei der Implementierung 
 		sei hier explizit auf Abschnitt \ref{sec:statusImplementation} verwiesen, der den Status der Implementierung
 		zur Zeit der Abgabe der Ausarbeitung skizziert.\\
@@ -948,7 +943,7 @@ void ParallelComputeManager::acquireSharedBuffersForCompute()
 	\emph{Grantlee}-Template-Engine verwendet, um aus relativ wenigen Dateien angepasste Shader zu generieren.
 	
 	Sie ist dafür zuständig, immer wenn sich das "`Rendering Szenario"' ändert, also eine neue 
-	\lstinline|LightinSimStageBase| im \lstinline|LightingSimulator| aktiv wird,  anhand von diversen Parametern
+	\lstinline|LightingSimStageBase| im \lstinline|LightingSimulator| aktiv wird,  anhand von diversen Parametern
 	allen \lstinline|VisualMaterial|s einen zum Material, dem Szenario und den globalen Shader-Features
 	kompatiblen \lstinline|Shader| zuzuweisen. Dieser wird entweder zur Laufzeit
 	per \emph{Grantlee} generiert, oder wenn schon ein Shader mit benötigten Features existiert, aus einer
@@ -1087,7 +1082,7 @@ VisualMaterialFlags(
 	\paragraph{Probleme}
 	Es sei noch ein nicht so unwichtiges Wort verloren über den Versuch, viele Effekte und Techniken in beliebiger
 	Permutation zu kombinieren: Da dank der Template-Engine nun die Möglichkeit besteht, in Vererbungs-Hierachien zu denken
-	und somit objektorientierte Ansätze ins Shader-Design einfließen zu lassen, zeigt sich umso krasser,
+	und somit objektorientierte Ansätze ins Shader-Design einfließen zu lassen, zeigt sich umso deutlicher,
 	wie schwer es ist, Effekte und Techniken sauber und modular zu kombinieren, wenn man obendrein noch maximale
 	Performance haben will.\\
 	Viele Features in einem Shader bringen bei Integration neue Einschränkungen mit sich, 
@@ -1097,28 +1092,29 @@ VisualMaterialFlags(
 	(die View-Matrix ist aus Position und Richtung der \emph{Lichtquelle} konstruiert), wir aber für Level-Of-Detail-	
 	Berechnungen zur Bestimmung des Tessellation-Levels	Vertex-Positionen im \emph{Betrachter}-Viewspace benötigen!
 	Dies hat den Grund, dass das LOD eines jeden Patches sowohl in der Shadow Map als auch im finalen Rendering
-	gleich sein müssen! Wenn dies nämlich nicht der Fall ist, ist die Geometrie, die dem Shadow-Map-Lookup
-	zugrunde liegt, eine andere als die des finalen Renderings. somit werden sprichwörtlich Äpfel mit Birnen verglichen,
+	gleich sein müssen. Wenn dies nämlich nicht der Fall ist, ist die Geometrie, die dem Shadow-Map-Lookup
+	zugrunde liegt, eine andere als die des finalen Renderings. Somit werden sprichwörtlich Äpfel mit Birnen verglichen,
 	und es kann zu Artefakten kommen, z.B. Selbstverschattung, wo keine sein sollte (wenn durch Tessellation z.B.
 	eine Furche generiert wird und die Lichtquelle weiter weg von der Geometrie ist als die Betrachter-Kamera, 
 	s. Abb. \ref{fig:tessellationSelbstverschattung}).
 	
 	\begin{figure}[!h]
-	\includegraphics[width=\textwidth]{tessellationSelbstverschattung.pdf}
-	\caption{Artefakte bei naiver Tessellation-Level-Berechnung mit Camera-Viewspace bei der Shadow Map Generation}
-	\label{fig:tessellationSelbstverschattung}
+		\includegraphics[width=\textwidth]{tessellationSelbstverschattung.pdf}
+		\caption{Artefakte bei naiver Tessellation-Level-Berechnung mit 
+		"`Lichtquellen-Viewspace"' bei der Shadow Map Generation}
+		\label{fig:tessellationSelbstverschattung}
 	\end{figure}
 	
 	Um diese Artefakte zu vermeiden, muss für die LOD-Berechnung im Tesselation Control Shader
 	\emph{immer} die Viewspace-Position der Vertices aus Sicht der Betrachter-Kamera zur Verfügung stehen.
 	Bei der Shadow-Map-Generierung und/oder bei Layered Rendering (in Cube Maps und/oder Texture Arrays)
 	werden aber für alles weitere, wie Displacement Mapping im Tessellation Evaluation Shader oder Beleuchtung
-	im Fragment Shader, Viewspace-Positionen aus \emph{Lichtquellen}-Sicht bzw \emph{Worldspace}-Positionen durch die
+	im Fragment Shader, Viewspace-Positionen aus \emph{Lichtquellen}-Sicht bzw. \emph{Worldspace}-Positionen durch die
 	einzelnen Shader Stages geschleift.\footnote{bei Layered Rendering muss man bis zur Geometry Shader Stage im 
 	World Space (nur mit der Model Matrix) rechnen, da im Geometry Shader jedes Layer eine andere Kamera, also eine andere 
 	View Matrix hat. Entsprechend kann  man keine ModelView Matrix für frühzeitige View Space-Berechnungen akkumulieren!}
 	Somit sind die klassischen Interface-Varying-Variablen schon belegt.
-	Man muss also eine neue Variable benutzen, um die Betrachter-Kamera-View Space-transformierte Vertex-Position
+	Man muss also eine neue Variable benutzen, um die Betrachter-Kamera- Viewspace-transformierte Vertex-Position
 	vom Vertex Shader an den Tessellation Control Shader zu übergeben. Da die built-in-Variable
 	\lstinline[language=GLSL]|gl_Position| für OpenGL erst direkt vor der Fragment Shader-Stage für die Rasterisierung
 	benötigt wird, kann man sie zuvor einfach zum Durchschleifen beliebiger Werte zweckentfremden. Somit ergibt sich
@@ -1127,7 +1123,7 @@ VisualMaterialFlags(
 // step 2: calculate the gl_Position, if necessary 
 {%if not layeredRendering and not SHADING_FEATURE_TESSELATION %} 
   //default case:
-  //we need projected transform for rasterization because no tessCtrl/TessEval/geom shader follows the vertex shader;
+  //we need projected transform for rasterization because no tessCtrl/tessEval/geom shader follows the vertex shader;
   gl_Position =  modelViewProjectionMatrix  * inVPosition; /*default MVP transform*/   
 {% endif %} 
 {%if SHADING_FEATURE_TESSELATION %} 
@@ -1152,8 +1148,8 @@ VisualMaterialFlags(
 	
 	\begin{lstlisting}[language=GLSL]
 //In order to determine the tessellation levels,
-//we need all three vertex positions in spectator view space 
-//of the triangle patch to which the current vertex belongs:
+//we need all three vertex positions of the triangle patch to which the current vertex belongs,
+//in spectator view space:
 {%if RENDERING_TECHNIQUE_SHADOWMAP_GENERATION or worldSpaceTransform %}
   //every user varyings are either in spectator world space
   //or in the light source- view- or world space;
@@ -1198,8 +1194,8 @@ VisualMaterialFlags(
 	
 	Die \lstinline|CLProgramManager|-Singleton-Klasse gewährleistet einen Zugriff auf sämtliche OpenCL-Programme
 	im System über ihren Namen. Dies kann nützlich sein, wenn ein Kernel auf die Beendigung eines anderen Kernels
-	warten muss, dafür das Event, was mit der letzten Ausführung assoziiert ist, benötigt, aber kein Handle auf die 
-	entsprechenen \lstinline|CLProgram|s vorhanden ist.
+	warten muss, dafür das Event, was mit der letzten Ausführung assoziiert ist, benötigt, aber kein Handle auf das 
+	zugehörige \lstinline|CLProgram| vorhanden ist.
 	
 	\lstinline|CLProgramManager| besitzt einen \lstinline|IntermediateResultBuffersManager|, der Buffers bereit stellt,
 	die sich verschiedene Kernels für ihre Zwischen-Ergebnisse teilen können. Somit wird GPU-Speicher gespart.
@@ -1394,7 +1390,7 @@ VisualMaterialFlags(
 											see section \ref{sec:ausblick} }
 															&  {\color{orange}o}	\\								
 		\multicolumn{1}{|c|}{} 		& 	multiple fluids		&  {\color{orange}o}	\\	
-		\multicolumn{1}{|c|}{} 		& 	particle Rigid Bodies
+		\multicolumn{1}{|c|}{} 		& 	particle based Rigid Bodies
 															&  {\color{orange}o}	\\	
 		\multicolumn{1}{|c|}{} 		& 	static triangle collision mesh
 															&  {\color{darkred}o}	\\															
@@ -1435,7 +1431,7 @@ VisualMaterialFlags(
 	einen Würfel aus Objekten, die per Instancing gezeichnet werden, tesseliert und normal mapped sind,
 	einen Sky Dome, und schließlich ein tesselliertes, normal und environment mapped Raptor-Modell.
 	Alle Objekte sind mit mehreren Lichtquellen, sowohl Spot als auch Point Lights, in einem Render-Pass beleuchtet.
-	Ein Spot Light wirft per Shadow Mapping Schatten.  
+	Ein einzelnes Spot Light wirft per Shadow Mapping Schatten.  
 	Details werden im Verlauf des Abschnitts \ref{sec:simulation} erläutert.\\
   	
   	Der größte Wermutstropfen bei der Implementierung ist sicherlich die Visualisierung des Fluids, die minimalistischer
@@ -1443,7 +1439,7 @@ VisualMaterialFlags(
   	Abgabe (die ersten Monate waren rein der Framework-Programmierung und dem nicht-Fluid-bezogenen
   	visuellen Rendering gewidmet), 
   	so dass für eine angemessene Visualisierung des Fluids im Rahmen dieser Arbeit leider keine Zeit mehr blieb.
-  	Es soll außerhalb des Rahmens dieser vorgelegten Arbeit "`Screen Space Fluid Rendering with Curvature Flow"' 
+  	Es soll außerhalb des Rahmens dieser vorgelegten Arbeit die in "`Screen Space Fluid Rendering with Curvature Flow"' 
   	(siehe \cite{Green2009FluidRenderingCurvatureFlow}) vorgestellte Lösung nach-implementiert werden.
   	
   	Weiterhin fehlen noch sämtliche erweiterten Features und "`a posteriori"'-Optimierungen (also Optimierungen, die 
@@ -1451,7 +1447,7 @@ VisualMaterialFlags(
   	Der Kernel- und Host-Code für die partikelbasierten Rigid Bodies ist fast komplett programmiert.
   	da der Beginn der Ausarbeitung aber sehr dringend wurde, wurde der Versuchung widerstanden,
   	diesen Code noch zu testen.\\
-  	Weiterhin ist geplant, "`static triangle collision meshes"' in die ansonsten partikelbasierte
+  	Auderdem ist geplant, "`static triangle collision meshes"' in die ansonsten partikelbasierte
   	mechanische Simulation integrieren, es liegt allerdings zur Zeit nur der Entwurf 
   	eines Algorithmus zur Voxelisierung von Dreiecken ins Uniform Grid vor
   	(mehr dazu im Ausblick, Kapitel \ref{sec:ausblick}).
@@ -1464,7 +1460,7 @@ VisualMaterialFlags(
 	
 	Die fehlende GUI erschwert das Parameter-Tweaken, was zur Zeit noch per XML-Datei geschehen muss.
 	
-	Für weitere Details im Umgang mit fehlenden Features und unvöllständiger Implementation sei auf
+	Für weitere Details im Umgang mit fehlenden Features und unvollständiger Implementation sei auf
 	den Ausblick in Abschnitt \ref{sec:ausblick} verwiesen.
 
 \clearpage

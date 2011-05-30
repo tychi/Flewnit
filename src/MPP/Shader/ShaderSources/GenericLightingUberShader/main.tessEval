@@ -5,6 +5,8 @@
 
 layout(triangles, fractional_even_spacing, ccw) in;
 //layout(triangles, fractional_odd_spacing, ccw) in;
+//layout(triangles, equal_spacing, ccw) in;
+
 
 
 //---- shader interface ----------------------
@@ -95,27 +97,23 @@ void main()
           texelFetch(
             displacementMap, 
             texelPos,
-            0  
+            0  //mip map level 0; not thought about sophisticated mip map usage in this context yet
           ).x 
-          //- 0.75
-          -0.5
+          //note: when applying shift,scale and type conversion from uint to int and setting the texture parameters accordingly,
+          //we could omit the following two operations: TODO test it
+          -0.5 //normalized values: shift from [0..1] to [-0.5 .. +0.5]
         )
-        *2.0
+        *2.0 //scale from [-0.5 .. +0.5] to [-1..+1]
         ;
         
-   //displacementVal*=2.0;
-
-  float weightedDistDepDisplFactor = BARYCENTRIC_WEIGHTED(distanceDependentDisplacementFactor);         
-
-
-
+  float weightedDistanceDependentDisplacementFactor = 
+    BARYCENTRIC_WEIGHTED(distanceDependentDisplacementFactor);         
 
   output.position +=  
     normalize(output.normal) * 
     displacementVal *
     displacementIntensity * 
-    weightedDistDepDisplFactor
-    //distanceDependentDisplacementFactor
+    weightedDistanceDependentDisplacementFactor
     ;
 
 

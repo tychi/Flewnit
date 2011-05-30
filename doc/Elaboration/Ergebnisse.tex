@@ -6,7 +6,7 @@
 	\includegraphics[width=1.2\textwidth]{Screenshot_raptorExtremities_allFX.png} 
 	\includegraphics[width=1.2\textwidth]{Screenshot_raptorExtremities_allFX_withoutTess.png}
 
-	\caption{Die Extremitäten des Raptor-modells; Oben: tesseliert, texturiert, normal mapped, environment mapped, 
+	\caption{Die Extremitäten des Raptor-modells; Oben: tesselliert, texturiert, normal mapped, environment mapped, 
 	beleuchtet von fünf Lichtquellen , shadow mapped von einer Lichtquelle; Unten: wie oben, nur ohne Tessellation
 	}
 	\label{fig:raptorExtremitiesTessVSNonTess}
@@ -48,7 +48,7 @@ System noch nicht getestet.
 
 	Zunächst sollen die Ergebnisse ohne die mechanische Simulationsdomäne, also ohne die Fluid-Simulation,
 	vorgestellt werden.
-	Sämtliche Non-OpenCl- Benchmarks wurden nur auf der auf der GT435M durchgeführt.
+	Sämtliche non-OpenCL- Benchmarks wurden nur auf der auf der GT435M durchgeführt.
 	
 	
 	Außer dem Raptor-Modell befinden sich nur Quader in der Szene, geometrisches Detail wird also
@@ -323,7 +323,7 @@ System noch nicht getestet.
 		
 		\multicolumn{1}{|c|}{
     		\multirow{2}{*}{$2^{15}$ ( 32768)}
-    	}	 	 				& \checkmark 			&  6.0	  & 13.1	& xxx	 \\
+    	}	 	 				& \checkmark 			&  6.0	  & 13.1	& 50.0	 \\
  								\cline{2-5}
  		\multicolumn{1}{|c|}{} 	& x						&  5.8	  & 13.0	& 45.0	 \\
  		\noalign{\hrule}   	
@@ -366,12 +366,15 @@ System noch nicht getestet.
 		\item Die Performance zwischen den beiden Fermi-Devices unterscheidet sich immer mindestens um den Faktor 7,
 		was mit der Anzahl an Compute Units korrelliert (2 zu 14); Der über das Siebenfache hinausgehende
 		Performance-Unterschied ist wohl der höheren Taktung und weiteren Desktop-GPU- vorbehaltenen Features zu verdanken.
-		\item Aus der oberen Feststelung, dass die Performance mit der Anzahl an Compute Units zu korrellieren scheint,
+		\item Aus der oberen Feststellung, dass die Performance mit der Anzahl an Compute Units zu korrellieren scheint,
 		und nicht mit der Gesamt-Anzahl an Rechen-Einheiten (96 zu 480), mag zwei Gründe haben: Entweder sind die
 		Kernels so voller Daten-Abhängigkeiten und Synchronisations-Punkte, dass die Superskalarität, die nötig ist, um 
-		alle 48 Recheneinheiten einer solchen Compute-Unit zu nutzen \footnote{Work Items sind auch bei diesen Chips in 
-		"`Warps"' à 32 Stück organisiert und synchronisiert, so dass weitere Recheneinheiten nur durch Ausnutzen von 
-		Superskalarität	genutzt werden können}, nicht mehr gegeben ist;
+		alle 48 Recheneinheiten einer solchen Compute-Unit zu nutzen 
+		\footnote{Work Items sind auch bei diesen Chips in "`Warps"' à 32 Work Items organisiert und synchronisiert, so 
+		dass weitere Recheneinheiten nur durch Ausnutzen von Superskalarität 
+		(also paralleler Ausführung von eigentlich sequentiellen Befehlen, zwischen denen aber keine Abhängigkeiten
+		bestehen) genutzt werden können.}
+		, nicht mehr gegeben ist;
 		oder aber der Unterschied ist noch stärker der höheren Taktung und weiteren Stärken der GTX 570 zu verdanken.
 		\item Der Perfomance-Unterschied zwischen der GT435M und der GTX 280 liegt nur bei einem Faktor von gut 2,
 		obwohl die GTX280 mehr als doppelt so viele Recheneinheiten (96 zu 240) hat und zum Release der GT200-Generation
@@ -389,14 +392,16 @@ System noch nicht getestet.
 			\item Der L1-Cache der Fermi-Architektur, der bei Global Memory Reads Latenz verkürzt und Bandbreite spart
 			\item Die verbesserte Integer-Performance: Durch die Verwaltung der Beschleunigungs-Struktur über Z-Indices,
 			Radix Sort, Stream Compaction etc. bestehen viele Kernels ausschließlich aus Integer-Operationen.
-			Nativ sind bei GT200 nur 24Bit-Integer-Operationen unterstützt, die ich nicht explizit genutzt habe, weil ich
-			für Fermi optimieren wollte.
-			\item Der größere local Memory der Fermi-GPUs:
+			Nativ sind bei GT200 nur 24Bit-Integer-Multiplikationen unterstützt, die ich nicht explizit genutzt habe, weil 
+			ich für Fermi optimieren wollte; hier würde sich die Performance durch diese Operationen sogar 
+			verschlechtern (\cite{nvidiaOpenCLProgrammingGuide}, S. 34). Ein Makro könnte das 
+			Architektur-spezifische Problem beheben, noch wird aber keines verwendet.
+			\item Der größere Local Memory der Fermi-GPUs:
 				Hierdurch kann eine Work Group z.B. mehr Radix Counters beim Radix Sort pro Work Group haben, 
 				was die lokalen Scan-Intervalle größer und effektiver macht, denn ein großer Scan pro WorkGroup 
 				hat in den letzten Scan-Schritten nur noch eine aktive Warp, wohingegen bei vielen kleinen Scans pro Work 					Group am Ende so viele Warps aktiv sind, wie lokale Radix-Counter-Intervalle gleichzeitig pro Work Group 	
-				gescannt werden; Außerdem nimmt mit größeren "`local Scan"'-Intervallen die Anzahl der Elemente für den
-				"`global Scan"' ab, so dass auch dieser schneller geht.
+				gescannt werden; Außerdem nimmt mit größeren "`Local Scan"'-Intervallen die Anzahl der Elemente für den
+				"`Global Scan"' ab, so dass auch dieser schneller geht.
 			\end{enumerate}	
 	\end{enumerate}
 	
@@ -435,7 +440,7 @@ System noch nicht getestet.
 if(any(isnan(ownAccelerationNew)) || any(isinf(ownAccelerationNew)) ) 
 	{ownAccelerationNew =  (float4)(0.0f,0.0f,0.0f,0.0f); }
 		\end{lstlisting}
-		, um etwaige "Not A Number"'s oder "`infinities"' heraus zu filtern; 
+		, um etwaige "Not A Number"'s oder "`Infinities"' herauszufiltern; 
 		
 		\item
 		Durch den auf Seite \pageref{enum:oclSyncBug} beschriebenen Bug laufen sowohl die "`Global Scan Phase"'

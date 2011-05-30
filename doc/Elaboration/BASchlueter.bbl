@@ -1,4 +1,4 @@
-\begin{thebibliography}{vdLGS07}
+\begin{thebibliography}{vdLGS09}
 
 \bibitem[APS00]{microfacet}
 Michael Ashikhmin, Simon Premoze, and Peter Shirley.
@@ -62,11 +62,24 @@ Matthias M\"{u}ller, David Charypar, and Markus Gross.
   on Computer animation}, SCA '03, pages 154--159. Eurographics Association,
   2003.
 
+\bibitem[NVI10]{nvidiaOpenCLProgrammingGuide}
+NVIDIA Corporation.
+\newblock {\em {OpenCL Programming Guide for the CUDA Architecture}}, version:
+  3.2, document revision: 08/16/10 edition, 2010.
+
 \bibitem[Pes09]{Peschel2009}
 Franz Peschel.
 \newblock Simulation und {V}isualisierung von {F}luiden in einer
   {E}chtzeitanwendung mit {H}ilfe der {GPU}.
 \newblock Studienarbeit, Universität Koblenz-Landau, apr 2009.
+
+\bibitem[SRS10]{tessMetro2033}
+Oles Shishkovtsov, Ashu Rege, and Nikolai Sakharnykh.
+\newblock {DX11 Effects in Metro 2033: The Last Refuge}.
+\newblock
+  \url{http://developer.download.nvidia.com/presentations/2010/gdc/metro.pdf},
+  2010.
+\newblock [Online; accessed 29-May-2011].
 
 \bibitem[Sta99]{Stam99stablefluids}
 Jos Stam.
@@ -83,10 +96,18 @@ Thomas Steil.
   Interactions}.
 \newblock Diplomarbeit, Universität Koblenz-Landau, dec 2007.
 
-\bibitem[vdLGS07]{Green2009FluidRenderingCurvatureFlow}
+\bibitem[vdLGS09]{Green2009FluidRenderingCurvatureFlow}
 Wladimir~J. van~der Laan, Simon Green, and Miguel Sainz.
 \newblock {Screen Space Fluid Rendering with Curvature Flow}.
 \newblock In Eric Haines, Morgan McGuire, Daniel~G. Aliaga, Manuel~M. Oliveira,
-  and Stephen~N. Spencer, editors, {\em SI3D}, pages 91--98. ACM, 20092007.
+  and Stephen~N. Spencer, editors, {\em SI3D}, pages 91--98. ACM, 2009.
+
+\bibitem[Wik11]{wiki:ZCurve}
+Wikipedia.
+\newblock {Z-order curve --- Wikipedia, The Free Encyclopedia}.
+\newblock
+  \url{http://en.wikipedia.org/w/index.php?title=Z-order_curve&oldid=425544238%
+}, 2011.
+\newblock [Online; accessed 29-May-2011].
 
 \end{thebibliography}

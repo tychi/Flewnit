@@ -42,7 +42,7 @@
 			4 Channeltypen \emph{*} 3 Bitgrößen * (3 non-normalized + 2 normalized)= theoretisch 60 makros;
 			Erstens stört die Asymmetrie, zweitens das "`Zusammenklatschen"' eigentlich unabhängiger Parameter in ein 
 			Makro.}. 
-	Es soll ein Buffer mit einem einzigen Konstruktor-Call völlständig definiert,
+	Es soll ein Buffer mit einem einzigen Konstruktor-Call vollständig definiert,
 	falls erwünscht auf dem Host-Memory und -- sofern unterstützt --
 	in den gewünschten API-Contexten allokiert bzw registiert werden.
 	
@@ -51,7 +51,7 @@
 		
 		\item[enum Type] 
 		Beschreibt String-, boolsche, Skalar-, Vektor- und Matrix-Datentypen mit verschiedener 
-		Genauigkeit. Findet in \emph{Flewnit} u.a. auch beim Config-Parsen Verwendung.
+		Genauigkeit; findet in \emph{Flewnit} u.a. auch beim Config-Parsen Verwendung.
 		
 		%--------------------------------------------------------------------------------------------
 		\item[enum ContextType und ContextTypeFlags] 
@@ -65,11 +65,10 @@
 		siehe Listing \ref{listing:BufferSemantics} im Anhang \ref{append:Listings}.
 		Dieser Aufzählungstyp ist eine große Erleichterung beim Hantieren mit OpenGL Vertex Buffer Objects (VBO's) 
 		\footnote{abstrahiert von \lstinline|Flewnit::VertexBasedGeometry|, s. \ref{sec:geometry} }
-		und Frame Buffer Objects (FBO's) 
-		\footnote{abstrahiert von \lstinline|Flewnit::RenderTarget|}, 
-		da hier ein Index zur Assoziation von VBO-Vertex Attribute Buffern mit Input-Variablen im Vertex Shader
-		angegeben werden muss. Dasselbe gilt für den Fragment Shader bei der Assoziation zwischen Output-Variablen 
-		und an verschiedene Color-Attachments gebundenen Texturen.
+		, da hier ein Index zur Assoziation von VBO-Vertex Attribute Buffern mit Input-Variablen im Vertex Shader
+		angegeben werden muss. Dasselbe gilt für OpenGL Frame Buffer Objects (FBO's) 
+		\footnote{abstrahiert von \lstinline|Flewnit::RenderTarget|} bei der Assoziation von
+		an verschiedene Color-Attachments gebundenen Texturen mit den Output-Variablen eines Fragment Shaders.
 		Wenn wir als Index die numerische Entsprechung der Buffer-Semantik verwenden, 
 		ist nicht nur die Lesbarkeit des Codes erhöht, es ist auch automatisch sichergestellt, 
 		dass Indizes keine Konflikte versursachen.
@@ -126,7 +125,7 @@ typedef struct _cl_image_format {
 		Um das interne Handling der CL/GL-Makros etwas symmetrischer zu machen (man verliert leicht den Überblick),
 		ist eine ähnliche Structure definiert 
 		\footnote{Obwohl beide APIs von der Khronos Group spezifiziert wurden und explizit 	
-			Interoperabilität ermöglichen, bestehen viele kleine Asymmetrien zwischen den veschiedenen Makros mit
+			Interoperabilität ermöglichen, bestehen viele kleine Asymmetrien zwischen den verschiedenen Makros mit
 			eigentlich gleicher Semantik. Diese Umstände trugen zu der Entscheidung bei, 
 			das \lstinline|BufferInterface| zu entwickeln, trotz des erheblichen Zeitaufwands.}
 		

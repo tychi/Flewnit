@@ -39,18 +39,19 @@
     mat4 modelMatrix;  //needed for layered rendering to be combined with the several lightsource matrices
     mat4 modelViewMatrix; //needed in a non-layered context for calculation of view-space values for lighting calculations
     mat4 modelViewProjectionMatrix; //needed in a non-layered context for gl_Position calculation
-    
-    int uniqueInstanceID; //it is not guearnteed that for each "logic" instance, the gl_InstanceID stays the same for every draw call
-                          //e.g. because of culling of "previous" instances, the own gl_InstanceID will get smaller 
-    
+    int uniqueInstanceID; //it is not guaranteed that for each "logical" instance, the gl_InstanceID stays the same for every draw call
+                          //e.g. because of culling of "previous" instances, the own gl_InstanceID will get smaller   
     //no padding, because the offsets will be queried via glGetActiveUniformsiv(...)
   };
 
-  layout(shared) uniform InstanceTransformBuffer
+  //the uniform Buffer for the instance transformation matrices
+  //layout(shared) uniform InstanceTransformBuffer
+  uniform InstanceTransformBuffer
   {
     InstanceTransform instanceTransforms[  {{numMaxInstancesRenderable}} ];
   };
 {% else  %}
+  //use the non-buffer- uniforms
   uniform mat4 modelMatrix;
   uniform mat4 modelViewMatrix;
   uniform mat4 modelViewProjectionMatrix; 

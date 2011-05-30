@@ -37,10 +37,11 @@
 		Kernel ausführt wie die Kraft-Berechnungen (die Stabilität kann insofern leiden, dass bei diesem Ansatz
 		immer die Dichte-Werte vom vorherigen Simulationsschritt verwendet werden müssen, welche somit veraltet sind)
 		\item Das Access Pattern für Nachbar-Partikel von Goswami (s. S. \pageref{enum:goswamiAccessPattern})
-			 auf linearen Buffern mit Fermi-Devices auf Performance prüfen, bei negativem Ergebnis Tricks mit 2D-Texturen
-			 erwägen
+			 auf linearen Buffern mit Fermi-Devices auf Performance prüfen, bei negativem Ergebnis Pattern verwerfen
+			 oder Tricks mit 2D-Texturen erwägen, außerdem versuchen, mehr über die L1-Cache-Nutzung in Nvidia-Hardware
+			 herauszufinden
 		\item Die partikelbasierte Rigid-Body-Simulation lauffähig machen
-		\item Ein anderes Integrations-Schema als das sehr Bandbreiten-lastige und Speicher-hungrige 
+		\item Ein anderes Integrations-Schema als das sehr Bandbreiten-lastige und speicherhungrige 
 			\emph{Velocity Verlet}-Verfahren testen.
 			%Da das \emph{Leap Frog}-Verfahren seine Vorteile verliert,
 			%sobald man Geschwindigkeits-Werte zur Kraftberechnung benötigt (wie etwa bei Viskositäts-Berechnungen),
@@ -48,13 +49,13 @@
 			%erst noch gefunden werden.
 		\item Das Fluid angemessen visualisieren nach \cite{Green2009FluidRenderingCurvatureFlow}, aus Erkenntnissen
 		hieraus womöglich die \lstinline|Shader|-Klasse und den Shader-Template-Code des
-		"`GenericLighingUberShader"' refactorn
+		"`GenericLightingUberShader"' refactorn
 		\item Die Funktionalität, mehrere Fluide zu simulieren und visualisieren, lauffähig machen
 		\item OpenCL-Kernels profilen, Flaschenhälse finden, optimieren
 		\item Den \lstinline|SceneLoader| fertig implementieren
 		\item Die Features zu Ende implementieren, für welche schon viel Code im System liegt: 
 		Deferred und Layered Rendering
-		\item Funktionalität zur Voxelisierung von Geometrie bereitstellen, so dass beliebige water tight meshes
+		\item Funktionalität zur Voxelisierung von Geometrie bereitstellen, so dass beliebige "`water tight"' Meshes
 		an der Rigid Body-Simulation teilnehmen können
 		\item Die "`static triangle collision meshes"' implementieren
 		\item Eine GUI implementieren
