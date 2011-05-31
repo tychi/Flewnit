@@ -1,31 +1,129 @@
 
 
 \label{sec:mechanicalDomain}
-blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext 
+In dieser Domäne wurde exemplarisch eine partikelbasierte Fluid-Simulation nach dem
+Verfahren der Smoothed Particle Hydrodynamics mit OpenCL implementiert.
 	
-\subsubsection{Fluidsimulation}
-blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext 		
-blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext 
-blindtext blindtext blindtext blindtext blindtext 
+\subsubsection{Fluid-Simulation}
 		
-	\paragraph{Grundlagen}
-	blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext 
-	
+	\paragraph{Grundlagen}	
 		\subparagraph{Die Navier-Stokes-Gleichungen}
-		Herleitung, Erläuterung
-		blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext blindtext 
+		Die Sammlung an Gleichungen, die das Verhalten von Fluiden beschreiben, sind die
+		\emph{Navier-Stokes-Gleichungen}.
+		Für die Echtzeit-Simulation nützlich sind die \emph{inkompressiblen} Navier-Stokes-Gleichungen:
+		\begin{subequations}\label{equ:navStokes1}
+			\begin{align}
+			\rho 
+			\left( 
+				\frac{\partial \vec{v}}{\partial t} 
+				+ 
+				\left( \vec{v} \cdot \nabla	\right) \vec{v} 
+			\right)
+				& = - \nabla p  + \mu \Delta \vec{v} + \vec{f} \\
+			\nabla \cdot \vec{v}   & = 0
+			\end{align}	
+		\end{subequations}
+		
+		Die erste Gleichung heißt \emph{Impulsgleichung}. Die basiert auf dem zweiten Newtonschen Gesetz
+		\begin{equation}
+			\vec{F} = m \cdot \vec{a}
+		\end{equation}
+		
+		$\rho$ steht für die Dichte  $\frac{m}{V}$, $\vec{v}$ für die Geschwindigkeit, $t$ für die Zeit,
+		$p$ für den Druck, $\mu$ ist die Viskosität und $\vec{f}$ steht für sämtliche weiteren
+		Kräfte, u.a. Gravitation.\\
+		$\nabla$ ist der Nabla-Operator, der den Gradienten einer Größe liefert, 
+		$\nabla \cdot$	ist die Divergenz,	
+		$\Delta$ ist der Laplace-Operator und ein Maß für die Abweichung einer Größe vom Durchschnitt.\\	
+		
+		Bei den beschriebenen physikalischen Größen handelt es sich um \emph{Kraft pro Volumen},
+		"`Kraftdichten"' (engl. \emph{force density}).
+		
+		Die zweite Gleichung ist die Inkompressibilitätsbedingung.
+		Die Forderung, dass die Divergenz der Geschwindigkeit überall null sein muss, heißt anschaulich, dass es keine
+		Quellen oder Senken von Geschwindigkeitsvektoren geben darf. Damit bleibt die Dichte konstant, da immer genauso
+		viel Materie einen Punkt verlässt wie "`herein kommt"'.\\
+
+		Der Term 			
+		$
+				\frac{\partial \vec{v}}{\partial t} 
+				+ 
+				\left( \vec{v} \cdot \nabla	\right) \vec{v} 
+		$
+		beschreibt die \emph{Materielle Ableitung} und vereinfacht sich aufgrund der "`Lagrange'schen Natur"'
+		der Partikeldomäne zu $\frac{D \vec{v}}{D t}$, da wir keinen Advektions-Term benötigen.\\
+
+		
 			
+		Eine recht gute Einführung für den Laien in diese nicht ganz intuitiven Formeln, mit ein paar Beispielen
+		und Herleitungen, liefert \cite{Steil2007}. Insbesondere wird hier die  
+		"`Lagrange'sche"' und "`Eulersche"' Sicht, die über die Materielle Ableitung verknüpft sind,
+		an einem anschaulichen Beispiel erläutert.\\
+		
+		Was wir für den weiteren Verlauf dieses Kapitels aus den Gleichungen \ref{equ:navStokes1} mitnehmen müssen,
+		ist, dass wir für die mechanische Simulation von Fluiden Kraftdichten berechnen wollen,
+		aus denen wir durch Division durch die Dichte die Beschleunigungen errechnen können,
+		mithilfe derer dann die Integration geschieht, also die Aktualisierung von Positionen und Geschwindigkeiten.
+			
+		
 			
 				
 		\subparagraph{Smoothed Particle Hydrodynamics}
-		ursprünglich aus astronomie blubb blubb 
-		\todo{überlegen, ob ich aus Interesse nicht noch weiter in die Richtung recherchieren sollte, da ich nach meiner 
-		Implementierung erst so richtig beeindruckt von dem Verfahren war (ich habe im Internet noch keine Fluid-Demo 
-		gefunden, die ebenfalls SPH implementiert; ok., ich hab auch nicht gesucht ;) ), und gerne mehr über die 
-		Hintergründe verstehen würde... problem, wie immer: Zeitdruck ;( }		
+		Das Verfahren wurde eigentlich von \cite{Gingold_Monaghan_1977} für Anwendung in der Astrophysik
+		entwickelt, jedoch ist es auch für beliebige Fluidsimulationen einsetzbar.
+		Es handelt sich um eine Interpolations-Methode: physikalische Größen sind nur stichprobenhaft
+		in einem Raum enthalten, doch durch Interpolation von Nachbar-Samples lässt sich eine Größe $A$
+		für jeden Punkt $\vec{r}$ im Raum bestimmen:
+		
+		\begin{equation} \label{equ:SPHbase}
+			A_S(\vec{r}) = \sum_j m_j \frac{A_j}{\rho_j} W(\vec{r}-\vec{r}_j,h)
+		\end{equation}
+		
+		Es wird über die $j$ Nachbar-Partikel in der Umgebung iteriert, und die Quantitäten aufsummiert,
+		wobei sie mit dem Volumen ($\frac{m_i}{\rho_i}=V_i$) 
+		sowie einem "`radial symmetric smoothing kernel"'  $W(\vec{r}_j,h)$ gewichtet werden.
+		$h$ ist hier der \emph{Support Radius}. Der Kernel heißt "`normalisiert"' wenn sein Integral 1 ergibt:
+		$\int W(\vec{r}) d \vec{r}=1$.\\
+		
+		
+		Eine wichtige Eigenschaft ist, dass der Gradient oder der Laplacian
+		einer Größe wie in Gleichung \ref{equ:SPHbase} zu berechnen ist, nur dass man den Gradienten bzw. den Laplacian
+		des Smoothing Kernels verwendet:
+		\begin{subequations}\label{equ:navStokes1}
+			\begin{align}
+			\nabla A_S(\vec{r}) &= \sum_j m_j \frac{A_j}{\rho_j} \nabla W(\vec{r}-\vec{r}_j,h) \\
+			\Delta A_S(\vec{r}) &= \sum_j m_j \frac{A_j}{\rho_j} \Delta W(\vec{r}-\vec{r}_j,h)
+			\end{align}	
+		\end{subequations}
+		
+		Die Dichte an einem Punkt kann ebenfalls mit Gleichung \ref{equ:SPHbase} berechnet werden, wobei sich 
+		gerade diese heraus kürzt:
+		
+		\begin{equation} \label{equ:SPHbase}
+			\rho (\vec{r}) = \sum_j m_j  W(\vec{r}-\vec{r}_j,h)
+		\end{equation}
+		
+		Je nach physikalischer Größe bieten sich unterschiedliche Sommting Kernels an, die besondere
+		Eigenschaften haben.		
+		
+		%Es sei noch ein Wort über die Dichte verloren: Obwohl wir eigentlich inkompressible Flüssigkeiten
+		%simulieren wollen, sorgen verschiedene Umstände dafür, dass die Dichte dennoch variiert: numerische Ungenauigkeit,
+		%Dämpfung für numerische Stabilitä
+
+
+		
+		%ursprünglich aus astronomie blubb blubb 
+		%\todo{überlegen, ob ich aus Interesse nicht noch weiter in die Richtung recherchieren sollte, da ich nach meiner 
+		%Implementierung erst so richtig beeindruckt von dem Verfahren war (ich habe im Internet noch keine Fluid-Demo 
+		%gefunden, die ebenfalls SPH implementiert; ok., ich hab auch nicht gesucht ;) ), und gerne mehr über die 
+		%Hintergründe verstehen würde... problem, wie immer: Zeitdruck ;( }		
 		
 	\paragraph{Verwandte Arbeiten}
 	\label{sec:relatedWork}
+
+	Jos Stam \cite{Stam99stablefluids,Stam03realtimefluid} hat auf dem Gebiet der interaktiven Fluid-Simulation 
+	Poinier-Arbeit geleistet 
+	
 	Referenzen auf Müller03, Thomas Steil, Goswami, GPU gems, Aufzeigen, was ich von wem übernommen habe, was ich selbst  
 	modifiziert habe aufgrund von etwaigen Fehlern in den Papers odel weil OpenCL es schlciht nicht zulässt;
 	

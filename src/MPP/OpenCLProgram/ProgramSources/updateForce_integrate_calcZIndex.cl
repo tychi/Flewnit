@@ -268,16 +268,14 @@
       float accellRange = 0.8f;
       float4 ownAccelerationNew =  
         clamp
-	(
+	      ( 
           //force/Volume/(mass/Volume) yields acceleration
-          ( (ownPressureForceDensityNew + ownViscosityForceDensityNew ) / ownDensity ) //TODO native_divide or precompute inverse;
+          ( (ownPressureForceDensityNew + ownViscosityForceDensityNew ) / ownDensity ) 
           //add gravity term, is already an acceleration
           + cSimParams->gravityAcceleration
-	  //+ staticGeomCollisionAcceleration
-
-	  ,
-	  (float4)(-accellRange,-accellRange,-accellRange,0.0f),
-	  (float4)(accellRange,accellRange,accellRange,0.0f)
+          ,
+	        (float4)(-accellRange,-accellRange,-accellRange,0.0f),
+	        (float4)(accellRange,accellRange,accellRange,0.0f)
         )
         + staticGeomCollisionAcceleration
         ;
