@@ -54,7 +54,7 @@ PingPongBuffer::PingPongBuffer(String name,BufferInterface* ping, BufferInterfac
 
 PingPongBuffer::~PingPongBuffer()
 {
-	LOG<<MEMORY_TRACK_LOG_LEVEL<<"Destroying PingPongBuffer named "<<mBufferInfo->name<<" ;\n";
+	//LOG<<MEMORY_TRACK_LOG_LEVEL<<"Destroying PingPongBuffer named "<<mBufferInfo->name<<" ;\n";
 
 	//DON'T delete the managed buffers! everythin is done by SimResMan!
 	//delete mPingPongBuffers[mInactiveBufferIndex];

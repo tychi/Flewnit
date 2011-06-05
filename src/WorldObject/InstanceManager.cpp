@@ -145,8 +145,8 @@ void InstanceManager::registerInstanceForNextDrawing(SubObject* so)throw(Simulat
 	BOOST_FOREACH(SubObject* currentSO, mCurrentlyRegisteredInstancesForNextDrawing)
 	{
 		if(
-			reinterpret_cast<InstancedGeometry*>(currentSO->getGeometry())->getUniqueID() ==
-			reinterpret_cast<InstancedGeometry*>(so->getGeometry())->getUniqueID()
+			reinterpret_cast<InstancedGeometry*>(currentSO->getGeometry())->getInstanceID() ==
+			reinterpret_cast<InstancedGeometry*>(so->getGeometry())->getInstanceID()
 		)
 		{
 			throw(SimulatorException("instance with this ID is already registered"));

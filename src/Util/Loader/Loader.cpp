@@ -73,7 +73,9 @@ void Loader::loadScene()
 				*sceneConfNode
 			);
 			hcsl.loadScene();
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 			Profiler::getInstance().updateMemoryTrackingInfo();
+#endif
 		}
 		else
 		{
@@ -85,7 +87,9 @@ void Loader::loadScene()
 				);
 
 				sceneLoader.loadScene();
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 				Profiler::getInstance().updateMemoryTrackingInfo();
+#endif
 			}
 			else
 			{

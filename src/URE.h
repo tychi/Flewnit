@@ -53,8 +53,8 @@ class URE :
 	//FLEWNIT_BASIC_OBJECT_DECLARATIONS
 
 public:
-    static void bootstrap(bool disableMemoryTrackLogging = false);
-    static void cleanup();
+    //static void bootstrap(bool disableMemoryTrackLogging = false);
+    //static void cleanup();
 
     URE();
     virtual ~URE();

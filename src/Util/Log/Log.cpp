@@ -39,15 +39,24 @@ Log&  Log::operator<<(LogLevel loglevel)
 {
 	mCurrentLogLevel = loglevel;
 
-	(*mFileStream)<< gLogLevelString[loglevel] <<" :";
+	if(logLevelIsEnabled(mCurrentLogLevel))
+	{
+		(*mFileStream)<< gLogLevelString[loglevel] <<" :";
+		handleConsoleOutput(gLogLevelString[loglevel]);
+	}
 
-	handleConsoleOutput(gLogLevelString[loglevel]);
+
 
 	return (*this);
 }
 
 Log&  Log::operator<<(String logEntry)
 {
+	if(! logLevelIsEnabled(mCurrentLogLevel))
+	{
+		return *this;
+	}
+
 	(*mFileStream) << logEntry;
 
 	handleConsoleOutput(logEntry);
@@ -73,10 +82,10 @@ Log&  Log::operator<<(const unsigned char* logEntry)
 #if FLEWNIT_DO_CONSOLE_DEBUG_OUTPUT
 void Log::handleConsoleOutput(String logEntry)
 {
-	 if( mConsoleOutputLevelFlags & FLEWNIT_FLAGIFY(mCurrentLogLevel))
-	 {
-		 std::cout<< logEntry;
-	 }
+	assert(logLevelIsEnabled(mCurrentLogLevel));
+
+	std::cout<< logEntry;
+
 }
 #endif
 

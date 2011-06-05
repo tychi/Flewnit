@@ -25,6 +25,9 @@ public:
 				//SimulationPipelineStage* currentStage, SubObject* currentUsingSuboject,
 				unsigned int numInstances,
 				GeometryRepresentation desiredGeomRep);
+
+	inline ID getInstanceID()const{return mInstanceID;}
+
 private:
 	friend class InstanceManager;
 	//only InstanceManager may create objects of this type;

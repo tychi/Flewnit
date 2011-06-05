@@ -52,31 +52,31 @@
 namespace Flewnit {
 
 //---------------------------------------------------------------------------------------------------------
-///\brief static stuff
-void URE::bootstrap(bool disableMemoryTrackLogging)
-{
-	//INSTANCIATE_SINGLETON(Log);
-	new Log();
-
-	if(disableMemoryTrackLogging)
-	{
-		LOG.disableLogLevel(MEMORY_TRACK_LOG_LEVEL);
-	}
-
-#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-	//INSTANCIATE_SINGLETON(Profiler);
-	new Profiler();
-	Profiler::getInstancePtr()->performBasicChecks();
-#endif
-}
-
-void URE::cleanup()
-{
-#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
-	DESTROY_SINGLETON(Profiler);
-#endif
-	DESTROY_SINGLETON(Log);
-}
+/////\brief static stuff
+//void URE::bootstrap(bool disableMemoryTrackLogging)
+//{
+//
+//	new Log();
+//
+//	if(disableMemoryTrackLogging)
+//	{
+//		LOG.disableLogLevel(MEMORY_TRACK_LOG_LEVEL);
+//	}
+//
+//#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
+//	//INSTANCIATE_SINGLETON(Profiler);
+//	new Profiler();
+//	Profiler::getInstancePtr()->performBasicChecks();
+//#endif
+//}
+//
+//void URE::cleanup()
+//{
+//#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
+//	DESTROY_SINGLETON(Profiler);
+//#endif
+//	DESTROY_SINGLETON(Log);
+//}
 //---------------------------------------------------------------------------------------------------------
 
 
@@ -104,14 +104,25 @@ URE::URE()
 
   mDisableMechanicalSim(false)
 {
-//	mSimulators[MECHANICAL_SIM_DOMAIN]=0;
-//	mSimulators[VISUAL_SIM_DOMAIN]=0;
-//	mSimulators[ACUSTIC_SIM_DOMAIN]=0;
+	new Log();
+
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
+	//INSTANCIATE_SINGLETON(Profiler);
+	new Profiler();
+	Profiler::getInstancePtr()->performBasicChecks();
+#endif
+
 }
 
 URE::~URE()
 {
 	resetEngine();
+
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
+	DESTROY_SINGLETON(Profiler);
+#endif
+	DESTROY_SINGLETON(Log);
+
 }
 
 
@@ -250,7 +261,9 @@ void URE::resetEngine()
 {
 	Log::getInstance()<<INFO_LOG_LEVEL<< "resetting URE;\n";
 
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	Profiler::getInstance().updateMemoryTrackingInfo();
+#endif
 
 	mMainLoopQuitRequested = false;
 
@@ -294,7 +307,10 @@ void URE::resetEngine()
 	delete mConfig;
 	mConfig=0;
 
+#if (FLEWNIT_TRACK_MEMORY || FLEWNIT_DO_PROFILING)
 	Profiler::getInstance().printRegisteredObjects();
+#endif
+
 }
 
 

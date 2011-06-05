@@ -56,8 +56,10 @@ const String gLogLevelString[]
 
 class Log: public Singleton<Log>
 {
-public:
+private:
+	friend class URE;
 	Log();
+public:
 	virtual ~Log();
 
 	Log& operator<<(LogLevel loglevel);
@@ -104,7 +106,10 @@ public:
 		mConsoleOutputLevelFlags &= (~FLEWNIT_FLAGIFY(which));
 	}
 
-
+	inline bool logLevelIsEnabled(LogLevel which)
+	{
+		return ( ( mConsoleOutputLevelFlags & FLEWNIT_FLAGIFY(which) ) != 0 ) ;
+	}
 
 private:
 #if FLEWNIT_DO_CONSOLE_DEBUG_OUTPUT
@@ -127,6 +132,12 @@ private:
 
 template <typename T> Log& Log::handleGenericValues(T logEntry)
 {
+	if(!logLevelIsEnabled(mCurrentLogLevel))
+	{
+		//do nothing for disabled output levels
+		return *this;
+	}
+
 	//static std::stringstream pseudoToStringConverter;
 	std::stringstream pseudoToStringConverter;
 	pseudoToStringConverter<<logEntry;
