@@ -281,6 +281,7 @@ void  ShaderManager::assignShader(VisualMaterial* mat)
 		mat->isInstanced()
 	);
 
+
 //	if( (!tesselationIsEnabled()) )
 //	{
 //		//mask out tesselation feature!
@@ -313,7 +314,7 @@ Shader* ShaderManager::getShader(const ShaderFeaturesLocal& sfl)
 
 /*
  *	Shall return a shader where offsets of members in
- *	lightsource buffer and shadowmap matrix buffer,
+ *	lightsource uniform buffer and shadowmap matrix uniform buffer can be queried,
  *	if the global shader features indicate their possible usage;
  *
  *	note: an instance transform uniform block is not necessary, as every instance manager
@@ -323,17 +324,17 @@ Shader* ShaderManager::getUniformBufferOffsetQueryShader(bool forShadowMapGenera
 {
 	//shaderfeatures to request from the shadermanager a minimalistic shader containing the
 	//uniform buffer declaration, so that offsets can be queried
-	static ShaderFeaturesLocal sfl =
-		ShaderFeaturesLocal(
-				RENDERING_TECHNIQUE_DEFAULT_LIGHTING, //lighting, for the creation of the lightsource uniform block
-				TEXTURE_TYPE_2D_RECT, //play no role, dummy..
-				VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING, //lighting, for the creation of the lightsource uniform block
-				ShadingFeatures(
-						SHADING_FEATURE_DIRECT_LIGHTING //lighting, for the creation of the lightsource uniform block
-						//TODO add shadowing when the rest is stable
-				),
-				false //no global instance buffer query needed
-	);
+//	static ShaderFeaturesLocal sfl =
+//		ShaderFeaturesLocal(
+//				RENDERING_TECHNIQUE_DEFAULT_LIGHTING, //lighting, for the creation of the lightsource uniform block
+//				TEXTURE_TYPE_2D_RECT, //play no role, dummy..
+//				VISUAL_MATERIAL_TYPE_DEFAULT_LIGHTING, //lighting, for the creation of the lightsource uniform block
+//				ShadingFeatures(
+//						SHADING_FEATURE_DIRECT_LIGHTING //lighting, for the creation of the lightsource uniform block
+//						//TODO add shadowing when the rest is stable
+//				),
+//				false //no global instance buffer query needed
+//	);
 
 	if(forShadowMapGeneration)
 	{
@@ -387,11 +388,12 @@ Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 		//depth stuff
 		newShader = new DepthImageGenerationShader(
 				mShaderCodeDirectory,
-				sfl.renderingTechnique,
-				sfl.visualMaterialType,
-				sfl.renderTargetTextureType,
-				((sfl.shadingFeatures & SHADING_FEATURE_TESSELATION) !=0),
-				sfl.instancedRendering
+				sfl
+//				sfl.renderingTechnique,
+//				sfl.visualMaterialType,
+//				sfl.renderTargetTextureType,
+//				((sfl.shadingFeatures & SHADING_FEATURE_TESSELATION) !=0),
+//				sfl.instancedRendering
 		);
 	}
 	else
@@ -406,7 +408,8 @@ Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 			newShader = new GenericLightingUberShader(mShaderCodeDirectory,sfl);
 			break;
 		case VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING:
-			newShader = new SkyDomeShader(mShaderCodeDirectory, sfl.renderTargetTextureType);
+			//newShader = new SkyDomeShader(mShaderCodeDirectory, sfl.renderTargetTextureType);
+			newShader = new SkyDomeShader(mShaderCodeDirectory, sfl);
 			break;
 		case VISUAL_MATERIAL_TYPE_DEBUG_DRAW_ONLY:
 			newShader = new GenericLightingUberShader(mShaderCodeDirectory,sfl);

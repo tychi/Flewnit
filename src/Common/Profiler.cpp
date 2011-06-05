@@ -45,7 +45,7 @@ Profiler::~Profiler()
 	Log::getInstance()<< MEMORY_TRACK_LOG_LEVEL<<"Showing memory Status; If you've done a good house keeping, all values should be zero:\n";
 	printMemoryStatus();
 
-	printRegisteredObjects();
+	//printRegisteredObjects();
 
 	checkError();
 }
@@ -53,10 +53,18 @@ Profiler::~Profiler()
 
 void Profiler::printObjectStatus(BasicObject* bo)
 {
-	Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
-			<<"Object class name: \""<< bo->getClassName() <<"\";\n"
-			<<"\t\tMemory footprint:"<< bo->getMemoryFootprint() <<" Byte;\n"
-			;//<<"\t\tObject purpose: :\""<< bo->getPurposeDescription() <<"\";\n" ;
+	if((bo->mMemoryFootPrint > 0) &&  (bo->mClassName != ""))
+	{
+		Log::getInstance()<<MEMORY_TRACK_LOG_LEVEL
+				<<"Object class name: \""<< bo->getClassName() <<"\";\n"
+				<<"\t\tMemory footprint:"<< bo->getMemoryFootprint() <<" Byte;\n";
+	}
+	else
+	{
+		LOG<<WARNING_LOG_LEVEL<<"BasicObject::printObjectStatus(): Object meta info not initialized yet; call \"Profiler::getInstance().updateMemoryTrackingInfo()\" (from time to time after object creation) and before querying BasicObjectInfo!\n";
+		assert(0);
+		exit(-1);
+	}
 }
 
 void Profiler::printMemoryStatus()
@@ -80,9 +88,9 @@ void Profiler::printRegisteredObjects()
 {
 	std::pair<ID,BasicObject*> boPair;
 	BOOST_FOREACH(boPair, mRegisteredBasicObjects)
-		{
-			printObjectStatus(boPair.second);
-		}
+	{
+		printObjectStatus(boPair.second);
+	}
 }
 
 void Profiler::printBufferMemoryStatus()
@@ -169,7 +177,9 @@ void Profiler::unregisterBasicObject(BasicObject* bo)
 	//checkError();
 
 	//assure that the object was registered; otherwise, the application logic would have failed;
-	assert( mRegisteredBasicObjects.erase(bo->getUniqueID()) > 0);
+	assert( mRegisteredBasicObjects.find(bo->getUniqueID()) != mRegisteredBasicObjects.end());
+
+	mRegisteredBasicObjects.erase(bo->getUniqueID());
 
 	mIDsFromFreedObjects.push(bo->getUniqueID());
 

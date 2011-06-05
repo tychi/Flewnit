@@ -62,9 +62,9 @@ Shader::Shader(Path codeDirectory, Path specificShaderCodeSubFolderName, const S
 				//String (shaderName.string() + localShaderFeatures.stringify() ),
 				VISUAL_SIM_DOMAIN
 		),
+		mLocalShaderFeatures(localShaderFeatures),
 		mCodeDirectory(ShaderManager::getInstance().getShaderCodeDirectory()),
-		mSpecificShaderCodeSubFolderName(specificShaderCodeSubFolderName),
-		mLocalShaderFeatures(localShaderFeatures)
+		mSpecificShaderCodeSubFolderName(specificShaderCodeSubFolderName)
 //		mGrantleeShaderFeaturesContext(
 //				new GrantleeShaderFeaturesContext(
 //					mLocalShaderFeatures,

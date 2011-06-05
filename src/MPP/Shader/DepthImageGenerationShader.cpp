@@ -17,22 +17,26 @@ namespace Flewnit {
 
 DepthImageGenerationShader::DepthImageGenerationShader(
 		Path codeDirectory,
-		RenderingTechnique renderingTechnique,
-		VisualMaterialType visMatType,
-		TextureType renderTargetTextureType,
-		bool forTessellation,
-		bool instancedRendering)
+		const ShaderFeaturesLocal& sfl
+//
+//		RenderingTechnique renderingTechnique,
+//		VisualMaterialType visMatType,
+//		TextureType renderTargetTextureType,
+//		bool forTessellation,
+//		bool instancedRendering
+		)
 :
 		Shader(codeDirectory,
 				//even the shadow map gen is included in the uber shader:
 				Path("GenericLightingUberShader"),
 				//Path("DepthImageGenerationShader"),
-				ShaderFeaturesLocal(
-						renderingTechnique,
-						renderTargetTextureType,
-						visMatType,//VISUAL_MATERIAL_TYPE_NONE,
-						forTessellation ? SHADING_FEATURE_TESSELATION : SHADING_FEATURE_NONE,
-						instancedRendering)
+				sfl
+//				ShaderFeaturesLocal(
+//						renderingTechnique,
+//						renderTargetTextureType,
+//						visMatType,//VISUAL_MATERIAL_TYPE_NONE,
+//						forTessellation ? SHADING_FEATURE_TESSELATION : SHADING_FEATURE_NONE,
+//						instancedRendering)
 		)
 {
 	build();

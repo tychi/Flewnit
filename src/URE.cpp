@@ -265,6 +265,7 @@ void URE::resetEngine()
 	{
 		delete simulator;
 	}
+	mSimulators.clear();
 
 //	BOOST_FOREACH( SimulatorMap::value_type & simPair, mSimulators)
 //	{
@@ -275,16 +276,23 @@ void URE::resetEngine()
 	//delete mGeometryConverter;
 
 	delete mCLProgramManager;
+	mCLProgramManager=0;
 	delete mSimulationResourceManager;
+	mSimulationResourceManager=0;
 	delete mParallelComputeManager;
+	mParallelComputeManager=0;
 
 
 	delete mFPSCounter;
-
+	mFPSCounter=0;
 	delete mInputManager;
+	mInputManager=0;
 	delete mWindowManager;
+	mWindowManager=0;
 	delete mLoader;
+	mLoader=0;
 	delete mConfig;
+	mConfig=0;
 
 	Profiler::getInstance().printRegisteredObjects();
 }

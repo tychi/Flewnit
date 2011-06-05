@@ -47,10 +47,10 @@ namespace Flewnit {
 
 
 class URE :
-	public Singleton<URE>,
-	public BasicObject
+	public Singleton<URE>
+	//,public BasicObject
 {
-	FLEWNIT_BASIC_OBJECT_DECLARATIONS
+	//FLEWNIT_BASIC_OBJECT_DECLARATIONS
 
 public:
     static void bootstrap(bool disableMemoryTrackLogging = false);

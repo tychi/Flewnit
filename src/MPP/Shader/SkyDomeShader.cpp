@@ -16,18 +16,23 @@
 namespace Flewnit {
 
 
-SkyDomeShader::SkyDomeShader(Path codeDirectory, TextureType renderTargetTextureType)
+SkyDomeShader::SkyDomeShader(Path codeDirectory,
+		const ShaderFeaturesLocal & sfl
+		//, TextureType renderTargetTextureType
+		)
 :
 		Shader(
 			codeDirectory,
 			Path("GenericLightingUberShader"), //yes, the sky dome rending is also included in the ubershader
-			ShaderFeaturesLocal(
-				RENDERING_TECHNIQUE_DEFAULT_LIGHTING,
-				renderTargetTextureType,
-				VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING,
-				SHADING_FEATURE_CUBE_MAPPING,
-				false)
+			sfl
 		)
+
+//	ShaderFeaturesLocal(
+//		RENDERING_TECHNIQUE_DEFAULT_LIGHTING,
+//		renderTargetTextureType,
+//		VISUAL_MATERIAL_TYPE_SKYDOME_RENDERING,
+//		SHADING_FEATURE_CUBE_MAPPING,
+//		false)
 {
 	build();
 	//nothing to assert, as the restricted constructor parameters assure that the user

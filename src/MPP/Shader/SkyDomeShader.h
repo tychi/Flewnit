@@ -24,7 +24,10 @@ public:
 
 protected:
 	friend class ShaderManager;
-	SkyDomeShader(Path codeDirectory, TextureType renderTargetTextureType);
+	SkyDomeShader(Path codeDirectory,
+			const ShaderFeaturesLocal& sfl
+			//, TextureType renderTargetTextureType
+			);
 
 	//virtual bool operator==(const Shader& rhs)const;
 

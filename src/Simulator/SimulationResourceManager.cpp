@@ -23,6 +23,7 @@
 #include <boost/foreach.hpp>
 #include "Util/HelperFunctions.h"
 #include "Buffer/Buffer.h"
+#include "MPP/Shader/Shader.h"
 
 namespace Flewnit
 {
@@ -193,7 +194,44 @@ void SimulationResourceManager::registerTexture(Texture* tex)
 
 void SimulationResourceManager::registerMPP(MPP* mpp)
 {
-	FLEWNIT_INTERNAL_REGISTER_MACRO(mpp, getMPP, mMPPs)
+
+//	if(getMPP(mpp->getName()))
+//	{
+//		LOG<<ERROR_LOG_LEVEL<< mpp->getName()<<":"
+//					 <<"Object with specified name already exists!";
+//		abort();
+//	}
+
+//	if(
+//			(mpp->getName() == "GenericLightingUberShader_SMGen_RT_2D_MatDefaultLighting_ShadeNone")
+//			||
+//			(mpp->getName() == "GenericLightingUberShader_SMGen_RT_2D_MatDefaultLighting_ShadeTesselation")
+//			||
+//			(mpp->getName() == "GenericLightingUberShader_SMGen_RT_2D_MatDefaultLighting_ShadeTesselation_instanced")
+//			||
+//			(mpp->getName() == "GenericLightingUberShader_DefaultLighting_RT_2D_MatTypeSkyDome_ShadeCubeMapping")
+//			||
+//			(mpp->getName() == "GenericLightingUberShader_SMGen_RT_2D_MatDefaultLighting_ShadeNone_instanced")
+//	)
+//	{
+//			LOG<<ERROR_LOG_LEVEL<<"suspicious strange release-build-bug multiplename-stuff detected; plx press enter; "
+//					<<mpp->getName()<<" ;\n"
+//					;
+////					<<"hash of shader features: "
+////					<<hash_value( static_cast<Shader*>(mpp)->getLocalShaderFeatures() )<<" ;\n"
+////					<<HelperFunctions::getBitString(
+////						hash_value( static_cast<Shader*>(mpp)->getLocalShaderFeatures() ))
+////						<<";\n"
+////				<<"fresh stringified name: "
+////				<<	static_cast<Shader*>(mpp)->getLocalShaderFeatures().stringify()<<" ;\n";
+//								;
+//			std::cin.get();
+//	}
+//	else
+	{
+		FLEWNIT_INTERNAL_REGISTER_MACRO(mpp, getMPP, mMPPs)
+	}
+
 }
 
 //void SimulationResourceManager::SimulationResourceManager::deleteMPP(MPP* mpp);

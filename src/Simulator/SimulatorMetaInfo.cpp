@@ -48,11 +48,11 @@ bool operator==(ShaderFeaturesLocal const& lhs, ShaderFeaturesLocal const& rhs)
 
 const ShaderFeaturesLocal& ShaderFeaturesLocal::operator=(const ShaderFeaturesLocal& rhs)
 {
-	renderingTechnique = rhs.renderingTechnique;
-	renderTargetTextureType = rhs.renderTargetTextureType;
-	visualMaterialType = rhs.visualMaterialType;
-	shadingFeatures = rhs.shadingFeatures;
-	instancedRendering = rhs.instancedRendering;
+	this->renderingTechnique = rhs.renderingTechnique;
+	this->renderTargetTextureType = rhs.renderTargetTextureType;
+	this->visualMaterialType = rhs.visualMaterialType;
+	this->shadingFeatures = rhs.shadingFeatures;
+	this->instancedRendering = rhs.instancedRendering;
 
 	return *this;
 }
@@ -90,6 +90,7 @@ String ShaderFeaturesLocal::stringify()const
 			returnString.append("_CustomRenderingTechnique");
 			break;
 		default:
+			assert("need valid rendering technique" && 0);
 			break;
 	}
 
@@ -141,6 +142,7 @@ String ShaderFeaturesLocal::stringify()const
 			returnString.append("_RT_3D");
 			break;
 		default:
+			assert("need valid render target textures type" && 0);
 			break;
 	}
 
@@ -171,11 +173,12 @@ String ShaderFeaturesLocal::stringify()const
 //			returnString.append("_MatInstanced");
 //			break;
 		default:
+			assert("need valid material type" && 0);
 			break;
 	}
 
 
-	for(int  currentShadingFeatureBitPosition = 0;
+	for(uint  currentShadingFeatureBitPosition = 0;
 			currentShadingFeatureBitPosition < __NUM_SHADING_FEATURES__;
 			currentShadingFeatureBitPosition ++)
 	{
@@ -185,6 +188,7 @@ String ShaderFeaturesLocal::stringify()const
 						(ShadingFeatures(1<<currentShadingFeatureBitPosition))
 				);
 		switch (currentShadingFeatureToTest) {
+			case 0: break; // nothing active in current run
 			case SHADING_FEATURE_NONE:
 				returnString.append("_ShadeNone");
 				break;
@@ -213,6 +217,7 @@ String ShaderFeaturesLocal::stringify()const
 				returnString.append("_ShadeTesselation");
 				break;
 			default:
+				assert("need valid shading feature type" && 0);
 				break;
 		}
 	}
@@ -229,7 +234,7 @@ String ShaderFeaturesLocal::stringify()const
 
 std::size_t hash_value(ShaderFeaturesLocal const& sfl)
    {
-       boost::hash<int> hasher;
+      boost::hash<uint> hasher;
 
        //generating unique integer for every possible permutaion of values;
 //       int integerizedSFLvalue =
@@ -243,20 +248,34 @@ std::size_t hash_value(ShaderFeaturesLocal const& sfl)
 //    		   (sfl.instancedRendering? 1: 0)
 //    		   ;
 
-       int integerizedSFLvalue =
-    		   //bit 31..28 (4bits) for number in [0..8]=4 bits --> fits
-    		   ( static_cast<int>(sfl.renderingTechnique) <<28 ) |
-    		   //bit 27..24 (4bits) for number in [0..14]=4 bits --> fits
-    		   ( static_cast<int>(sfl.renderTargetTextureType) <<24 ) |
-    		   //bit 23..20 (4bits) for number in [0..7]=3 bits --> fits
-    		   ( static_cast<int>(sfl.visualMaterialType) <<20 ) |
-    		   //bit 19..10 (10 bits) for 9-bit bitfield --> fits
-    		   ( static_cast<int>(sfl.shadingFeatures) << 10 ) |
-    		   //bit  9.. 0 (10 bits) for  max  val 1023 integer value (10 bit) --> fits
+//       int integerizedSFLvalue =
+//    		   //bit 31..28 (4bits) for number in [0..8]=4 bits --> fits
+//    		   ( static_cast<int>(sfl.renderingTechnique) <<28 ) |
+//    		   //bit 27..24 (4bits) for number in [0..14]=4 bits --> fits
+//    		   ( static_cast<int>(sfl.renderTargetTextureType) <<24 ) |
+//    		   //bit 23..20 (4bits) for number in [0..7]=3 bits --> fits
+//    		   ( static_cast<int>(sfl.visualMaterialType) <<20 ) |
+//    		   //bit 19..10 (10 bits) for 9-bit bitfield --> fits
+//    		   ( static_cast<int>(sfl.shadingFeatures) << 10 ) |
+//    		   //bit  9.. 0 (10 bits) for  max  val 1023 integer value (10 bit) --> fits
+//    		   (sfl.instancedRendering? 1: 0)
+//    		   ;
+
+       uint integerizedSFLvalue =
+    		   //bit 21..18 (4bits) for number in [0..8]=4 bits --> fits
+    		   ( static_cast<uint>(sfl.renderingTechnique) <<18 ) |
+    		   //bit 17..14 (4bits) for number in [0..14]=4 bits --> fits
+    		   ( static_cast<uint>(sfl.renderTargetTextureType) <<14 ) |
+    		   //bit 13..10 (4bits) for number in [0..7]=3 bits --> fits
+    		   ( static_cast<uint>(sfl.visualMaterialType) <<10 ) |
+    		   //bit 09..01 (9 bits) for 9-bit bit field --> fits
+    		   ( static_cast<uint>(sfl.shadingFeatures) << 1 ) |
+    		   //bit  0.. 0 (1 bit) for instanced- flag (1 bit) --> fits
     		   (sfl.instancedRendering? 1: 0)
     		   ;
 
-       return hasher(integerizedSFLvalue);
+       //return hasher(integerizedSFLvalue);
+       return static_cast<size_t>( integerizedSFLvalue );
    }
 
 

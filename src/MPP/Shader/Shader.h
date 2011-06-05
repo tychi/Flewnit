@@ -61,7 +61,7 @@ private:
 
 	ShaderStage(ShaderStageType shaderStageType, String sourceCode,
 				Path codeDirectory, Path shaderName, Shader* owningShader);
-	~ShaderStage();
+	virtual ~ShaderStage();
 
 
 	void setSource(String sourceCode);
@@ -166,11 +166,11 @@ protected:
 	void bindFloat(String uniformName, float val);
 	void bindInt(String uniformName, int val);
 
+	ShaderFeaturesLocal mLocalShaderFeatures;
 
 	Path mCodeDirectory;
 	Path mSpecificShaderCodeSubFolderName;
 
-	ShaderFeaturesLocal mLocalShaderFeatures;
 
 	GLuint mGLProgramHandle;
 	ShaderStage* mShaderStages[__NUM_SHADER_STAGES__];

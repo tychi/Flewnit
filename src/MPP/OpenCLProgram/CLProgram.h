@@ -30,7 +30,7 @@ namespace Flewnit
 	{
 		FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 	public:
-		~CLKernel();
+		virtual ~CLKernel();
 
 		void validate()throw(SimulatorException);
 

@@ -173,7 +173,7 @@ void LightSourceManager::updateLightSourcesUniformBuffer()
 		//which could corrupt a tightly-packed assumption; EDIT: yes, my concern was legitimate ;(
 		unsigned char* bufferToFill = reinterpret_cast<unsigned char*>(mLightSourcesUniformBuffer->getCPUBufferHandle());
 		//set everything to zero in order to omit wrong rendering in hardcoeded for-loops
-		memset(bufferToFill,mLightSourcesUniformBuffer->getBufferInfo().bufferSizeInByte,0);
+		memset(bufferToFill,0,mLightSourcesUniformBuffer->getBufferInfo().bufferSizeInByte);
 
 		unsigned int currentLightSourceUniformBufferIndex=0;
 		for(unsigned int currentLightSourceHostIndex =0; currentLightSourceHostIndex < mLightSources.size(); currentLightSourceHostIndex++ )
@@ -256,7 +256,7 @@ void LightSourceManager::setupShadowCamMatricesUniformBuffer(bool lookupMatrices
 			//which could corrupt a tightly-packed assumption; EDIT: yes, my concern was legitimate ;(
 			unsigned char* bufferToFill = reinterpret_cast<unsigned char*>(mShadowCameraTransformBuffer->getCPUBufferHandle());
 			//set everything to zero in order to omit wrong rendering in hardcoeded for-loops
-			memset(bufferToFill,mShadowCameraTransformBuffer->getBufferInfo().bufferSizeInByte,0);
+			memset(bufferToFill,0,mShadowCameraTransformBuffer->getBufferInfo().bufferSizeInByte);
 
 #define MAT4_VALUE(index) \
 	reinterpret_cast<Matrix4x4&>( \
