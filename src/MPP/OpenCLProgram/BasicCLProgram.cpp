@@ -56,18 +56,6 @@ void BasicCLProgram::setupTemplateContext(TemplateContextMap& contextMap)
 		CLProgramManager::getInstance().useCacheUsingOpenCLImplementation()
 	);
 
-
-	//no support for atomics in devices with compute cap <= 1.1 or 1.2 (TODO check for 1.2 devices in manuals)
-	contextMap.insert(
-		"atomicsSupport",
-		(
-			PARA_COMP_MANAGER->getParallelComputeDeviceInfo().nvidiaDeviceComputeCapability.x >= 2
-			||
-			PARA_COMP_MANAGER->getParallelComputeDeviceInfo().nvidiaDeviceComputeCapability.y >= 2
-		)
-	);
-
-
 }
 
 }

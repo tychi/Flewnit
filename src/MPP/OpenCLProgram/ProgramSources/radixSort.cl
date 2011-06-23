@@ -213,13 +213,11 @@
         //lRadixCounters[ CONFLICT_FREE_INDEX( offset + lwiID ) ] = 1;
     }
     
-    //synchronize, because the tabulation of an element is not necessarily performed by the same work item having done the copy
-    //there is no way to circumvent the synch without causing bank conflicts, i.e. "transposing" the pseudo 2d array
+    //synchronize, because the tabulation of an element is not necessaryly performed by the same work item having done the copy
+    //there is no way to circumvent the synch withour causing bank conflicts, i.e. "transposing" the pseudo 2d array
     //increases the danger of bank conflicts
     barrier(CLK_LOCAL_MEM_FENCE);
    
-
-    {% if atomicsSupport %}
 
     atom_inc( 
       &(
@@ -234,29 +232,22 @@
       )
     );
 
-    {% else %}
 
-    //sequentialize the tabulation
-    #pragma unroll
-    for(uint i=0; i < NUM_KEY_ELEMENTS_PER_RADIX_COUNTER; i++)
-    {
-      if( (lwiID % NUM_KEY_ELEMENTS_PER_RADIX_COUNTER) == i )
-      {
-	lRadixCounters[
+
+/*
+    atom_inc( 
+      &(
+        lRadixCounters[
           //select the counter array for the radix of the current value
           CONFLICT_FREE_INDEX( 
              localCounterIndex * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  +
              //select the appropriate counter
              radix
           )
-        ]++;
-      }
- barrier(CLK_LOCAL_MEM_FENCE);
-    }
-
-
-   {% endif %}
-
+        ]
+      )
+    );
+*/
 
     
     

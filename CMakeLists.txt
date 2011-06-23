@@ -23,7 +23,7 @@ if(UNIX)
     
 
     option(RELEASE "build in Release mode for more performance but no debugging features" OFF)
-    set(GLM_DIRECTORY "../thirdParty/glm" CACHE PATH "Path to glm Math library")
+    set(GLM_DIRECTORY "../thirdParty/ogl-math" CACHE PATH "Path to glm Math library")
     
     set(ASSIMP_DIRECTORY "/usr/local/include/assimp" CACHE PATH "Path to assimp asset loading library")
     
@@ -188,6 +188,11 @@ execute_process(
 	OUTPUT_FILE cmakeGeneratedDefinitions.h 
 	)
 
+# another now obsolete medialayer-hack; see above
+#find media layer source files
+#file(GLOB_RECURSE GLOB_RESULT ${LIBRARY_SOURCE_DIRECTORY}/MediaLayer/${WINDOW_MANAGER_LIBRARY_NAME}/*.cpp)
+#add them to the whole library source file list
+#set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_FILES} ${GLOB_RESULT})
 #----------------------------------------------------------------------------------------------------------
 
 
@@ -197,9 +202,29 @@ execute_process(
 file(GLOB_RECURSE LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/*.cpp)
 
 
+#the following stuff was a hack for a compile-time-dependent media layer setup; has now become obsolete because of a real interface:
+#This stuff instead of globbing the whole source folder is necessary in order to handle the media layer sources differently
+#set(LIBRARY_RELATIVE_DIRECTORIES
+#       Common
+#       Simulator
+#       UserInterface
+#       Buffer
+#       Util
+#       World
+#)
+#
+#first, add the toplevel UnifiedRenderingEngine-sources, which ar running all our stuff in the library ;)
+#set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/URE.cpp)
+#
+#glob all source files in the given subdirectory
+#foreach(LIBRARY_RELATIVE_DIRECTORY ${LIBRARY_RELATIVE_DIRECTORIES})
+#    file(GLOB_RECURSE GLOB_RESULT ${LIBRARY_SOURCE_DIRECTORY}/${LIBRARY_RELATIVE_DIRECTORY}/*.cpp)
+#    set(LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_FILES} ${GLOB_RESULT})
+    #TODO check if adding all the header will omit the fuckup that changes in headers don't result in rebuild :@
+#endforeach(LIBRARY_RELATIVE_DIRECTORY)
 #----------------------------------------------------------------------------------------------------------
 
-#found a way to propagate stuff to grantlee without qt meta objects, no moc'ing necessry anymore :)
+#found a way to propagate stuff to grantlee without qt meta objects, no moc'ing necessaray anymore :)
 #qt4_wrap_cpp (MOC_OUTFILES 
 #    ${LIBRARY_SOURCE_DIRECTORY}/MPP/Shader/GrantleeShaderFeaturesContext.h
 #    ${LIBRARY_SOURCE_DIRECTORY}/Simulator/ShaderFeatureRelevantEnums.h 
@@ -209,13 +234,14 @@ file(GLOB_RECURSE LIBRARY_SOURCE_FILES ${LIBRARY_SOURCE_DIRECTORY}/*.cpp)
 ###########################################################################################################
 #finally, do some build stuff for libflewnit:
 #tell cmake to create a library named "libflewnit", which uses auch library source file list as input for sources ;)
-#shared is bad for debugging :(
+#shasred is bad for debugging :(
 #add_library(flewnit SHARED ${LIBRARY_SOURCE_FILES})
 add_library(flewnit ${LIBRARY_SOURCE_FILES} ${MOC_OUTFILES})
 
 
 
 #tell cmake to link the libflewnit library against the given third party libraries
+#TODO: add gpuTE ass dependency :D
 #TODO: unterstand why only relevant qt stuff will be linked against ;) yes, I'm noob with cmake and qt ;)
 #${QT_LIBRARIES}
 target_link_libraries(flewnit ${OPENGL_LIB} ${OPENCL_LIBRARIES} ${QT_LIBRARIES} )
