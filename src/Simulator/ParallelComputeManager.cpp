@@ -398,6 +398,7 @@ void ParallelComputeManager::acquireSharedBuffersForGraphics()
 
 void ParallelComputeManager::barrierGraphics()
 {
+	GUARD(glFlush());
 	GUARD(glFinish());
 }
 void ParallelComputeManager::barrierCompute()
@@ -406,8 +407,8 @@ void ParallelComputeManager::barrierCompute()
 	//usleep(50000);
 	mCommandQueue.enqueueBarrier();
 
-	//mCommandQueue.flush();
-//	mCommandQueue.finish();
+	mCommandQueue.flush();
+	mCommandQueue.finish();
 
 //	usleep(50000);
 }

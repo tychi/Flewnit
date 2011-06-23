@@ -395,141 +395,141 @@ bool ParticleMechanicsStage::stepSimulation() throw(SimulatorException)
 	PARA_COMP_MANAGER->barrierCompute();
 
 
-	unsigned int numCurrentSPHSimulationWorkGroups=0;
-	numCurrentSPHSimulationWorkGroups =
-			mParticleUniformGrid->splitAndCompactCells(
-				"particles",
-				mSplitAndCompactedUniformGridCells
-			);
-
-
-	PARA_COMP_MANAGER->barrierCompute();
-
-
-
-	LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
-			<< numCurrentSPHSimulationWorkGroups << ";\n";
-
-
-	//}
-
-	//PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
-	//PARA_COMP_MANAGER->getCommandQueue().flush();
-	//PARA_COMP_MANAGER->getCommandQueue().finish();
-	//usleep(50000);
-
-	//{ SPH stuff
-
-		CLKernelWorkLoadParams currentSPHKErnelWorkLoadParams(
-				numCurrentSPHSimulationWorkGroups
-				//std::min((uint)(10000),numCurrentSPHSimulationWorkGroups)
-					* mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup(),
-				mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup()
-		);
-
-		mUpdateDensityProgram->getKernel("kernel_updateDensity")->run(
-			EventVector{
-				CLProgramManager::getInstance().getProgram("reorderParticleAttributes.cl")
-						->getKernel("kernel_reorderParticleAttributes")
-						->getEventOfLastKernelExecution(),
-				CLProgramManager::getInstance().getProgram("splitAndCompactUniformGrid.cl")
-					->getKernel("kernel_splitAndCompactUniformGrid")
-					->getEventOfLastKernelExecution()
-			},
-			currentSPHKErnelWorkLoadParams
-		);
-
-
-
-		//PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
-		//PARA_COMP_MANAGER->getCommandQueue().flush();
-	//	PARA_COMP_MANAGER->getCommandQueue().finish();
-
-
-
-		if(
-		    (URE_INSTANCE->bufferDumpCondition() )
-		)
-		{
-			mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
-				"AttributeBufferDump_DensityComputation",
-				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-				false
-			);
-		}
-
-
-
-		PARA_COMP_MANAGER->barrierCompute();
-
-
-
-		if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
-		{
-			//init integrate step
-			mInitial_UpdateForce_Integrate_CalcZIndex_Program->getKernel("kernel_initial_updateForce_integrate_calcZIndex")
-				->run(
-					EventVector{
-						mUpdateDensityProgram->getKernel("kernel_updateDensity")->getEventOfLastKernelExecution(),
-					},
-					currentSPHKErnelWorkLoadParams
-				);
-		}
-		else
-		{
-			//default integrate step
-			mUpdateForce_Integrate_CalcZIndex_Program->getKernel("kernel_updateForce_integrate_calcZIndex")
-				->run(
-					EventVector{
-						mUpdateDensityProgram->getKernel("kernel_updateDensity")->getEventOfLastKernelExecution(),
-					},
-					currentSPHKErnelWorkLoadParams
-			);
-
-		}
-
-
-
-		PARA_COMP_MANAGER->barrierCompute();
-		PARA_COMP_MANAGER->getCommandQueue().flush();
-		PARA_COMP_MANAGER->getCommandQueue().finish();
-
-
-
-		//mParticleSceneRepresentation->getParticleAttributeBuffers()->getZIndicesPiPoBuffer()->toggleBuffers(); <--ping ponging only needed during radix sort!
-		mParticleSceneRepresentation->getParticleAttributeBuffers()->getPositionsPiPoBuffer()->toggleBuffers();
-		mParticleSceneRepresentation->getParticleAttributeBuffers()->getCorrectedVelocitiesPiPoBuffer()->toggleBuffers();
-		mParticleSceneRepresentation->getParticleAttributeBuffers()->getPredictedVelocitiesPiPoBuffer()->toggleBuffers();
-		mParticleSceneRepresentation->getParticleAttributeBuffers()->getLastStepsAccelerationsPiPoBuffer()->toggleBuffers();
-
-		if(
-		    (URE_INSTANCE->bufferDumpCondition() )
-		)
-		{
-			mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
-				"AttributeBufferDump_ForceIntrZIndComputation_AfterToggle",
-				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
-				false
-			);
-		}
-
-	//} //end SPH
-
-
-		PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
-		PARA_COMP_MANAGER->getCommandQueue().flush();
-		//PARA_COMP_MANAGER->getCommandQueue().finish();
-
-
-
-	//reset element counts to zero
-	mParticleUniformGrid->getBufferSet("particles")->clearElementCounts();
-
-
-
-	PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
-	PARA_COMP_MANAGER->getCommandQueue().flush();
-	//PARA_COMP_MANAGER->getCommandQueue().finish();
+//	unsigned int numCurrentSPHSimulationWorkGroups=0;
+//	numCurrentSPHSimulationWorkGroups =
+//			mParticleUniformGrid->splitAndCompactCells(
+//				"particles",
+//				mSplitAndCompactedUniformGridCells
+//			);
+//
+//
+//	PARA_COMP_MANAGER->barrierCompute();
+//
+//
+//
+//	LOG<<DEBUG_LOG_LEVEL<<"current number of simulation work groups for SPH related kernels: "
+//			<< numCurrentSPHSimulationWorkGroups << ";\n";
+//
+//
+//	//}
+//
+//	//PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+//	//PARA_COMP_MANAGER->getCommandQueue().flush();
+//	//PARA_COMP_MANAGER->getCommandQueue().finish();
+//	//usleep(50000);
+//
+//	//{ SPH stuff
+//
+//		CLKernelWorkLoadParams currentSPHKErnelWorkLoadParams(
+//				numCurrentSPHSimulationWorkGroups
+//				//std::min((uint)(10000),numCurrentSPHSimulationWorkGroups)
+//					* mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup(),
+//				mParticleUniformGrid->getNumMaxElementsPerSimulationWorkGroup()
+//		);
+//
+//		mUpdateDensityProgram->getKernel("kernel_updateDensity")->run(
+//			EventVector{
+//				CLProgramManager::getInstance().getProgram("reorderParticleAttributes.cl")
+//						->getKernel("kernel_reorderParticleAttributes")
+//						->getEventOfLastKernelExecution(),
+//				CLProgramManager::getInstance().getProgram("splitAndCompactUniformGrid.cl")
+//					->getKernel("kernel_splitAndCompactUniformGrid")
+//					->getEventOfLastKernelExecution()
+//			},
+//			currentSPHKErnelWorkLoadParams
+//		);
+//
+//
+//
+//		//PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+//		//PARA_COMP_MANAGER->getCommandQueue().flush();
+//	//	PARA_COMP_MANAGER->getCommandQueue().finish();
+//
+//
+//
+//		if(
+//		    (URE_INSTANCE->bufferDumpCondition() )
+//		)
+//		{
+//			mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+//				"AttributeBufferDump_DensityComputation",
+//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//				false
+//			);
+//		}
+//
+//
+//
+//		PARA_COMP_MANAGER->barrierCompute();
+//
+//
+//
+//		if(URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames() == 0)
+//		{
+//			//init integrate step
+//			mInitial_UpdateForce_Integrate_CalcZIndex_Program->getKernel("kernel_initial_updateForce_integrate_calcZIndex")
+//				->run(
+//					EventVector{
+//						mUpdateDensityProgram->getKernel("kernel_updateDensity")->getEventOfLastKernelExecution(),
+//					},
+//					currentSPHKErnelWorkLoadParams
+//				);
+//		}
+//		else
+//		{
+//			//default integrate step
+//			mUpdateForce_Integrate_CalcZIndex_Program->getKernel("kernel_updateForce_integrate_calcZIndex")
+//				->run(
+//					EventVector{
+//						mUpdateDensityProgram->getKernel("kernel_updateDensity")->getEventOfLastKernelExecution(),
+//					},
+//					currentSPHKErnelWorkLoadParams
+//			);
+//
+//		}
+//
+//
+//
+//		PARA_COMP_MANAGER->barrierCompute();
+//		PARA_COMP_MANAGER->getCommandQueue().flush();
+//		PARA_COMP_MANAGER->getCommandQueue().finish();
+//
+//
+//
+//		//mParticleSceneRepresentation->getParticleAttributeBuffers()->getZIndicesPiPoBuffer()->toggleBuffers(); <--ping ponging only needed during radix sort!
+//		mParticleSceneRepresentation->getParticleAttributeBuffers()->getPositionsPiPoBuffer()->toggleBuffers();
+//		mParticleSceneRepresentation->getParticleAttributeBuffers()->getCorrectedVelocitiesPiPoBuffer()->toggleBuffers();
+//		mParticleSceneRepresentation->getParticleAttributeBuffers()->getPredictedVelocitiesPiPoBuffer()->toggleBuffers();
+//		mParticleSceneRepresentation->getParticleAttributeBuffers()->getLastStepsAccelerationsPiPoBuffer()->toggleBuffers();
+//
+//		if(
+//		    (URE_INSTANCE->bufferDumpCondition() )
+//		)
+//		{
+//			mParticleSceneRepresentation->getParticleAttributeBuffers()->dumpBuffers(
+//				"AttributeBufferDump_ForceIntrZIndComputation_AfterToggle",
+//				URE_INSTANCE->getFPSCounter()->getTotalRenderedFrames(),
+//				false
+//			);
+//		}
+//
+//	//} //end SPH
+//
+//
+//		PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+//		PARA_COMP_MANAGER->getCommandQueue().flush();
+//		//PARA_COMP_MANAGER->getCommandQueue().finish();
+//
+//
+//
+//	//reset element counts to zero
+//	mParticleUniformGrid->getBufferSet("particles")->clearElementCounts();
+//
+//
+//
+//	PARA_COMP_MANAGER->getCommandQueue().enqueueBarrier();
+//	PARA_COMP_MANAGER->getCommandQueue().flush();
+//	//PARA_COMP_MANAGER->getCommandQueue().finish();
 
 
 
