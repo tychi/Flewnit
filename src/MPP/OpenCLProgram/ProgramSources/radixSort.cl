@@ -219,6 +219,7 @@
     barrier(CLK_LOCAL_MEM_FENCE);
    
 
+/*
     atom_inc( 
       &(
         lRadixCounters[
@@ -231,24 +232,25 @@
         ]
       )
     );
+*/
 
-
-
-/*
-    atom_inc( 
-      &(
-        lRadixCounters[
+    //sequentialize the tabulation
+    #pragma unroll
+    for(uint i=0; i < NUM_KEY_ELEMENTS_PER_RADIX_COUNTER; i++)
+    {
+      if( (lwiID % NUM_KEY_ELEMENTS_PER_RADIX_COUNTER) == i )
+      {
+	lRadixCounters[
           //select the counter array for the radix of the current value
           CONFLICT_FREE_INDEX( 
              localCounterIndex * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  +
              //select the appropriate counter
              radix
           )
-        ]
-      )
-    );
-*/
-
+        ]++;
+      }
+      //barrier(CLK_LOCAL_MEM_FENCE);
+    }
     
     
     //------------------------------------------------------------------------------------------
