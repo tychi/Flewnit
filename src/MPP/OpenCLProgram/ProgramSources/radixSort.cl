@@ -219,20 +219,17 @@
     barrier(CLK_LOCAL_MEM_FENCE);
    
 
-/*
-    atom_inc( 
-      &(
-        lRadixCounters[
-          //select the counter array for the radix of the current value
-          CONFLICT_FREE_INDEX( 
-            radix * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  +
-            //select the appropriate counter
-            localCounterIndex 
-          )
-        ]
-      )
-    );
-*/
+    uint tabIndex=       
+      CONFLICT_FREE_INDEX( 
+      //select the counter array for the radix of the current value
+      radix * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  +
+      //select the appropriate counter
+      localCounterIndex 
+      );
+      
+    //atom_inc( &( lRadixCounters[ tabIndex ] ) );
+
+
 
     //sequentialize the tabulation
     #pragma unroll
@@ -240,17 +237,13 @@
     {
       if( (lwiID % NUM_KEY_ELEMENTS_PER_RADIX_COUNTER) == i )
       {
-	lRadixCounters[
-          //select the counter array for the radix of the current value
-          CONFLICT_FREE_INDEX( 
-             localCounterIndex * NUM_RADIX_COUNTERS_PER_RADIX_AND_WORK_GROUP  +
-             //select the appropriate counter
-             radix
-          )
-        ]++;
+	      lRadixCounters[tabIndex]++;
       }
-      //barrier(CLK_LOCAL_MEM_FENCE);
+      //crash without barrier, although it is semantically not necessary if there are fewer elements 
+      //per counter than a quarter warp and if their count is a power of two; ... i "love" the OpenCL-drivers -.-
+      barrier(CLK_LOCAL_MEM_FENCE);
     }
+
     
     
     //------------------------------------------------------------------------------------------
