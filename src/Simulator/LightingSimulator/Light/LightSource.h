@@ -44,7 +44,7 @@ public:
 	inline LightSourceType getType()const{return mType;}
 	inline bool castsShadows()const{return mCastsShadows;}
 	inline bool isEnabled()const{return mIsEnabled;}
-	inline const LightSourceShaderStruct& getdata()const{return mLightSourceShaderStruct;}
+	inline LightSourceShaderStruct& getdata(){return mLightSourceShaderStruct;}
 
 
 	//void destroyedCallBack();

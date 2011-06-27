@@ -77,7 +77,7 @@ void HardCodedSceneLoader::createSceneNodeHierarchy()
 		new PureVisualObject("myBlackNWhiteBox",AmendedTransform(Vector3D(-90,-10,50), Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1),1.0))
 	);
 	mRootSceneNode->addChild(
-		new PureVisualObject("myBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),3.0f))
+		new PureVisualObject("myBoxAsPlane",AmendedTransform(Vector3D(0,-40,0), Vector3D(0,0,-1),Vector3D(0,1,0),1.0f))
 	);
 	mRootSceneNode->addChild(
 		new PureVisualObject("myEnvmapBox",AmendedTransform(Vector3D(100,5,-80) )) //, Vector3D(0.0f,0.9f,0.1f),Vector3D(0,0,1)))
@@ -113,7 +113,7 @@ void HardCodedSceneLoader::loadGeometries()
 	Geometry* myBoxAsPlane = SimulationResourceManager::getInstance().getGeometry("myBoxAsPlane");
 	if(! myBoxAsPlane)
 	{
-		myBoxAsPlane = new BoxGeometry("myBoxAsPlane",Vector3D(100.0f,2.0f,100.0f),true,
+		myBoxAsPlane = new BoxGeometry("myBoxAsPlane",3.0f * Vector3D(100.0f,2.0f,100.0f),true,
 				false,
 				//(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4)
 				Vector4D(20,20,1,1)
@@ -300,8 +300,8 @@ void HardCodedSceneLoader::loadMaterials()
 					myMap,
 					VisualMaterialFlags(true,false,true,true,false,false),
 					//VisualMaterialFlags(true,false,true,true,false,true),
-					30.0f,
-					0.2f//6f
+					200.0f,
+					0.12f//6f
 				);
 
 
@@ -761,8 +761,8 @@ void HardCodedSceneLoader::loadLightSources()
 			if(ShaderManager::getInstance().getGlobalShaderFeatures().numMaxLightSources >1)
 			{
 				LightSourceManager::getInstance().createSpotLight(
-					Vector4D(-50.0f,65.0f,10.0f,1.0f),
-					Vector4D(1.0f,-2.0f,-1.0f,0.0f),
+					Vector4D(-50.0f,100.0f,-120.0f,1.0f),
+					Vector4D(1.0f,-2.0f,1.0f,0.0f),
 					(
 						//shadow casting or not depends on global shading features
 						ShaderManager::getInstance().getGlobalShaderFeatures().lightSourcesShadowFeature
@@ -770,7 +770,7 @@ void HardCodedSceneLoader::loadLightSources()
 					),
 					45.0f,
 					60.5f,
-					10.0f,
+					50.0f,
 					Vector4D(1.0f,1.0f,1.0f,1.0f)*8,
 					Vector4D(0.1f,0.3f,1.0f,1.0f)*2
 				);
@@ -851,6 +851,12 @@ void HardCodedSceneLoader::loadLightSources()
 				}
 
 			}
+		}
+
+		//scale brigtness
+		for(int i=0; i<LightSourceManager::getInstance().getNumTotalLightSources();i++)
+		{
+			LightSourceManager::getInstance().getLightSource(i)->getdata().diffuseColor *=3.0f;
 		}
 }
 

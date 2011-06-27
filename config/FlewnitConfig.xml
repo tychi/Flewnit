@@ -97,8 +97,9 @@
       <resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
       <resolution type="VEC2I" x="1920" y="1200" GUIVisibility="read" tweakConfigString="TODO"/>      
       <resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
-      -->
       <resolution type="VEC2I" x="1280" y="720" GUIVisibility="read" tweakConfigString="TODO"/>      
+      -->
+      <resolution type="VEC2I" x="800" y="800" GUIVisibility="read" tweakConfigString="TODO"/>      
 	  
       <position type="VEC2I" x="0" y="0" GUIVisibility="read" tweakConfigString="TODO"/>
 
@@ -108,7 +109,7 @@
 
 
     <OpenGL_Settings>
-      <contextVersion type="VEC2I" x="3" y="3" />
+      <contextVersion type="VEC2I" x="4" y="1" />
       <enforceCoreProfile type="BOOL" value="true" />
     </OpenGL_Settings>
 
@@ -194,13 +195,13 @@
           <!-- to be as big as the uniform grid, it simulationDomainBorderMax-simulationDomainBorderMin should be
                = extendsOfOneCell * ( numCellsPerDimension +1 )
            -->
-          <simulationDomainBorderMin  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <simulationDomainBorderMin  type="VEC4" x="0.0" y="-32.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <!--
           <simulationDomainBorderMax  type="VEC4" x="96.0" y="96.0" z="96.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <simulationDomainBorderMax  type="VEC4" x="195.0" y="195.0" z="195.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <simulationDomainBorderMax  type="VEC4" x="64.0" y="64.0" z="64.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           -->
-          <simulationDomainBorderMax  type="VEC4" x="96.0" y="96.0" z="96.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+          <simulationDomainBorderMax  type="VEC4" x="96.0" y="64.0" z="96.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             
           <gravityAcceleration  type="VEC4" x="0.0" y="-0.2" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           <penaltyForceSpringConstant type="FLOAT" value="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -230,7 +231,7 @@
            <minCornerPosition  type="VEC4" x="-16.0" y="-16.0" z="-16.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
            <minCornerPosition  type="VEC4" x="-32.0" y="-32.0" z="-32.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
            -->
-           <minCornerPosition  type="VEC4" x="0.0" y="0.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <minCornerPosition  type="VEC4" x="0.0" y="-40.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
            <!--
            <extendsOfOneCell  type="VEC4" x="5.0" y="5.0" z="5.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -279,7 +280,7 @@
             <spawnAABBMax  type="VEC4" x="32.5" y="32.5" z="32.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
             <spawnAABBMax  type="VEC4" x="45" y="45" z="45" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>     
             -->  
-            <spawnAABBMax  type="VEC4" x="60.5" y="100" z="60.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/> 
+            <spawnAABBMax  type="VEC4" x="60.5" y="60" z="60.5" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/> 
             
             
             <initialVelocity type="VEC4" x="0" y="0.0" z="0.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
