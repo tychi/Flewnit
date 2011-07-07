@@ -14,7 +14,7 @@
 namespace Flewnit
 {
 
-CLProgramManager::CLProgramManager( bool useCacheUsingOpenCLImplementation)
+CLProgramManager::CLProgramManager( bool  useCacheUsingOpenCLImplementation)
 
 :
 	mIntermediateResultBuffersManager(new IntermediateResultBuffersManager()),

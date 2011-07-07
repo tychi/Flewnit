@@ -89,7 +89,7 @@
 
       <windowTitle type="STRING" value="Flewnit" />
 
-      <fullScreen type="BOOL" value="false"/>
+      <fullScreen type="BOOL" value="true"/>
 
       <enforceCustomResolutionInFullScreen type="BOOL" value="false" />
     
@@ -99,7 +99,7 @@
       <resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
       <resolution type="VEC2I" x="1280" y="720" GUIVisibility="read" tweakConfigString="TODO"/>      
       -->
-      <resolution type="VEC2I" x="1024" y="768" GUIVisibility="read" tweakConfigString="TODO"/>      
+      <resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>      
 	  
       <position type="VEC2I" x="0" y="0" GUIVisibility="read" tweakConfigString="TODO"/>
 
