@@ -19,6 +19,8 @@
 #include "Simulator/LightingSimulator/LightingSimulator.h"
 #include "Simulator/LightingSimulator/Camera/Camera.h"
 #include "UserInterface/WindowManager/WindowManager.h"
+#include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
+#include "Util/Loader/LoaderHelper.h"
 
 
 
@@ -38,7 +40,8 @@ DefaultLightingStage::DefaultLightingStage(ConfigStructNode* simConfigNode)
 
 DefaultLightingStage::~DefaultLightingStage()
 {
-	//nothing to do
+	//this stage owns this target, so it will destroy it
+	delete mUsedRenderTarget;
 }
 
 bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
@@ -53,6 +56,16 @@ bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
 				Vector2Di(WindowManager::getInstance().getWindowResolution())
 	);
 
+	if(! mRenderToScreen)
+	{
+		//render to FBO
+		mUsedRenderTarget->bind();
+		RenderTarget::setEnableDepthTest(true);
+		mUsedRenderTarget->attachStoredColorTexture(FINAL_RENDERING_SEMANTICS,0);
+		mUsedRenderTarget->renderToAttachedTextures();
+		mUsedRenderTarget->clear();
+	}
+
 	//assign lighting shaders to materials after shadowmap gen matrials might have been set by a preceding
 	//SM gen stage
 	ShaderManager::getInstance().setRenderingScenario(this);
@@ -64,14 +77,30 @@ bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
 
 	SimulationResourceManager::getInstance().executeInstancedRendering(this);
 
+	//ensure that render target is unbound so that it's not used on accident by following stages
+	RenderTarget::renderToScreen();
+
 	return true;
 }
 
 bool DefaultLightingStage::initStage()throw(SimulatorException)
 {
+	mRenderToScreen = ConfigCaster::cast<bool>(mSimConfigNode->get("renderToScreen",0));
 
 	//cause shader generation now:
 	ShaderManager::getInstance().setRenderingScenario(this);
+
+	mUsedRenderTarget= new RenderTarget(
+		String("DefaultLightingStageRenderTarget"),
+		WindowManager::getInstance().getWindowResolution(),
+		TEXTURE_TYPE_2D,
+		DEPTH_RENDER_BUFFER,
+		BufferElementInfo(4,GPU_DATA_TYPE_UINT,8,true),
+		1,
+		1
+	);
+
+	mUsedRenderTarget->requestCreateAndStoreColorTexture(FINAL_RENDERING_SEMANTICS);
 
 	return true;
 

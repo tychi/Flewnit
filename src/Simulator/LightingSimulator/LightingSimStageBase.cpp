@@ -26,14 +26,16 @@ LightingSimStageBase::LightingSimStageBase(String name,
 :
 	SimulationPipelineStage(name, VISUAL_SIM_DOMAIN, simConfigNode),
 	mUsedRenderTarget(0),
+	mRenderToScreen(true),
 	mRenderingTechnique(renderingTechnique),
 	mMaterialFlagMask(materialFlagMask)
 {
 
 }
 
-LightingSimStageBase::~LightingSimStageBase() {
-	//nothing to do
+LightingSimStageBase::~LightingSimStageBase()
+{
+
 }
 
 

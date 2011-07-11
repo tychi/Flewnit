@@ -89,17 +89,17 @@
 
       <windowTitle type="STRING" value="Flewnit" />
 
-      <fullScreen type="BOOL" value="true"/>
+      <fullScreen type="BOOL" value="false"/>
 
       <enforceCustomResolutionInFullScreen type="BOOL" value="false" />
     
       <!--
-      <resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
       <resolution type="VEC2I" x="1920" y="1200" GUIVisibility="read" tweakConfigString="TODO"/>      
       <resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>
       <resolution type="VEC2I" x="1280" y="720" GUIVisibility="read" tweakConfigString="TODO"/>      
-      -->
       <resolution type="VEC2I" x="1366" y="768" GUIVisibility="read" tweakConfigString="TODO"/>      
+      -->
+      <resolution type="VEC2I" x="640" y="480" GUIVisibility="read" tweakConfigString="TODO"/>
 	  
       <position type="VEC2I" x="0" y="0" GUIVisibility="read" tweakConfigString="TODO"/>
 
@@ -408,14 +408,24 @@
       <SimulationPipelineStage>
         <Type type="STRING" value="DefaultLightingStage"/>
 
-        <renderToScreen type="STRING" value="true" />
         <!-- indicator not to render to the main FBO -->
+        <renderToScreen type="BOOL" value="true" />
+        
 
       </SimulationPipelineStage>
 
 
 
       <!-- Fluid rendering specific stages to go -->
+      <SimulationPipelineStage>
+        <Type type="STRING" value="ParticleLiquidDrawStage"/>
+
+        <!-- indicator not to render to the main FBO -->
+        <renderToScreen type="BOOL" value="true" />
+        
+        <!-- more specifics to come -->
+
+      </SimulationPipelineStage>
 
     </Simulator>
 

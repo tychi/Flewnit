@@ -55,10 +55,13 @@ public:
 	//NULL if rendering to screen;
 	inline RenderTarget* getUsedRenderTarget()const{return mUsedRenderTarget;}
 	inline const VisualMaterialFlags& getMaterialFlagMask()const{return mMaterialFlagMask;}
+	inline void setRenderToScreen(bool val){mRenderToScreen=val;}
 
 protected:
 	//init to 0
 	RenderTarget* mUsedRenderTarget;
+
+	bool mRenderToScreen;
 
 private:
 

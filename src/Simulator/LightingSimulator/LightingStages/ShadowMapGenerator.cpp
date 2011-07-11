@@ -129,7 +129,7 @@ bool ShadowMapGenerator::stepSimulation() throw(SimulatorException)
 	mUsedRenderTarget->clear();
 
 	//--------------------------------------------------------
-	//maybe superflous repeated setup, checkout removal after SM works stable
+	//maybe superfluous repeated setup, checkout removal after SM works stable
 	mUsedRenderTarget->setEnableColorRendering(false);
 	mUsedRenderTarget->clear();
 	//-------------------------------------------------------
@@ -167,7 +167,6 @@ void ShadowMapGenerator::setPolygonOffset(const Vector2D& val)
 bool ShadowMapGenerator::checkCompatibility(VisualMaterial* visMat)
 {
 	return visMat->getFlags().castsShadows;
-
 }
 
 

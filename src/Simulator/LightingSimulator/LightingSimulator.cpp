@@ -33,6 +33,7 @@
 
 #include <typeinfo>
 #include "Simulator/ParallelComputeManager.h"
+#include "Simulator/LightingSimulator/LightingStages/ParticleLiquidDrawStage.h"
 
 
 
@@ -242,6 +243,11 @@ bool LightingSimulator::initPipeLine()  throw(SimulatorException)
 		if(stageType  == "DefaultLightingStage")
 		{
 			mSimStages.push_back(new DefaultLightingStage( &( mSimConfigNode->get("SimulationPipelineStage",i) ) ) );
+		}
+
+		if(stageType  == "ParticleLiquidDrawStage")
+		{
+			mSimStages.push_back(new ParticleLiquidDrawStage( &( mSimConfigNode->get("SimulationPipelineStage",i) ) ) );
 		}
 
 	}

@@ -1,5 +1,5 @@
 /*
- * DefaultLightingStage.h
+ * ParticleLiquidDrawStage.h
  *
  *  Created on: Feb 5, 2011
  *      Author: tychi
@@ -17,21 +17,20 @@ namespace Flewnit
 {
 
 
-class DefaultLightingStage
+class ParticleLiquidDrawStage
 : public LightingSimStageBase
 {
 	FLEWNIT_BASIC_OBJECT_DECLARATIONS;
 
 public:
-	DefaultLightingStage(ConfigStructNode* simConfigNode);
-	virtual ~DefaultLightingStage();
+	ParticleLiquidDrawStage(ConfigStructNode* simConfigNode);
+	virtual ~ParticleLiquidDrawStage();
 
 	virtual bool stepSimulation() throw(SimulatorException);
 	virtual bool initStage()throw(SimulatorException);
 	virtual bool validateStage()throw(SimulatorException);
 
 	virtual bool checkCompatibility(VisualMaterial* visMat);
-
 
 };
 
