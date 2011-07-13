@@ -327,6 +327,63 @@ void RenderTarget::bind(bool forReading)
 	GUARD_FRAMEBUFFER(glBindFramebuffer(mIsReadFrameBuffer ? GL_READ_FRAMEBUFFER : GL_DRAW_FRAMEBUFFER, mFBO));
 }
 
+void RenderTarget::bindSave()
+{
+	//static GLint currentReadBufferBinding;
+	//static GLint currentDrawBufferBinding;
+
+	mBindSaveCallCounter++;
+
+	if( mBindSaveCallCounter == 1)
+	{
+		GUARD( glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &mOldReadBufferBinding) );
+		GUARD( glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &mOldDrawBufferBinding) );
+
+//		GUARD( glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &currentReadBufferBinding) );
+//		GUARD( glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &currentDrawBufferBinding) );
+//
+//		if(     mIsReadFrameBuffer   && ( (GLuint)(currentReadBufferBinding) != mFBO ) )
+//		{
+//			mOldReadBufferBinding = currentReadBufferBinding;
+//		}
+//
+//		if( ( ! mIsReadFrameBuffer ) && ( (GLuint)(currentDrawBufferBinding) != mFBO ) )
+//		{
+//			mOldDrawBufferBinding = currentDrawBufferBinding;
+//		}
+
+		//mOldReadBufferBinding = mIsReadFrameBuffer ? currentReadBufferBinding : mOldReadBufferBinding;
+		//mOldDrawBufferBinding = mIsReadFrameBuffer ? mOldDrawBufferBinding    : currentDrawBufferBinding ;
+		bind(mIsReadFrameBuffer);
+	}
+
+	//bind(mIsReadFrameBuffer);
+}
+void RenderTarget::unbindSave()
+{
+	mBindSaveCallCounter--;
+
+	//only restore old binding if unbindSave() has been calls as often as bindSave();
+	if( ( mBindSaveCallCounter == 0) && mIsReadFrameBuffer )
+	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER,
+				(GLuint) (mOldReadBufferBinding) );
+	}
+
+	if( ( mBindSaveCallCounter == 0) && (!mIsReadFrameBuffer) )
+	{
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER,
+				(GLuint) (mOldDrawBufferBinding) );
+	}
+
+	//glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
+	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
+}
+
+
+
+
+
 //calls bind() automatically
 void RenderTarget::renderToAttachedTextures()
 {
@@ -337,7 +394,7 @@ void RenderTarget::renderToAttachedTextures()
 		bind();
 	}
 	assert(mNumCurrentDrawBuffers >0 && "attach at least one texture to the FBO!" );
-	glDrawBuffers(mNumCurrentDrawBuffers, mCurrentDrawBuffers);
+	GUARD_FRAMEBUFFER(glDrawBuffers(mNumCurrentDrawBuffers, mCurrentDrawBuffers));
 }
 
 void RenderTarget::clear()
@@ -354,14 +411,28 @@ void RenderTarget::clear()
 		throw(BufferException("This rendertarget has no depth buffer attached! disable depth test or attach a depth texture!"));
 	}
 
+	const float oneForClearing = 1.0f;
+	GUARD_FRAMEBUFFER (
+//		glClear(
+//			mColorRenderingEnabled ? GL_COLOR_BUFFER_BIT : 0
+//					|
+//			depthTestEnabled()? GL_DEPTH_BUFFER_BIT : 0
+//					|
+//			stencilTestEnabled()? GL_STENCIL_BUFFER_BIT : 0
+//		)
+
+		glClearBufferfv(GL_DEPTH,0,&oneForClearing)
+	);
+
 	GUARD_FRAMEBUFFER (
 		glClear(
 			mColorRenderingEnabled ? GL_COLOR_BUFFER_BIT : 0
 					|
-			depthTestEnabled()? GL_DEPTH_BUFFER_BIT : 0
-					|
+//			depthTestEnabled()? GL_DEPTH_BUFFER_BIT : 0
+//					|
 			stencilTestEnabled()? GL_STENCIL_BUFFER_BIT : 0
 		)
+
 	);
 	unbindSave();
 }
@@ -857,6 +928,9 @@ void RenderTarget::attachStoredDepthBuffer()throw(BufferException)
 	else
 	{
 		assert(mOwnedGLRenderBufferHandle);
+
+		GUARD_FRAMEBUFFER( glBindRenderbuffer(GL_RENDERBUFFER, mOwnedGLRenderBufferHandle));
+
 		//attach renderbuffer to depth/stencil attachment point of the FBO
 		GUARD_FRAMEBUFFER(
 				glFramebufferRenderbuffer(
@@ -952,58 +1026,7 @@ void RenderTarget::detachDepthBuffer()
 	unbindSave();
 }
 
-void RenderTarget::bindSave()
-{
-	//static GLint currentReadBufferBinding;
-	//static GLint currentDrawBufferBinding;
 
-	mBindSaveCallCounter++;
-
-	if( mBindSaveCallCounter == 1)
-	{
-		GUARD( glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &mOldReadBufferBinding) );
-		GUARD( glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &mOldDrawBufferBinding) );
-
-//		GUARD( glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &currentReadBufferBinding) );
-//		GUARD( glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &currentDrawBufferBinding) );
-//
-//		if(     mIsReadFrameBuffer   && ( (GLuint)(currentReadBufferBinding) != mFBO ) )
-//		{
-//			mOldReadBufferBinding = currentReadBufferBinding;
-//		}
-//
-//		if( ( ! mIsReadFrameBuffer ) && ( (GLuint)(currentDrawBufferBinding) != mFBO ) )
-//		{
-//			mOldDrawBufferBinding = currentDrawBufferBinding;
-//		}
-
-		//mOldReadBufferBinding = mIsReadFrameBuffer ? currentReadBufferBinding : mOldReadBufferBinding;
-		//mOldDrawBufferBinding = mIsReadFrameBuffer ? mOldDrawBufferBinding    : currentDrawBufferBinding ;
-		bind(mIsReadFrameBuffer);
-	}
-
-	//bind(mIsReadFrameBuffer);
-}
-void RenderTarget::unbindSave()
-{
-	mBindSaveCallCounter--;
-
-	//only restore old binding if unbindSave() has been calls as often as bindSave();
-	if( ( mBindSaveCallCounter == 0) && mIsReadFrameBuffer )
-	{
-		glBindFramebuffer(GL_READ_FRAMEBUFFER,
-				(GLuint) (mOldReadBufferBinding) );
-	}
-
-	if( ( mBindSaveCallCounter == 0) && (!mIsReadFrameBuffer) )
-	{
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER,
-				(GLuint) (mOldDrawBufferBinding) );
-	}
-
-	//glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
-}
 
 bool RenderTarget::depthTestEnabled()
 {

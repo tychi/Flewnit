@@ -220,7 +220,7 @@ void DemoInputInterpreter::interpretInput(Keyboard* keyboard)
 	{
 		GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_POINT));
 
-		GUARD(glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT));
+		//GUARD(glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT));
 		GUARD(glEnable(GL_PROGRAM_POINT_SIZE));
 
 	}

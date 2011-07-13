@@ -89,7 +89,7 @@ bool ParticleLiquidDrawStage::stepSimulation() throw(SimulatorException)
 	mTextureShowShader->use(renderingOfDefaultLightingStage);
 
 	//draw fullscreenquad
-	//WindowManager::getInstance().drawFullScreenQuad();
+	WindowManager::getInstance().drawFullScreenQuad();
 
 	//-------------------
 

@@ -42,20 +42,20 @@ UnitQuad::UnitQuad(	String name)
 	tcBuffer[0]= Vector4D(0.0f,0.0f,0.0f,1.0f);
 
 	posBuffer[1]= Vector4D(1.0f,-1.0f,0.0f,1.0f);
-	tcBuffer[0]= Vector4D(1.0f,0.0f,0.0f,1.0f);
+	tcBuffer[1]= Vector4D(1.0f,0.0f,0.0f,1.0f);
 
 	posBuffer[2]= Vector4D(1.0f,1.0f,0.0f,1.0f);
-	tcBuffer[0]= Vector4D(1.0f,1.0f,0.0f,1.0f);
+	tcBuffer[2]= Vector4D(1.0f,1.0f,0.0f,1.0f);
 
 	//upper left triangle
 	posBuffer[3]= Vector4D(-1.0f,-1.0f,0.0f,1.0f);
-	tcBuffer[0]= Vector4D(0.0f,0.0f,0.0f,1.0f);
+	tcBuffer[3]= Vector4D(0.0f,0.0f,0.0f,1.0f);
 
 	posBuffer[4]= Vector4D(1.0f,1.0f,0.0f,1.0f);
-	tcBuffer[0]= Vector4D(1.0f,1.0f,0.0f,1.0f);
+	tcBuffer[4]= Vector4D(1.0f,1.0f,0.0f,1.0f);
 
 	posBuffer[5]= Vector4D(-1.0f,1.0f,0.0f,1.0f);
-	tcBuffer[0]= Vector4D(0.0f,1.0f,0.0f,1.0f);
+	tcBuffer[5]= Vector4D(0.0f,1.0f,0.0f,1.0f);
 
 
 	getAttributeBuffer(POSITION_SEMANTICS)->copyFromHostToGPU();

@@ -21,6 +21,8 @@
 #include "Util/Time/FPSCounter.h"
 #include "Util/HelperFunctions.h"
 #include "Geometry/Procedural/UnitQuad.h"
+#include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
+#include "Simulator/ParallelComputeManager.h"
 
 namespace Flewnit
 {
@@ -315,7 +317,13 @@ void GLFWWindowManager::drawFullScreenQuad()
 		mFullScreenQuadGeom = new UnitQuad("WindowManagerUnitQuad");
 	}
 
+	RenderTarget::setEnableDepthTest(false);
+	int val;
+	GUARD(glGetIntegerv(GL_POLYGON_MODE, &val));
+	GUARD(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	reinterpret_cast<Geometry*>(mFullScreenQuadGeom)->draw();
+	RenderTarget::setEnableDepthTest(true);
+	GUARD(glPolygonMode(GL_FRONT_AND_BACK, val));
 }
 
 

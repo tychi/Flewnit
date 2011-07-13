@@ -61,6 +61,7 @@ bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
 		//render to FBO
 		mUsedRenderTarget->bind();
 		RenderTarget::setEnableDepthTest(true);
+		mUsedRenderTarget->attachStoredDepthBuffer();
 		mUsedRenderTarget->attachStoredColorTexture(FINAL_RENDERING_SEMANTICS,0);
 		mUsedRenderTarget->renderToAttachedTextures();
 		mUsedRenderTarget->clear();

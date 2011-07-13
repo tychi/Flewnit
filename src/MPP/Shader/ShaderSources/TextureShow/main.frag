@@ -27,7 +27,8 @@ in InterfaceData
 }input;
 
 //---- shader output -------------------
-out vec4 outFFinalLuminance;
+//out vec4 outFFinalLuminance;
+layout(location = 0 ) out vec4 outFFinalLuminance;
 //----- subroutines ------------------------------------------------------------------------------
 
 
@@ -36,9 +37,11 @@ void main()
 {
 
   {% if TEXTURE_SHOW_TYPE_TEXTURE_TYPE_2D%}
-    outFFinalLuminance=texture(textureToShow,input.texCoords.xy);
+    outFFinalLuminance=texture(textureToShow, input.texCoords.xy);
    
-    outFFinalLuminance.b= 0.8 * input.texCoords.x ;  //test for success TODO remove this line 
+    //outFFinalLuminance +=  0.5* input.texCoords ;  //test for success TODO remove this line 
+    
+    //outFFinalLuminance=vec4(1.0,0.0,0.0,1.0);
   {% endif %}
   
   {% if TEXTURE_SHOW_TYPE_TEXTURE_TYPE_2D_RECT%}

@@ -408,7 +408,7 @@
         <Type type="STRING" value="DefaultLightingStage"/>
 
         <!-- indicator not to render to the main FBO -->
-        <renderToScreen type="BOOL" value="true" />
+        <renderToScreen type="BOOL" value="false" />
         
 
       </SimulationPipelineStage>

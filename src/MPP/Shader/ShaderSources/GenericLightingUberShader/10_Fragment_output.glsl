@@ -3,7 +3,9 @@
   applicable to following stages: fragment     {%endcomment%} 
 
 {% if RENDERING_TECHNIQUE_DEFAULT_LIGHTING or RENDERING_TECHNIQUE_TRANSPARENT_OBJECT_LIGHTING %}
-		out vec4 outFFinalLuminance;
+		//out vec4 outFFinalLuminance;
+		layout(location = 0 ) out vec4 outFFinalLuminance;
+		
 {% endif %}
 	
 {% if RENDERING_TECHNIQUE_DEFERRED_GBUFFER_FILL %}

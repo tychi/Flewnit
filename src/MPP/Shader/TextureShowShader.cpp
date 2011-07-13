@@ -97,9 +97,9 @@ namespace Flewnit
 		GUARD(glUseProgram(mGLProgramHandle));
 
 		//bind texture to sampler
-		GUARD(glActiveTexture(GL_TEXTURE0 + FINAL_RENDERING_SEMANTICS));
+		GUARD(glActiveTexture(GL_TEXTURE0 ));
 		GUARD(tex->bind(OPEN_GL_CONTEXT_TYPE));
-		bindInt("textureToShow",FINAL_RENDERING_SEMANTICS);
+		bindInt("textureToShow",0);
 
 		//setup orthogonal projection matrix to unit cube:
 		//(model and view matrix are the identity here and hence can be ignored)
