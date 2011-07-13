@@ -412,25 +412,29 @@ void RenderTarget::clear()
 	}
 
 	const float oneForClearing = 1.0f;
-	GUARD_FRAMEBUFFER (
-//		glClear(
-//			mColorRenderingEnabled ? GL_COLOR_BUFFER_BIT : 0
-//					|
-//			depthTestEnabled()? GL_DEPTH_BUFFER_BIT : 0
-//					|
-//			stencilTestEnabled()? GL_STENCIL_BUFFER_BIT : 0
-//		)
 
-		glClearBufferfv(GL_DEPTH,0,&oneForClearing)
-	);
+//	if(depthTestEnabled())
+//	{
+//		GUARD_FRAMEBUFFER (
+//	//		glClear(
+//	//			mColorRenderingEnabled ? GL_COLOR_BUFFER_BIT : 0
+//	//					|
+//	//			depthTestEnabled()? GL_DEPTH_BUFFER_BIT : 0
+//	//					|
+//	//			stencilTestEnabled()? GL_STENCIL_BUFFER_BIT : 0
+//	//		)
+//
+//			glClearBufferfv(GL_DEPTH,0,&oneForClearing)
+//		);
+//	}
 
 	GUARD_FRAMEBUFFER (
 		glClear(
-			mColorRenderingEnabled ? GL_COLOR_BUFFER_BIT : 0
+			(mColorRenderingEnabled ? GL_COLOR_BUFFER_BIT : 0)
 					|
-//			depthTestEnabled()? GL_DEPTH_BUFFER_BIT : 0
-//					|
-			stencilTestEnabled()? GL_STENCIL_BUFFER_BIT : 0
+			(depthTestEnabled()? GL_DEPTH_BUFFER_BIT : 0)
+					|
+			(stencilTestEnabled()? GL_STENCIL_BUFFER_BIT : 0)
 		)
 
 	);
