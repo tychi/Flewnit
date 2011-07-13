@@ -64,13 +64,13 @@ Shader::Shader(Path codeDirectory, Path specificShaderCodeSubFolderName, const S
 		),
 		mLocalShaderFeatures(localShaderFeatures),
 		mCodeDirectory(ShaderManager::getInstance().getShaderCodeDirectory()),
-		mSpecificShaderCodeSubFolderName(specificShaderCodeSubFolderName)
-//		mGrantleeShaderFeaturesContext(
-//				new GrantleeShaderFeaturesContext(
-//					mLocalShaderFeatures,
-//					ShaderManager::getInstance().getGlobalShaderFeatures()
-//				)
-//		)
+		mSpecificShaderCodeSubFolderName(specificShaderCodeSubFolderName),
+		//init to NULL as it is only needed during build process, hence created
+		//right before and destroyed right after to save memory (shader build performance is not
+		//performance critical right now)
+		mTemplateEngine(0),
+		mTemplateContextMap(0)
+
 {
 
 	for(int i=0; i< __NUM_SHADER_STAGES__; i++)
@@ -91,51 +91,81 @@ Shader::~Shader()
 		delete mShaderStages[i];
 	}
 	GUARD(glDeleteProgram(mGLProgramHandle));
+
 }
 
-
-
-//called by constructor
-void Shader::build()
+void Shader::initBuild()
 {
 	GUARD( mGLProgramHandle = glCreateProgram() );
 
-    Grantlee::Engine *templateEngine = new Grantlee::Engine();
+	assert("template engine should be zero; call Shader::finishBuild() at the and og each derived"
+			"build() function " && ( mTemplateEngine == 0 ) );
+
+    mTemplateEngine = new Grantlee::Engine();
     Grantlee::FileSystemTemplateLoader::Ptr loader = Grantlee::FileSystemTemplateLoader::Ptr( new Grantlee::FileSystemTemplateLoader() );
     String shaderDirectory=	(mCodeDirectory / mSpecificShaderCodeSubFolderName).string() ;
     String commonCodeSnippetsDirectory = (mCodeDirectory / Path("Common")).string();
     loader->setTemplateDirs( QStringList() << shaderDirectory.c_str() << commonCodeSnippetsDirectory.c_str());
-    templateEngine->addTemplateLoader(loader);
+    mTemplateEngine->addTemplateLoader(loader);
+
 
     //setup the context to delegate template rendering according to the shaderFeatures (both local and global):
-    TemplateContextMap contextMap;
-    setupTemplateContext(contextMap);
+    //TemplateContextMap contextMap;
+    mTemplateContextMap = new TemplateContextMap();
+    setupTemplateContext(*mTemplateContextMap);
+
+}
+
+void Shader::finishBuild()
+{
+	link();
+
+	if(mTemplateContextMap)
+	{
+		delete mTemplateContextMap;
+		mTemplateContextMap=0;
+	}
+
+	if(mTemplateEngine)
+	{
+
+		//TODO check if additional objects (template loaders etc must be explicitels deleted)
+
+		delete mTemplateEngine;
+		mTemplateEngine = 0;
+	}
+}
+
+
+void Shader::build()
+{
+	initBuild();
+
 
     //--------------------------------------------------------------------
 
-    generateShaderStage(VERTEX_SHADER_STAGE,templateEngine,contextMap);
+    generateShaderStage(VERTEX_SHADER_STAGE,mTemplateEngine,*mTemplateContextMap);
 
     if((mLocalShaderFeatures.shadingFeatures & SHADING_FEATURE_TESSELATION ) != 0 )
     {
     	assert(WindowManager::getInstance().getAvailableOpenGLVersion().x >= 4);
-    	generateShaderStage(TESSELATION_CONTROL_SHADER_STAGE,templateEngine,contextMap);
-    	generateShaderStage(TESSELATION_EVALUATION_SHADER_STAGE,templateEngine,contextMap);
+    	generateShaderStage(TESSELATION_CONTROL_SHADER_STAGE,mTemplateEngine,*mTemplateContextMap);
+    	generateShaderStage(TESSELATION_EVALUATION_SHADER_STAGE,mTemplateEngine,*mTemplateContextMap);
     }
 
     if(ShaderManager::getInstance().currentRenderingScenarioNeedsGeometryShader())
     {
 		//when do we need a geometry shader?
 		//if we need to trender to a cubemap, an array texture or if wee need to render primitive IDs
-    	generateShaderStage(GEOMETRY_SHADER_STAGE,templateEngine,contextMap);
+    	generateShaderStage(GEOMETRY_SHADER_STAGE,mTemplateEngine,*mTemplateContextMap);
     }
 
     if(ShaderManager::getInstance().currentRenderingScenarioNeedsFragmentShader())
     {
-    	generateShaderStage(FRAGMENT_SHADER_STAGE,templateEngine,contextMap);
+    	generateShaderStage(FRAGMENT_SHADER_STAGE,mTemplateEngine,*mTemplateContextMap);
     }
 
-    link();
-
+    finishBuild();
 
 }
 
@@ -412,6 +442,7 @@ void Shader::setupTemplateContext(TemplateContextMap& contextMap)
 	contextMap.insert("cotangensCamFovVertical", 1.0f / tangensCamFovVertical );
 
 
+	contextMap.insert("pointRendering", true);
 }
 
 

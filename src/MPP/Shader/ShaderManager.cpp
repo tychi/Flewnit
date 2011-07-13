@@ -20,6 +20,7 @@
 #include <boost/foreach.hpp>
 #include "UserInterface/WindowManager/WindowManager.h"
 #include "Buffer/Texture.h"
+#include "TextureShowShader.h"
 
 
 namespace Flewnit {
@@ -46,10 +47,13 @@ ShaderManager::ShaderManager(
 //						? SHADING_FEATURE_TESSELATION:0)
 //			)
 		)
+		//mTextureShowShader(new TextureShowShader())
 		//mTesselationIsEnabled(WindowManager::getInstance().getAvailableOpenGLVersion().x >=4)
 		//mIsInitializedGuard(false)
 {
 	mGlobalShaderFeatures.validate();
+
+	//mTextureShowShader->build();
 
 
 	// TODO Auto-generated constructor stub

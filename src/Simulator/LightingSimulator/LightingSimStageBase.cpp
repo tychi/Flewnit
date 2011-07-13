@@ -15,6 +15,9 @@
 #include "Geometry/Geometry.h"
 
 #include "URE.h"
+#include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
+
+#include "Buffer/Texture.h"
 
 namespace Flewnit
 {
@@ -36,6 +39,16 @@ LightingSimStageBase::LightingSimStageBase(String name,
 LightingSimStageBase::~LightingSimStageBase()
 {
 
+}
+
+BufferInterface* LightingSimStageBase::getRenderingResult(BufferSemantics what)
+{
+	if(mUsedRenderTarget)
+	{
+		return mUsedRenderTarget->getStoredColorTexture(what);
+	}
+
+	return 0;
 }
 
 

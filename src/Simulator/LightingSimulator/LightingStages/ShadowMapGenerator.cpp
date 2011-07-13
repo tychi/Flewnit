@@ -41,6 +41,19 @@ ShadowMapGenerator::~ShadowMapGenerator()
 }
 
 
+BufferInterface* ShadowMapGenerator::getRenderingResult(BufferSemantics what)
+{
+	assert(mUsedRenderTarget);
+
+	if( (what == SHADOW_MAP_SEMANTICS) || (what == DEPTH_BUFFER_SEMANTICS) )
+	{
+		return mUsedRenderTarget->getStoredDepthTexture();
+	}
+
+	return 0;
+}
+
+
 bool ShadowMapGenerator::initStage()throw(SimulatorException)
 {
 	assert("need shadow map generation stage only if shadowing is desired from the lighting stages :@"

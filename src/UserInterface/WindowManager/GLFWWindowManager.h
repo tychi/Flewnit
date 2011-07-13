@@ -50,6 +50,7 @@ public:
 	virtual bool openGLContextIsCreated();
 	virtual Vector2Di getAvailableOpenGLVersion();
 
+	virtual void drawFullScreenQuad();
 
 protected:
 
@@ -58,6 +59,8 @@ protected:
 
 	FPSCounter* mFPSCounter;
 	bool mGLContextCreatedGuard;
+
+	UnitQuad* mFullScreenQuadGeom;
 
 };
 

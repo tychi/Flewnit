@@ -62,6 +62,11 @@
 	uniform vec2 cotangensCamFov= vec2 ( {{cotangensCamFovHorizontal}}, {{cotangensCamFovVertical}}   ); //for texcoord calculation from viewspace position value;/inverso of tanget, pass from outside to save calculations
 	uniform float cameraFarClipPlane = {{ cameraFarClipPlane }};
 	uniform float invCameraFarClipPlane = {{ invCameraFarClipPlane }};
+	
+  {% if pointRendering %} 
+	  uniform float pointRadius= 3.0;  // point size in world space
+    uniform float pointScale = 300.0;   // scale to calculate size in pixels
+	{% endif %} 	
 
 
 {% if SHADOW_FEATURE_EXPERIMENTAL_SHADOWCOORD_CALC_IN_FRAGMENT_SHADER and LIGHT_SOURCES_SHADOW_FEATURE_ONE_SPOT_LIGHT %}
@@ -135,6 +140,11 @@ void main()
   {% endif %}	
   //----------------------------------------------------------------------------------------------
   
+ 
+  
+  //----------------------------------------------------------------------------------------------
+  
+  
   //++++++++++++++ step 1: calculate the shade space position ++++++++++++++++++++++++++++++++++++
   {% if shadeSpacePositionNeeded %} {%comment%} i.e. color calcs or layered (world transform needed) 
                                                 or tess (world transform for layered, view transform else) {%endcomment%}   
@@ -143,6 +153,11 @@ void main()
       output.position = inVPosition;
     {% else %}
       output.position =  shadeSpaceTransform * inVPosition; 
+      
+        {% if pointRendering %} 
+	        gl_PointSize = pointRadius * (pointScale / length(output.position));
+        {% endif %} 
+      
     {% endif %}       
   {% endif %}  
   

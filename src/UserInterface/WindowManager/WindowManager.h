@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "Simulator/SimulatorForwards.h"
+
 #include "Common/Singleton.h"
 #include "Common/BasicObject.h"
 #include "Common/Math.h"
@@ -50,6 +52,8 @@ public:
 
 	virtual bool openGLContextIsCreated()=0;
 	virtual Vector2Di getAvailableOpenGLVersion()=0;
+
+	virtual void drawFullScreenQuad()=0;
 
 
 protected:

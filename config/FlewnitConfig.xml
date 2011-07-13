@@ -376,8 +376,7 @@
           <numMaxInstancesRenderable type="INT" value="300"/>
           <GBufferType type="STRING" value="TEXTURE_TYPE_2D_RECT"/>
 
-          <shaderCodeDirectory type="STRING" value="./src/MPP/Shader/ShaderSources/"
-						/>
+          <shaderCodeDirectory type="STRING" value="./src/MPP/Shader/ShaderSources/" />
         </GlobalShadingFeatures>
 
       </generalSettings>

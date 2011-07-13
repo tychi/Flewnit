@@ -32,6 +32,9 @@ public:
 
 	virtual bool checkCompatibility(VisualMaterial* visMat);
 
+private:
+	TextureShowShader* mTextureShowShader;
+
 };
 
 }

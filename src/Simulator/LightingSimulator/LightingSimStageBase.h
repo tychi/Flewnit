@@ -34,6 +34,11 @@ public:
 
 	inline RenderingTechnique getRenderingTechnique()const {return mRenderingTechnique;}
 
+	//override to pass stuff from mUsedRenderTarget instead of mRenderingResults
+	//WARNING: just returns owned color textures; if you want to expose the depth texture
+	//uese as depth buffer or non-owned color textures, you have to override again
+	virtual BufferInterface* getRenderingResult(BufferSemantics what);
+
 	//iterates over the scenegraph and issues material activations and geometry draw calls on materials
 	//compatible to the specific rendering technique;
 	//uses VisualMaterialFlags::areCompatibleTo(materialFlagMask) to decide which SubObject in the SceneGraph

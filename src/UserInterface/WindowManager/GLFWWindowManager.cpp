@@ -20,12 +20,14 @@
 
 #include "Util/Time/FPSCounter.h"
 #include "Util/HelperFunctions.h"
+#include "Geometry/Procedural/UnitQuad.h"
 
 namespace Flewnit
 {
 
 GLFWWindowManager::GLFWWindowManager()
-: mGLContextCreatedGuard(false)
+: mGLContextCreatedGuard(false),
+  mFullScreenQuadGeom(0)
 {
 	init();
 
@@ -177,6 +179,8 @@ void GLFWWindowManager::init()
 
 void GLFWWindowManager::cleanup()
 {
+	mFullScreenQuadGeom =0; //don't delete, is done by SimResourceManager
+
 	delete mFPSCounter;
 
 	glfwTerminate();
@@ -301,6 +305,17 @@ void GLFWWindowManager::printInfo()
 //		Logger::Instance().message << glGetStringi(GL_EXTENSIONS,i);
 //		Logger::Instance().log("DEBUG","GL_EXTENSIONS");
 //	}
+}
+
+
+void GLFWWindowManager::drawFullScreenQuad()
+{
+	if(!mFullScreenQuadGeom)
+	{
+		mFullScreenQuadGeom = new UnitQuad("WindowManagerUnitQuad");
+	}
+
+	reinterpret_cast<Geometry*>(mFullScreenQuadGeom)->draw();
 }
 
 

@@ -214,6 +214,7 @@ class		Texture3DVoxelGridGeometry;
 
 //procedural types:
 class BoxGeometry;
+class UnitQuad;
 
 /*
 The Generic Buffer is needed as a storage for a Uniform Grid acceleration structure
@@ -255,6 +256,7 @@ class MPP;
 
 	class ShaderManager;
 	class 	Shader;
+	class 	TextureShowShader;
 
 	class CLProgramManager;
 	class 	CLProgram;

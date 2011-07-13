@@ -126,6 +126,13 @@ protected:
 	friend class ShaderManager;
 	Shader(Path codeDirectory, Path specificShaderCodeSubFolderName, const ShaderFeaturesLocal& localShaderFeatures);
 
+	//due to time pressure before CV-Tag: don't know how to use a single global engine for ALL shaders without
+	//interference, hence every Shader instance maintains its own engine ;( //TODO refactor
+
+	//create and init template engine, call virtual template context setup routine
+	void initBuild();
+	//destroy template engine, link shaders
+	void finishBuild();
 
 	//setup the context for template rendering:
 	virtual void setupTemplateContext(TemplateContextMap& contextMap);
@@ -177,6 +184,9 @@ protected:
 
 	//to be compared to rendertarget; Initial state: all -1;
 	GLint mCurrentFragDataBindings[__NUM_TOTAL_SEMANTICS__];
+
+	Grantlee::Engine* mTemplateEngine;
+	TemplateContextMap* mTemplateContextMap;
 };
 
 }

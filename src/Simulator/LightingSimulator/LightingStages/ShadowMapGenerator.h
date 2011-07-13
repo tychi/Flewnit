@@ -31,6 +31,9 @@ public:
 	void setPolygonOffset(const Vector2D& val);
 	inline const Vector2D& getPolygonOffset()const{return mPolygonOffset;}
 
+	//override to expose the depth texture via depth buffer or shadow map semantics
+	virtual BufferInterface* getRenderingResult(BufferSemantics what);
+
 private:
 
 	int mShadowMapResolution; //shadowmap is alwayas of squared size:

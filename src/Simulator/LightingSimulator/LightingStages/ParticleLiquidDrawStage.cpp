@@ -22,6 +22,9 @@
 #include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
 #include "Util/Loader/LoaderHelper.h"
 #include "Material/ParticleLiquidVisualMaterial.h"
+#include "MPP/Shader/TextureShowShader.h"
+#include "Buffer/Texture.h"
+
 
 
 
@@ -33,7 +36,8 @@ ParticleLiquidDrawStage::ParticleLiquidDrawStage(ConfigStructNode* simConfigNode
 		RENDERING_TECHNIQUE_CUSTOM,
 		//mask for custom stuff; isn'nt used anyway, because there is no scene graph traversal
 		VisualMaterialFlags(false,false,false,false,false,true),
-		simConfigNode)
+		simConfigNode),
+		mTextureShowShader(0)
 {
 	//TODO configure main render target etc..
 
@@ -67,6 +71,27 @@ bool ParticleLiquidDrawStage::stepSimulation() throw(SimulatorException)
 
 	//ensure that render target is unbound so that it's not used on accident by following stages
 	RenderTarget::renderToScreen();
+	//TODO maybe clear srceen? should actualle be done by dimulator at the beginning...
+
+	//--------------------------------------------------
+	//TEST: just render the result from previous stage as texture show to test the render target stuff
+
+	//enable the texture show shader with the repsective texture bound
+	Texture* renderingOfDefaultLightingStage =
+		dynamic_cast<Texture*>(
+			URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)
+			->getStage("DefaultLightingStage")->getRenderingResult(FINAL_RENDERING_SEMANTICS)
+		);
+	assert("ParticleLiquidDrawStage::stepSimulation(): The DefaultLightingStage "
+			"must expose a Texture with final rendering semantics! " && renderingOfDefaultLightingStage);
+	//ShaderManager::getInstance().getTextureShowShader()->use(renderingOfDefaultLightingStage);
+
+	mTextureShowShader->use(renderingOfDefaultLightingStage);
+
+	//draw fullscreenquad
+	//WindowManager::getInstance().drawFullScreenQuad();
+
+	//-------------------
 
 	return true;
 
@@ -74,6 +99,9 @@ bool ParticleLiquidDrawStage::stepSimulation() throw(SimulatorException)
 
 bool ParticleLiquidDrawStage::initStage()throw(SimulatorException)
 {
+	mTextureShowShader= new TextureShowShader();
+	mTextureShowShader->build();
+
 //	mRenderToScreen = ConfigCaster::cast<bool>(mSimConfigNode->get("renderToScreen",0));
 //
 //	//cause shader generation now:

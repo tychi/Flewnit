@@ -42,7 +42,10 @@ public:
 	inline const ShaderFeaturesGlobal& getGlobalShaderFeatures()const{return mGlobalShaderFeatures;}
 	inline Path getShaderCodeDirectory()const{return mShaderCodeDirectory;}
 
+	///\{
+	//inline TextureShowShader* getTextureShowShader()const{return mTextureShowShader;}
 
+	///\}
 
 	//iterates all visual materials and assigns them shaders fitting the current scenario;
 	//the shaders might need to be generated first (done automatically);
@@ -111,6 +114,8 @@ private:
 	//bool mIsInitializedGuard;
 
 	boost::unordered_map<ShaderFeaturesLocal, Shader*> mShaderMap;
+
+	//TextureShowShader* mTextureShowShader;
 
 
 
