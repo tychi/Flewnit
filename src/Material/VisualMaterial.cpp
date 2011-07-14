@@ -156,9 +156,9 @@ bool VisualMaterial::operator==(const Material& rhs) const
 
 		//first, compare the logical features:
 		if(
-				mType == castedMat->getType() &&
-				mShadingFeatures == castedMat->getShadingFeatures() &&
-				mVisMatFlags == castedMat->getFlags()
+				(mType == castedMat->getType()) &&
+				(mShadingFeatures == castedMat->getShadingFeatures()) &&
+				(mVisMatFlags == castedMat->getFlags())
 		)
 		{
 			//compare textures; that the texture state is valid, has already been asserted,
@@ -334,6 +334,10 @@ void VisualMaterial::validateTextures()throw(SimulatorException)
 		return;
 	}
 
+	if(mType == VISUAL_MATERIAL_TYPE_LIQUID_RENDERING)
+	{
+		return;
+	}
 
 	throw(SimulatorException("no other visual material type supported yet"));
 

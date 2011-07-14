@@ -39,9 +39,8 @@ void main()
   {% if TEXTURE_SHOW_TYPE_TEXTURE_TYPE_2D%}
     outFFinalLuminance=texture(textureToShow, input.texCoords.xy);
    
-    //outFFinalLuminance +=  0.5* input.texCoords ;  //test for success TODO remove this line 
+    //outFFinalLuminance *=   input.texCoords ;  //test for success TODO remove this line 
     
-    //outFFinalLuminance=vec4(1.0,0.0,0.0,1.0);
   {% endif %}
   
   {% if TEXTURE_SHOW_TYPE_TEXTURE_TYPE_2D_RECT%}

@@ -54,10 +54,15 @@ GLuint ShaderStage::mGLShaderStageIdentifiers[__NUM_SHADER_STAGES__] =
 
 
 
-Shader::Shader(Path codeDirectory, Path specificShaderCodeSubFolderName, const ShaderFeaturesLocal& localShaderFeatures)
+Shader::Shader(
+		Path codeDirectory, Path specificShaderCodeSubFolderName,
+		const ShaderFeaturesLocal& localShaderFeatures,
+		String optionalName)
 :
 		//generate a unigque name:
-		MPP(	specificShaderCodeSubFolderName.string() + localShaderFeatures.stringify(),
+		MPP(	specificShaderCodeSubFolderName.string()
+				+ optionalName
+				+ localShaderFeatures.stringify(),
 				//String(shaderName.string()).append(localShaderFeatures.stringify()),
 				//String (shaderName.string() + localShaderFeatures.stringify() ),
 				VISUAL_SIM_DOMAIN
@@ -169,7 +174,10 @@ void Shader::build()
 
 }
 
-void Shader::generateShaderStage(ShaderStageType shaderStageType,  Grantlee::Engine* templateEngine, const TemplateContextMap& contextMap)
+void Shader::generateShaderStage(ShaderStageType shaderStageType,
+		Grantlee::Engine* templateEngine,
+		const TemplateContextMap& contextMap,
+		String diskWrittenFileNamePrefix )
 {
     //generate shader stage source code:
 	Grantlee::Template shaderTemplate = templateEngine->loadByName(
@@ -181,7 +189,9 @@ void Shader::generateShaderStage(ShaderStageType shaderStageType,  Grantlee::Eng
 	Path shaderPath=
 		mCodeDirectory  / Path("__generated") /
 		Path(
-			mSpecificShaderCodeSubFolderName.string()+ mLocalShaderFeatures.stringify()
+			//mSpecificShaderCodeSubFolderName.string()
+			diskWrittenFileNamePrefix
+			+ mLocalShaderFeatures.stringify()
 			+ String(".")+  shaderStageFileEndings[shaderStageType]
 		);
 	writeToDisk(shaderSourceCode, shaderPath);
@@ -623,6 +633,18 @@ void Shader::bindVector3D(String uniformName, const Vector3D& vec)
 		)
 	);
 }
+
+void Shader::bindVector2D(String uniformName, const Vector2D& vec)
+{
+	GUARD(
+		glUniform2fv(
+			glGetUniformLocation(mGLProgramHandle,uniformName.c_str()),
+			1,
+			&( vec[0])
+		)
+	);
+}
+
 
 void Shader::bindFloat(String uniformName, float val)
 {

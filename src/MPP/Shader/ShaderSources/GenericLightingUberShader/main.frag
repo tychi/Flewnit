@@ -145,9 +145,10 @@ void main()
                     cubeMap, 
                     //transform from viewspace back to worldspace via inverse rotational part of the view matrix:
                     //note : the correct lookup would be with positive direction reflected; but due to strange layout
-                    //of loadable cube map textures (	{"_RT", "_LF", positive y= down, nagative y=up, "_FR", "_BK"}),
-                    //we have to lookup in the contrary direction
-                    transpose(mat3(viewMatrix)) * reflect( - position.xyz , normalVN ) //fragment position is view space correspands to unnormalized direction :)
+                    //of loadable cube map textures (	{"_RT", "_LF", positive y= down, negative y=up, "_FR", "_BK"}),
+                    //we have to lookup in the contrary direction,
+                    //fragment position is in view space, hence corresponds to unnormalized direction :)
+                    transpose(mat3(viewMatrix)) * reflect( - position.xyz , normalVN )
                   ),
                   reflectivity        
           );

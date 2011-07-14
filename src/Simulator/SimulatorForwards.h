@@ -257,6 +257,7 @@ class MPP;
 	class ShaderManager;
 	class 	Shader;
 	class 	TextureShowShader;
+	class 	ParticleLiquidShader;
 
 	class CLProgramManager;
 	class 	CLProgram;

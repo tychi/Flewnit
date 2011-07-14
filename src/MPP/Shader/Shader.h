@@ -124,7 +124,11 @@ public:
 protected:
 
 	friend class ShaderManager;
-	Shader(Path codeDirectory, Path specificShaderCodeSubFolderName, const ShaderFeaturesLocal& localShaderFeatures);
+	Shader(Path codeDirectory, Path specificShaderCodeSubFolderName,
+			const ShaderFeaturesLocal& localShaderFeatures,
+			//if there exist several custom shader versions not distinguishable by LocalShaderFeatures:
+			//this way, a shader can still be identified by its unique, partially generated name
+			String optionalName="");
 
 	//due to time pressure before CV-Tag: don't know how to use a single global engine for ALL shaders without
 	//interference, hence every Shader instance maintains its own engine ;( //TODO refactor
@@ -136,7 +140,8 @@ protected:
 
 	//setup the context for template rendering:
 	virtual void setupTemplateContext(TemplateContextMap& contextMap);
-	void generateShaderStage(ShaderStageType shaderStageType, Grantlee::Engine* templateEngine, const TemplateContextMap& contextMap);
+	void generateShaderStage(ShaderStageType shaderStageType, Grantlee::Engine* templateEngine,
+			const TemplateContextMap& contextMap, String diskWrittenFileNamePrefix = "");
 
 
 	//bind G-buffer textures to output fragments;
@@ -170,6 +175,7 @@ protected:
 	void bindMatrix4x4(String uniformName, const Matrix4x4& mat);
 	void bindVector4D(String uniformName, const Vector4D& vec);
 	void bindVector3D(String uniformName, const Vector3D& vec);
+	void bindVector2D(String uniformName, const Vector2D& vec);
 	void bindFloat(String uniformName, float val);
 	void bindInt(String uniformName, int val);
 

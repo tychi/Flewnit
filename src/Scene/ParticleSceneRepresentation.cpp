@@ -397,7 +397,12 @@ VertexBasedGeometry* ParticleSceneRepresentation::createGeometryFromAttributeBuf
 		mParticleAttributeBuffers->getZIndicesPiPoBuffer()
 	);
 
-	//return to comput stuff
+	//TODO enable when sure the rest works
+//	pointGeo->setAttributeBuffer(
+//		mParticleAttributeBuffers->getObjectInfoPiPoBuffer()
+//	);
+
+	//return to compute stuff
 	PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
 
 	return pointGeo;

@@ -12,7 +12,6 @@
 #include "Shader.h"
 #include "GenericLightingUberShader.h"
 #include "SkyDomeShader.h"
-#include "MPP/Shader/LiquidShader.h"
 #include "DepthImageGenerationShader.h"
 
 #include "Simulator/LightingSimulator/RenderTarget/RenderTarget.h"
@@ -424,7 +423,8 @@ Shader*  ShaderManager::generateShader(const ShaderFeaturesLocal& sfl)
 			break;
 		case VISUAL_MATERIAL_TYPE_LIQUID_RENDERING:
 			//newShader = new LiquidShader (mShaderCodeDirectory,sfl);
-			assert(0&&"liquid rendering comes later");
+			assert(0&&"should never end here; liquid shaders are generated and maintained by the corresponding"
+					"visual materials themselves");
 			break;
 //		case VISUAL_MATERIAL_TYPE_INSTANCED:
 //			//no such material, obsolete
@@ -449,10 +449,11 @@ void ShaderManager::registerVisualMaterial(VisualMaterial* mat)
 	mRegisteredVisualMaterials.push_back(mat);
 
 
-	//if(mIsInitializedGuard)
-	//{
+	//mask custum, i.e. self maintainde materials
+	if(! mat->getFlags().isCustomMaterial)
+	{
 		assignShader(mat);
-	//}
+	}
 }
 
 void ShaderManager::unregisterVisualMaterial(VisualMaterial* mat)

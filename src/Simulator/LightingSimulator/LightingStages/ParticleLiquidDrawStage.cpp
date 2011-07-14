@@ -76,15 +76,15 @@ bool ParticleLiquidDrawStage::stepSimulation() throw(SimulatorException)
 	//--------------------------------------------------
 	//TEST: just render the result from previous stage as texture show to test the render target stuff
 
-	//enable the texture show shader with the repsective texture bound
+	//enable the texture show shader with the respective texture bound
 	Texture* renderingOfDefaultLightingStage =
 		dynamic_cast<Texture*>(
 			URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)
 			->getStage("DefaultLightingStage")->getRenderingResult(FINAL_RENDERING_SEMANTICS)
 		);
-	assert("ParticleLiquidDrawStage::stepSimulation(): The DefaultLightingStage "
-			"must expose a Texture with final rendering semantics! " && renderingOfDefaultLightingStage);
-	//ShaderManager::getInstance().getTextureShowShader()->use(renderingOfDefaultLightingStage);
+	assert("The DefaultLightingStage must expose a Texture with final rendering semantics! "
+			&& renderingOfDefaultLightingStage);
+
 
 	mTextureShowShader->use(renderingOfDefaultLightingStage);
 

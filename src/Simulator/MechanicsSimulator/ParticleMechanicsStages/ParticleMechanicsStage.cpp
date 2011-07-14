@@ -254,17 +254,30 @@ void ParticleMechanicsStage::parseParticleScene()
 					ConfigCaster::cast<Vector4D>( fluidNode.get("spawnAABBMax",0) )
 				),
 				ConfigCaster::cast<Vector4D>( fluidNode.get("initialVelocity",0) ),
+
 				new ParticleLiquidVisualMaterial(
 					ConfigCaster::cast<String>( fluidVisMatNode.get("name",0) ),
-					ConfigCaster::cast<Vector4D>( fluidVisMatNode.get("liquidColor",0) ),
+					ConfigCaster::cast<int>( fluidVisMatNode.get("numCurvatureFlowRelaxationSteps",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("curvatureDisplacementFactorPerStep",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("silhouetteThreshold",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("fluidTextureScaleFactor",0) ),
 					ConfigCaster::cast<float>( fluidVisMatNode.get("particleDrawRadius",0) ),
+					ConfigCaster::cast<Vector4D>( fluidVisMatNode.get("liquidColor",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("thicknessAttenuationFactor",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("refractionStrengthBias",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("foamGenerationAccelerationThreshold",0) ),
 					ConfigCaster::cast<Vector4D>( fluidVisMatNode.get("foamColor",0) ),
-					ConfigCaster::cast<float>( fluidVisMatNode.get("foamGenerationAcceleration",0) ),
-					ConfigCaster::cast<float>( fluidVisMatNode.get("shininess",0) ),
 					ConfigCaster::cast<float>( fluidVisMatNode.get("reflectivity",0) ),
-					ConfigCaster::cast<float>( fluidVisMatNode.get("refractivity",0) ),
-					ConfigCaster::cast<int>( fluidVisMatNode.get("numCurvatureFlowRelaxationSteps",0) )
+					ConfigCaster::cast<float>( fluidVisMatNode.get("shininess",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("refractiveIndexNonFluid",0) ),
+					ConfigCaster::cast<float>( fluidVisMatNode.get("refractiveIndexFluid",0) ),
+					ConfigCaster::cast<bool>( fluidVisMatNode.get("sophisticatedRendering",0) )
 				),
+
+
+
+
+
 				new ParticleFluidMechMat(
 					ConfigCaster::cast<String>( fluidMechMatNode.get("name",0) ),
 					ConfigCaster::cast<int>( fluidNode.get("numContainingParticles",0) ),
