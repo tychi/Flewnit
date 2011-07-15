@@ -314,7 +314,7 @@
               <liquidColor type="VEC4" x="0.0" y="0.3" z="1" w="1.0" />
               <thicknessAttenuationFactor type="FLOAT" value="0.05" />
               <refractionStrengthBias type="FLOAT" value="0.25" />
-              <foamGenerationAccelerationThreshold type="FLOAT" value="1.0" />
+              <foamGenerationAccelerationThreshold type="FLOAT" value="0.5" />
               <foamColor type="VEC4" x="0.4" y="0.5" z="0.2" w="1.0" />
               <reflectivity type="FLOAT" value="0.3" />
               <shininess type="FLOAT" value="50.0" />

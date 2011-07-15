@@ -86,15 +86,14 @@
       //vec4 velocity; afaik unneeded
       //float density; only needed later for spray- or inside-volume-culling (via discard in fragment shader or via geom shader.. we'll see)
 
-/*        
       {% if directRendering or depthAndAccelGeneration %}
         float acceleration;
       {% endif %}
+
       
       {% if directRendering or thicknessAndNoiseGeneration %}
-        uint objectInfo;
+        //uint objectInfo;
       {% endif %} 
-  */
      } input;
      
   {% endif %}
@@ -284,9 +283,14 @@ void main()
       reflectivity  //* vec3(1,1,1)
       *reflectedColor.xyz  
        + 
-       refractivity * refractedColor.xyz
+       refractivity * refractedColor.xyz  
     ;
-
+   
+  if(input.acceleration > foamGenerationAccelerationThreshold)
+  { 
+     outFFinalLuminance.rgb += 
+      min((input.acceleration - foamGenerationAccelerationThreshold) * foamColor.rgb, vec3(0.7));
+  }
     //TODO add specular hightlight stuff
 
 

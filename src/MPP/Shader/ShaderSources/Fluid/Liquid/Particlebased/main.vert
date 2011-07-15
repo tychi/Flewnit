@@ -50,7 +50,7 @@ layout(location = {{ PRIMITIVE_ID_SEMANTICS }}     ) 	in uint inVObjectInfo;
       {% endif %}
       
       {% if directRendering or thicknessAndNoiseGeneration %}
-        uint objectInfo;
+        //uint objectInfo;
       {% endif %} 
      } output;
      
@@ -76,15 +76,15 @@ void main()
         //gl_PointSize = 500.0 / length( output.position);
        
         //no velocity or density passing yet
-  /*      
         {% if directRendering or depthAndAccelGeneration %}
           output.acceleration= length(inVAcceleration);
         {% endif %}
         
+       
         {% if directRendering or thicknessAndNoiseGeneration %}
-          output.objectInfo= inVObjectInfo;
+          //output.objectInfo= inVObjectInfo;
         {% endif %} 
-    */    
+       
   {% endif %}
 }
 
