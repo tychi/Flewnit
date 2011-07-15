@@ -398,9 +398,9 @@ VertexBasedGeometry* ParticleSceneRepresentation::createGeometryFromAttributeBuf
 	);
 
 	//TODO enable when sure the rest works
-//	pointGeo->setAttributeBuffer(
-//		mParticleAttributeBuffers->getObjectInfoPiPoBuffer()
-//	);
+	pointGeo->setAttributeBuffer(
+		mParticleAttributeBuffers->getObjectInfoPiPoBuffer()
+	);
 
 	//return to compute stuff
 	PARA_COMP_MANAGER->acquireSharedBuffersForCompute();
@@ -453,7 +453,7 @@ void ParticleSceneRepresentation::associateParticleAttributeBuffersWithRendering
 	] = mParticleAttributeBuffers->mCorrectedVelocitiesPiPoBuffer;
 
 	renderingResults[
-	  //FORCE_SEMANTICS
+	  //ACCELERATION_SEMANTICS
 	  mParticleAttributeBuffers->mLastStepsAccelerationsPiPoBuffer->getBufferInfo().bufferSemantics
 	] = mParticleAttributeBuffers->mLastStepsAccelerationsPiPoBuffer;
 

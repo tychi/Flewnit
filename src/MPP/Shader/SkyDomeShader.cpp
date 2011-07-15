@@ -24,7 +24,8 @@ SkyDomeShader::SkyDomeShader(Path codeDirectory,
 		Shader(
 			codeDirectory,
 			Path("GenericLightingUberShader"), //yes, the sky dome rending is also included in the ubershader
-			sfl
+			sfl,
+			String("SkyDomeShader")
 		)
 
 //	ShaderFeaturesLocal(

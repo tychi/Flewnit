@@ -24,6 +24,14 @@
 #include "Material/ParticleLiquidVisualMaterial.h"
 #include "MPP/Shader/TextureShowShader.h"
 #include "Buffer/Texture.h"
+#include "Simulator/MechanicsSimulator/ParticleMechanicsStages/ParticleMechanicsStage.h"
+#include "Scene/ParticleSceneRepresentation.h"
+#include "WorldObject/ParticleFluid.h"
+#include "WorldObject/SubObject.h"
+#include "Geometry/Geometry.h"
+
+using Flewnit::SubObject;
+using Flewnit::Geometry;
 
 
 
@@ -90,6 +98,38 @@ bool ParticleLiquidDrawStage::stepSimulation() throw(SimulatorException)
 
 	//draw fullscreenquad
 	WindowManager::getInstance().drawFullScreenQuad();
+
+	int numCurrentFluids =
+			dynamic_cast<ParticleMechanicsStage*>(
+				URE_INSTANCE->getSimulator(MECHANICAL_SIM_DOMAIN)
+				->getStage("ParticleMechanicsStage")
+			)->getParticleSceneRepresentation()
+			->getNumCurrentFluids();
+
+	for(int i=0; i< numCurrentFluids; i++)
+	{
+		ParticleFluid* fluid =
+			dynamic_cast<ParticleMechanicsStage*>(
+				URE_INSTANCE->getSimulator(MECHANICAL_SIM_DOMAIN)
+					->getStage("ParticleMechanicsStage")
+				)->getParticleSceneRepresentation()
+				->getFluid(i);
+
+		assert( ! fluid->getSubObjects(VISUAL_SIM_DOMAIN).empty());
+		SubObject* so = fluid->getSubObjects(VISUAL_SIM_DOMAIN)[0];
+
+		ParticleLiquidVisualMaterial* mat =
+			dynamic_cast<ParticleLiquidVisualMaterial*>(so->getMaterial());
+		assert(mat);
+
+		mat->mCompositionShader->use(so);
+		so->getGeometry()->draw();
+
+		//draw fullscreenquad
+		//WindowManager::getInstance().drawFullScreenQuad();
+	}
+
+
 
 	//-------------------
 

@@ -690,7 +690,7 @@ void RenderTarget::requestCreateAndStoreColorTexture(BufferSemantics which)throw
 	case TEXCOORD_SEMANTICS:
 	case DIFFUSE_COLOR_SEMANTICS:
 	case VELOCITY_SEMANTICS:
-	case FORCE_SEMANTICS:
+	case ACCELERATION_SEMANTICS:
 	case DISPLACEMENT_SEMANTICS: //normal-depth or normal map
 	case INTERMEDIATE_RENDERING_SEMANTICS:
 	case FINAL_RENDERING_SEMANTICS:
@@ -714,10 +714,10 @@ void RenderTarget::requestCreateAndStoreColorTexture(BufferSemantics which)throw
 				"<< Think about requesting a DEPTH texture instead;\n";
 	case MASS_SEMANTICS:
 	case DENSITY_SEMANTICS:
-	case PRESSURE_SEMANTICS:
 	case AMBIENT_OCCLUSION_SEMANTICS:
 	case NOISE_SEMANTICS:
 	case DEPTH_BUFFER_SEMANTICS:
+	case THICKNESS_SEMANTICS:
 
 		texeli.numChannels = 1;
 		texeli.validate();

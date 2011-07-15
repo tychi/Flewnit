@@ -111,6 +111,19 @@ ParticleLiquidVisualMaterial::ParticleLiquidVisualMaterial(
 {
 	mCompositionShader->build();
 
+	BufferElementInfo texeli(1,GPU_DATA_TYPE_FLOAT,32,false);
+
+	mNoiseSourceTexture =
+		dynamic_cast<Texture2D*>(
+			URE_INSTANCE->getLoader()->loadTexture(
+			"partLiquidNoiseSourceTex",NOISE_SEMANTICS,
+			Path("./assets/textures/perlinNoiseTex512x512gray.jpg"),
+			texeli,true,false,false
+		)
+	);
+	assert("noise texture must be a texture 2D" && mNoiseSourceTexture);
+	//TODO handle noise texture resolution to yield a good lookup pattern
+
 	if(sophisticatedRendering)
 	{
 		mDepthAndAccelGenerationShader->build();
@@ -122,8 +135,6 @@ ParticleLiquidVisualMaterial::ParticleLiquidVisualMaterial(
 				Vector2D(WindowManager::getInstance().getWindowResolution().x,
 						WindowManager::getInstance().getWindowResolution().y)
 				* fluidTextureScaleFactor;
-
-		BufferElementInfo texeli(1,GPU_DATA_TYPE_FLOAT,32,false);
 
 		Texture2D* depthPing = new Texture2D(
 				"partLiquidDepthTexPing", DEPTH_BUFFER_SEMANTICS,
@@ -149,17 +160,6 @@ ParticleLiquidVisualMaterial::ParticleLiquidVisualMaterial(
 				textureSizes.x,textureSizes.y,
 				texeli,true,false,false,0,false
 				);
-
-		mNoiseSourceTexture =
-			dynamic_cast<Texture2D*>(
-				URE_INSTANCE->getLoader()->loadTexture(
-				"partLiquidNoiseSourceTex",NOISE_SEMANTICS,
-				Path("./assets/textures/perlinNoiseTex512x512gray.jpg"),
-				texeli,true,false,false
-			)
-		);
-		assert("noise texture must be a texture 2D" && mNoiseSourceTexture);
-		//TODO handle noise texture resolution to yield a good lookup pattern
 	}
 
 }

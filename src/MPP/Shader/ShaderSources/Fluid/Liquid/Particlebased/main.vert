@@ -1,4 +1,3 @@
-
 {% include  "00_Generic_Common_VersionTag.glsl" %}
 {% include  "01_Generic_Common_precisionTag.glsl" %}
 
@@ -19,7 +18,7 @@ layout(location = {{ POSITION_SEMANTICS }}    ) 	in vec4 inVPosition;
 //if we use predicted or corrected velicity, plays virtually no role; afaik unneeded anyway
 //layout(location = {{ VELOCITY_SEMANTICS }}    ) 	in vec4 inVVelocity;
 layout(location = {{ DENSITY_SEMANTICS }}     ) 	in vec4 inVDensity;
-layout(location = {{ FORCE_SEMANTICS }}       ) 	in vec4 inVAcceleration;
+layout(location = {{ ACCELERATION_SEMANTICS }}       ) 	in vec4 inVAcceleration;
 //maybe once needed for visualization.. but as it works anyway... ;(
 //layout(location = {{ Z_INDEX_SEMANTICS }}     ) 	in uint inVZIndex;
 //needed for consistent noise texture sampling for a certain pattern to be advected with the particle
@@ -74,6 +73,7 @@ void main()
   
         output.position = modelViewMatrix  * inVPosition;
         gl_PointSize = particlePointSizePrecomputedFactor / length( output.position);
+        //gl_PointSize = 500.0 / length( output.position);
        
         //no velocity or density passing yet
         

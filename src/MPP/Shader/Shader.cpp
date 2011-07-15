@@ -57,18 +57,17 @@ GLuint ShaderStage::mGLShaderStageIdentifiers[__NUM_SHADER_STAGES__] =
 Shader::Shader(
 		Path codeDirectory, Path specificShaderCodeSubFolderName,
 		const ShaderFeaturesLocal& localShaderFeatures,
-		String optionalName)
+		String name)
 :
 		//generate a unigque name:
-		MPP(	specificShaderCodeSubFolderName.string()
-				+ optionalName
-				+ localShaderFeatures.stringify(),
+		MPP(	name + localShaderFeatures.stringify(),
 				//String(shaderName.string()).append(localShaderFeatures.stringify()),
 				//String (shaderName.string() + localShaderFeatures.stringify() ),
 				VISUAL_SIM_DOMAIN
 		),
 		mLocalShaderFeatures(localShaderFeatures),
-		mCodeDirectory(ShaderManager::getInstance().getShaderCodeDirectory()),
+		//mCodeDirectory(ShaderManager::getInstance().getShaderCodeDirectory()),
+		mCodeDirectory(codeDirectory),
 		mSpecificShaderCodeSubFolderName(specificShaderCodeSubFolderName),
 		//init to NULL as it is only needed during build process, hence created
 		//right before and destroyed right after to save memory (shader build performance is not
@@ -109,7 +108,8 @@ void Shader::initBuild()
     mTemplateEngine = new Grantlee::Engine();
     Grantlee::FileSystemTemplateLoader::Ptr loader = Grantlee::FileSystemTemplateLoader::Ptr( new Grantlee::FileSystemTemplateLoader() );
     String shaderDirectory=	(mCodeDirectory / mSpecificShaderCodeSubFolderName).string() ;
-    String commonCodeSnippetsDirectory = (mCodeDirectory / Path("Common")).string();
+    String commonCodeSnippetsDirectory =
+    		(ShaderManager::getInstance().getShaderCodeDirectory() / Path("Common")).string();
     loader->setTemplateDirs( QStringList() << shaderDirectory.c_str() << commonCodeSnippetsDirectory.c_str());
     mTemplateEngine->addTemplateLoader(loader);
 
@@ -176,8 +176,7 @@ void Shader::build()
 
 void Shader::generateShaderStage(ShaderStageType shaderStageType,
 		Grantlee::Engine* templateEngine,
-		const TemplateContextMap& contextMap,
-		String diskWrittenFileNamePrefix )
+		const TemplateContextMap& contextMap)
 {
     //generate shader stage source code:
 	Grantlee::Template shaderTemplate = templateEngine->loadByName(
@@ -186,19 +185,21 @@ void Shader::generateShaderStage(ShaderStageType shaderStageType,
 	Grantlee::Context shaderTemplateContext(contextMap);
     String shaderSourceCode = shaderTemplate->render(&shaderTemplateContext).toStdString();
 
-	Path shaderPath=
-		mCodeDirectory  / Path("__generated") /
+	Path generatedShaderPath=
+		/*mCodeDirectory*/
+		ShaderManager::getInstance().getShaderCodeDirectory()/ Path("__generated") /
 		Path(
 			//mSpecificShaderCodeSubFolderName.string()
-			diskWrittenFileNamePrefix
-			+ mLocalShaderFeatures.stringify()
+			//diskWrittenFileNamePrefix
+			//+ mLocalShaderFeatures.stringify()
+			getName()
 			+ String(".")+  shaderStageFileEndings[shaderStageType]
 		);
-	writeToDisk(shaderSourceCode, shaderPath);
+	writeToDisk(shaderSourceCode, generatedShaderPath);
 
     //create the fragment shader:
     mShaderStages[shaderStageType] = new ShaderStage(
-    		shaderStageType, shaderSourceCode, mCodeDirectory, mSpecificShaderCodeSubFolderName,this);
+    		shaderStageType, shaderSourceCode, mCodeDirectory, getName() /*mSpecificShaderCodeSubFolderName*/,this);
     attachCompiledStage(shaderStageType);
 }
 
@@ -501,10 +502,11 @@ ShaderStage::ShaderStage(ShaderStageType shaderStageType,
 		String sourceCode, Path codeDirectory, Path shaderName,
 		Shader* owningShader)
 :
+		SimulationObject(shaderName.string(), VISUAL_SIM_DOMAIN),
 		mType(shaderStageType),
 		mSourceCode(sourceCode),
-		mCodeDirectory(codeDirectory),
-		mSpecificShaderCodeSubFolderName(shaderName),
+		//mCodeDirectory(codeDirectory),
+		//mSpecificShaderCodeSubFolderName(shaderName),
 		mOwningShader(owningShader)
 {
 	GUARD( mGLShaderStageHandle = glCreateShader(mGLShaderStageIdentifiers[shaderStageType]));
@@ -562,14 +564,16 @@ void ShaderStage::validate()throw(BufferException)
 	{
 		//something went wrong, write info to disk for easier inspection
 		String logFileName=
-				mSpecificShaderCodeSubFolderName.string() +
-				mOwningShader->getLocalShaderFeatures().stringify() +
+				//mSpecificShaderCodeSubFolderName.string() +
+				//mOwningShader->getLocalShaderFeatures().stringify() +
+				getName()+
 				String(".")+
 				shaderStageFileEndings[mType]+
 				String("_LOG_STAGE")+
 				String(".txt");
 
-		Path logFilePath= mCodeDirectory / Path("__generated") / Path(logFileName);
+		//Path logFilePath= mCodeDirectory / Path("__generated") / Path(logFileName);
+		Path logFilePath= ShaderManager::getInstance().getShaderCodeDirectory() / Path("__generated") / Path(logFileName);
 
 
 		std::fstream fileStream;

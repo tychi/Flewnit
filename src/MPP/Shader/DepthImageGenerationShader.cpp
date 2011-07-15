@@ -30,13 +30,8 @@ DepthImageGenerationShader::DepthImageGenerationShader(
 				//even the shadow map gen is included in the uber shader:
 				Path("GenericLightingUberShader"),
 				//Path("DepthImageGenerationShader"),
-				sfl
-//				ShaderFeaturesLocal(
-//						renderingTechnique,
-//						renderTargetTextureType,
-//						visMatType,//VISUAL_MATERIAL_TYPE_NONE,
-//						forTessellation ? SHADING_FEATURE_TESSELATION : SHADING_FEATURE_NONE,
-//						instancedRendering)
+				sfl,
+				String("DepthImageGenerationShader")
 		)
 {
 	build();

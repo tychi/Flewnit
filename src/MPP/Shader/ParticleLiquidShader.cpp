@@ -32,12 +32,17 @@ namespace Flewnit
 
 	ParticleLiquidShader::ParticleLiquidShader(ParticleLiquidShaderType type)
 	:
-	  Shader(ShaderManager::getInstance().getShaderCodeDirectory(), Path("Fluid/Liquid/Particlebased/"),
-			ShaderFeaturesLocal(RENDERING_TECHNIQUE_CUSTOM,TEXTURE_TYPE_2D,
+	Shader(
+		ShaderManager::getInstance().getShaderCodeDirectory()/Path("Fluid/Liquid/Particlebased/"),
+		Path(""),
+		//ShaderManager::getInstance().getShaderCodeDirectory()/Path("/Fluid/Liquid"),
+		//Path("/Particlebased"),
+
+		ShaderFeaturesLocal(RENDERING_TECHNIQUE_CUSTOM,TEXTURE_TYPE_2D,
 					VISUAL_MATERIAL_TYPE_LIQUID_RENDERING,
 					ShadingFeatures( SHADING_FEATURE_DIRECT_LIGHTING | SHADING_FEATURE_CUBE_MAPPING),
 					false),
-			particleLiquidShaderTypeStrings[type]
+		String("ParticleLiquidShader_")+particleLiquidShaderTypeStrings[type]
 	  ),
 	  mParticleLiquidShaderType(type)
 	{
@@ -57,10 +62,8 @@ namespace Flewnit
 		initBuild();
 
 		//build vert and frag shader
-		generateShaderStage(VERTEX_SHADER_STAGE,mTemplateEngine,*mTemplateContextMap,
-				particleLiquidShaderTypeStrings[mParticleLiquidShaderType]);
-		generateShaderStage(FRAGMENT_SHADER_STAGE,mTemplateEngine,*mTemplateContextMap,
-				particleLiquidShaderTypeStrings[mParticleLiquidShaderType]);
+		generateShaderStage(VERTEX_SHADER_STAGE,mTemplateEngine,*mTemplateContextMap);
+		generateShaderStage(FRAGMENT_SHADER_STAGE,mTemplateEngine,*mTemplateContextMap);
 
 		finishBuild();
 
@@ -113,6 +116,24 @@ namespace Flewnit
 		Camera *cam = URE_INSTANCE->getCurrentlyActiveCamera();
 		//-------------------------------------
 
+		Vector2D viewPortSizes = Vector2D(
+			static_cast<float>(WindowManager::getInstance().getWindowResolution().x),
+			static_cast<float>(WindowManager::getInstance().getWindowResolution().y)
+		);
+		if(	  !(mParticleLiquidShaderType == PARTLIQU_DIRECT_RENDERING_TYPE )
+				&&
+			  !(mParticleLiquidShaderType == PARTLIQU_SOPHISTICATED_RENDERING_TYPE )   )
+		{
+			viewPortSizes *= liquidMat->fluidTextureScaleFactor;
+		}
+
+
+		bindFloat("particlePointSizePrecomputedFactor",
+			liquidMat->particleDrawRadius * std::max(viewPortSizes.x,viewPortSizes.y)
+			/ ( glm::tan( glm::radians(cam->getVerticalFOVAngle()))) // TODO *2 ?
+		);
+
+
 		//-------------------------------------
 		Matrix4x4 modelViewMatrix =
 				cam->getViewMatrix()
@@ -126,18 +147,7 @@ namespace Flewnit
 
 		//-------------------------------------
 
-		bindVector2D("viewPortSizes",
-			(
-				//scale down vieport sizes for intermediate passes
-				( (mParticleLiquidShaderType == PARTLIQU_DIRECT_RENDERING_TYPE )
-					||
-				  (mParticleLiquidShaderType == PARTLIQU_SOPHISTICATED_RENDERING_TYPE )   )
-					? 1.0f
-					: liquidMat->fluidTextureScaleFactor
-			) *
-			Vector2D(  static_cast<float>(WindowManager::getInstance().getWindowResolution().x),
-					   static_cast<float>(WindowManager::getInstance().getWindowResolution().y)	)
-		);
+		bindVector2D("viewPortSizes",viewPortSizes);
 		//focal length y == cot(openingAngle/2)
 		//focal length x == focal length y / aspecRatioXtoY
 		//... seemingly according to gluPerspective... but i don't get is completely.. no time..

@@ -78,13 +78,16 @@ enum BufferSemantics
 	TEXCOORD_SEMANTICS,
 
 	VELOCITY_SEMANTICS,
-	MASS_SEMANTICS,
 	DENSITY_SEMANTICS,
-	PRESSURE_SEMANTICS,
-	FORCE_SEMANTICS,
+	ACCELERATION_SEMANTICS,
+
+	PRIMITIVE_ID_SEMANTICS,
+	MATERIAL_ID_SEMANTICS,
 
 	Z_INDEX_SEMANTICS,
 	DIFFUSE_COLOR_SEMANTICS,
+	MASS_SEMANTICS,
+
 	CUSTOM_SEMANTICS,
 
 	//we need that value to have static-length arrays holding VBO maintainance information
@@ -102,8 +105,7 @@ enum BufferSemantics
 
 	DISPLACEMENT_SEMANTICS, //normal-depth or normal map
 	ENVMAP_SEMANTICS,
-	MATERIAL_ID_SEMANTICS,
-	PRIMITIVE_ID_SEMANTICS,
+
 	SHADOW_MAP_SEMANTICS,
 	AMBIENT_OCCLUSION_SEMANTICS, //attenuation value as result of AO calculations on a depth/position buffer
 	DETAIL_TEXTURE_SEMANTICS, //for stuff like terrain to hide low res decal texture
@@ -112,6 +114,8 @@ enum BufferSemantics
 	STENCIL_BUFFER_SEMANTICS,
 	INTERMEDIATE_RENDERING_SEMANTICS,
 	FINAL_RENDERING_SEMANTICS,
+
+	THICKNESS_SEMANTICS,
 
 	//actually real amount is one less than this value, but that doesnt matter
 	__NUM_TOTAL_SEMANTICS__,

@@ -24,7 +24,9 @@ namespace Flewnit
 	TextureShowShader::TextureShowShader(TextureType texType)
 	:
 	  Shader(ShaderManager::getInstance().getShaderCodeDirectory(), Path("TextureShow"),
-			ShaderFeaturesLocal(RENDERING_TECHNIQUE_CUSTOM,texType,VISUAL_MATERIAL_TYPE_NONE,SHADING_FEATURE_NONE,false)
+			ShaderFeaturesLocal(RENDERING_TECHNIQUE_CUSTOM,texType,VISUAL_MATERIAL_TYPE_NONE,
+					SHADING_FEATURE_NONE,false),
+					String("TextureShowShader")
 	  ),
 	  mTextureType(texType)
 	{

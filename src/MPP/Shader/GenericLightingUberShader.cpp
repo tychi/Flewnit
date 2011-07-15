@@ -32,7 +32,8 @@ namespace Flewnit
 //cannot trigger automatic generation by ShaderManager)
 GenericLightingUberShader::GenericLightingUberShader(Path codeDirectory, const ShaderFeaturesLocal& localShaderFeatures)
 :
-		Shader(codeDirectory, Path("GenericLightingUberShader"), localShaderFeatures)
+	Shader(codeDirectory, Path("GenericLightingUberShader"), localShaderFeatures,
+				String("GenericLightingUberShader"))
 {
 	build();
 

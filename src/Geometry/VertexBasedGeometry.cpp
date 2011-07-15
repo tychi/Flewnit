@@ -492,7 +492,7 @@ void VertexBasedGeometry::validateBufferIntegrity()throw(BufferException)
 				||
 				( mAttributeBuffers[i]->getBufferInfo().bufferSemantics == VELOCITY_SEMANTICS )
 				||
-				( mAttributeBuffers[i]->getBufferInfo().bufferSemantics == FORCE_SEMANTICS )
+				( mAttributeBuffers[i]->getBufferInfo().bufferSemantics == ACCELERATION_SEMANTICS )
 			)
 			{
 				assert("must be four component" && ((mAttributeBuffers[i]->getBufferInfo().elementInfo.numChannels ) == 4));

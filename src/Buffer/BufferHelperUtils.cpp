@@ -154,22 +154,22 @@ String BufferHelper::BufferSemanticsToString(BufferSemantics bs)
 			"POSITION_SEMANTICS",
 			"NORMAL_SEMANTICS",
 			"TANGENT_SEMANTICS",
-			//"BINORMAL_SEMANTICS",
 			"TEXCOORD_SEMANTICS",
 
 			"VELOCITY_SEMANTICS",
-			"MASS_SEMANTICS",
 			"DENSITY_SEMANTICS",
-			"PRESSURE_SEMANTICS",
-			"FORCE_SEMANTICS",
+			"ACCELERATION_SEMANTICS",
+
+			"PRIMITIVE_ID_SEMANTICS",
+			"MATERIAL_ID_SEMANTICS",
 
 			"Z_INDEX_SEMANTICS",
-
 			"DIFFUSE_COLOR_SEMANTICS",
+			"MASS_SEMANTICS",
 
 			"CUSTOM_SEMANTICS",
 
-			//we need tha value to have static-length arrays holding VBO maintainance information
+			//we need that value to have static-length arrays holding VBO maintainance information
 			"__NUM_VALID_GEOMETRY_ATTRIBUTE_SEMANTICS__",
 
 			//Semantic of the index buffer from a VBO used via glDrawElements()
@@ -180,23 +180,24 @@ String BufferHelper::BufferSemanticsToString(BufferSemantics bs)
 			"LIGHT_SOURCE_BUFFER_SEMANTICS",
 			///\}
 
-			//following texture-only semantics; Texture can also have the above Semantics
+			//following texture-only semantics; Texture can also have most of the above Semantics
 
 			"DISPLACEMENT_SEMANTICS", //normal-depth or normal map
 			"ENVMAP_SEMANTICS",
-			"MATERIAL_ID_SEMANTICS",
-			"PRIMITIVE_ID_SEMANTICS",
+
 			"SHADOW_MAP_SEMANTICS",
-			"AMBIENT_OCCLUSION_SEMANTICS",
+			"AMBIENT_OCCLUSION_SEMANTICS", //attenuation value as result of AO calculations on a depth/position buffer
 			"DETAIL_TEXTURE_SEMANTICS", //for stuff like terrain to hide low res decal texture
 			"NOISE_SEMANTICS",
-			"DEPTH_BUFFER_SEMANTICS",
+			"DEPTH_BUFFER_SEMANTICS", //e.g. for memory optimized ambient occlusion calculation
 			"STENCIL_BUFFER_SEMANTICS",
 			"INTERMEDIATE_RENDERING_SEMANTICS",
 			"FINAL_RENDERING_SEMANTICS",
 
-			//actually real amount is one less than this valu, but that doesnt matter
-			"__NUM_TOTAL_SEMANTICS__" ,
+			"THICKNESS_SEMANTICS",
+
+			//actually real amount is one less than this value, but that doesnt matter
+			"__NUM_TOTAL_SEMANTICS__",
 
 			//indicator for "empty" stuff, e.g. an empty Color Attachment slot in an FBO
 			"INVALID_SEMANTICS"

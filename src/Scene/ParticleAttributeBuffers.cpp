@@ -175,7 +175,7 @@ ParticleAttributeBuffers::ParticleAttributeBuffers(
 		"particleAccelerationsBufferPing",
 		//all three contexts;
 		ContextTypeFlags(  HOST_CONTEXT_TYPE_FLAG | OPEN_GL_CONTEXT_TYPE_FLAG | OPEN_CL_CONTEXT_TYPE_FLAG),
-		FORCE_SEMANTICS, //k, have to refactor ;(.. but F=m*a, particle mass is known ;)
+		ACCELERATION_SEMANTICS,
 		TYPE_VEC4F,
 		numTotalParticles,
 		BufferElementInfo(4,GPU_DATA_TYPE_FLOAT,32,false),

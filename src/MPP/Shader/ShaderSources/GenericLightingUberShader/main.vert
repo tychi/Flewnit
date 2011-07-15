@@ -92,7 +92,7 @@ layout(location = {{ TEXCOORD_SEMANTICS }}    ) 	in vec4 inVTexCoord;
 {% if VISUAL_MATERIAL_TYPE_LIQUID_RENDERING or VISUAL_MATERIAL_TYPE_GAS_RENDERING %}
 layout(location = {{ VELOCITY_SEMANTICS }}        ) 	in vec4 inVVelocity;
 layout(location = {{ DENSITY_SEMANTICS }}         ) 	in vec4 inVDensity;
-layout(location = {{ FORCE_SEMANTICS }}           ) 	in vec4 inVForce;
+layout(location = {{ ACCELERATION_SEMANTICS }}           ) 	in vec4 inVForce;
 //layout(location = {{ Z_INDEX_SEMANTICS }}       ) 	in uint inVZIndex;
 layout(location = {{ PRIMITIVE_ID_SEMANTICS }}    ) 	in uint inVObjectInfo;
 //layout(location = {{ DIFFUSE_COLOR_SEMANTICS }} )   in vec4 inVDecalColor;

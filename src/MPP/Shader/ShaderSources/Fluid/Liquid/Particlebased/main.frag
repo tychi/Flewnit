@@ -1,4 +1,3 @@
-
 {% include  "00_Generic_Common_VersionTag.glsl" %}
 {% include  "01_Generic_Common_precisionTag.glsl" %}
 //data type definition
@@ -178,7 +177,7 @@ void main()
 {% if directRendering or depthAndAccelGeneration  %}
   //compute normal from point coord 
   vec3 normalViewSpace;
-  normalViewSpace = gl_PointCoord.xy * vec2(2.0, -2.0) + vec2(-1.0, 1.0);
+  normalViewSpace.xy = gl_PointCoord.xy * vec2(2.0, -2.0) + vec2(-1.0, 1.0);
   float magnitude = dot(normalViewSpace.xy, normalViewSpace.xy);
   // kill pixels outside circle
   if (magnitude > 1.0) 
@@ -254,7 +253,8 @@ void main()
   //no thickness information, "real" refraction (i suggest) is too costly, will try later, so just half of both:
   vec4 refractedColor = 
     0.5 * liquidColor +
-    0.5 * texture(backGroundSceneTexture, input.texCoords +  normalViewSpace.xy * thickness * refractionStrengthBias),                
+    0.5 * texture(backGroundSceneTexture, 
+      gl_FragCoord.xy * sceneTextureSampleInterval.xy  +  normalViewSpace.xy * thickness * refractionStrengthBias);
 {% endif %}                 
 
 {% if sophisticatedRendering %}
@@ -271,7 +271,7 @@ void main()
  
   outFFinalLuminance.rgb= 
       reflectivity * reflectedColor.xyz  
-    + refractivity * refractedColor-xyz
+    + refractivity * refractedColor.xyz
     ;
 
     //TODO add specular hightlight stuff

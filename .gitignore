@@ -2,7 +2,11 @@
 .project
 CMakeFiles/
 src/MPP/Shader/ShaderSources/backup/
-src/MPP/Shader/ShaderSources/__generated/_*
+src/MPP/Shader/ShaderSources/__generated/*.vert
+src/MPP/Shader/ShaderSources/__generated/*.tessCtrl
+src/MPP/Shader/ShaderSources/__generated/*.tessEval
+src/MPP/Shader/ShaderSources/__generated/*.geom
+src/MPP/Shader/ShaderSources/__generated/*.frag
 src/MPP/OpenCLProgram/ProgramSources/__generated/_GEN_*
 src/MPP/OpenCLProgram/ProgramSources/__generated/INFO_LOG_*
 src/MPP/OpenCLProgram/ProgramSources/bufferDumps/bufferDump_*
