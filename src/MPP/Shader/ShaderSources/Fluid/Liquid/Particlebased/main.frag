@@ -5,7 +5,9 @@
 //---- interface ---------------------------------------------------------------------------------
 //---- application (uniform) input ----
 
+
   uniform mat4 inverseModelViewMatrix; //needed for cube map lookup in world space
+  uniform mat4 projectionMatrix; 
   
   uniform vec2 viewPortSizes;
   uniform vec2 focalLengths;
@@ -83,7 +85,8 @@
       vec4 position;
       //vec4 velocity; afaik unneeded
       //float density; only needed later for spray- or inside-volume-culling (via discard in fragment shader or via geom shader.. we'll see)
-        
+
+/*        
       {% if directRendering or depthAndAccelGeneration %}
         float acceleration;
       {% endif %}
@@ -91,6 +94,7 @@
       {% if directRendering or thicknessAndNoiseGeneration %}
         uint objectInfo;
       {% endif %} 
+  */
      } input;
      
   {% endif %}
@@ -189,6 +193,10 @@ void main()
   
   vec3 fragPositionViewSpace = input.position.xyz + normalize(normalViewSpace) * particleDrawRadius ;
   
+  vec4 projectedFragPos = projectionMatrix * vec4(fragPositionViewSpace.xyz,1.0);
+  gl_FragDepth =  projectedFragPos.z / projectedFragPos.w ;
+  
+  
   //hardcode for direct rendering ;(
   float thickness = 0.5;
   
@@ -270,8 +278,9 @@ void main()
 
  
   outFFinalLuminance.rgb= 
-      reflectivity * reflectedColor.xyz  
-    + refractivity * refractedColor.xyz
+  fragPositionViewSpace.xyz
+    //  reflectivity * reflectedColor.xyz  
+   // + refractivity * refractedColor.xyz
     ;
 
     //TODO add specular hightlight stuff

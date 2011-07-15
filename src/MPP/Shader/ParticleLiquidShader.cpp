@@ -142,6 +142,8 @@ namespace Flewnit
 		Matrix4x4 modelViewProjectionMatrix = cam->getProjectionMatrix() * modelViewMatrix;
 		bindMatrix4x4("modelViewMatrix", modelViewMatrix);
 		bindMatrix4x4("inverseModelViewMatrix", inverseModelViewMatrix);
+
+		bindMatrix4x4("projectionMatrix", cam->getProjectionMatrix());
 		bindMatrix4x4("modelViewProjectionMatrix", modelViewProjectionMatrix);
 		//-------------------------------------
 

@@ -62,6 +62,7 @@ bool DefaultLightingStage::stepSimulation() throw(SimulatorException)
 		mUsedRenderTarget->bind();
 		RenderTarget::setEnableDepthTest(true);
 		mUsedRenderTarget->attachStoredDepthBuffer();
+		//mUsedRenderTarget->detachDepthBuffer();
 		mUsedRenderTarget->attachStoredColorTexture(FINAL_RENDERING_SEMANTICS,0);
 		mUsedRenderTarget->renderToAttachedTextures();
 		mUsedRenderTarget->clear();

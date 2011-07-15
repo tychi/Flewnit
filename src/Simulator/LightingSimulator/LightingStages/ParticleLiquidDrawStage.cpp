@@ -85,6 +85,12 @@ bool ParticleLiquidDrawStage::stepSimulation() throw(SimulatorException)
 	//TEST: just render the result from previous stage as texture show to test the render target stuff
 
 	//enable the texture show shader with the respective texture bound
+	RenderTarget* rt =
+			dynamic_cast<LightingSimStageBase*>(
+			URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)
+						->getStage("DefaultLightingStage"))->getUsedRenderTarget();
+	assert(rt);
+
 	Texture* renderingOfDefaultLightingStage =
 		dynamic_cast<Texture*>(
 			URE_INSTANCE->getSimulator(VISUAL_SIM_DOMAIN)
@@ -122,6 +128,7 @@ bool ParticleLiquidDrawStage::stepSimulation() throw(SimulatorException)
 			dynamic_cast<ParticleLiquidVisualMaterial*>(so->getMaterial());
 		assert(mat);
 
+		RenderTarget::setEnableDepthTest(true);
 		mat->mCompositionShader->use(so);
 		so->getGeometry()->draw();
 

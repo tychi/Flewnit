@@ -76,7 +76,7 @@ void main()
         //gl_PointSize = 500.0 / length( output.position);
        
         //no velocity or density passing yet
-        
+  /*      
         {% if directRendering or depthAndAccelGeneration %}
           output.acceleration= length(inVAcceleration);
         {% endif %}
@@ -84,7 +84,7 @@ void main()
         {% if directRendering or thicknessAndNoiseGeneration %}
           output.objectInfo= inVObjectInfo;
         {% endif %} 
-        
+    */    
   {% endif %}
 }
 
