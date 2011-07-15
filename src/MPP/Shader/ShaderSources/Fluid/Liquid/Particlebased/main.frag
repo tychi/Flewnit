@@ -198,7 +198,7 @@ void main()
   
   
   //hardcode for direct rendering ;(
-  float thickness = 0.5;
+  float thickness = 0.3;
   
 {% endif %}
 
@@ -239,7 +239,10 @@ void main()
   vec3 reflectedCamToFragViewSpaceNormalized = reflect ( normalize(fragPositionViewSpace.xyz), normalViewSpace.xyz);
   
   //Schlick's approximation:
-  float reflectivity = r0 + (1.0-r0) * pow( dot(reflectedCamToFragViewSpaceNormalized.xyz, normalViewSpace.xyz), 5.0);
+  float reflectivity = 
+      clamp( r0 + (1.0-r0) * pow( dot(reflectedCamToFragViewSpaceNormalized.xyz, normalViewSpace.xyz), 5.0),
+        0.0,1.0      
+      );
   
   float refractivity = 1.0 - reflectivity;
   //}
@@ -260,8 +263,8 @@ void main()
 {% if directRendering  %}
   //no thickness information, "real" refraction (i suggest) is too costly, will try later, so just half of both:
   vec4 refractedColor = 
-    0.5 * liquidColor +
-    0.5 * texture(backGroundSceneTexture, 
+    thickness * liquidColor +
+    (1.0-thickness) * texture(backGroundSceneTexture, 
       gl_FragCoord.xy * sceneTextureSampleInterval.xy  +  normalViewSpace.xy * thickness * refractionStrengthBias);
 {% endif %}                 
 
@@ -278,16 +281,17 @@ void main()
 
  
   outFFinalLuminance.rgb= 
-  fragPositionViewSpace.xyz
-    //  reflectivity * reflectedColor.xyz  
-   // + refractivity * refractedColor.xyz
+      reflectivity  //* vec3(1,1,1)
+      *reflectedColor.xyz  
+       + 
+       refractivity * refractedColor.xyz
     ;
 
     //TODO add specular hightlight stuff
 
 
   //HAXX TEST: first, just pass the normal for a test:
-  outFFinalLuminance.rgb= normalViewSpace;
+  //outFFinalLuminance.rgb= normalViewSpace;
   outFFinalLuminance.a= 1.0;
 
 

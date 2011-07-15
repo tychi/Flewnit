@@ -42,8 +42,11 @@
     <scenesGlobalSettings>
       <tesselateMeshesWithDisplacementMap type="BOOL" value="true" />
 
+      <!--
       <environmentMap type="STRING" value="./assets/textures/cubeMaps/evening.jpg"/>
-
+      -->
+      <environmentMap type="STRING" value="./assets/textures/cubeMaps/stormy.jpg"/>
+       
       <referenceCountThresholdForInstancedRendering type="INT" value="8" />
     </scenesGlobalSettings>
 
@@ -231,7 +234,7 @@
            <minCornerPosition  type="VEC4" x="-16.0" y="-16.0" z="-16.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
            <minCornerPosition  type="VEC4" x="-32.0" y="-32.0" z="-32.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
            -->
-           <minCornerPosition  type="VEC4" x="0.0" y="-40.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
+           <minCornerPosition  type="VEC4" x="0.0" y="-32.0" z="0.0" w="1.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
           
            <!--
            <extendsOfOneCell  type="VEC4" x="5.0" y="5.0" z="5.0" w="0.0" GUIVisibility="read/write" tweakConfigString="TODO"/>
@@ -305,15 +308,18 @@
               <silhouetteThreshold type="FLOAT" value="50.0" />
               <fluidTextureScaleFactor type="FLOAT" value="0.5" />
               <particleDrawRadius type="FLOAT" value="3.0" />
-              <liquidColor type="VEC4" x="0.4" y="0.2" z="0.9" w="1.0" />
+              <!-- 
+              <liquidColor type="VEC4" x="0.6" y="0.2" z="1.0" w="1.0" />
+              -->
+              <liquidColor type="VEC4" x="0.0" y="0.3" z="1" w="1.0" />
               <thicknessAttenuationFactor type="FLOAT" value="0.05" />
-              <refractionStrengthBias type="FLOAT" value="0.05" />
+              <refractionStrengthBias type="FLOAT" value="0.25" />
               <foamGenerationAccelerationThreshold type="FLOAT" value="1.0" />
               <foamColor type="VEC4" x="0.4" y="0.5" z="0.2" w="1.0" />
               <reflectivity type="FLOAT" value="0.3" />
               <shininess type="FLOAT" value="50.0" />
               <refractiveIndexNonFluid type="FLOAT" value="1.0" />
-              <refractiveIndexFluid type="FLOAT" value="1.6" />
+              <refractiveIndexFluid type="FLOAT" value="4.6" />
               <sophisticatedRendering type="BOOL" value="false" />
               
             </ParticleLiquidVisualMaterial>

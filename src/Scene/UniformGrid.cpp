@@ -347,7 +347,7 @@ UniformGrid::UniformGrid(
 
 	setupZIndexLookUpTable();
 
-	//createAndAddDebugDrawSubObject();
+	createAndAddDebugDrawSubObject();
 
 
 	mUpdateUniformGridProgram = new UpdateUniformGridProgram(this);
