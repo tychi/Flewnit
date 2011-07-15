@@ -35,6 +35,10 @@ public:
 private:
 	TextureShowShader* mTextureShowShader;
 
+	//some hack to work around the depth buffer f***up between screen and FBO;
+	//will be obsolete when fluid is visualized "correctly"
+	Texture* mCompositedRendering;
+
 };
 
 }

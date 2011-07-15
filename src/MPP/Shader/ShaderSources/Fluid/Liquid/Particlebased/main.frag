@@ -190,11 +190,19 @@ void main()
   normalViewSpace.z = sqrt(1.0-magnitude);
   //now we have a normalized view space normal
   
-  vec3 fragPositionViewSpace = input.position.xyz + normalize(normalViewSpace) * particleDrawRadius ;
+  vec3 fragPositionViewSpace = input.position.xyz + normalViewSpace;// * particleDrawRadius ;
+  
   
   vec4 projectedFragPos = projectionMatrix * vec4(fragPositionViewSpace.xyz,1.0);
-  gl_FragDepth =  projectedFragPos.z / projectedFragPos.w ;
-  
+  //woot, first scale from [-w .. +w] to [-1..+1], then to [-0.5..+0.5] and finally to [0..1]
+  gl_FragDepth =  (projectedFragPos.z / projectedFragPos.w) / 2.0 + 0.5 ;
+  vec4 projectedDefaultPosNewCalced =  projectionMatrix * input.position;
+  //gl_FragDepth = projectedDefaultPosNewCalced.z / projectedDefaultPosNewCalced.w;
+  //gl_FragDepth = gl_FragCoord.z + 0.00001;
+  //if( abs((projectedDefaultPosNewCalced.z / projectedDefaultPosNewCalced.w) - gl_FragCoord.z) > 0.01  )
+  //{
+  //  discard;
+  //}
   
   //hardcode for direct rendering ;(
   float thickness = 0.3;

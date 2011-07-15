@@ -150,8 +150,7 @@ ParticleLiquidVisualMaterial::ParticleLiquidVisualMaterial(
 		mDepthPingPongTexture = new PingPongBuffer("partLiquidDepthTexPingPong",depthPing,depthPong);
 
 		mThicknessTexture= new Texture2D(
-				//TODO include thickness semantics
-				"partLiquidThicknessTex", CUSTOM_SEMANTICS,
+				"partLiquidThicknessTex", THICKNESS_SEMANTICS,
 				textureSizes.x,textureSizes.y,
 				texeli,true,false,false,0,false
 				);

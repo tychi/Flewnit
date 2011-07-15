@@ -45,7 +45,8 @@ ParticleLiquidDrawStage::ParticleLiquidDrawStage(ConfigStructNode* simConfigNode
 		//mask for custom stuff; isn'nt used anyway, because there is no scene graph traversal
 		VisualMaterialFlags(false,false,false,false,false,true),
 		simConfigNode),
-		mTextureShowShader(0)
+		mTextureShowShader(0),
+		mCompositedRendering(0)
 {
 	//TODO configure main render target etc..
 
@@ -99,12 +100,25 @@ bool ParticleLiquidDrawStage::stepSimulation() throw(SimulatorException)
 	assert("The DefaultLightingStage must expose a Texture with final rendering semantics! "
 			&& renderingOfDefaultLightingStage);
 
+	//render to FBO
+	rt->bind();
+	rt->detachAllColorTextures(); //free from previous stage's relicts
+	rt->attachColorTexture(mCompositedRendering,0); //attach own texture
 
+	RenderTarget::setEnableDepthTest(true);
+	rt->attachStoredDepthBuffer();
+	rt->renderToAttachedTextures();
+
+
+	//haxx: just copy the texture to have both an image to sample from
+	//and to amend by direct fluid rendering
 	mTextureShowShader->use(renderingOfDefaultLightingStage);
-
-	//draw fullscreenquad
 	WindowManager::getInstance().drawFullScreenQuad();
 
+	RenderTarget::setEnableDepthTest(true);
+
+	//now, render fluid onto the just copied texture;
+	//again: this hack is needed to have a consistent depth buffer!
 	int numCurrentFluids =
 			dynamic_cast<ParticleMechanicsStage*>(
 				URE_INSTANCE->getSimulator(MECHANICAL_SIM_DOMAIN)
@@ -136,6 +150,12 @@ bool ParticleLiquidDrawStage::stepSimulation() throw(SimulatorException)
 		//WindowManager::getInstance().drawFullScreenQuad();
 	}
 
+	//now, just show the result rendered into the FBO
+	//damn, so many useless copies, but time pressure is forcing me to do so...
+	RenderTarget::renderToScreen();
+	mTextureShowShader->use(mCompositedRendering);
+	WindowManager::getInstance().drawFullScreenQuad();
+
 
 
 	//-------------------
@@ -148,6 +168,14 @@ bool ParticleLiquidDrawStage::initStage()throw(SimulatorException)
 {
 	mTextureShowShader= new TextureShowShader();
 	mTextureShowShader->build();
+
+	BufferElementInfo texeli(4,GPU_DATA_TYPE_UINT,8,true);
+	mCompositedRendering = new Texture2D(
+			"particleLiquidDrawStageCompositedRendering", FINAL_RENDERING_SEMANTICS,
+			WindowManager::getInstance().getWindowResolution().x,
+			WindowManager::getInstance().getWindowResolution().y,
+			texeli,false,false,false,0,false
+			);
 
 //	mRenderToScreen = ConfigCaster::cast<bool>(mSimConfigNode->get("renderToScreen",0));
 //

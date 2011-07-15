@@ -23,7 +23,7 @@ public:
 	//setup the relevtant matrices per hand if you want different params;
 	Camera(String name, const AmendedTransform& localTransform = AmendedTransform(),
 			float verticalFOVAngle = 45.0f,
-			float nearClipPlane = 0.1f,
+			float nearClipPlane = 1.0f,
 			float farClipPlane = 1000.0f);
 
 	virtual ~Camera();
@@ -35,7 +35,7 @@ public:
 
 	const Matrix4x4& perspective(	float verticalFOVAngle,
 									float aspectRatioXtoY,
-									float nearClipPlane = 0.1f,
+									float nearClipPlane = 1.0f,
 									float farClipPlane = 100.0f	);
 	//glm::gtc::matrix_projection::perspective()
 
